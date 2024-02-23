@@ -71,6 +71,8 @@ function CompantTableHead() {
 function CompanyTable() {
   const [company, setCompany] = useState([]);
 
+  const userId = localStorage.getItem('user_id');
+
   useEffect(() => {
     getCompany();
   }, []);
@@ -79,7 +81,7 @@ function CompanyTable() {
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
-      url: apiUrl + '/allcompany',
+      url: apiUrl + '/allcompany/' + userId,
       headers: {}
     };
 
@@ -168,6 +170,13 @@ function CompanyTable() {
                 </TableRow>
               );
             })}
+            {company.length == 0 && (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  ไม่พบข้อมูล
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

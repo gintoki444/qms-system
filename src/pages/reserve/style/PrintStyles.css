@@ -1,0 +1,57 @@
+@media print {
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    .menu {
+        display: none;
+      }
+    
+      .navbar {
+        display: none;
+      }
+  
+    .slip-container {
+      /* กำหนดขนาดให้ slip */
+        width: 210mm; /* กำหนดความกว้างของ .slip-container เป็นขนาด A4 */
+        height: 297mm; /* กำหนดความสูงของ .slip-container เป็นขนาด A4 */
+        padding: 20mm; /* เพิ่มระยะขอบภายใน slip-container */
+        border: 1px solid #000; /* เพิ่มเส้นขอบสำหรับ slip-container */
+        box-sizing: border-box; /* ให้ขอบเขตของ slip-container ไม่นับ border และ padding */
+    }
+  
+    .logo-container {
+      /* กำหนดขนาดให้พอดีกับ slip */
+        width: 100%; /* กำหนดความกว้างเต็มของ .logo-container */
+        text-align: center; /* จัดเนื้อหาภายใน .logo-container ไปตรงกลาง */
+        margin-bottom: 10mm; /* เพิ่มระยะห่างด้านล่างของ .logo-container */
+    }
+  
+    .logo {
+      /* กำหนดขนาดให้พอดีกับ logo */
+        max-width: 100%; /* กำหนดความกว้างสูงสุดให้เป็น 100% ของพื้นที่ที่ใช้ใน .logo-container */
+        height: auto; /* ให้สูงของโลโก้ปรับตามอัตราส่วนของความกว้าง */
+    }
+  
+    .qr-code-container {
+      /* กำหนดขนาดให้พอดีกับ slip */
+      width: 100%; /* กำหนดความกว้างเต็มของ .qr-code-container */
+      text-align: center; /* จัดเนื้อหาภายใน .qr-code-container ไปตรงกลาง */
+      margin-bottom: 10mm; /* เพิ่มระยะห่างด้านล่างของ .qr-code-container */
+    }
+        
+    .qr-code {
+      /* กำหนดขนาดให้พอดีกับ QR code */
+        max-width: 100%; /* กำหนดความกว้างสูงสุดให้เป็น 100% ของพื้นที่ที่ใช้ใน .qr-code-container */
+        height: auto; /* ให้สูงของ QR code ปรับตามอัตราส่วนของความกว้าง */
+    }
+  
+    .slip-info {
+        width: 100%; /* กำหนดความกว้างเต็มของ .slip-info */
+        text-align: center; /* จัดเนื้อหาภายใน .slip-info ไปตรงกลาง */
+      }
+      
+      .slip-info p {
+        margin-bottom: 5mm; /* เพิ่มระยะห่างด้านล่างของแต่ละ paragraph ภายใน .slip-info */
+      }
+  }

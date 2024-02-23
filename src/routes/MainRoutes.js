@@ -8,16 +8,14 @@ import MainLayout from 'layout/MainLayout';
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard')));
 
 const Reserve = Loadable(lazy(() => import('pages/reserve/Reserve')));
+const ReserveDetail = Loadable(lazy(() => import('pages/reserve/ReserveDetail')));
 const AddReserve = Loadable(lazy(() => import('pages/reserve/reserve-forms/AddReserve')));
+const UpdateReserve = Loadable(lazy(() => import('pages/reserve/reserve-forms/UpdateReserve')));
+const AddOrder = Loadable(lazy(() => import('pages/order/order-forms/AddOrder')));
+const ReservePrint = Loadable(lazy(() => import('pages/reserve/ReservePrint')));
 
-// render - sample page
-// const SamplePage = Loadable(lazy(() => import('pages/extra-pages/SamplePage')));
-
-// render - utilities
-// const Typography = Loadable(lazy(() => import('pages/components-overview/Typography')));
-// const Color = Loadable(lazy(() => import('pages/components-overview/Color')));
-// const Shadow = Loadable(lazy(() => import('pages/components-overview/Shadow')));
-// const AntIcons = Loadable(lazy(() => import('pages/components-overview/AntIcons')));
+// Queues List
+const Queues = Loadable(lazy(() => import('pages/queues/Queues')));
 
 // render - management
 const Company = Loadable(lazy(() => import('pages/company/Company')));
@@ -50,9 +48,55 @@ const MainRoutes = {
           element: <Reserve />
         },
         {
+          path: 'detail/:id',
+          element: <ReserveDetail />
+        },
+        {
           path: 'add',
           element: <AddReserve />
+        },
+        {
+          path: 'update/:id',
+          element: <UpdateReserve />
+        },
+        {
+          path: 'print',
+          element: <ReservePrint reserveID />
         }
+      ]
+    },
+    {
+      path: '/queues',
+      children: [
+        {
+          path: '',
+          element: <Queues />
+        }
+        // {
+        //   path: 'add',
+        //   element: <AddReserve />
+        // },
+        // {
+        //   path: 'update/:id',
+        //   element: <UpdateReserve />
+        // }
+      ]
+    },
+    {
+      path: '/order',
+      children: [
+        // {
+        //   path: '',
+        //   element: <Reserve />
+        // },
+        {
+          path: 'add/:id',
+          element: <AddOrder />
+        }
+        // {
+        //   path: 'update/:id',
+        //   element: <UpdateReserve />
+        // }
       ]
     },
     {

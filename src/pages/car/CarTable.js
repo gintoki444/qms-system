@@ -64,19 +64,37 @@ function CompantTableHead({ car, carBy }) {
 function CarTable() {
   const [car, setCar] = useState([]);
 
+  const userId = localStorage.getItem('user_id');
+
+  // const [permission, setPermisstion] = useState([]);
+  // const getPermission = () => {
+  //   const userId = localStorage.getItem('user_id');
+  //   const urlapi = apiUrl + `/user_permissions/` + userId;
+
+  //   axios
+  //     .get(urlapi)
+  //     .then((res) => {
+  //       if (res.permissions) {
+  //         setPermisstion(res.permissions);
+  //       }
+  //     })
+  //     .catch((err) => console.log(err));
+  // };
+  
   useEffect(() => {
+    // getPermission();
     getCar();
   }, []);
 
-  const getCar = () => {
+  const getCar = async () => {
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
-      url: apiUrl + '/allcars',
+      url: apiUrl + '/allcars/' + userId,
       headers: {}
     };
 
-    axios
+    await axios
       .request(config)
       .then((response) => {
         setCar(response.data);
@@ -146,17 +164,26 @@ function CarTable() {
                   <TableCell align="left">{row.registration_no}</TableCell>
                   <TableCell align="left">{row.brand}</TableCell>
                   <TableCell align="left">{row.color}</TableCell>
-                  <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                    <Button variant="contained" size="medium" color="primary" onClick={() => updateCar(row.car_id)}>
-                      <EditOutlined />
-                    </Button>
-                    <Button variant="contained" size="medium" color="error" onClick={() => deleteCar(row.car_id)}>
-                      <DeleteOutlined />
-                    </Button>
-                  </TableCell>
+                  {/* {permission.length > 0 &&  */}
+                    <TableCell align="center" sx={{ '& button': { m: 1 } }}>
+                      <Button variant="contained" size="medium" color="primary" onClick={() => updateCar(row.car_id)}>
+                        <EditOutlined />
+                      </Button>
+                      <Button variant="contained" size="medium" color="error" onClick={() => deleteCar(row.car_id)}>
+                        <DeleteOutlined />
+                      </Button>
+                    </TableCell>
+                  {/* } */}
                 </TableRow>
               );
             })}
+            {car.length == 0 && (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  ไม่พบข้อมูล
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

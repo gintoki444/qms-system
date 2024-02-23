@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
+import { useAuth } from 'components/AuthenUser';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -10,12 +11,18 @@ import { EditOutlined, ProfileOutlined, LogoutOutlined, UserOutlined, WalletOutl
 
 // ==============================|| HEADER PROFILE - PROFILE TAB ||============================== //
 
-const ProfileTab = ({ handleLogout }) => {
+const ProfileTab = () => {
   const theme = useTheme();
+  const { logout } = useAuth();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const handleListItemClick = (event, index) => {
     setSelectedIndex(index);
+  };
+
+  const handleClickLogout = () => {
+    // Perform logout logic
+    logout();
   };
 
   return (
@@ -45,7 +52,7 @@ const ProfileTab = ({ handleLogout }) => {
         </ListItemIcon>
         <ListItemText primary="Billing" />
       </ListItemButton>
-      <ListItemButton selected={selectedIndex === 2} onClick={handleLogout}>
+      <ListItemButton selected={selectedIndex === 2} onClick={handleClickLogout}>
         <ListItemIcon>
           <LogoutOutlined />
         </ListItemIcon>

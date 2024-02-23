@@ -5,10 +5,22 @@ import { Box, Typography } from '@mui/material';
 import NavGroup from './NavGroup';
 import menuItem from 'menu-items';
 
+// types
+import { useSelector } from 'react-redux';
+
 // ==============================|| DRAWER CONTENT - NAVIGATION ||============================== //
 
 const Navigation = () => {
-  const navGroups = menuItem.items.map((item) => {
+  let newMenuItem = menuItem;
+
+  const userRole = useSelector((state) => state.auth.roles);
+
+  // Set menu follows Roles user
+  if (userRole && userRole !== 8) {
+    newMenuItem.items = menuItem.items.filter((x) => x.roles != '8');
+  }
+
+  const navGroups = newMenuItem.items.map((item) => {
     switch (item.type) {
       case 'group':
         return <NavGroup key={item.id} item={item} />;

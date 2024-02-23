@@ -17,11 +17,12 @@ import MainCard from 'components/MainCard';
 import moment from 'moment';
 
 // =============== บันทึกข้อมูล ===============//
+  const userId = localStorage.getItem('user_id');
 const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
   const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
   const formData = new FormData();
   try {
-    values.user_id = '91';
+    values.user_id = userId;
     values.created_at = currentDate;
     values.updated_at = currentDate;
     values.location_lat = '0000';
@@ -80,6 +81,7 @@ const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) =>
 };
 
 function AddCompany() {
+
   const initialValue = {
     name: '',
     country: '',

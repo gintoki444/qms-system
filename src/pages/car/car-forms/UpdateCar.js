@@ -23,6 +23,8 @@ function UpdateCar() {
     color: ''
   });
 
+  const userId = localStorage.getItem('user_id');
+
   // =============== Validate Forms ===============//
   const validationSchema = Yup.object().shape({
     registration_no: Yup.string().max(255).required('กรุณาระบุทะเบียนรถ'),
@@ -69,7 +71,7 @@ function UpdateCar() {
     console.log(values);
 
     try {
-      values.user_id = '91';
+      values.user_id = userId;
       values.created_at = currentDate;
       values.updated_at = currentDate;
 
@@ -122,7 +124,7 @@ function UpdateCar() {
   return (
     <Grid container alignItems="center" justifyContent="space-between">
       <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-        <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true} >
+        <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
           {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
             <form noValidate onSubmit={handleSubmit}>
               <Grid container spacing={3}>

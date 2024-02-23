@@ -1,11 +1,9 @@
 // assets
-import { DashboardOutlined, BookOutlined, PrinterOutlined } from '@ant-design/icons';
+import { DashboardOutlined } from '@ant-design/icons';
 
 // icons
 const icons = {
-  DashboardOutlined,
-  BookOutlined,
-  PrinterOutlined
+  DashboardOutlined
 };
 
 // ==============================|| MENU ITEMS - DASHBOARD ||============================== //
@@ -22,28 +20,6 @@ const dashboard = {
       url: '/',
       icon: icons.DashboardOutlined,
       breadcrumbs: false
-    },
-    {
-      id: 'reserves',
-      title: 'จองคิวรับสินค้า',
-      type: 'item',
-      url: '/reserve',
-      icon: icons.BookOutlined
-    },
-    {
-      id: 'queue',
-      title: 'ออกบัตรคิว',
-      type: 'item',
-      url: '#',
-      icon: icons.PrinterOutlined
-    },
-    {
-      id: 'low-weight',
-      title: 'ชั่งเบา',
-      type: 'item',
-      url: '#',
-      icon: ''
-      // ,breadcrumbs: false
     }
   ]
 };

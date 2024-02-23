@@ -1,5 +1,11 @@
 // assets
-import { ShopOutlined, CarOutlined, UserOutlined } from '@ant-design/icons';
+import { ContainerOutlined, BookOutlined, ShopOutlined, CarOutlined, UserOutlined } from '@ant-design/icons';
+
+// icons
+const icons = {
+  BookOutlined,
+  ContainerOutlined
+};
 
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
 
@@ -7,7 +13,22 @@ const management = {
   id: 'management',
   title: 'การจัดการข้อมูล',
   type: 'group',
+  roles: '3',
   children: [
+    {
+      id: 'userReserves',
+      title: 'จองคิวรับสินค้า',
+      type: 'item',
+      url: '/reserve',
+      icon: icons.BookOutlined
+    },
+    {
+      id: 'userQueue',
+      title: 'ข้อมูลคิวรับสินค้า',
+      type: 'item',
+      url: '/queues',
+      icon: icons.ContainerOutlined
+    },
     {
       id: 'company',
       title: 'ข้อมูลร้านค้า/บริษัท',

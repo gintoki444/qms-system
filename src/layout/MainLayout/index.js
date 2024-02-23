@@ -12,8 +12,13 @@ import Header from './Header';
 import navigation from 'menu-items';
 import Breadcrumbs from 'components/@extended/Breadcrumbs';
 
+// Get api Authen loggin
+import * as authUser from '_api/loginRequest';
+const token = localStorage.getItem('token');
+
 // types
 import { openDrawer } from 'store/reducers/menu';
+import { setProfile } from 'store/reducers/auth';
 
 // ==============================|| MAIN LAYOUT ||============================== //
 
@@ -44,6 +49,26 @@ const MainLayout = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawerOpen]);
 
+  const getProfile = () => {
+    authUser.authUser(token).then((result) => {
+      if (result.status) {
+        dispatch(
+          setProfile({
+            email: result.decoded.email,
+            user_id: result.decoded.user_id,
+            roles: result.decoded.role_id
+          })
+        );
+      } else {
+        localStorage.clear();
+        window.location = '/login';
+      }
+    });
+  };
+
+  useEffect(() => {
+    getProfile();
+  }, []);
   return (
     <Box sx={{ display: 'flex', width: '100%' }}>
       <Header open={open} handleDrawerToggle={handleDrawerToggle} />

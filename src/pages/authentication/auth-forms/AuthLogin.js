@@ -1,6 +1,9 @@
 import React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+
+// Alert Massage
+import Alert from '@mui/material/Alert';
 
 // material-ui
 import {
@@ -37,6 +40,8 @@ import axios from 'axios';
 
 const AuthLogin = () => {
   const [checked, setChecked] = React.useState(false);
+  const [massageErrors, setMassageErrors] = useState('');
+  const [popupErrors, setPopupErrors] = useState(false);
 
   const [showPassword, setShowPassword] = React.useState(false);
   const handleClickShowPassword = () => {
@@ -47,15 +52,12 @@ const AuthLogin = () => {
     event.preventDefault();
   };
 
-  useEffect(() => {
-    handleCheckLogin();
-  }, []);
+  // Ckeck Login
+  if (localStorage.getItem('token')) {
+    window.location = '/';
+  }
 
-  const handleCheckLogin = () => {
-    if (localStorage.getItem('token')) {
-      window.location = '/';
-    }
-  };
+  useEffect(() => {}, []);
 
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
     try {
@@ -67,16 +69,21 @@ const AuthLogin = () => {
         password: values.password
       };
 
-      await axios.post(apiUrl + '/login', jsonData)
+      await axios
+        .post(apiUrl + '/login', jsonData)
         .then((res) => {
-          console.log(res);
           if (res.data.status === 'ok') {
             console.log(res.data);
             // To store data
             localStorage.setItem('token', res.data.token);
+            // เก็บค่าไว้ใช้ใยการบันทึกมูลใน application
+            localStorage.setItem('user_id', res.data.user_id);
+            localStorage.setItem('email', res.data.email);
             window.location = '/';
           } else {
-            alert('Login failed: ' + res.data.message);
+            // alert('Login failed: ' + res.data.message);
+            setMassageErrors(res.data.message);
+            setPopupErrors(true);
           }
         })
         .catch((err) => {
@@ -91,6 +98,11 @@ const AuthLogin = () => {
 
   return (
     <>
+      {popupErrors == true && (
+        <Stack sx={{ width: '100%', mb: '18px' }} spacing={2}>
+          <Alert severity="error">{massageErrors}</Alert>
+        </Stack>
+      )}
       <Formik
         initialValues={{
           email: '',
@@ -133,7 +145,7 @@ const AuthLogin = () => {
                   <OutlinedInput
                     fullWidth
                     error={Boolean(touched.password && errors.password)}
-                    id="-password-login"
+                    id="password-login"
                     type={showPassword ? 'text' : 'password'}
                     value={values.password}
                     name="password"

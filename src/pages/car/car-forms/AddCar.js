@@ -1,4 +1,4 @@
-import React from 'react';
+// import React, { useState, useEffect } from 'react';
 
 // third party
 import * as Yup from 'yup';
@@ -15,6 +15,29 @@ import MainCard from 'components/MainCard';
 import moment from 'moment';
 
 function AddCar() {
+  const userId = localStorage.getItem('user_id');
+  if (!userId) {
+    window.location.href = '/login';
+  }
+
+  // const [permission, setPermisstion] = useState([]);
+  // const getPermission = () => {
+  //   const userId = localStorage.getItem('user_id');
+  //   const urlapi = apiUrl + `/user_permissions/` + userId;
+
+  //   axios
+  //     .get(urlapi)
+  //     .then((res) => {
+  //       if (res.permissions) {
+  //         setPermisstion(res.permissions);
+  //       }
+  //     })
+  //     .catch((err) => console.log(err));
+  // };
+  // useEffect(() => {
+  //   getPermission();
+  // }, []);
+
   const initialValue = {
     registration_no: '',
     brand: '',
@@ -28,7 +51,7 @@ function AddCar() {
     console.log(values);
 
     try {
-      values.user_id = '91';
+      values.user_id = userId;
       values.created_at = currentDate;
       values.updated_at = currentDate;
 
@@ -158,12 +181,13 @@ function AddCar() {
                     )}
                   </Stack>
                 </Grid>
-
+                {/* {permission.length > 0 && permission.add_data && ( */}
                 <Grid item xs={12}>
                   <Button disableElevation disabled={isSubmitting} size="large" type="submit" variant="contained" color="primary">
                     เพิ่มข้อมูลรถ
                   </Button>
                 </Grid>
+                {/* )} */}
               </Grid>
             </form>
           )}

@@ -47,11 +47,7 @@ function CompantTableHead() {
     <TableHead>
       <TableRow>
         {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.align}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-          >
+          <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'}>
             {headCell.label}
           </TableCell>
         ))}
@@ -63,6 +59,8 @@ function CompantTableHead() {
 function DriverTable() {
   const [car, setCar] = useState([]);
 
+  const userId = localStorage.getItem('user_id');
+
   useEffect(() => {
     getDrivers();
   }, []);
@@ -71,7 +69,7 @@ function DriverTable() {
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
-      url: apiUrl + '/alldrivers',
+      url: apiUrl + '/alldrivers/' + userId,
       headers: {}
     };
 
@@ -159,6 +157,13 @@ function DriverTable() {
                 </TableRow>
               );
             })}
+            {car.length == 0 && (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  ไม่พบข้อมูล
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

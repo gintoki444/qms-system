@@ -1,219 +1,81 @@
-import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import moment from 'moment';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+// third party
+// import * as Yup from 'yup';
+// import { Formik } from 'formik';
+import axios from '../../../node_modules/axios/index';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
-
-// Get Role use
-import { useSelector } from 'react-redux';
+// const userId = localStorage.getItem('user_id');
 
 // material-ui
 import {
-  Box,
-  Stack,
-  Chip,
+  //   Box,
+  Button,
+  //   FormControl,
+  //   FormHelperText,
+  Divider,
+  Grid,
+  //   IconButton,
+  //   InputAdornment,
+  //   InputLabel,
+  //   OutlinedInput,
+  //   Stack,
+  Typography,
   Table,
+  TableRow,
   TableBody,
   TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tooltip,
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions
 } from '@mui/material';
+import MainCard from 'components/MainCard';
+// import MenuItem from '@mui/material/MenuItem';
+// import TextField from '@mui/material/TextField';
 
-// project import
-// import Dot from 'components/@extended/Dot';
-import { EditOutlined, DeleteOutlined, DiffOutlined, ProfileOutlined } from '@ant-design/icons';
+// DateTime
+import moment from 'moment';
 
-import axios from 'axios';
-
-// ==============================|| ORDER TABLE - HEADER CELL ||============================== //
-const headCells = [
-  {
-    id: 'reserveNo',
-    align: 'left',
-    disablePadding: false,
-    label: 'รหัสการจอง.'
-  },
-  {
-    id: 'dateReserve',
-    align: 'left',
-    disablePadding: true,
-    label: 'วันที่จอง'
-  },
-  {
-    id: 'dateQueue',
-    align: 'left',
-    disablePadding: true,
-    label: 'วันที่เข้ารับสินค้า'
-  },
-  {
-    id: 'brandCode',
-    align: 'left',
-    disablePadding: true,
-    label: 'Brand Code'
-  },
-  {
-    id: 'description',
-    align: 'left',
-    disablePadding: false,
-    label: 'รายละเอียด'
-  },
-  {
-    id: 'Company',
-    align: 'center',
-    disablePadding: false,
-    label: 'บริษัท'
-  },
-  {
-    id: 'totalQuantity',
-    align: 'right',
-    disablePadding: false,
-    label: 'จำนวน'
-  },
-  {
-    id: 'status',
-    align: 'center',
-    disablePadding: false,
-    label: 'สถานะการจอง'
-  },
-  {
-    id: 'action',
-    align: 'center',
-    disablePadding: false,
-    label: 'Actions'
-  }
-];
-
-// ==============================|| ORDER TABLE - HEADER ||============================== //
-function OrderTableHead({ order, orderBy }) {
-  return (
-    <TableHead>
-      <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.align}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            {headCell.label}
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
-
-OrderTableHead.propTypes = {
-  order: PropTypes.string,
-  orderBy: PropTypes.string
-};
-
-// ==============================|| ORDER TABLE - STATUS ||============================== //
-const OrderStatus = ({ status }) => {
-  let color;
-  let title;
-
-  switch (status) {
-    case 'pending':
-      color = 'warning';
-      title = 'Pending';
-      break;
-    case 'completed':
-      color = 'success';
-      title = 'สำเร็จ';
-      break;
-    case 'waiting':
-      color = 'warning';
-      title = 'รออนุมัติ';
-      break;
-    default:
-      color = 'secondary';
-      title = 'None';
-  }
-
-  return (
-    <Stack direction="row" spacing={1} sx={{ justifyContent: 'center' }}>
-      <Chip color={color ? color : ''} label={title} />
-    </Stack>
-  );
-};
-
-OrderStatus.propTypes = {
-  status: PropTypes.string
-};
-
-export default function ReserveTable() {
-  const userRoles = useSelector((state) => state.auth.roles);
-  const [items, setItems] = useState([]);
-  const [order] = useState('asc');
-  const [orderBy] = useState('trackingNo');
-
-  const userId = localStorage.getItem('user_id');
-
-  useEffect(() => {
-    console.log('userRoles :', userRoles);
-    getReserve();
-  }, []);
-
+function ReserveDetail() {
+  // =============== Get Reserve ID ===============//
+  const [reserveData, setReservData] = useState({});
+  const { id } = useParams();
   const getReserve = () => {
-    let config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: apiUrl + '/allreserves/' + userId,
-      headers: {}
-    };
-
+    const urlapi = apiUrl + `/reserve/` + id;
     axios
-      .request(config)
-      .then((response) => {
-        setItems(response.data);
-        // setItems(response.data.filter((x) => x.status !== 'completed'));
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const navigate = useNavigate();
-  const updateDrivers = (id) => {
-    navigate('/reserve/update/' + id);
-  };
-
-  const deleteDrivers = (id) => {
-    let config = {
-      method: 'delete',
-      maxBodyLength: Infinity,
-      url: apiUrl + '/deletedriver/' + id,
-      headers: {}
-    };
-
-    console.log(config.url);
-
-    axios
-      .request(config)
-      .then((result) => {
-        console.log(result);
-        if (result.data.status === 'ok') {
-          alert(result.data.message);
-          getDrivers();
-        } else {
-          alert(result.data.message);
+      .get(urlapi)
+      .then((res) => {
+        if (res) {
+          res.data.reserve.map((result) => {
+            setReservData(result);
+            console.log('reserveData :', reserveData);
+          });
         }
       })
-      .catch((error) => {
-        console.log(error);
-      });
+      .catch((err) => console.log(err));
   };
+
+  // =============== Get orders ID ===============//
+  const [orderList, setOrderList] = useState([]);
+  const getOrder = async () => {
+    const urlapi = apiUrl + `/orders/` + id;
+    await axios
+      .get(urlapi)
+      .then((res) => {
+        console.log('res.data :', res.data);
+        setOrderList(res.data);
+      })
+      .catch((err) => console.log(err));
+  };
+  useEffect(() => {
+    getOrder();
+    getReserve();
+  }, [id]);
 
   // ==============================|| Create Queue ||============================== //
   const [open, setOpen] = useState(false);
@@ -441,12 +303,16 @@ export default function ReserveTable() {
     });
   }
 
-  // ==============================|| Reserve Detail ||============================== //
-  const reserveDetail = (id) => {
-    navigate('/reserve/detail/' + id);
+  const navigate = useNavigate();
+  const backToReserce = () => {
+    navigate('/reserve');
+  };
+
+  const reservePrint = (id) => {
+    navigate('/reserve/print', { state: { reserveId: id } });
   };
   return (
-    <Box>
+    <Grid alignItems="center" justifyContent="space-between">
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
         <DialogTitle id="responsive-dialog-title">{'แจ้งเตือน'}</DialogTitle>
         <DialogContent>
@@ -461,103 +327,146 @@ export default function ReserveTable() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Grid container spacing={3}>
+        <Grid item xs={12} lg={8}>
+          <MainCard>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <Typography variant="h5">ข้อมูลจองคิวรับสินค้า</Typography>
+                <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+              </Grid>
 
-      <TableContainer
-        sx={{
-          width: '100%',
-          overflowX: 'auto',
-          position: 'relative',
-          display: 'block',
-          maxWidth: '100%',
-          '& td, & th': { whiteSpace: 'nowrap' }
-        }}
-      >
-        <Table
-          aria-labelledby="tableTitle"
-          sx={{
-            '& .MuiTableCell-root:first-of-type': {
-              pl: 2
-            },
-            '& .MuiTableCell-root:last-of-type': {
-              pr: 3
-            }
-          }}
-        >
-          <OrderTableHead order={order} orderBy={orderBy} />
-          <TableBody>
-            {items.map((row, index) => {
-              return (
-                <TableRow key={index}>
-                  <TableCell align="left">{row.reserve_id}</TableCell>
-                  <TableCell align="left">{moment(row.created_date).format('DD/MM/YYYY')}</TableCell>
-                  <TableCell align="left">{moment(row.pickup_date).format('DD/MM/YYYY')}</TableCell>
-                  <TableCell align="left">{row.brand_code}</TableCell>
-                  <TableCell align="left">{row.description}</TableCell>
-                  <TableCell align="center">{row.company}</TableCell>
-                  <TableCell align="right">{row.total_quantity}</TableCell>
-                  <TableCell align="center">
-                    <OrderStatus  status={row.status} />
-                  </TableCell>
-                  <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                    <Tooltip title="รายละเอียด">
-                      <Button
-                        variant="outlined"
-                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                        size="medium"
-                        color="success"
-                        onClick={() => reserveDetail(row.reserve_id)}
-                      >
-                        <ProfileOutlined />
-                      </Button>
-                    </Tooltip>
+              <Grid item xs={12}>
+                <Typography variant="body1">
+                  <strong>ข้อมูลร้าค้า/บริษัท </strong>
+                </Typography>
+              </Grid>
 
-                    {userRoles && userRoles === 8 && (
-                      <Tooltip title="รายละเอียด">
-                        <Button
-                          variant="contained"
-                          sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                          size="medium"
-                          color="info"
-                          onClick={() => handleClickOpen(row.reserve_id, row.total_quantity, row.brand_code)}
-                        >
-                          <DiffOutlined />
-                        </Button>
-                      </Tooltip>
-                    )}
-                    <Button
-                      variant="contained"
-                      sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                      size="medium"
-                      color="primary"
-                      onClick={() => updateDrivers(row.reserve_id)}
-                    >
-                      <EditOutlined />
-                    </Button>
+              <Grid item xs={6}>
+                <Typography variant="body1" gutterBottom>
+                  ชื่อร้าค้า/บริษัท : {reserveData.company}
+                </Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="body1" gutterBottom>
+                  เลขทีผู้เสียภาษี : {reserveData.tax_no}
+                </Typography>
+              </Grid>
 
-                    <Button
-                      variant="contained"
-                      sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                      size="medium"
-                      color="error"
-                      onClick={() => deleteDrivers(row.reserve_id)}
-                    >
-                      <DeleteOutlined />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+              <Grid item xs={6}>
+                <Typography variant="body1" gutterBottom>
+                  วันที่จอง : {moment(reserveData.pickup_date).format('DD/MM/YYYY')}
+                </Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="body1" gutterBottom>
+                  เบอร์โทรศัพท์ : {reserveData.phone}
+                </Typography>
+              </Grid>
 
-            {items.length == 0 && (
-              <TableRow>
-                <TableCell colSpan={9} align="center">
-                  ไม่พบข้อมูล
-                </TableCell>
-              </TableRow>
+              <Grid item xs={12}>
+                <Divider sx={{ mb: { xs: 0, sm: 0 }, mt: 0 }} />
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="body1">
+                  <strong>ข้อมูลสินค้า </strong>
+                </Typography>
+              </Grid>
+
+              <Grid item xs={12}>
+                {orderList.map((order, index) => (
+                  <Grid item xs={12} key={index}>
+                    <Grid container spacing={3} sx={{ mb: '15px' }}>
+                      <Grid item xs={6}>
+                        <Typography variant="body1">
+                          <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body1">
+                          <strong>รายละเอียด : </strong> {order.description}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                    <Table size="small">
+                      <TableBody>
+                        {order.items.map((item, index) => (
+                          <TableRow key={index}>
+                            <TableCell width={'50%'}>{item.name}</TableCell>
+                            <TableCell>{item.quantity} ตัน</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Grid>
+                ))}
+
+                {orderList.length === 0 && (
+                  <Typography variant="body1">
+                    <strong>ไม่มีข้อมูล </strong>
+                  </Typography>
+                )}
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="body1">
+                  <strong>ข้อมูลคนขับรถ </strong>
+                </Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="body1" gutterBottom>
+                  ชื่อ :{reserveData.driver}
+                </Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="body1" gutterBottom>
+                  เลขที่ใบขับขี่ :{reserveData.license_no}
+                </Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="body1" gutterBottom>
+                  เบอร์โทรศัพท์ :{reserveData.mobile_no}
+                </Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="body1" gutterBottom>
+                  เลขที่ใบขับขี่ :{reserveData.license_no}
+                </Typography>
+              </Grid>
+            </Grid>
+          </MainCard>
+          <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
+            {orderList.length > 0 && (
+              <Button
+                size="mediam"
+                variant="outlined"
+                color="success"
+                onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity, reserveData.brand_code)}
+              >
+                ออกบัตรคิว
+              </Button>
             )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+
+            {orderList.length > 0 && (
+              <Button size="mediam" variant="contained" color="info" onClick={() => reservePrint(reserveData.reserve_id)}>
+                พิมพ์
+              </Button>
+            )}
+
+            <Button
+              size="mediam"
+              variant="contained"
+              color="error"
+              onClick={() => {
+                backToReserce();
+              }}
+            >
+              ย้อนกลับ
+            </Button>
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
   );
 }
+
+export default ReserveDetail;

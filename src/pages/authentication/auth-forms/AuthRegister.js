@@ -17,6 +17,9 @@ import {
   Typography
 } from '@mui/material';
 
+// Alert Massage
+import Alert from '@mui/material/Alert';
+
 // third party
 import * as Yup from 'yup';
 import { Formik } from 'formik';
@@ -40,6 +43,9 @@ const AuthRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [massageErrors, setMassageErrors] = useState('');
+  const [popupErrors, setPopupErrors] = useState(false);
+
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -62,20 +68,18 @@ const AuthRegister = () => {
   };
 
   useEffect(() => {
-    handleCheckLogin();
+    // handleCheckLogin();
     changePassword('');
   }, []);
 
-  const handleCheckLogin = () => {
-    if (localStorage.getItem('token')) {
-      window.location = '/';
-    }
-  };
+  if (localStorage.getItem('token')) {
+    window.location = '/';
+  }
 
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
+    setPopupErrors(false);
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     try {
-      console.log('values ', values);
       setStatus({ success: false });
       setSubmitting(false);
 
@@ -83,7 +87,8 @@ const AuthRegister = () => {
         firstname: values.firstname,
         lastname: values.lastname,
         company_id: '',
-        role: '',
+        role_id: '3',
+        role: 'Subscriber',
         country: '',
         email: values.email,
         avatar: '',
@@ -96,13 +101,25 @@ const AuthRegister = () => {
       await axios
         .post(apiUrl + '/adduser', jsonData)
         .then((res) => {
-          console.log(res);
           if (res.data.status === 'ok') {
-            console.log(res.data);
-            // To store data
-            window.location = '/dashboard/default';
+            const loginData = {
+              email: values.email,
+              password: values.password
+            };
+
+            axios.post(apiUrl + '/login', loginData).then((login) => {
+              if (login.data.status === 'ok') {
+                // To store data
+                localStorage.setItem('token', login.data.token);
+                // เก็บค่าไว้ใช้ใยการบันทึกมูลใน application
+                localStorage.setItem('user_id', res.data.user_id);
+                localStorage.setItem('email', res.data.email);
+                window.location = '/';
+              }
+            });
           } else {
-            alert('สมัครสมาชิกไม่สำเร็จ: ' + res.data.message);
+            setMassageErrors('คุณได้ใช้อีเมล :' + values.email + ' สมัครสมาชิกแล้ว !');
+            setPopupErrors(true);
           }
         })
         .catch((err) => {
@@ -118,6 +135,11 @@ const AuthRegister = () => {
 
   return (
     <>
+      {popupErrors == true && (
+        <Stack sx={{ width: '100%', mb: '18px' }} spacing={2}>
+          <Alert severity="error">{massageErrors}</Alert>
+        </Stack>
+      )}
       <Formik
         initialValues={{
           firstname: '',
