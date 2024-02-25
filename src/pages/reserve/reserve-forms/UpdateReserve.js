@@ -470,7 +470,7 @@ function UpdateReserve() {
                           id="total_quantity"
                           type="text"
                           disabled
-                          value={values.total_quantity}
+                          value={parseFloat(values.total_quantity).toFixed(4)}
                           name="color"
                           onBlur={handleBlur}
                           onChange={handleChange}

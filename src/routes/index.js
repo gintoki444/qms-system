@@ -5,9 +5,10 @@ import LoginRoutes from './LoginRoutes';
 import MainRoutes from './MainRoutes';
 import AdminsRoutes from './AdminRoutes';
 import OperationRoutes from './OperationRoutes';
+import PrintRoutes from './PrintsRoutes';
 
 // ==============================|| ROUTING RENDER ||============================== //
 
 export default function ThemeRoutes() {
-  return useRoutes([MainRoutes, LoginRoutes, AdminsRoutes, OperationRoutes]);
+  return useRoutes([MainRoutes, LoginRoutes, AdminsRoutes, OperationRoutes, PrintRoutes]);
 }

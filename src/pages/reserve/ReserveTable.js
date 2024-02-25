@@ -71,7 +71,7 @@ const headCells = [
     id: 'Company',
     align: 'center',
     disablePadding: false,
-    label: 'บริษัท'
+    label: 'ร้านค้า/บริษัท'
   },
   {
     id: 'totalQuantity',
@@ -362,7 +362,7 @@ export default function ReserveTable() {
       } else {
         //alert("สร้างคิวแล้ว")
         const queue_id = await getQueueIdf(id);
-        window.location.href = '/queue/' + queue_id + '/' + id;
+        window.location.href = '/queues/detail/' + queue_id;
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -370,7 +370,7 @@ export default function ReserveTable() {
   };
 
   //สร้าง ขั้นตอนการรับสินค้า
-  function createStepsf(queue_id, reserve_id) {
+  function createStepsf(queue_id) {
     return new Promise((resolve) => {
       setTimeout(() => {
         var myHeaders = new Headers();
@@ -432,7 +432,7 @@ export default function ReserveTable() {
           .then((response) => response.json())
           .then((result) => {
             console.log(result);
-            window.location.href = '/queue/' + queue_id + '/' + reserve_id;
+            window.location.href = '/queues/detail/' + queue_id;
           })
           .catch((error) => console.log('error', error));
 
@@ -496,7 +496,7 @@ export default function ReserveTable() {
                   <TableCell align="center">{row.company}</TableCell>
                   <TableCell align="right">{row.total_quantity}</TableCell>
                   <TableCell align="center">
-                    <OrderStatus  status={row.status} />
+                    <OrderStatus status={row.status} />
                   </TableCell>
                   <TableCell align="center" sx={{ '& button': { m: 1 } }}>
                     <Tooltip title="รายละเอียด">
@@ -511,8 +511,8 @@ export default function ReserveTable() {
                       </Button>
                     </Tooltip>
 
-                    {userRoles && userRoles === 8 && (
-                      <Tooltip title="รายละเอียด">
+                    {row.status !== 'completed' && (
+                      <Tooltip title="สร้างคิว">
                         <Button
                           variant="contained"
                           sx={{ minWidth: '33px!important', p: '6px 0px' }}
@@ -524,25 +524,34 @@ export default function ReserveTable() {
                         </Button>
                       </Tooltip>
                     )}
-                    <Button
-                      variant="contained"
-                      sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                      size="medium"
-                      color="primary"
-                      onClick={() => updateDrivers(row.reserve_id)}
-                    >
-                      <EditOutlined />
-                    </Button>
 
-                    <Button
-                      variant="contained"
-                      sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                      size="medium"
-                      color="error"
-                      onClick={() => deleteDrivers(row.reserve_id)}
-                    >
-                      <DeleteOutlined />
-                    </Button>
+                    {row.status !== 'completed' && (
+                      <Tooltip title="แก้ไข">
+                        <Button
+                          variant="contained"
+                          sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                          size="medium"
+                          color="primary"
+                          onClick={() => updateDrivers(row.reserve_id)}
+                        >
+                          <EditOutlined />
+                        </Button>
+                      </Tooltip>
+                    )}
+
+                    {row.status !== 'completed' && (
+                      <Tooltip title="ลบ">
+                        <Button
+                          variant="contained"
+                          sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                          size="medium"
+                          color="error"
+                          onClick={() => deleteDrivers(row.reserve_id)}
+                        >
+                          <DeleteOutlined />
+                        </Button>
+                      </Tooltip>
+                    )}
                   </TableCell>
                 </TableRow>
               );

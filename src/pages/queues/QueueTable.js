@@ -7,7 +7,7 @@ import moment from 'moment';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 // material-ui
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Chip, Stack } from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Chip, Tooltip } from '@mui/material';
 
 import {
   ProfileOutlined
@@ -52,10 +52,22 @@ const headCells = [
     label: 'เบอร์โทรศัพท์'
   },
   {
-    id: 'status',
-    align: 'center',
+    id: 'step1',
+    align: 'left',
     disablePadding: false,
-    label: 'สถานะเข้ารับสินค้า'
+    label: 'ชั่งเบา'
+  },
+  {
+    id: 'step2',
+    align: 'left',
+    disablePadding: false,
+    label: 'ขึ้นสินค้า'
+  },
+  {
+    id: 'step3',
+    align: 'left',
+    disablePadding: false,
+    label: 'ชั่งหนัก'
   },
   {
     id: 'action',
@@ -91,25 +103,29 @@ QueueTableHead.propTypes = {
 };
 
 // ==============================|| ORDER TABLE - STATUS ||============================== //
-const QueueStatus = ({ status, text }) => {
+const QueueStatus = ({ status }) => {
   let color;
   let title;
 
   switch (status) {
     case 'processing':
       color = 'warning';
-      title = text;
+      title = 'ดำเนินการ';
       break;
     case 'completed':
       color = 'success';
-      title = text;
+      title = 'สำเร็จ';
       break;
     default:
       color = 'secondary';
-      title = text;
+      title = 'รอคิว';
   }
 
-  return <Chip color={color} label={title} />;
+  return (
+    <Tooltip title={title}>
+      <Chip color={color} label={title}/>
+    </Tooltip>
+  );
 };
 
 QueueStatus.propTypes = {
@@ -147,7 +163,7 @@ export default function QueueTable() {
 
   const navigate = useNavigate();
   const updateDrivers = (id) => {
-    navigate('/queue/detail/' + id);
+    navigate('/queues/detail/' + id);
   };
   return (
     <Box>
@@ -178,28 +194,31 @@ export default function QueueTable() {
               return (
                 <TableRow key={index}>
                   <TableCell align="left">{index + 1}</TableCell>
-                  <TableCell align="center">{row.company}</TableCell>
+                  <TableCell align="left">{row.company_name}</TableCell>
                   <TableCell align="left">{row.driver_name}</TableCell>
                   <TableCell align="left">{row.registration_no}</TableCell>
                   <TableCell align="left">{row.driver_mobile}</TableCell>
-                  <TableCell align="center">
-                    <Stack direction="row" spacing={1} sx={{ justifyContent: 'center' }}>
-                      <QueueStatus status={row.step1_status} text={'ชั่งเบา'} />
-                      <QueueStatus status={row.step2_status} text={'ขึ้นสินค้า'} />
-                      <QueueStatus status={row.step3_status} text={'ชั่งหนัก'} />
-                      <QueueStatus status={row.step4_status} text={'ชั่งเบา'} />
-                    </Stack>
+                  <TableCell align="left">
+                    <QueueStatus status={row.step1_status} />
+                  </TableCell>
+                  <TableCell align="left">
+                    <QueueStatus status={row.step2_status} />
+                  </TableCell>
+                  <TableCell align="left">
+                    <QueueStatus status={row.step3_status} />
                   </TableCell>
                   <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                    <Button
-                      sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                      variant="contained"
-                      size="medium"
-                      color="info"
-                      onClick={() => updateDrivers(row.reserve_id)}
-                    >
-                      <ProfileOutlined />
-                    </Button>
+                    <Tooltip title="รายละเอียด">
+                      <Button
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        variant="contained"
+                        size="medium"
+                        color="info"
+                        onClick={() => updateDrivers(row.queue_id)}
+                      >
+                        <ProfileOutlined />
+                      </Button>
+                    </Tooltip>
                     {/* <Button 
                       sx={{ minWidth: '33px!important', p: '6px 0px' }}
                       variant="contained" size="medium" color="error" onClick={() => deleteDrivers(row.reserve_id)}>

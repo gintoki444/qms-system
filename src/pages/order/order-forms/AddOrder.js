@@ -95,7 +95,7 @@ function AddOrder() {
   const generateItemSchema = () =>
     Yup.object().shape({
       product_id: Yup.string().required('กรุณาระบุสินค้า'),
-      quantity: Yup.number().required('กรุณาระบุจำนวนสินค้า').min(5, 'กรุณาระบุจำนวนสินค้าอย่างน้อว 5')
+      quantity: Yup.number().required('กรุณาระบุจำนวนสินค้า').min(1, 'กรุณาระบุจำนวนสินค้าอย่างน้อย 1 ตัน')
     });
   const [validationSchema, setValidationSchema] = useState(
     Yup.object().shape({
@@ -120,7 +120,7 @@ function AddOrder() {
       setTimeout(() => {
         // รวม grand total ของ quantity ของทุกรายการ items
         const grandTotalQuantity = items.reduce((acc, item) => {
-          return acc + parseInt(item.quantity);
+          return acc + parseFloat(item.quantity);
         }, 0);
 
         if (items.length === 0) {
@@ -377,13 +377,13 @@ function AddOrder() {
                           <TableCell>
                             <TextField
                               required
-                              value={item.quantity}
+                              value={parseFloat(item.quantity).toFixed(4)}
                               onChange={(e) => handleInputChange(e, index)}
                               name={`quantity`}
                               autoComplete="quantity"
                               size="small"
                               type="number"
-                              inputProps={{ min: 1, step: 1 }}
+                              inputProps={{ min: 1, step: 1, pattern: '^\\d*\\.?\\d{0,4}$' }}
                               InputProps={{ inputMode: 'numeric' }}
                             />
                             {touched.items && touched.items[index] && errors.items && errors.items[index] && (

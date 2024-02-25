@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Box, Button } from '@mui/material';
+import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Box, Button, Tooltip } from '@mui/material';
 
 import axios from '../../../node_modules/axios/index';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -80,7 +80,7 @@ function CarTable() {
   //     })
   //     .catch((err) => console.log(err));
   // };
-  
+
   useEffect(() => {
     // getPermission();
     getCar();
@@ -165,14 +165,30 @@ function CarTable() {
                   <TableCell align="left">{row.brand}</TableCell>
                   <TableCell align="left">{row.color}</TableCell>
                   {/* {permission.length > 0 &&  */}
-                    <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                      <Button variant="contained" size="medium" color="primary" onClick={() => updateCar(row.car_id)}>
+                  <TableCell align="center" sx={{ '& button': { m: 1 } }}>
+                    <Tooltip title="แก้ไข">
+                      <Button
+                        variant="contained"
+                        size="medium"
+                        color="primary"
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        onClick={() => updateCar(row.car_id)}
+                      >
                         <EditOutlined />
                       </Button>
-                      <Button variant="contained" size="medium" color="error" onClick={() => deleteCar(row.car_id)}>
+                    </Tooltip>
+                    <Tooltip title="ลบ">
+                      <Button
+                        variant="contained"
+                        size="medium"
+                        color="error"
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        onClick={() => deleteCar(row.car_id)}
+                      >
                         <DeleteOutlined />
                       </Button>
-                    </TableCell>
+                    </Tooltip>
+                  </TableCell>
                   {/* } */}
                 </TableRow>
               );

@@ -12,17 +12,9 @@ const apiUrl = process.env.REACT_APP_API_URL;
 
 // material-ui
 import {
-  //   Box,
   Button,
-  //   FormControl,
-  //   FormHelperText,
   Divider,
   Grid,
-  //   IconButton,
-  //   InputAdornment,
-  //   InputLabel,
-  //   OutlinedInput,
-  //   Stack,
   Typography,
   Table,
   TableRow,
@@ -52,8 +44,8 @@ function ReserveDetail() {
       .then((res) => {
         if (res) {
           res.data.reserve.map((result) => {
+            console.log(result)
             setReservData(result);
-            console.log('reserveData :', reserveData);
           });
         }
       })
@@ -67,7 +59,6 @@ function ReserveDetail() {
     await axios
       .get(urlapi)
       .then((res) => {
-        console.log('res.data :', res.data);
         setOrderList(res.data);
       })
       .catch((err) => console.log(err));
@@ -90,16 +81,20 @@ function ReserveDetail() {
   };
 
   const handleClickOpen = (id, total_quantity, brand_code) => {
-    if (total_quantity === '0') {
-      alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
-      return;
-    } else {
-      setNotifyText('ต้องการสร้างคิวหรือไม่?');
-      //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
-      setReserveId(id);
-      setTotalQuantity(total_quantity);
-      setBrandCode(brand_code);
-      setOpen(true);
+    try {
+      if (total_quantity === '0') {
+        alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
+        return;
+      } else {
+        setNotifyText('ต้องการสร้างคิวหรือไม่?');
+        //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
+        setReserveId(id);
+        setTotalQuantity(total_quantity);
+        setBrandCode(brand_code);
+        setOpen(true);
+      }
+    } catch (e) {
+      console.log(e);
     }
     //กำหนดข้อความแจ้งเตือน
     // setNotifyText('ต้องการสร้างคิวหรือไม่?');
@@ -108,6 +103,8 @@ function ReserveDetail() {
   const handleClose = (flag) => {
     if (flag === 1) {
       //click มาจากการลบ
+      console.log('reserve_id :', reserve_id);
+      console.log('total_quantity :', total_quantity);
       addQueue(reserve_id, total_quantity);
     }
     setOpen(false);
@@ -124,9 +121,7 @@ function ReserveDetail() {
     return await new Promise((resolve) => {
       axios.request(config).then((response) => {
         if (response.data.status === 'ok') {
-          console.log('response.data.queuecount :', response.data.queuecount);
           response.data.queuecount.map((data) => {
-            console.log('data :', data.queuecount);
             resolve(data.queuecount);
           });
         } else {
@@ -138,6 +133,8 @@ function ReserveDetail() {
 
   //สร้าง Queue รับค่า reserve_id
   function createQueuef(reserve_id, brand_code) {
+    console.log('reserve_id: ', reserve_id);
+    console.log('brand_code: ', brand_code);
     return new Promise((resolve) => {
       setTimeout(() => {
         //วันที่ปัจจุบัน
@@ -309,7 +306,7 @@ function ReserveDetail() {
   };
 
   const reservePrint = (id) => {
-    navigate('/reserve/print', { state: { reserveId: id } });
+    navigate('/prints/reserve', { state: { reserveId: id } });
   };
   return (
     <Grid alignItems="center" justifyContent="space-between">
@@ -327,7 +324,7 @@ function ReserveDetail() {
           </Button>
         </DialogActions>
       </Dialog>
-      <Grid container spacing={3}>
+      <Grid container spacing={3} rowSpacing={2} columnSpacing={2.75}>
         <Grid item xs={12} lg={8}>
           <MainCard>
             <Grid container spacing={3}>
@@ -375,7 +372,7 @@ function ReserveDetail() {
 
               <Grid item xs={12}>
                 {orderList.map((order, index) => (
-                  <Grid item xs={12} key={index}>
+                  <Grid item xs={12} key={index} sx={{mb:2}}>
                     <Grid container spacing={3} sx={{ mb: '15px' }}>
                       <Grid item xs={6}>
                         <Typography variant="body1">
@@ -435,14 +432,14 @@ function ReserveDetail() {
             </Grid>
           </MainCard>
           <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-            {orderList.length > 0 && (
+            {orderList.length > 0 && reserveData.status !== 'completed' && (
               <Button
                 size="mediam"
                 variant="outlined"
                 color="success"
                 onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity, reserveData.brand_code)}
               >
-                ออกบัตรคิว
+                ออกบัตรคิว {reserveData.reserve_id + ' - ' + reserveData.total_quantity + ' - ' + reserveData.brand_code}
               </Button>
             )}
 

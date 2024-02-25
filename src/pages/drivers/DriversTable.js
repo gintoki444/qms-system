@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Box, Button } from '@mui/material';
+import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Box, Button, Tooltip } from '@mui/material';
 
 import axios from '../../../node_modules/axios/index';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -147,12 +147,29 @@ function DriverTable() {
                   <TableCell align="left">{row.mobile_no}</TableCell>
                   <TableCell align="left">{row.license_no}</TableCell>
                   <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                    <Button variant="contained" size="medium" color="primary" onClick={() => updateDrivers(row.driver_id)}>
-                      <EditOutlined />
-                    </Button>
-                    <Button variant="contained" size="medium" color="error" onClick={() => deleteDrivers(row.driver_id)}>
-                      <DeleteOutlined />
-                    </Button>
+                    <Tooltip title="แก้ไข">
+                      <Button
+                        variant="contained"
+                        size="medium"
+                        color="primary"
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        onClick={() => updateDrivers(row.driver_id)}
+                      >
+                        <EditOutlined />
+                      </Button>
+                    </Tooltip>
+
+                    <Tooltip title="ลบ">
+                      <Button
+                        variant="contained"
+                        size="medium"
+                        color="error"
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        onClick={() => deleteDrivers(row.driver_id)}
+                      >
+                        <DeleteOutlined />
+                      </Button>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               );

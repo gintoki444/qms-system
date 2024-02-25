@@ -12,10 +12,10 @@ const ReserveDetail = Loadable(lazy(() => import('pages/reserve/ReserveDetail'))
 const AddReserve = Loadable(lazy(() => import('pages/reserve/reserve-forms/AddReserve')));
 const UpdateReserve = Loadable(lazy(() => import('pages/reserve/reserve-forms/UpdateReserve')));
 const AddOrder = Loadable(lazy(() => import('pages/order/order-forms/AddOrder')));
-const ReservePrint = Loadable(lazy(() => import('pages/reserve/ReservePrint')));
 
 // Queues List
 const Queues = Loadable(lazy(() => import('pages/queues/Queues')));
+const QueuesDetail = Loadable(lazy(() => import('pages/queues/QueueDetail')));
 
 // render - management
 const Company = Loadable(lazy(() => import('pages/company/Company')));
@@ -58,10 +58,6 @@ const MainRoutes = {
         {
           path: 'update/:id',
           element: <UpdateReserve />
-        },
-        {
-          path: 'print',
-          element: <ReservePrint reserveID />
         }
       ]
     },
@@ -71,32 +67,20 @@ const MainRoutes = {
         {
           path: '',
           element: <Queues />
+        },
+        {
+          path: 'detail/:id',
+          element: <QueuesDetail />
         }
-        // {
-        //   path: 'add',
-        //   element: <AddReserve />
-        // },
-        // {
-        //   path: 'update/:id',
-        //   element: <UpdateReserve />
-        // }
       ]
     },
     {
       path: '/order',
       children: [
-        // {
-        //   path: '',
-        //   element: <Reserve />
-        // },
         {
           path: 'add/:id',
           element: <AddOrder />
         }
-        // {
-        //   path: 'update/:id',
-        //   element: <UpdateReserve />
-        // }
       ]
     },
     {
