@@ -11,7 +11,7 @@ const queues = {
   children: [
     {
       id: 'weighEmpty',
-      title: 'ชั่งเบา',
+      title: 'Step1-ชั่งเบา',
       type: 'item',
       url: '/admin/step1',
       icon: MenuUnfoldOutlined,
@@ -20,7 +20,7 @@ const queues = {
     },
     {
       id: 'getIn',
-      title: 'รับสินค้า',
+      title: 'Step2-รับสินค้า',
       type: 'item',
       url: '/admin/step2',
       icon: InboxOutlined,
@@ -29,7 +29,7 @@ const queues = {
     },
     {
       id: 'weighProduct',
-      title: 'ชั่งหนัก',
+      title: 'Step3-ชั่งหนัก',
       type: 'item',
       url: '/admin/step3',
       icon: MenuFoldOutlined,
@@ -38,7 +38,7 @@ const queues = {
     },
     {
       id: 'done',
-      title: 'สำเร็จ (ประตูทางออก)',
+      title: 'Step4-สำเร็จ',
       type: 'item',
       url: '/admin/step4',
       icon: SafetyOutlined,

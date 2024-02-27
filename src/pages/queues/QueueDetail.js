@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import { StepContent } from '../../../node_modules/@mui/material/index';
 
 const apiUrl = process.env.REACT_APP_API_URL;
-const steps = ['ชังเบา', 'ขึ้นสินค้า', 'ชั่งหนัก', 'เสร็จสิ้น'];
+const steps = ['ชั่งเบา', 'ขึ้นสินค้า', 'ชั่งหนัก', 'เสร็จสิ้น'];
 
 function QueueDetail() {
   const { id } = useParams();
@@ -129,7 +129,7 @@ function QueueDetail() {
                   {isMobile ? (
                     <div>
                       <Grid item xs={12}>
-                        <Typography variant="h5">ข้อมูลจองคิวรับสินค้า</Typography>
+                        <Typography variant="h5">ข้อมูลการรับสินค้า</Typography>
                         <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                       </Grid>
 
@@ -147,7 +147,7 @@ function QueueDetail() {
                   ) : (
                     <div>
                       <Grid item xs={12}>
-                        <Typography variant="h5">ข้อมูลจองคิวรับสินค้า</Typography>
+                        <Typography variant="h5">ข้อมูลการรับสินค้า</Typography>
                         <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                       </Grid>
 
@@ -166,7 +166,7 @@ function QueueDetail() {
                   )}
                   <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} light />
                 </Grid>
-                <Grid item xs={12} sx={{ '& button': { m: 1 } }} >
+                <Grid item xs={12} sx={{ '& button': { m: 1 }, p: '0 6%!important' }}>
                   <Button
                     size="mediam"
                     variant="contained"
@@ -191,7 +191,10 @@ const VerticalStepper = ({ activeStep, steps, queue_token, queues, orders, total
     <Stepper activeStep={activeStep} orientation="vertical">
       {steps.map((label, index) => (
         <Step key={index}>
-          <StepLabel>{label}</StepLabel>
+          <StepLabel>
+            <Typography variant="h5">{label}</Typography>
+          </StepLabel>
+
           <StepContent>
             <div>
               <QueueDetails
@@ -212,10 +215,12 @@ const VerticalStepper = ({ activeStep, steps, queue_token, queues, orders, total
 
 const HorizontalStepper = ({ activeStep, steps, queue_token, queues, orders, totalItem, stepDetail, stepId }) => (
   <div>
-    <Stepper activeStep={activeStep} alternativeLabel>
+    <Stepper activeStep={activeStep} alternativeLabel sx={{ ml: '-6%' }}>
       {steps.map((label, index) => (
         <Step key={index}>
-          <StepLabel>{label}</StepLabel>
+          <StepLabel>
+            <Typography variant="h5">{label}</Typography>
+          </StepLabel>
         </Step>
       ))}
     </Stepper>
@@ -331,7 +336,7 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
   };
 
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={2} sx={{ p: '0 5%' }}>
       <Grid item xs={6}>
         <Typography variant="h5">
           <strong>รหัสคิว :</strong> {queue_token}
@@ -377,32 +382,10 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
       <Grid item xs={12}>
         {orders.map((order) => (
           <Grid container spacing={2} key={order.order_id}>
-            {/* <Grid item xs={12}>
-              <Typography variant="h6">
-                <strong>ข้อมูลสินค้า</strong>
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="body1" gutterBottom>
-                <strong>เลขที่ใบสั่งซื้อ :</strong> {order.ref_order_id}
-              </Typography>
-            </Grid>
-
-            <Grid item xs={6}>
-              <Typography variant="body1" gutterBottom>
-                <strong>วันที่สั่งซื้อ :</strong> {order.order_date ? moment(order.rder_date).format('dd/MM/yyyy') : '-'}{' '}
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="body1" gutterBottom>
-                <strong>รายละเอียด : </strong> {order.description}
-              </Typography>
-            </Grid> */}
             <Grid item xs={12} sx={{ mt: 1 }}>
               <Divider sx={{ mb: { xs: 1, sm: 2 } }} />
               <Typography variant="h5">
-                <strong>ข้อมูลสินค้า</strong>
+                <strong>รายการสั่งซื้อ:</strong>
               </Typography>
             </Grid>
             <Grid item xs={12}>
@@ -429,6 +412,5 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
     </Grid>
   );
 };
-
 
 export default QueueDetail;

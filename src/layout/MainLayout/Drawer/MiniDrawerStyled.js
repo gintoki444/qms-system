@@ -22,7 +22,7 @@ const closedMixin = (theme) => ({
     duration: theme.transitions.duration.leavingScreen
   }),
   overflowX: 'hidden',
-  width: 0,
+  width: 65,
   borderRight: 'none',
   boxShadow: theme.customShadows.z1
 });
@@ -31,7 +31,7 @@ const closedMixin = (theme) => ({
 
 const MiniDrawerStyled = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
   width: drawerWidth,
-  flexShrink: 0,
+  flexShrink: 65,
   whiteSpace: 'nowrap',
   boxSizing: 'border-box',
   ...(open && {

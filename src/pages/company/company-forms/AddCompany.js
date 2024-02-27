@@ -17,7 +17,7 @@ import MainCard from 'components/MainCard';
 import moment from 'moment';
 
 // =============== บันทึกข้อมูล ===============//
-  const userId = localStorage.getItem('user_id');
+const userId = localStorage.getItem('user_id');
 const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
   const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
   const formData = new FormData();
@@ -81,7 +81,6 @@ const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) =>
 };
 
 function AddCompany() {
-
   const initialValue = {
     name: '',
     country: '',
@@ -108,13 +107,17 @@ function AddCompany() {
             phone: Yup.string()
               .min(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
               .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
+              .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
               .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
               .required('กรุณาระบุเบอร์โทรศัพท์'),
             address: Yup.string().max(255).required('กรุณาระบุที่อยู่'),
             zipcode: Yup.string().max(5).required('กรุณาระบุรหัสไปรษณีย์'),
             contact_person: Yup.string().max(255).required('กรุณาระบุชื่อผู้ติดต่อ'),
             contact_number: Yup.string()
+              .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
               .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
+              .min(9, 'กรุณาระบุเบอร์โทรศัพท์ 9 หลัก')
+              .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
               .required('กรุณาระบุเบอร์โทรศัพท์ผู้ติดต่อ')
           })}
           onSubmit={handleSubmits}
@@ -178,6 +181,7 @@ function AddCompany() {
                       id="phone-company"
                       type="phone"
                       value={values.phone}
+                      format="##-####-####"
                       name="phone"
                       onBlur={handleBlur}
                       onChange={handleChange}
@@ -336,6 +340,7 @@ function AddCompany() {
                     <OutlinedInput
                       id="contact_number-company"
                       type="contact_number"
+                      format="##-####-####"
                       value={values.contact_number}
                       name="contact_number"
                       onBlur={handleBlur}
@@ -353,7 +358,7 @@ function AddCompany() {
                 </Grid>
 
                 <Grid item xs={12}>
-                  <Button disableElevation disabled={isSubmitting} size="large" type="submit" variant="contained" color="primary">
+                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
                     เพิ่มข้อมูลร้านค้า/บริษัท
                   </Button>
                 </Grid>

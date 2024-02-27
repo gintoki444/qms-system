@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Box, Button, Tooltip } from '@mui/material';
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Box,
+  ButtonGroup,
+  Button,
+  Tooltip,
+  Typography,
+  CircularProgress
+} from '@mui/material';
 
 import axios from '../../../node_modules/axios/index';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -12,9 +25,10 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const headCells = [
   {
     id: 'driver_No',
-    align: 'left',
+    align: 'center',
+    width: '5%',
     disablePadding: false,
-    label: 'ID.'
+    label: 'ลำดับ'
   },
   {
     id: 'fullName',
@@ -37,6 +51,7 @@ const headCells = [
   {
     id: 'action',
     align: 'center',
+    width: '10%',
     disablePadding: false,
     label: 'Actions'
   }
@@ -47,7 +62,7 @@ function CompantTableHead() {
     <TableHead>
       <TableRow>
         {headCells.map((headCell) => (
-          <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'}>
+          <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'} width={headCell.width}>
             {headCell.label}
           </TableCell>
         ))}
@@ -57,7 +72,8 @@ function CompantTableHead() {
 }
 
 function DriverTable() {
-  const [car, setCar] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [driver, setDriver] = useState([]);
 
   const userId = localStorage.getItem('user_id');
 
@@ -66,6 +82,7 @@ function DriverTable() {
   }, []);
 
   const getDrivers = () => {
+    setOpen(true);
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
@@ -76,7 +93,8 @@ function DriverTable() {
     axios
       .request(config)
       .then((response) => {
-        setCar(response.data);
+        setDriver(response.data);
+        setOpen(false);
       })
       .catch((error) => {
         console.log(error);
@@ -127,6 +145,7 @@ function DriverTable() {
       >
         <Table
           aria-labelledby="tableTitle"
+          size="small"
           sx={{
             '& .MuiTableCell-root:first-of-type': {
               pl: 2
@@ -136,52 +155,65 @@ function DriverTable() {
             }
           }}
         >
-          <CompantTableHead company={car} companyBy={car} />
+          <CompantTableHead company={driver} companyBy={driver} />
 
-          <TableBody>
-            {car.map((row, index) => {
-              return (
-                <TableRow key={index}>
-                  <TableCell align="left">{row.driver_id}</TableCell>
-                  <TableCell align="left">{row.firstname + ' ' + row.lastname}</TableCell>
-                  <TableCell align="left">{row.mobile_no}</TableCell>
-                  <TableCell align="left">{row.license_no}</TableCell>
-                  <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                    <Tooltip title="แก้ไข">
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        color="primary"
-                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                        onClick={() => updateDrivers(row.driver_id)}
-                      >
-                        <EditOutlined />
-                      </Button>
-                    </Tooltip>
+          {!open ? (
+            <TableBody>
+              {driver.map((row, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell align="center">{index+1}</TableCell>
+                    <TableCell align="left">{row.firstname + ' ' + row.lastname}</TableCell>
+                    <TableCell align="left">{row.mobile_no}</TableCell>
+                    <TableCell align="left">{row.license_no}</TableCell>
+                    <TableCell align="center">
+                      <ButtonGroup variant="contained" aria-label="Basic button group">
+                        <Tooltip title="แก้ไข">
+                          <Button
+                            variant="contained"
+                            size="medium"
+                            color="primary"
+                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                            onClick={() => updateDrivers(row.driver_id)}
+                          >
+                            <EditOutlined />
+                          </Button>
+                        </Tooltip>
 
-                    <Tooltip title="ลบ">
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        color="error"
-                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                        onClick={() => deleteDrivers(row.driver_id)}
-                      >
-                        <DeleteOutlined />
-                      </Button>
-                    </Tooltip>
+                        <Tooltip title="ลบ">
+                          <Button
+                            variant="contained"
+                            size="medium"
+                            color="error"
+                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                            onClick={() => deleteDrivers(row.driver_id)}
+                          >
+                            <DeleteOutlined />
+                          </Button>
+                        </Tooltip>
+                      </ButtonGroup>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+              {driver.length == 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    ไม่พบข้อมูล
                   </TableCell>
                 </TableRow>
-              );
-            })}
-            {car.length == 0 && (
+              )}
+            </TableBody>
+          ) : (
+            <TableBody>
               <TableRow>
                 <TableCell colSpan={5} align="center">
-                  ไม่พบข้อมูล
+                  <CircularProgress />
+                  <Typography variant="body1">Loading....</Typography>
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
+            </TableBody>
+          )}
         </Table>
       </TableContainer>
     </Box>

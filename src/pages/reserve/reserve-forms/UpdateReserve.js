@@ -24,7 +24,9 @@ import {
   TableHead,
   TableRow,
   TableBody,
-  TableCell
+  TableCell,
+  Backdrop,
+  CircularProgress
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import MenuItem from '@mui/material/MenuItem';
@@ -34,6 +36,7 @@ import TextField from '@mui/material/TextField';
 import moment from 'moment';
 
 function UpdateReserve() {
+  const [open, setOpen] = useState(false);
   const currentDate = new Date().toISOString().split('T')[0];
   // =============== Get Reserve ID ===============//
   const [reservationData, setReservationData] = useState({
@@ -73,6 +76,7 @@ function UpdateReserve() {
   });
   const { id } = useParams();
   const getReserve = () => {
+    setOpen(true);
     const urlapi = apiUrl + `/reserve/` + id;
     axios
       .get(urlapi)
@@ -166,6 +170,7 @@ function UpdateReserve() {
       .get(urlapi)
       .then((res) => {
         setOrderList(res.data);
+        setOpen(false);
       })
       .catch((err) => console.log(err));
   };
@@ -272,6 +277,14 @@ function UpdateReserve() {
 
   return (
     <Grid alignItems="center" justifyContent="space-between">
+      {open && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={open}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <Grid container spacing={3}>
         <Grid item xs={12} md={12}>
           <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
@@ -353,7 +366,7 @@ function UpdateReserve() {
                           </MenuItem>
                           {carList.map((cars) => (
                             <MenuItem key={cars.car_id} value={cars.car_id}>
-                              {cars.brand} : {cars.registration_no}
+                              {cars.registration_no} : {cars.brand}
                             </MenuItem>
                           ))}
                         </TextField>
@@ -487,7 +500,7 @@ function UpdateReserve() {
                     </Grid>
                     <Grid item xs={12}>
                       <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="h5">ข้อมูลสินค้า</Typography>
+                        <Typography variant="h5">ข้อมูลรายการสั่งซื้อสินค้า</Typography>
                       </Grid>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                       {orderList.length === 0 && (
@@ -497,34 +510,59 @@ function UpdateReserve() {
                           </Typography>
                         </Grid>
                       )}
-                      {orderList.length > 0 && (
-                        <Grid item xs={6}>
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>สินค้า</TableCell>
-                                <TableCell align="left">จำนวน (ตัน)</TableCell>
-                              </TableRow>
-                            </TableHead>
 
-                            {orderList.map((order, index) => (
-                              <TableBody key={index}>
-                                {order.items.map((item, index) => (
-                                  <TableRow key={index}>
-                                    <TableCell>{item.name}</TableCell>
-                                    <TableCell>{item.quantity}</TableCell>
+                      <Grid item xs={12} sx={{ p: 2 }}>
+                        {orderList.map((order, index) => (
+                          <Grid item xs={12} key={index} sx={{ mb: 2 }}>
+                            <Grid container spacing={2} sx={{ mb: '15px' }}>
+                              <Grid item xs={12} md={12}>
+                                <Typography variant="body1">
+                                  <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
+                                </Typography>
+                              </Grid>
+                              <Grid item xs={12} md={12}>
+                                <Typography variant="body1">
+                                  <strong>รายละเอียด : </strong> {order.description}
+                                </Typography>
+                              </Grid>
+                            </Grid>
+                            <Grid item xs={12} md={12}>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                              <Table size="small">
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell sx={{ p: '12px' }}>สินค้า</TableCell>
+                                    <TableCell align="right" sx={{ p: '12px' }}>
+                                      จำนวน (ตัน)
+                                    </TableCell>
                                   </TableRow>
-                                ))}
-                              </TableBody>
-                            ))}
-                          </Table>
-                        </Grid>
-                      )}
+                                </TableHead>
+                                <TableBody>
+                                  {order.items.map((item, index) => (
+                                    <TableRow key={index}>
+                                      <TableCell width={'50%'}>{item.name}</TableCell>
+                                      <TableCell align="right">{item.quantity} ตัน</TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </Grid>
+                            <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                          </Grid>
+                        ))}
+
+                        {orderList.length === 0 && (
+                          <Typography variant="body1">
+                            <strong>ไม่มีข้อมูล </strong>
+                          </Typography>
+                        )}
+                      </Grid>
                     </Grid>
                     <Grid item xs={12}>
                       <Stack direction="row" alignItems="center" spacing={0}>
                         <Button size="mediam" variant="outlined" color="success" onClick={() => addOrder()}>
-                          เพิ่มข้อมูล
+                          เพิ่มข้อมูลสินค้า
                         </Button>
                       </Stack>
                     </Grid>
@@ -537,7 +575,7 @@ function UpdateReserve() {
                     </Button>
 
                     <Button
-                      size="large"
+                      size="mediam"
                       variant="contained"
                       color="error"
                       onClick={() => {
@@ -548,99 +586,6 @@ function UpdateReserve() {
                     </Button>
                   </Grid>
                 </MainCard>
-
-                {/* <MainCard sx={{ mt: '10px', mb: '10px' }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Typography variant="h5">ข้อมูลสินค้า</Typography>
-                  <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                </Grid>
-              </Grid>
-              {orderList.map((order) => (
-                <Grid container spacing={3} key={order.order_id}>
-                  <Grid item xs={12} md={6}>
-                    <Stack spacing={1}>
-                      <InputLabel>เลขที่ใบสั่งซื้อ *</InputLabel>
-                      <OutlinedInput
-                        id="order_id-car"
-                        type="text"
-                        name="order_so"
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        placeholder="เลขที่ใบสั่งซื้อ"
-                        fullWidth
-                        error={Boolean(touched.order_id && errors.order_id)}
-                      />
-                    </Stack>
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <Stack spacing={1}>
-                      <InputLabel>รายละเอียดคำสั่งซื้อ *</InputLabel>
-                      <OutlinedInput
-                        id="order_detail"
-                        type="text"
-                        value={order.description}
-                        name="order_detail"
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        placeholder="รายละเอียดคำสั่งซื้อ"
-                        fullWidth
-                        // error={Boolean(touched.order_id && errors.registration_no)}
-                      />
-                    </Stack>
-                  </Grid>
-
-                  {order.items.map((items, index) => (
-                    <Grid item  md={12} key={index}>
-                      <InputLabel>สินค้า</InputLabel>
-                      <Grid item xs={12} md={12}>
-                        <Stack spacing={1}>
-                          <TextField
-                            select
-                            variant="outlined"
-                            name="product_id"
-                            value={items.product_id}
-                            onChange={handleChange}
-                            placeholder="เลือกบริษัท/ร้านค้า"
-                            onBlur={handleBlur}
-                            fullWidth
-                          >
-                            {productList.map((product) => (
-                              <MenuItem key={product.product_id} value={product.product_id}>
-                                {product.name}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        </Stack>
-                      </Grid>
-
-                      <Grid item xs={12} md={612}>
-                        <Stack spacing={1}>
-                          <InputLabel>จำนวน *</InputLabel>
-                          <OutlinedInput
-                            id="quantity"
-                            type="text"
-                            value={items.quantity}
-                            name="quantity"
-                            onBlur={handleBlur}
-                            placeholder="รายละเอียดคำสั่งซื้อ"
-                            fullWidth
-                            // error={Boolean(touched.order_id && errors.registration_no)}
-                          />
-                        </Stack>
-                      </Grid>
-                    </Grid>
-                  ))}
-                </Grid>
-              ))}
-
-              <Grid item xs={12} sx={{ mt: '30px' }}>
-                <Button disableElevation disabled={isSubmitting} size="mediam" variant="contained" color="success">
-                  บันทึกข้อมูลสินค้า
-                </Button>
-              </Grid>
-            </MainCard> */}
               </form>
             )}
           </Formik>

@@ -40,7 +40,7 @@ function AddOrder() {
   const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
   const sutotal = 0;
   const [items, setItems] = useState([
-    { product_id: '', quantity: 0, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }
+    { product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }
   ]);
 
   // =============== Get Reserve ID ===============//
@@ -88,14 +88,14 @@ function AddOrder() {
   useEffect(() => {
     // getOrder();
     getProduct();
-    getReserve();
+    getReserve(); 
   }, [id]);
 
   // =============== Validate Forms ===============//
   const generateItemSchema = () =>
     Yup.object().shape({
       product_id: Yup.string().required('กรุณาระบุสินค้า'),
-      quantity: Yup.number().required('กรุณาระบุจำนวนสินค้า').min(1, 'กรุณาระบุจำนวนสินค้าอย่างน้อย 1 ตัน')
+      quantity: Yup.number().required('กรุณาระบุจำนวนสินค้า').min(0.2, 'กรุณาระบุจำนวนสินค้าอย่างน้อย 0.2 ตัน')
     });
   const [validationSchema, setValidationSchema] = useState(
     Yup.object().shape({
@@ -109,7 +109,7 @@ function AddOrder() {
     ref_order_id: '',
     company_id: reservationData.company_id,
     description: '',
-    order_date: '',
+    order_date: moment(new Date()).format('YYYY-MM-DD'),
     items: items
   };
 
@@ -222,7 +222,7 @@ function AddOrder() {
   // =============== เพิ่ม-ลบรา รายการสินค้า ===============//
   const [coutRowsProduct, setCoutRowsProduct] = useState(1);
   const addItem = () => {
-    items.push({ product_id: '', quantity: 0, subtotal: sutotal, created_at: currentDate, updated_at: currentDate });
+    items.push({ product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate });
 
     setCoutRowsProduct(coutRowsProduct + 1);
 
@@ -307,7 +307,7 @@ function AddOrder() {
                   </Stack>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={12}>
                   <Stack spacing={1}>
                     <InputLabel>รายละเอียดวันสั่งซื้อสินค้า *</InputLabel>
                     <OutlinedInput
@@ -328,7 +328,7 @@ function AddOrder() {
                   </Stack>
                 </Grid>
 
-                <Grid item xs={12} md={12}>
+                <Grid item xs={12} md={6}>
                   <Table size="small">
                     <TableHead>
                       <TableRow>
@@ -377,7 +377,7 @@ function AddOrder() {
                           <TableCell>
                             <TextField
                               required
-                              value={parseFloat(item.quantity).toFixed(4)}
+                              value={item.quantity}
                               onChange={(e) => handleInputChange(e, index)}
                               name={`quantity`}
                               autoComplete="quantity"

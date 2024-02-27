@@ -1,20 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Box, Button, Tooltip } from '@mui/material';
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Box,
+  ButtonGroup,
+  Button,
+  Tooltip,
+  Typography,
+  CircularProgress
+} from '@mui/material';
 
-import axios from '../../../node_modules/axios/index';
+// Get api company
+import * as companyRequest from '_api/companyRequest';
+
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-
-// Link api url
-const apiUrl = process.env.REACT_APP_API_URL;
 
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
     id: 'companyNo',
-    align: 'left',
+    align: 'center',
+    width: '5%',
     disablePadding: false,
-    label: 'ID.'
+    label: 'ลำดับ'
   },
   {
     id: 'name',
@@ -49,6 +62,7 @@ const headCells = [
   {
     id: 'action',
     align: 'center',
+    width: '10%',
     disablePadding: false,
     label: 'Actions'
   }
@@ -59,7 +73,7 @@ function CompantTableHead() {
     <TableHead>
       <TableRow>
         {headCells.map((headCell) => (
-          <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'}>
+          <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'} width={headCell.width}>
             {headCell.label}
           </TableCell>
         ))}
@@ -70,6 +84,7 @@ function CompantTableHead() {
 
 function CompanyTable() {
   const [company, setCompany] = useState([]);
+  const [open, setOpen] = useState(false);
 
   const userId = localStorage.getItem('user_id');
 
@@ -78,17 +93,13 @@ function CompanyTable() {
   }, []);
 
   const getCompany = () => {
-    let config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: apiUrl + '/allcompany/' + userId,
-      headers: {}
-    };
+    setOpen(true);
 
-    axios
-      .request(config)
+    companyRequest
+      .getAllCompanyByuserId(userId)
       .then((response) => {
-        setCompany(response.data);
+        setCompany(response);
+        setOpen(false);
       })
       .catch((error) => {
         console.log(error);
@@ -138,6 +149,7 @@ function CompanyTable() {
       >
         <Table
           aria-labelledby="tableTitle"
+          size="small"
           sx={{
             '& .MuiTableCell-root:first-of-type': {
               pl: 2
@@ -149,51 +161,64 @@ function CompanyTable() {
         >
           <CompantTableHead company={company} companyBy={company} />
 
-          <TableBody>
-            {company.map((row, index) => {
-              return (
-                <TableRow key={index}>
-                  <TableCell align="left">{row.company_id}</TableCell>
-                  <TableCell align="left">{row.name}</TableCell>
-                  <TableCell align="left">{row.tax_no}</TableCell>
-                  <TableCell align="left">{row.phone}</TableCell>
-                  <TableCell align="center">{row.contact_person}</TableCell>
-                  <TableCell align="left">{row.contact_number}</TableCell>
-                  <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                    <Tooltip title="แก้ไข">
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        color="primary"
-                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                        onClick={() => updateCompany(row.company_id)}
-                      >
-                        <EditOutlined />
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title="ลบ">
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        color="error"
-                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                        onClick={() => deleteCompany(row.company_id)}
-                      >
-                        <DeleteOutlined />
-                      </Button>
-                    </Tooltip>
+          {!open ? (
+            <TableBody>
+              {company.map((row, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell align="center">{index + 1}</TableCell>
+                    <TableCell align="left">{row.name}</TableCell>
+                    <TableCell align="left">{row.tax_no}</TableCell>
+                    <TableCell align="left">{row.phone}</TableCell>
+                    <TableCell align="center">{row.contact_person}</TableCell>
+                    <TableCell align="left">{row.contact_number}</TableCell>
+                    <TableCell align="center">
+                      <ButtonGroup variant="contained" aria-label="Basic button group">
+                        <Tooltip title="แก้ไข">
+                          <Button
+                            variant="contained"
+                            size="medium"
+                            color="primary"
+                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                            onClick={() => updateCompany(row.company_id)}
+                          >
+                            <EditOutlined />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip title="ลบ">
+                          <Button
+                            variant="contained"
+                            size="medium"
+                            color="error"
+                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                            onClick={() => deleteCompany(row.company_id)}
+                          >
+                            <DeleteOutlined />
+                          </Button>
+                        </Tooltip>
+                      </ButtonGroup>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+              {company.length == 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">
+                    ไม่พบข้อมูล
                   </TableCell>
                 </TableRow>
-              );
-            })}
-            {company.length == 0 && (
+              )}
+            </TableBody>
+          ) : (
+            <TableBody>
               <TableRow>
                 <TableCell colSpan={6} align="center">
-                  ไม่พบข้อมูล
+                  <CircularProgress />
+                  <Typography variant="body1">Loading....</Typography>
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
+            </TableBody>
+          )}
         </Table>
       </TableContainer>
     </Box>

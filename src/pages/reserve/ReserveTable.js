@@ -21,12 +21,15 @@ import {
   TableHead,
   TableRow,
   Tooltip,
+  ButtonGroup,
   Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
+  DialogActions,
+  Typography,
+  CircularProgress
 } from '@mui/material';
 
 // project import
@@ -38,12 +41,6 @@ import axios from 'axios';
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
-    id: 'reserveNo',
-    align: 'left',
-    disablePadding: false,
-    label: 'รหัสการจอง.'
-  },
-  {
     id: 'dateReserve',
     align: 'left',
     disablePadding: true,
@@ -53,25 +50,51 @@ const headCells = [
     id: 'dateQueue',
     align: 'left',
     disablePadding: true,
-    label: 'วันที่เข้ารับสินค้า'
+    label: 'วันที่เข้ารับ'
+  },
+  {
+    id: 'registration_no',
+    align: 'left',
+    disablePadding: true,
+    label: 'ทะเบียนรถ'
   },
   {
     id: 'brandCode',
     align: 'left',
     disablePadding: true,
-    label: 'Brand Code'
+    label: 'เบรน Code'
   },
   {
     id: 'description',
     align: 'left',
-    disablePadding: false,
-    label: 'รายละเอียด'
+    disablePadding: true,
+    width: '12%',
+    label: 'เหตุผลการจอง'
   },
   {
     id: 'Company',
-    align: 'center',
+    align: 'left',
     disablePadding: false,
-    label: 'ร้านค้า/บริษัท'
+    width: '15%',
+    label: 'บริษัท'
+  },
+  {
+    id: 'names',
+    align: 'left',
+    disablePadding: false,
+    label: 'ชื่อผู้ติดต่อ'
+  },
+  {
+    id: 'tels',
+    align: 'left',
+    disablePadding: false,
+    label: 'เบอร์โทรผู้ติดต่อ'
+  },
+  {
+    id: 'driverName',
+    align: 'left',
+    disablePadding: false,
+    label: 'คนขับรถ'
   },
   {
     id: 'totalQuantity',
@@ -83,11 +106,12 @@ const headCells = [
     id: 'status',
     align: 'center',
     disablePadding: false,
-    label: 'สถานะการจอง'
+    label: 'สถานะออกคิว'
   },
   {
     id: 'action',
     align: 'center',
+    width: '10%',
     disablePadding: false,
     label: 'Actions'
   }
@@ -103,6 +127,7 @@ function OrderTableHead({ order, orderBy }) {
             key={headCell.id}
             align={headCell.align}
             padding={headCell.disablePadding ? 'none' : 'normal'}
+            width={headCell.width}
             sortDirection={orderBy === headCell.id ? order : false}
           >
             {headCell.label}
@@ -143,7 +168,7 @@ const OrderStatus = ({ status }) => {
 
   return (
     <Stack direction="row" spacing={1} sx={{ justifyContent: 'center' }}>
-      <Chip color={color ? color : ''} label={title} />
+      <Chip color={color ? color : ''} label={title} sx={{ minWidth: 70 }} />
     </Stack>
   );
 };
@@ -153,6 +178,7 @@ OrderStatus.propTypes = {
 };
 
 export default function ReserveTable() {
+  const [loading, setLoading] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
   const [items, setItems] = useState([]);
   const [order] = useState('asc');
@@ -166,6 +192,7 @@ export default function ReserveTable() {
   }, []);
 
   const getReserve = () => {
+    setLoading(true);
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
@@ -177,6 +204,8 @@ export default function ReserveTable() {
       .request(config)
       .then((response) => {
         setItems(response.data);
+        setLoading(false);
+
         // setItems(response.data.filter((x) => x.status !== 'completed'));
       })
       .catch((error) => {
@@ -275,7 +304,7 @@ export default function ReserveTable() {
   }
 
   //สร้าง Queue รับค่า reserve_id
-  function createQueuef(reserve_id, brand_code) {
+  function createQueuef(reserve_id, brand_code, queue_number) {
     return new Promise((resolve) => {
       setTimeout(() => {
         //วันที่ปัจจุบัน
@@ -288,7 +317,9 @@ export default function ReserveTable() {
         var raw = JSON.stringify({
           reserve_id: reserve_id,
           queue_date: queueDate,
-          token: brand_code + padZero(reserve_id),
+          // token: brand_code + padZero(reserve_id),
+          token: brand_code + padZero(queue_number),
+          //"token": brand_code + padZero(reserve_id),
           description: brand_code + '-Reserver id: ' + padZero(reserve_id),
           created_at: currentDate,
           updated_at: currentDate
@@ -343,6 +374,26 @@ export default function ReserveTable() {
       .catch((error) => console.log('error', error));
   };
 
+  const getQueuesCount = () => {
+    return new Promise((resolve, reject) => {
+      const currentDate = moment(new Date()).format('YYYY-MM-DD');
+
+      const requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+      };
+
+      fetch(apiUrl + '/queues/count?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          resolve(result['queue_count']);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  };
+
   //สร้าง addQueue รับค่า reserve_id ,total_quantity
   const addQueue = async (id, total_quantity) => {
     try {
@@ -352,9 +403,13 @@ export default function ReserveTable() {
       if (queuecountf === 0) {
         if (total_quantity > 0) {
           //สร้างข้อมูลคิว
-          const queue_id_createf = await createQueuef(id, brand_code);
+          const queue_number = (await getQueuesCount()) + 1;
+          //console.log(queue_number)
+          const queue_id_createf = await createQueuef(id, brand_code, queue_number);
+          console.log('queue_id_createf: ' + queue_id_createf);
 
           //สร้าง step 1-4
+          //createStep(queue_id_createf)
           await createStepsf(queue_id_createf, id);
         } else {
           alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
@@ -362,7 +417,7 @@ export default function ReserveTable() {
       } else {
         //alert("สร้างคิวแล้ว")
         const queue_id = await getQueueIdf(id);
-        window.location.href = '/queues/detail/' + queue_id;
+        window.location.href = '/queue/' + queue_id + '/' + id;
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -474,6 +529,7 @@ export default function ReserveTable() {
       >
         <Table
           aria-labelledby="tableTitle"
+          size="small"
           sx={{
             '& .MuiTableCell-root:first-of-type': {
               pl: 2
@@ -484,87 +540,117 @@ export default function ReserveTable() {
           }}
         >
           <OrderTableHead order={order} orderBy={orderBy} />
-          <TableBody>
-            {items.map((row, index) => {
-              return (
-                <TableRow key={index}>
-                  <TableCell align="left">{row.reserve_id}</TableCell>
-                  <TableCell align="left">{moment(row.created_date).format('DD/MM/YYYY')}</TableCell>
-                  <TableCell align="left">{moment(row.pickup_date).format('DD/MM/YYYY')}</TableCell>
-                  <TableCell align="left">{row.brand_code}</TableCell>
-                  <TableCell align="left">{row.description}</TableCell>
-                  <TableCell align="center">{row.company}</TableCell>
-                  <TableCell align="right">{row.total_quantity}</TableCell>
-                  <TableCell align="center">
-                    <OrderStatus status={row.status} />
-                  </TableCell>
-                  <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                    <Tooltip title="รายละเอียด">
-                      <Button
-                        variant="outlined"
-                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                        size="medium"
-                        color="success"
-                        onClick={() => reserveDetail(row.reserve_id)}
-                      >
-                        <ProfileOutlined />
-                      </Button>
-                    </Tooltip>
+          {!loading ? (
+            <TableBody>
+              {items.map((row, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell align="left">{moment(row.created_date).format('DD/MM/YYYY')}</TableCell>
+                    <TableCell align="left">
+                      <Chip color={'primary'} label={moment(row.pickup_date).format('DD/MM/YYYY')} sx={{ minWidth: 95 }} />
+                    </TableCell>
+                    <TableCell align="left">
+                      <Chip color={'primary'} label={row.registration_no} sx={{ width: 95, border: 1 }} />
+                    </TableCell>
+                    <TableCell align="center"> {row.brand_code}</TableCell>
+                    <TableCell align="left">
+                      {row.r_description.substring(0, 30)} {row.r_description.length >= 20 && '...'}
+                    </TableCell>
+                    <TableCell align="left">{row.company}</TableCell>
+                    <TableCell align="left">{row.contact_person}</TableCell>
+                    <TableCell align="left">{row.contact_number}</TableCell>
+                    <TableCell align="left">{row.driver}</TableCell>
+                    <TableCell align="right"> {parseFloat((row.total_quantity * 1).toFixed(3))}</TableCell>
+                    <TableCell align="center">
+                      <OrderStatus status={row.status} />
+                    </TableCell>
+                    <TableCell align="center">
+                      <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
+                        <Tooltip title="รายละเอียด">
+                          <span>
+                            <Button
+                              variant="contained"
+                              sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                              size="medium"
+                              color="success"
+                              onClick={() => reserveDetail(row.reserve_id)}
+                            >
+                              <ProfileOutlined />
+                            </Button>
+                          </span>
+                        </Tooltip>
 
-                    {row.status !== 'completed' && (
-                      <Tooltip title="สร้างคิว">
-                        <Button
-                          variant="contained"
-                          sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                          size="medium"
-                          color="info"
-                          onClick={() => handleClickOpen(row.reserve_id, row.total_quantity, row.brand_code)}
-                        >
-                          <DiffOutlined />
-                        </Button>
-                      </Tooltip>
-                    )}
+                        {userRoles === 8 && (
+                          <Tooltip title="สร้างคิว">
+                            <span>
+                              <Button
+                                // disabled
+                                variant="contained"
+                                sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                size="medium"
+                                disabled={row.status === 'completed'}
+                                color="info"
+                                onClick={() => handleClickOpen(row.reserve_id, row.total_quantity, row.brand_code)}
+                              >
+                                <DiffOutlined />
+                              </Button>
+                            </span>
+                          </Tooltip>
+                        )}
 
-                    {row.status !== 'completed' && (
-                      <Tooltip title="แก้ไข">
-                        <Button
-                          variant="contained"
-                          sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                          size="medium"
-                          color="primary"
-                          onClick={() => updateDrivers(row.reserve_id)}
-                        >
-                          <EditOutlined />
-                        </Button>
-                      </Tooltip>
-                    )}
+                        <Tooltip title="แก้ไข">
+                          <span>
+                            <Button
+                              variant="contained"
+                              sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                              size="medium"
+                              disabled={row.status === 'completed'}
+                              color="primary"
+                              onClick={() => updateDrivers(row.reserve_id)}
+                            >
+                              <EditOutlined />
+                            </Button>
+                          </span>
+                        </Tooltip>
 
-                    {row.status !== 'completed' && (
-                      <Tooltip title="ลบ">
-                        <Button
-                          variant="contained"
-                          sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                          size="medium"
-                          color="error"
-                          onClick={() => deleteDrivers(row.reserve_id)}
-                        >
-                          <DeleteOutlined />
-                        </Button>
-                      </Tooltip>
-                    )}
+                        <Tooltip title="ลบ">
+                          <span>
+                            <Button
+                              variant="contained"
+                              sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                              size="medium"
+                              disabled={row.status === 'completed'}
+                              color="error"
+                              onClick={() => deleteDrivers(row.reserve_id)}
+                            >
+                              <DeleteOutlined />
+                            </Button>
+                          </span>
+                        </Tooltip>
+                      </ButtonGroup>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+
+              {items.length == 0 && (
+                <TableRow>
+                  <TableCell colSpan={13} align="center">
+                    ไม่พบข้อมูล
                   </TableCell>
                 </TableRow>
-              );
-            })}
-
-            {items.length == 0 && (
+              )}
+            </TableBody>
+          ) : (
+            <TableBody>
               <TableRow>
-                <TableCell colSpan={9} align="center">
-                  ไม่พบข้อมูล
+                <TableCell colSpan={13} align="center">
+                  <CircularProgress />
+                  <Typography variant="body1">Loading....</Typography>
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
+            </TableBody>
+          )}
         </Table>
       </TableContainer>
     </Box>

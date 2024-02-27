@@ -21,6 +21,7 @@ const Navigation = () => {
   }
 
   const navGroups = newMenuItem.items.map((item) => {
+    console.log('menu item:', item);
     switch (item.type) {
       case 'group':
         return <NavGroup key={item.id} item={item} />;

@@ -10,13 +10,25 @@ import axios from '../../../../node_modules/axios/index';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 // material-ui
-import { Button, FormHelperText, Grid, InputLabel, OutlinedInput, Stack, Typography, Divider } from '@mui/material';
+import {
+  Button,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Typography,
+  Divider,
+  Backdrop,
+  CircularProgress
+} from '@mui/material';
 import MainCard from 'components/MainCard';
 
 // DateTime
 import moment from 'moment';
 
 function UpdateDrivers() {
+  const [open, setOpen] = useState(false);
   let [initialValue, setInitialValue] = useState({
     firstname: '',
     lastname: '',
@@ -26,6 +38,7 @@ function UpdateDrivers() {
   // =============== Get ข้อมูล Driver ===============//
   const { id } = useParams();
   const getDriver = async (id) => {
+    setOpen(true);
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
@@ -44,6 +57,7 @@ function UpdateDrivers() {
               license_no: result.license_no,
               mobile_no: result.mobile_no
             });
+            setOpen(false);
           }
         });
       })
@@ -135,6 +149,14 @@ function UpdateDrivers() {
 
   return (
     <Grid container alignItems="center" justifyContent="space-between">
+      {open && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={open}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
         <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
           {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
@@ -234,18 +256,18 @@ function UpdateDrivers() {
                 </Grid>
 
                 <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                  <Button disableElevation disabled={isSubmitting} size="large" type="submit" variant="contained" color="primary">
+                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
                     บันทึกข้อมูล
                   </Button>
                   <Button
-                    size="large"
+                    size="mediam"
                     variant="contained"
                     color="error"
                     onClick={() => {
                       backToDrivers();
                     }}
                   >
-                    ย้อนกลับ
+                    ยกเลิก
                   </Button>
                 </Grid>
               </Grid>

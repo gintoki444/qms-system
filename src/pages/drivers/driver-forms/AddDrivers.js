@@ -91,6 +91,7 @@ function AddDrivers() {
               .max(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
               .required('กรุณาระบุเลขใบขับขี่'),
             mobile_no: Yup.string()
+              .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
               .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
               .min(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
               .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
@@ -195,7 +196,7 @@ function AddDrivers() {
                 </Grid>
 
                 <Grid item xs={12}>
-                  <Button disableElevation disabled={isSubmitting} size="large" type="submit" variant="contained" color="primary">
+                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
                     เพิ่มข้อมูลรถ
                   </Button>
                 </Grid>

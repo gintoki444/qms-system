@@ -3,11 +3,24 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
 
-// Link api url
-const apiUrl = process.env.REACT_APP_API_URL;
+// get queue api
+import * as queueRequest from '_api/queueReques';
 
 // material-ui
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Chip, Tooltip } from '@mui/material';
+import {
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  Chip,
+  Tooltip,
+  Typography,
+  CircularProgress
+} from '@mui/material';
 
 import {
   ProfileOutlined
@@ -15,17 +28,27 @@ import {
   // DeleteOutlined
 } from '@ant-design/icons';
 
-import axios from 'axios';
-
 const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
     id: 'queueNo',
+    align: 'center',
+    disablePadding: false,
+    label: 'ลำดับ'
+  },
+  {
+    id: 'reserve_date',
     align: 'left',
     disablePadding: false,
-    label: 'ลำดับคิว.'
+    label: 'วันที่เข้ารับสินค้า'
+  },
+  {
+    id: 'queue_token',
+    align: 'center',
+    disablePadding: false,
+    label: 'หมายเลขคิว'
   },
   {
     id: 'branName',
@@ -34,16 +57,16 @@ const headCells = [
     label: 'ร้านค้า/บริษัท'
   },
   {
-    id: 'driver',
-    align: 'left',
-    disablePadding: true,
-    label: 'ชื่อผู้ขับ'
-  },
-  {
     id: 'registration_no',
     align: 'left',
     disablePadding: true,
     label: 'ทะเบียนรถ'
+  },
+  {
+    id: 'driver',
+    align: 'left',
+    disablePadding: true,
+    label: 'ชื่อผู้ขับ'
   },
   {
     id: 'tel',
@@ -55,19 +78,25 @@ const headCells = [
     id: 'step1',
     align: 'left',
     disablePadding: false,
-    label: 'ชั่งเบา'
+    label: 'ชั่งเบา(S1)'
   },
   {
     id: 'step2',
     align: 'left',
     disablePadding: false,
-    label: 'ขึ้นสินค้า'
+    label: ' ขึ้นสินค้า(S2)'
   },
   {
     id: 'step3',
     align: 'left',
     disablePadding: false,
-    label: 'ชั่งหนัก'
+    label: 'ชั่งหนัก(S3)'
+  },
+  {
+    id: 'step4',
+    align: 'left',
+    disablePadding: false,
+    label: 'เสร็จสิ้น(S4)'
   },
   {
     id: 'action',
@@ -116,14 +145,18 @@ const QueueStatus = ({ status }) => {
       color = 'success';
       title = 'สำเร็จ';
       break;
+    case 'waiting':
+      color = 'secondary';
+      title = 'รอเรียกคิว';
+      break;
     default:
       color = 'secondary';
-      title = 'รอคิว';
+      title = '-';
   }
 
   return (
     <Tooltip title={title}>
-      <Chip color={color} label={title}/>
+      <Chip color={color} label={title} sx={{ minWidth: '78.7px!important' }} />
     </Tooltip>
   );
 };
@@ -133,6 +166,7 @@ QueueStatus.propTypes = {
 };
 
 export default function QueueTable() {
+  const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([]);
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
@@ -144,21 +178,15 @@ export default function QueueTable() {
   }, []);
 
   const getQueue = () => {
-    let config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: apiUrl + '/allqueuesbyqueuedate2?queue_date1=' + currentDate + '&queue_date2=' + currentDate,
-      headers: {}
-    };
-
-    axios
-      .request(config)
-      .then((response) => {
-        setItems(response.data.filter((x) => x.status !== 'completed'));
-      })
-      .catch((error) => {
-        console.log(error);
+    setLoading(true);
+    try {
+      queueRequest.getAllqueueByDate(currentDate).then((response) => {
+        setItems(response);
+        setLoading(false);
       });
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const navigate = useNavigate();
@@ -179,6 +207,7 @@ export default function QueueTable() {
       >
         <Table
           aria-labelledby="tableTitle"
+          size="small"
           sx={{
             '& .MuiTableCell-root:first-of-type': {
               pl: 2
@@ -189,54 +218,64 @@ export default function QueueTable() {
           }}
         >
           <QueueTableHead order={order} orderBy={orderBy} />
-          <TableBody>
-            {items.map((row, index) => {
-              return (
-                <TableRow key={index}>
-                  <TableCell align="left">{index + 1}</TableCell>
-                  <TableCell align="left">{row.company_name}</TableCell>
-                  <TableCell align="left">{row.driver_name}</TableCell>
-                  <TableCell align="left">{row.registration_no}</TableCell>
-                  <TableCell align="left">{row.driver_mobile}</TableCell>
-                  <TableCell align="left">
-                    <QueueStatus status={row.step1_status} />
-                  </TableCell>
-                  <TableCell align="left">
-                    <QueueStatus status={row.step2_status} />
-                  </TableCell>
-                  <TableCell align="left">
-                    <QueueStatus status={row.step3_status} />
-                  </TableCell>
-                  <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                    <Tooltip title="รายละเอียด">
-                      <Button
-                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                        variant="contained"
-                        size="medium"
-                        color="info"
-                        onClick={() => updateDrivers(row.queue_id)}
-                      >
-                        <ProfileOutlined />
-                      </Button>
-                    </Tooltip>
-                    {/* <Button 
+          {!loading ? (
+            <TableBody>
+              {items.map((row, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell align="center">{row.queue_number}</TableCell>
+                    <TableCell align="left">{moment(row.queue_date).format('MM-DD-YYYY')}</TableCell>
+                    <TableCell align="center">
+                      <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
+                    </TableCell>
+                    <TableCell align="left">{row.company_name}</TableCell>
+                    <TableCell align="left">{row.registration_no}</TableCell>
+                    <TableCell align="left">{row.driver_name}</TableCell>
+                    <TableCell align="left">{row.driver_mobile}</TableCell>
+                    <TableCell align="left">{row.step1_status !== 'none' ? <QueueStatus status={row.step1_status} /> : '-'}</TableCell>
+                    <TableCell align="left">{row.step2_status !== 'none' ? <QueueStatus status={row.step2_status} /> : '-'}</TableCell>
+                    <TableCell align="center">{row.step3_status !== 'none' ? <QueueStatus status={row.step3_status} /> : '-'}</TableCell>
+                    <TableCell align="left">{row.step4_status !== 'none' ? <QueueStatus status={row.step4_status} /> : '-'}</TableCell>
+                    <TableCell align="center">
+                      <Tooltip title="รายละเอียด">
+                        <Button
+                          sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                          variant="contained"
+                          size="medium"
+                          color="info"
+                          onClick={() => updateDrivers(row.queue_id)}
+                        >
+                          <ProfileOutlined />
+                        </Button>
+                      </Tooltip>
+                      {/* <Button 
                       sx={{ minWidth: '33px!important', p: '6px 0px' }}
                       variant="contained" size="medium" color="error" onClick={() => deleteDrivers(row.reserve_id)}>
                       <DeleteOutlined />
                     </Button> */}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+
+              {items.length == 0 && (
+                <TableRow>
+                  <TableCell colSpan={9} align="center">
+                    ไม่พบข้อมูล
                   </TableCell>
                 </TableRow>
-              );
-            })}
-
-            {items.length == 0 && (
+              )}
+            </TableBody>
+          ) : (
+            <TableBody>
               <TableRow>
-                <TableCell colSpan={9} align="center">
-                  ไม่พบข้อมูล
+                <TableCell colSpan={13} align="center">
+                  <CircularProgress />
+                  <Typography variant="body1">Loading....</Typography>
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
+            </TableBody>
+          )}
         </Table>
       </TableContainer>
     </Box>

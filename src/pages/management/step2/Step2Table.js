@@ -37,7 +37,7 @@ const apiUrl = process.env.REACT_APP_API_URL;
 // import DoneIcon from '@mui/icons-material/Done';
 import CircularProgress from '@mui/material/CircularProgress';
 import { RightSquareOutlined } from '@ant-design/icons';
-import moment from 'moment';
+import moment from 'moment/min/moment-with-locales';
 
 // import { useDispatch, useSelector } from 'react-redux';
 // import { setStation } from 'store/reducers/station';
@@ -53,42 +53,56 @@ export const Step2Table = ({ status }) => {
       id: 'queueNo',
       align: 'left',
       disablePadding: false,
+      width: '5%',
       label: 'ลำดับคิว.'
     },
     {
       id: 'queueID',
       align: 'left',
       disablePadding: false,
+      width: '5%',
       label: 'รหัสคิว.'
     },
     {
       id: 'registration_no',
       align: 'left',
       disablePadding: true,
+      width: '10%',
       label: 'ทะเบียนรถ'
     },
     {
       id: 'driver',
       align: 'left',
       disablePadding: true,
+      width: '10%',
       label: 'ชื่อผู้ขับ'
     },
     {
       id: 'tel',
       align: 'left',
       disablePadding: true,
+      width: '10%',
       label: 'เบอร์โทรศัพท์'
     },
     {
       id: 'branName',
       align: 'left',
       disablePadding: false,
+      width: '20%',
       label: 'ร้านค้า/บริษัท'
+    },
+    {
+      id: 'times',
+      align: 'left',
+      disablePadding: false,
+      width: '7%',
+      label: 'เวลาเริ่ม'
     },
     {
       id: 'status',
       align: 'center',
       disablePadding: false,
+      width: '8%',
       label: 'สถานะ'
     },
     {
@@ -101,6 +115,7 @@ export const Step2Table = ({ status }) => {
       id: 'action',
       align: 'center',
       disablePadding: false,
+      width: '15%',
       label: 'Actions'
     }
   ];
@@ -110,7 +125,12 @@ export const Step2Table = ({ status }) => {
       <TableHead>
         <TableRow>
           {headCells.map((headCell) => (
-            <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'}>
+            <TableCell
+              key={headCell.id}
+              align={headCell.align}
+              width={headCell.width}
+              padding={headCell.disablePadding ? 'none' : 'normal'}
+            >
               {headCell.label}
             </TableCell>
           ))}
@@ -375,6 +395,79 @@ export const Step2Table = ({ status }) => {
     setOpen(true);
   };
 
+  //Update start_time of step
+  const updateStartTime = (step_id) => {
+    //alert("updateStartTime")
+
+    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
+    return new Promise((resolve, reject) => {
+      const myHeaders = new Headers();
+      myHeaders.append('Content-Type', 'application/json');
+
+      const raw = JSON.stringify({
+        start_time: currentDate
+      });
+
+      const requestOptions = {
+        method: 'PUT',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+      };
+
+      fetch(apiUrl + '/updatestarttime/' + step_id, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          //console.log(result)
+          if (result['status'] === 'ok') {
+            console.log('updateStartTime is ok');
+            resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
+          } else {
+            console.log('not update updateStartTime');
+            reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
+          }
+        })
+        .catch((error) => console.error(error));
+    });
+  };
+
+  //Update start_time of step
+  const updateEndTime = (step_id) => {
+    //alert("updateEndTime")
+    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
+    return new Promise((resolve, reject) => {
+      const myHeaders = new Headers();
+      myHeaders.append('Content-Type', 'application/json');
+
+      const raw = JSON.stringify({
+        start_time: currentDate
+      });
+
+      const requestOptions = {
+        method: 'PUT',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+      };
+
+      fetch(apiUrl + '/updateendtime/' + step_id, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          //console.log(result)
+          if (result['status'] === 'ok') {
+            console.log('updateEndTime is ok');
+            resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
+          } else {
+            console.log('not update updateEndTime');
+            reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
+          }
+        })
+        .catch((error) => console.error(error));
+    });
+  };
+
   const handleClose = async (flag) => {
     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
     if (flag === 1) {
@@ -383,6 +476,7 @@ export const Step2Table = ({ status }) => {
         if (station_count < station_num) {
           //เพิ่ม function get station id 3 = station id
           step1Update(id_update, 'processing', selectedStation);
+          updateStartTime(id_update);
         } else {
           alert('สถานีบริการเต็ม');
           setLoading(false);
@@ -399,11 +493,12 @@ export const Step2Table = ({ status }) => {
           }
 
           try {
-            //setLoading(true);
             await updateLoadingTeam(id_update);
             await updateLoadingTeam(id_update_next);
             await step2Update(id_update_next, 'waiting', 27);
             await step1Update(id_update, 'completed', staion_id);
+            await updateEndTime(id_update);
+            await updateStartTime(id_update_next);
             //setLoading(false);
           } catch (error) {
             console.error(error);
@@ -413,6 +508,7 @@ export const Step2Table = ({ status }) => {
         } else {
           //ยกเลิก 27 = Station ว่าง
           step1Update(id_update, 'waiting', 27);
+          updateStartTime(id_update);
         }
       }
     } else {
@@ -420,6 +516,52 @@ export const Step2Table = ({ status }) => {
     }
     setOpen(false);
   };
+  
+  // const handleClose = async (flag) => {
+  //   //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
+  //   if (flag === 1) {
+  //     if (fr === 'call') {
+  //       // station_count = จำนวนคิวที่กำลังเข้ารับบรการ, station_num = จำนวนหัวจ่ายในสถานีทั้งหมด
+  //       if (station_count < station_num) {
+  //         //เพิ่ม function get station id 3 = station id
+  //         step1Update(id_update, 'processing', selectedStation);
+  //       } else {
+  //         alert('สถานีบริการเต็ม');
+  //         setLoading(false);
+  //       }
+  //     } else {
+  //       if (fr === 'close') {
+  //         //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว 27 = Station ว่าง
+
+  //         if (selectedLoadingTeam === '') {
+  //           alert('กรุณาเลือกทีมขึ้นสินค้า');
+  //           setOpen(false);
+  //           setLoading(false);
+  //           return;
+  //         }
+
+  //         try {
+  //           //setLoading(true);
+  //           await updateLoadingTeam(id_update);
+  //           await updateLoadingTeam(id_update_next);
+  //           await step2Update(id_update_next, 'waiting', 27);
+  //           await step1Update(id_update, 'completed', staion_id);
+  //           //setLoading(false);
+  //         } catch (error) {
+  //           console.error(error);
+  //           // จัดการข้อผิดพลาดตามที่ต้องการ
+  //           alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+  //         }
+  //       } else {
+  //         //ยกเลิก 27 = Station ว่าง
+  //         step1Update(id_update, 'waiting', 27);
+  //       }
+  //     }
+  //   } else {
+  //     setLoading(false);
+  //   }
+  //   setOpen(false);
+  // };
 
   const getStation = () => {
     const requestOptions = {
@@ -551,27 +693,23 @@ export const Step2Table = ({ status }) => {
                           <Typography>{index + 1}</Typography>
                         </Stack>
                       </TableCell>
-                      <TableCell align="left" width="10%">
+                      <TableCell align="left">
                         <Chip color="info" label={row.token} variant="outlined" />
                       </TableCell>
-                      <TableCell align="left" width="10%">
-                        {row.registration_no}
+                      <TableCell align="left">{row.registration_no}</TableCell>
+                      <TableCell align="left">{row.driver_name}</TableCell>
+                      <TableCell align="left">{row.driver_mobile}</TableCell>
+                      <TableCell align="left">{row.company_name}</TableCell>
+                      <TableCell align="left">
+                        {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
+                        {row.start_time ? row.start_time.slice(11, 19) : '-'}
                       </TableCell>
-                      <TableCell align="left" width="15%">
-                        {row.driver_name}
-                      </TableCell>
-                      <TableCell align="left" width="10%">
-                        {row.driver_mobile}
-                      </TableCell>
-                      <TableCell align="left" width="20%">
-                        {row.company_name}
-                      </TableCell>
-                      <TableCell align="center" width="10%">
+                      <TableCell align="center">
                         {status == 'waiting' && <Chip color="secondary" label={row.status} />}
                         {status == 'processing' && <Chip color="warning" label={row.status} />}
                       </TableCell>
 
-                      <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                      <TableCell align="center" style={{ fontFamily: 'kanit' }}>
                         {status == 'waiting' && (
                           <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
                             <InputLabel id={'select-label-' + index} style={{ fontFamily: 'kanit' }} size="small">
@@ -616,7 +754,7 @@ export const Step2Table = ({ status }) => {
                         )}
                       </TableCell>
 
-                      <TableCell align="center" width="15%" sx={{ '& button': { m: 1 } }}>
+                      <TableCell align="center" sx={{ '& button': { m: 1 } }}>
                         {status == 'waiting' && (
                           <Button
                             // sx={{ minWidth: '33px!important', p: '6px 0px' }}

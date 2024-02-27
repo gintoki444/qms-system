@@ -10,13 +10,25 @@ import axios from '../../../../node_modules/axios/index';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 // material-ui
-import { Button, FormHelperText, Grid, InputLabel, OutlinedInput, Stack, Typography, Divider } from '@mui/material';
+import {
+  Button,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Typography,
+  Divider,
+  Backdrop,
+  CircularProgress
+} from '@mui/material';
 import MainCard from 'components/MainCard';
 
 // DateTime
 import moment from 'moment';
 
 function UpdateCar() {
+  const [open, setOpen] = useState(false);
   let [initialValue, setInitialValue] = useState({
     registration_no: '',
     brand: '',
@@ -35,6 +47,7 @@ function UpdateCar() {
   // =============== Get ข้อมูล Car ===============//
   const { id } = useParams();
   const getCar = async (id) => {
+    setOpen(true);
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
@@ -52,6 +65,7 @@ function UpdateCar() {
               brand: result.brand,
               color: result.color
             });
+            setOpen(false);
           }
         });
       })
@@ -123,6 +137,14 @@ function UpdateCar() {
 
   return (
     <Grid container alignItems="center" justifyContent="space-between">
+      {open && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={open}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
         <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
           {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
@@ -177,7 +199,7 @@ function UpdateCar() {
                   </Stack>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={12}>
                   <Stack spacing={1}>
                     <InputLabel htmlFor="color-car">สีรถ*</InputLabel>
                     <OutlinedInput
@@ -200,18 +222,18 @@ function UpdateCar() {
                 </Grid>
 
                 <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                  <Button disableElevation disabled={isSubmitting} size="large" type="submit" variant="contained" color="primary">
+                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
                     บันทึกข้อมูล
                   </Button>
                   <Button
-                    size="large"
+                    size="mediam"
                     variant="contained"
                     color="error"
                     onClick={() => {
                       backToCar();
                     }}
                   >
-                    ย้อนกลับ
+                    ยกเลิก
                   </Button>
                 </Grid>
               </Grid>

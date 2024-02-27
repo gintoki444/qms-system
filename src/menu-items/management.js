@@ -16,20 +16,6 @@ const management = {
   roles: '3',
   children: [
     {
-      id: 'userReserves',
-      title: 'จองคิวรับสินค้า',
-      type: 'item',
-      url: '/reserve',
-      icon: icons.BookOutlined
-    },
-    {
-      id: 'userQueue',
-      title: 'ข้อมูลคิวรับสินค้า',
-      type: 'item',
-      url: '/queues',
-      icon: icons.ContainerOutlined
-    },
-    {
       id: 'company',
       title: 'ข้อมูลร้านค้า/บริษัท',
       type: 'item',
@@ -40,7 +26,7 @@ const management = {
     },
     {
       id: 'car',
-      title: 'ข้อมูลรถบรรทุก/พ่วง',
+      title: 'ข้อมูลรถ',
       type: 'item',
       url: '/car',
       icon: CarOutlined,
@@ -55,6 +41,20 @@ const management = {
       icon: UserOutlined,
       target: false
       // breadcrumbs: false
+    },
+    {
+      id: 'userReserves',
+      title: 'ข้อมูลการจองคิว',
+      type: 'item',
+      url: '/reserve',
+      icon: icons.BookOutlined
+    },
+    {
+      id: 'userQueue',
+      title: 'ข้อมูลคิว',
+      type: 'item',
+      url: '/queues',
+      icon: icons.ContainerOutlined
     }
   ]
 };

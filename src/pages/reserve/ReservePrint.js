@@ -6,7 +6,7 @@ import logo from '../../assets/images/ICON-02.png';
 
 import QRCode from 'react-qr-code';
 
-import { Grid, Paper, Typography, Button, Divider } from '@mui/material';
+import { Grid, Paper, Typography, Button, Divider, Backdrop, CircularProgress } from '@mui/material';
 import moment from '../../../node_modules/moment/moment';
 
 import { useLocation } from 'react-router-dom';
@@ -21,6 +21,7 @@ const printPageStyle = {
 const apiUrl = process.env.REACT_APP_API_URL;
 
 function ReservePrint() {
+  const [open, setOpen] = useState(false);
   const [company, setCompany] = useState('');
   const [registration_no, setRegistrationNo] = useState('');
   const [driver_name, setDriverName] = useState('');
@@ -49,6 +50,7 @@ function ReservePrint() {
   }, []);
 
   const getReserve = (reserve_id) => {
+    setOpen(true);
     var requestOptions = {
       method: 'GET',
       redirect: 'follow'
@@ -87,6 +89,7 @@ function ReservePrint() {
           .then((result) => {
             console.log(result);
             setOrders(result);
+            setOpen(false);
           })
           .catch((error) => console.log('error', error));
       }, 300);
@@ -113,6 +116,14 @@ function ReservePrint() {
   return (
     <>
       <Paper style={{ ...printPageStyle }} elevation={2}>
+        {open && (
+          <Backdrop
+            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+            open={open}
+          >
+            <CircularProgress color="primary" />
+          </Backdrop>
+        )}
         <Grid alignItems="center" justifyContent="space-between">
           <Grid container rowSpacing={1} columnSpacing={2.75} sx={{ pt: 4 }}>
             <Grid item xs={12} align="center">
@@ -219,13 +230,6 @@ function ReservePrint() {
                   <Grid item xs={6}>
                     <Typography variant="body1" gutterBottom>
                       <strong>วันที่สั่งซื้อ :</strong> {order.order_date ? moment(order.rder_date).format('dd/MM/yyyy') : '-'}{' '}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={6}>
-                    <Typography variant="body1" gutterBottom>
-                      <strong>จำนวน (ทั้งหมด) : </strong>
-                      {order.total_amount} ตัน
                     </Typography>
                   </Grid>
 

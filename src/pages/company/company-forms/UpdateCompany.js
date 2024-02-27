@@ -5,19 +5,30 @@ import { useNavigate } from 'react-router-dom';
 // third party
 import * as Yup from 'yup';
 import { Formik } from 'formik';
-import axios from '../../../../node_modules/axios/index';
 
-// Link api url
-const apiUrl = process.env.REACT_APP_API_URL;
+// Get api company
+import * as companyRequest from '_api/companyRequest';
 
 // material-ui
-import { Button, FormHelperText, Grid, InputLabel, OutlinedInput, Stack, Typography, Divider } from '@mui/material';
+import {
+  Button,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Typography,
+  Divider,
+  Backdrop,
+  CircularProgress
+} from '@mui/material';
 import MainCard from 'components/MainCard';
 
 // DateTime
 import moment from 'moment';
 
 function UpdateCompany() {
+  const [open, setOpen] = useState(false);
   let [initialValue, setInitialValue] = useState({
     name: '',
     country: '',
@@ -39,13 +50,19 @@ function UpdateCompany() {
     description: Yup.string().max(255).required('กรุณาระบุรายละเอียดของบริษัท'),
     tax_no: Yup.string().min(13).max(13).required('กรุณาระบุเลขที่ผู้เสียภาษี'),
     phone: Yup.string()
+      .min(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
+      .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
+      .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
       .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
       .required('กรุณาระบุเบอร์โทรศัพท์'),
     address: Yup.string().max(255).required('กรุณาระบุที่อยู่'),
     zipcode: Yup.string().max(5).required('กรุณาระบุรหัสไปรษณีย์'),
     contact_person: Yup.string().max(255).required('กรุณาระบุชื่อผู้ติดต่อ'),
     contact_number: Yup.string()
+      .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
       .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
+      .min(9, 'กรุณาระบุเบอร์โทรศัพท์ 9 หลัก')
+      .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
       .required('กรุณาระบุเบอร์โทรศัพท์ผู้ติดต่อ')
   });
 
@@ -54,20 +71,16 @@ function UpdateCompany() {
   useEffect(() => {
     getCompany(id);
   }, [id]);
-
+ 
   // =============== Get ข้อมูล Company ===============//
-  const getCompany = async (id) => {
-    let config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: apiUrl + '/company/' + id,
-      headers: {}
-    };
 
-    await axios
-      .request(config)
+  const getCompany = async (id) => {
+    setOpen(true);
+
+    companyRequest
+      .getAllCompanyById(id)
       .then((response) => {
-        response.data.company.map((result) => {
+        response.company.map((result) => {
           if (result) {
             setInitialValue({
               name: result.name,
@@ -81,6 +94,7 @@ function UpdateCompany() {
               contact_person: result.contact_person,
               contact_number: result.contact_number
             });
+            setOpen(false);
           }
         });
       })
@@ -162,6 +176,14 @@ function UpdateCompany() {
 
   return (
     <Grid container alignItems="center" justifyContent="space-between">
+      {open && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={open}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
         <Formik initialValues={initialValue} validationSchema={validationSchema} enableReinitialize={true} onSubmit={handleSubmits}>
           {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
@@ -398,18 +420,18 @@ function UpdateCompany() {
                 </Grid>
 
                 <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                  <Button disableElevation disabled={isSubmitting} size="large" type="submit" variant="contained" color="primary">
+                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
                     บันทึกข้อมูล
                   </Button>
                   <Button
-                    size="large"
+                    size="mediam"
                     variant="contained"
                     color="error"
                     onClick={() => {
                       backToCompany();
                     }}
                   >
-                    ย้อนกลับ
+                    ยกเลิก
                   </Button>
                 </Grid>
               </Grid>

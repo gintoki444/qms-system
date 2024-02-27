@@ -47,60 +47,79 @@ export const Step4Table = ({ status }) => {
   const headCells = [
     {
       id: 'queueNo',
-      align: 'left',
+      align: 'center',
       disablePadding: false,
+      width: '5%',
       label: 'ลำดับคิว.'
     },
     {
       id: 'queueID',
       align: 'left',
       disablePadding: false,
+      width: '5%',
       label: 'รหัสคิว.'
     },
     {
       id: 'registration_no',
       align: 'left',
       disablePadding: true,
+      width: '10%',
       label: 'ทะเบียนรถ'
     },
     {
       id: 'driver',
       align: 'left',
       disablePadding: true,
+      width: '10%',
       label: 'ชื่อผู้ขับ'
     },
     {
       id: 'tel',
       align: 'left',
       disablePadding: true,
+      width: '10%',
       label: 'เบอร์โทรศัพท์'
     },
     {
       id: 'branName',
       align: 'left',
       disablePadding: false,
+      width: '15%',
       label: 'ร้านค้า/บริษัท'
+    },
+    {
+      id: 'times',
+      align: 'left',
+      disablePadding: false,
+      width: '15%',
+      label: 'เวลาเริ่ม'
     },
     {
       id: 'status',
       align: 'center',
       disablePadding: false,
+      width: '5%',
       label: 'สถานะ'
     },
     {
       id: 'action',
       align: 'center',
       disablePadding: false,
+      width: '15%',
       label: 'Actions'
     }
   ];
-
   function QueueTableHead() {
     return (
       <TableHead>
         <TableRow>
           {headCells.map((headCell) => (
-            <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'}>
+            <TableCell
+              key={headCell.id}
+              align={headCell.align}
+              width={headCell.width}
+              padding={headCell.disablePadding ? 'none' : 'normal'}
+            >
               {headCell.label}
             </TableCell>
           ))}
@@ -114,7 +133,7 @@ export const Step4Table = ({ status }) => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [id_update, setUpdate] = useState(0);
-  const [id_update_next, setUpdateNext] = useState(0);
+  // const [id_update_next, setUpdateNext] = useState(0);
   const [fr, setFrom] = useState('');
   const [textnotify, setText] = useState('');
   const [station_count, setStationCount] = useState(0);
@@ -194,36 +213,36 @@ export const Step4Table = ({ status }) => {
       .catch((error) => console.log('error', error));
   };
 
-  const step2Update = (id, statusupdate, station_id) => {
-    setLoading(true);
+  // const step2Update = (id, statusupdate, station_id) => {
+  //   setLoading(true);
 
-    var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-    var myHeaders = new Headers();
-    myHeaders.append('Content-Type', 'application/json');
+  //   var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+  //   var myHeaders = new Headers();
+  //   myHeaders.append('Content-Type', 'application/json');
 
-    var raw = JSON.stringify({
-      status: statusupdate,
-      station_id: station_id,
-      updated_at: currentDate
-    });
+  //   var raw = JSON.stringify({
+  //     status: statusupdate,
+  //     station_id: station_id,
+  //     updated_at: currentDate
+  //   });
 
-    var requestOptions = {
-      method: 'PUT',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow'
-    };
+  //   var requestOptions = {
+  //     method: 'PUT',
+  //     headers: myHeaders,
+  //     body: raw,
+  //     redirect: 'follow'
+  //   };
 
-    fetch(apiUrl + '/updatestepstatus/' + id, requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        if (result['status'] === 'ok') {
-          //alert("Upadte next step was completed")
-          setLoading(false);
-        }
-      })
-      .catch((error) => console.log('error', error));
-  };
+  //   fetch(apiUrl + '/updatestepstatus/' + id, requestOptions)
+  //     .then((response) => response.json())
+  //     .then((result) => {
+  //       if (result['status'] === 'ok') {
+  //         //alert("Upadte next step was completed")
+  //         setLoading(false);
+  //       }
+  //     })
+  //     .catch((error) => console.log('error', error));
+  // };
 
   const getStepCount = (steps_order, steps_status) => {
     return new Promise((resolve, reject) => {
@@ -249,19 +268,19 @@ export const Step4Table = ({ status }) => {
     });
   };
 
-  const getStepId = (steps_order, queues_id) => {
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
+  // const getStepId = (steps_order, queues_id) => {
+  //   var requestOptions = {
+  //     method: 'GET',
+  //     redirect: 'follow'
+  //   };
 
-    fetch(apiUrl + '/stepbyqueueid/' + steps_order + '/' + queues_id, requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        setUpdateNext(result[0]['step_id']);
-      })
-      .catch((error) => console.log('error', error));
-  };
+  //   fetch(apiUrl + '/stepbyqueueid/' + steps_order + '/' + queues_id, requestOptions)
+  //     .then((response) => response.json())
+  //     .then((result) => {
+  //       setUpdateNext(result[0]['step_id']);
+  //     })
+  //     .catch((error) => console.log('error', error));
+  // };
 
   //Update ทีมขึ้นสินค้าสำหรับ Step4
   const updateLoadingTeam = (step_id) => {
@@ -314,8 +333,81 @@ export const Step4Table = ({ status }) => {
     setUpdate(step_id);
     setTeamId(team_id);
     //get steps_id of step 4 from queues_id for next queues
-    getStepId(4, queue_id);
+    // getStepId(4, queue_id);
     setOpen(true);
+  };
+
+  //Update start_time of step
+  const updateStartTime = (step_id) => {
+    //alert("updateStartTime")
+
+    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
+    return new Promise((resolve, reject) => {
+      const myHeaders = new Headers();
+      myHeaders.append('Content-Type', 'application/json');
+
+      const raw = JSON.stringify({
+        start_time: currentDate
+      });
+
+      const requestOptions = {
+        method: 'PUT',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+      };
+
+      fetch(apiUrl + '/updatestarttime/' + step_id, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          //console.log(result)
+          if (result['status'] === 'ok') {
+            console.log('updateStartTime is ok');
+            resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
+          } else {
+            console.log('not update updateStartTime');
+            reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
+          }
+        })
+        .catch((error) => console.error(error));
+    });
+  };
+
+  //Update start_time of step
+  const updateEndTime = (step_id) => {
+    //alert("updateEndTime")
+    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
+    return new Promise((resolve, reject) => {
+      const myHeaders = new Headers();
+      myHeaders.append('Content-Type', 'application/json');
+
+      const raw = JSON.stringify({
+        start_time: currentDate
+      });
+
+      const requestOptions = {
+        method: 'PUT',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+      };
+
+      fetch(apiUrl + '/updateendtime/' + step_id, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          //console.log(result)
+          if (result['status'] === 'ok') {
+            console.log('updateEndTime is ok');
+            resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
+          } else {
+            console.log('not update updateEndTime');
+            reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
+          }
+        })
+        .catch((error) => console.error(error));
+    });
   };
 
   const handleClose = (flag) => {
@@ -326,7 +418,8 @@ export const Step4Table = ({ status }) => {
         // station_count = จำนวนคิวที่กำลังเข้ารับบรการ, station_num = จำนวนหัวจ่ายในสถานีทั้งหมด
         if (station_count < station_num) {
           //เพิ่ม function get station id 3 = station id
-          step1Update(id_update, 'processing', 23);
+          step1Update(id_update, 'processing', 24);
+          updateStartTime(id_update);
         } else {
           alert('สถานีบริการเต็ม');
           setLoading(false);
@@ -334,13 +427,15 @@ export const Step4Table = ({ status }) => {
       } else {
         if (fr === 'close') {
           //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว
-          updateLoadingTeam(id_update_next, team_id);
+          //step2Update(id_update_next,"waiting", 27)
           updateLoadingTeam(id_update, team_id);
-          step2Update(id_update_next, 'waiting', 27);
-          step1Update(id_update, 'completed', 23);
+          step1Update(id_update, 'completed', 24);
+          updateEndTime(id_update);
+          //updateStartTime(id_update_next);
         } else {
           //ยกเลิก
           step1Update(id_update, 'waiting', 27);
+          updateStartTime(id_update);
         }
       }
     } else {
@@ -348,6 +443,37 @@ export const Step4Table = ({ status }) => {
     }
     setOpen(false);
   };
+
+  // const handleClose = (flag) => {
+  //   // flag = 1 = ยืนยัน
+  //   if (flag === 1) {
+  //     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
+  //     if (fr === 'call') {
+  //       // station_count = จำนวนคิวที่กำลังเข้ารับบรการ, station_num = จำนวนหัวจ่ายในสถานีทั้งหมด
+  //       if (station_count < station_num) {
+  //         //เพิ่ม function get station id 3 = station id
+  //         step1Update(id_update, 'processing', 23);
+  //       } else {
+  //         alert('สถานีบริการเต็ม');
+  //         setLoading(false);
+  //       }
+  //     } else {
+  //       if (fr === 'close') {
+  //         //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว
+  //         updateLoadingTeam(id_update_next, team_id);
+  //         updateLoadingTeam(id_update, team_id);
+  //         step2Update(id_update_next, 'waiting', 27);
+  //         step1Update(id_update, 'completed', 23);
+  //       } else {
+  //         //ยกเลิก
+  //         step1Update(id_update, 'waiting', 27);
+  //       }
+  //     }
+  //   } else {
+  //     setLoading(false);
+  //   }
+  //   setOpen(false);
+  // };
 
   return (
     <>
@@ -413,27 +539,23 @@ export const Step4Table = ({ status }) => {
                           <Typography>{index + 1}</Typography>
                         </Stack>
                       </TableCell>
-                      <TableCell align="left" width="10%">
+                      <TableCell align="left">
                         <Chip color="info" label={row.token} variant="outlined" />
                       </TableCell>
-                      <TableCell align="left" width="10%">
-                        {row.registration_no}
+                      <TableCell align="left">{row.registration_no}</TableCell>
+                      <TableCell align="left">{row.driver_name}</TableCell>
+                      <TableCell align="left">{row.driver_mobile}</TableCell>
+                      <TableCell align="left">{row.company_name}</TableCell>
+                      <TableCell align="left">
+                        {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
+                        {row.start_time ? row.start_time.slice(11, 19) : '-'}
                       </TableCell>
-                      <TableCell align="left" width="15%">
-                        {row.driver_name}
-                      </TableCell>
-                      <TableCell align="left" width="10%">
-                        {row.driver_mobile}
-                      </TableCell>
-                      <TableCell align="left" width="20%">
-                        {row.company_name}
-                      </TableCell>
-                      <TableCell align="center" width="10%">
+                      <TableCell align="center">
                         {status == 'waiting' && <Chip color="secondary" label={row.status} />}
                         {status == 'processing' && <Chip color="warning" label={row.status} />}
                       </TableCell>
 
-                      <TableCell align="center" width="15%" sx={{ '& button': { m: 1 } }}>
+                      <TableCell align="center" sx={{ '& button': { m: 1 } }}>
                         {status == 'waiting' && (
                           <Button
                             // sx={{ minWidth: '33px!important', p: '6px 0px' }}

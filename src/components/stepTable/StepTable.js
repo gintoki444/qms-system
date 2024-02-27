@@ -27,7 +27,7 @@ import * as getQueues from '_api/queueReques';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 import { RightSquareOutlined } from '@ant-design/icons';
-import moment from 'moment';
+import moment from 'moment/min/moment-with-locales';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { setStation } from 'store/reducers/station';
@@ -40,50 +40,65 @@ export const StepTable = ({ status }) => {
   const headCells = [
     {
       id: 'queueNo',
-      align: 'left',
+      align: 'center',
       disablePadding: false,
+      width: '5%',
       label: 'ลำดับคิว.'
     },
     {
       id: 'queueID',
       align: 'left',
       disablePadding: false,
+      width: '5%',
       label: 'รหัสคิว.'
     },
     {
       id: 'registration_no',
       align: 'left',
       disablePadding: true,
+      width: '10%',
       label: 'ทะเบียนรถ'
     },
     {
       id: 'driver',
       align: 'left',
       disablePadding: true,
+      width: '10%',
       label: 'ชื่อผู้ขับ'
     },
     {
       id: 'tel',
       align: 'left',
       disablePadding: true,
+      width: '10%',
       label: 'เบอร์โทรศัพท์'
     },
     {
       id: 'branName',
       align: 'left',
       disablePadding: false,
+      width: '15%',
       label: 'ร้านค้า/บริษัท'
+    },
+    {
+      id: 'times',
+      align: 'left',
+      disablePadding: false,
+      width: '15%',
+      label: 'เวลาเริ่ม'
     },
     {
       id: 'status',
       align: 'center',
       disablePadding: false,
+      width: '5%',
       label: 'สถานะ'
     },
     {
       id: 'action',
       align: 'center',
       disablePadding: false,
+      width: '15%',
       label: 'Actions'
     }
   ];
@@ -92,7 +107,12 @@ export const StepTable = ({ status }) => {
       <TableHead>
         <TableRow>
           {headCells.map((headCell) => (
-            <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'}>
+            <TableCell
+              key={headCell.id}
+              align={headCell.align}
+              width={headCell.width}
+              padding={headCell.disablePadding ? 'none' : 'normal'}
+            >
               {headCell.label}
             </TableCell>
           ))}
@@ -307,7 +327,81 @@ export const StepTable = ({ status }) => {
       .catch((error) => console.log('error', error));
   };
 
+  //Update start_time of step
+  const updateStartTime = (step_id) => {
+    //alert("updateStartTime")
+
+    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
+    return new Promise((resolve, reject) => {
+      const myHeaders = new Headers();
+      myHeaders.append('Content-Type', 'application/json');
+
+      const raw = JSON.stringify({
+        start_time: currentDate
+      });
+
+      const requestOptions = {
+        method: 'PUT',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+      };
+
+      fetch(apiUrl + '/updatestarttime/' + step_id, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          //console.log(result)
+          if (result['status'] === 'ok') {
+            console.log('updateStartTime is ok');
+            resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
+          } else {
+            console.log('not update updateStartTime');
+            reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
+          }
+        })
+        .catch((error) => console.error(error));
+    });
+  };
+
+  //Update start_time of step
+  const updateEndTime = (step_id) => {
+    //alert("updateEndTime")
+    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
+    return new Promise((resolve, reject) => {
+      const myHeaders = new Headers();
+      myHeaders.append('Content-Type', 'application/json');
+
+      const raw = JSON.stringify({
+        start_time: currentDate
+      });
+
+      const requestOptions = {
+        method: 'PUT',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+      };
+
+      fetch(apiUrl + '/updateendtime/' + step_id, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          //console.log(result)
+          if (result['status'] === 'ok') {
+            console.log('updateEndTime is ok');
+            resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
+          } else {
+            console.log('not update updateEndTime');
+            reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
+          }
+        })
+        .catch((error) => console.error(error));
+    });
+  };
+
   // handleClose
+
   const handleClose = async (flag) => {
     // flag === 1 คลิกยืนยัน และ fr = คลิกมาจากปุ่มไหน
     if (flag === 1) {
@@ -315,9 +409,11 @@ export const StepTable = ({ status }) => {
         setTimeout(() => {
           if (station_count < station_num) {
             step1Update(id_update, 'processing', 2);
-            // sendMessageToLine();
+            updateStartTime(id_update);
+            //sendMessageToLine()
           } else {
-            alert('สถานีบริการเต็ม' + station_count + ':' + station_num);
+            alert('สถานีบริการเต็ม');
+            setLoading(false);
           }
         }, 100);
       }
@@ -329,6 +425,8 @@ export const StepTable = ({ status }) => {
         try {
           await step2Update(id_update_next, 'waiting', 27);
           await step1Update(id_update, 'completed', 2);
+          await updateEndTime(id_update);
+          await updateStartTime(id_update_next);
         } catch (error) {
           console.error(error);
           // จัดการข้อผิดพลาดตามที่ต้องการ
@@ -339,10 +437,48 @@ export const StepTable = ({ status }) => {
       if (fr === 'cancel') {
         //ยกเลิก
         step1Update(id_update, 'waiting', 27);
+        updateStartTime(id_update);
       }
+    } else {
+      setLoading(false);
     }
     setOpen(false);
   };
+  // const handleClose = async (flag) => {
+  //   // flag === 1 คลิกยืนยัน และ fr = คลิกมาจากปุ่มไหน
+  //   if (flag === 1) {
+  //     if (fr === 'call') {
+  //       setTimeout(() => {
+  //         if (station_count < station_num) {
+  //           step1Update(id_update, 'processing', 2);
+  //           // sendMessageToLine();
+  //         } else {
+  //           alert('สถานีบริการเต็ม' + station_count + ':' + station_num);
+  //         }
+  //       }, 100);
+  //     }
+
+  //     if (fr === 'close') {
+  //       //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว 27 = station ว่าง
+  //       //step2Update(id_update_next,"waiting", 27);
+  //       //step1Update(id_update, "completed", 2);
+  //       try {
+  //         await step2Update(id_update_next, 'waiting', 27);
+  //         await step1Update(id_update, 'completed', 2);
+  //       } catch (error) {
+  //         console.error(error);
+  //         // จัดการข้อผิดพลาดตามที่ต้องการ
+  //         alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+  //       }
+  //     }
+
+  //     if (fr === 'cancel') {
+  //       //ยกเลิก
+  //       step1Update(id_update, 'waiting', 27);
+  //     }
+  //   }
+  //   setOpen(false);
+  // };
 
   return (
     <>
@@ -398,26 +534,30 @@ export const StepTable = ({ status }) => {
                         <Typography>{index + 1}</Typography>
                       </Stack>
                     </TableCell>
-                    <TableCell align="left" width="10%">
+                    <TableCell align="left">
                       <Chip color="info" label={row.token} variant="outlined" />
                     </TableCell>
-                    <TableCell align="left" width="10%">
+                    <TableCell align="left">
                       {row.registration_no}
                     </TableCell>
-                    <TableCell align="left" width="15%">
+                    <TableCell align="left">
                       {row.driver_name}
                     </TableCell>
-                    <TableCell align="left" width="10%">
+                    <TableCell align="left">
                       {row.driver_mobile}
                     </TableCell>
-                    <TableCell align="left" width="20%">
+                    <TableCell align="left">
                       {row.company_name}
                     </TableCell>
-                    <TableCell align="center" width="10%">
+                    <TableCell align="left">
+                      {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
+                      {row.start_time ? row.start_time.slice(11, 19) : '-'}
+                    </TableCell>
+                    <TableCell align="center">
                       {status == 'waiting' && <Chip color="secondary" label={row.status} />}
                       {status == 'processing' && <Chip color="warning" label={row.status} />}
                     </TableCell>
-                    <TableCell align="center" width="15%" sx={{ '& button': { m: 1 } }}>
+                    <TableCell align="center" sx={{ '& button': { m: 1 } }}>
                       {status == 'waiting' && (
                         <Button
                           // sx={{ minWidth: '33px!important', p: '6px 0px' }}

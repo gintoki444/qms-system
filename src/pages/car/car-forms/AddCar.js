@@ -160,7 +160,7 @@ function AddCar() {
                   </Stack>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={12}>
                   <Stack spacing={1}>
                     <InputLabel htmlFor="color-car">สีรถ*</InputLabel>
                     <OutlinedInput
@@ -183,7 +183,7 @@ function AddCar() {
                 </Grid>
                 {/* {permission.length > 0 && permission.add_data && ( */}
                 <Grid item xs={12}>
-                  <Button disableElevation disabled={isSubmitting} size="large" type="submit" variant="contained" color="primary">
+                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
                     เพิ่มข้อมูลรถ
                   </Button>
                 </Grid>

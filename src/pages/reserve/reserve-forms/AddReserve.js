@@ -108,7 +108,7 @@ function AddReserve() {
     brand_group_id: '',
     driver_id: '',
     description: '',
-    pickup_date: '',
+    pickup_date: moment(new Date()).format('YYYY-MM-DD'),
     warehouse_id: '',
     status: 'waiting',
     total_quantity: 0
@@ -119,7 +119,7 @@ function AddReserve() {
     company_id: Yup.string().required('กรุณาเลือกบริษัท/ร้านค้า'),
     brand_group_id: Yup.string().required('กรุณาเลือกกลุ่มสินค้า'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
-    description: Yup.string().required('กรุณากรอกiรายละเอียดการจอง')
+    description: Yup.string().required('กรุณากรอกหัวข้อการจอง')
   });
 
   // =============== บันทึกข้อมูล ===============//
@@ -142,13 +142,12 @@ function AddReserve() {
         data: values
       };
 
-      console.log('values :', values);
-
       axios
         .request(config)
         .then((result) => {
           if (result.data.status === 'ok') {
-            window.location.href = '/reserve';
+            window.location.href = '/reserve/update/'+result.data.results.insertId;
+            console.log('result :', result);
           } else {
             alert(result['message']['sqlMessage']);
           }
@@ -313,7 +312,7 @@ function AddReserve() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
-                    <InputLabel>หัวข้อการจอง*</InputLabel>
+                    <InputLabel>เหตุผลการจอง*</InputLabel>
                     <OutlinedInput
                       id="description"
                       type="description"
@@ -321,7 +320,7 @@ function AddReserve() {
                       name="description"
                       onBlur={handleBlur}
                       onChange={handleChange}
-                      placeholder="หัวข้อการจอง"
+                      placeholder="เหตุผลการจอง"
                       error={Boolean(touched.description && errors.description)}
                     />
                     {touched.description && errors.description && (
@@ -382,7 +381,7 @@ function AddReserve() {
                 </Grid>
 
                 <Grid item xs={12}>
-                  <Button disableElevation disabled={isSubmitting} size="large" type="submit" variant="contained" color="primary">
+                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
                     เพิ่มข้อมูลรถ
                   </Button>
                 </Grid>

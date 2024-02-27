@@ -1,34 +1,19 @@
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
-// import { styled } from '@mui/material/styles';
 
 // import { Link as RouterLink } from 'react-router-dom';
 
 // material-ui
-import {
-  Box,
-  // Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  // tableCellClasses
-  // Typography
-  // , Chip
-} from '@mui/material';
-
-import moment from 'moment';
+import { Box, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Chip } from '@mui/material';
 
 // third-party
 // import NumberFormat from 'react-number-format';
 
 // Link api queues
-import * as getReport from '_api/reportRequest';
+import * as getQueues from '_api/queueReques';
 
 // project import
-// import Dot from 'components/@extended/Dot';
+import Dot from 'components/@extended/Dot';
 
 // function createData(trackingNo, name, fat, carbs, protein) {
 //   return { trackingNo, name, fat, carbs, protein };
@@ -63,64 +48,47 @@ import * as getReport from '_api/reportRequest';
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
-    id: 'NO.',
+    id: 'queueID',
     align: 'center',
     disablePadding: false,
-    label: 'ลำดับ.'
+    label: 'รหัสคิว.'
   },
   {
-    id: 'Products',
-    align: 'left',
-    disablePadding: false,
-    label: 'สินค้า.'
-  },
-  {
-    id: 'product_register',
+    id: 'registration_no',
     align: 'left',
     disablePadding: true,
-    label: 'ทะเบียน'
+    label: 'ทะเบียนรถ'
   },
   {
-    id: 'setup_pile_date',
+    id: 'driver',
     align: 'left',
     disablePadding: true,
-    label: 'วันที่ตั้งกอง'
+    label: 'ชื่อผู้ขับ'
   },
   {
-    id: 'total_sold',
-    align: 'right',
+    id: 'tel',
+    align: 'left',
     disablePadding: true,
-    label: 'ยอดตั้งต้น (ตัน)'
+    label: 'เบอร์โทรศัพท์'
   },
   {
-    id: 'remaining_total',
-    align: 'center',
-    disablePadding: false,
-    label: 'จ่าย (ตัน)'
-  },
-  {
-    id: 'total_sold_1',
+    id: 'branName',
     align: 'left',
     disablePadding: false,
-    label: 'รวมจ่าย (กระสอบ)'
+    label: 'ร้านค้า/บริษัท'
   },
   {
-    id: 'total_sold_2',
+    id: 'status',
     align: 'center',
     disablePadding: false,
-    label: 'รวมจ่าย (ตัน)'
-  },
-  {
-    id: 'total_sold_3',
-    align: 'center',
-    disablePadding: false,
-    label: 'คงเหลือ (ตัน)'
+    width: '8%',
+    label: 'สถานะ'
   }
 ];
 
 // ==============================|| ORDER TABLE - HEADER ||============================== //
 
-function OrderTableHead({ order, orderBy }) {
+function QueuesTableHead({ order, orderBy }) {
   return (
     <TableHead>
       <TableRow>
@@ -139,12 +107,50 @@ function OrderTableHead({ order, orderBy }) {
   );
 }
 
-OrderTableHead.propTypes = {
+QueuesTableHead.propTypes = {
   order: PropTypes.string,
   orderBy: PropTypes.string
 };
 
-export default function OrderTable() {
+// ==============================|| ORDER TABLE - STATUS ||============================== //
+
+const OrderStatus = ({ status }) => {
+  let color;
+  let title;
+
+  switch (status) {
+    case 0:
+      color = 'warning';
+      title = 'Pending';
+      break;
+    case 1:
+      color = 'success';
+      title = 'Approved';
+      break;
+    case 2:
+      color = 'error';
+      title = 'Rejected';
+      break;
+    default:
+      color = 'primary';
+      title = 'None';
+  }
+
+  return (
+    <Stack direction="row" spacing={1} alignItems="center">
+      <Dot color={color} />
+      <Typography>{title}</Typography>
+    </Stack>
+  );
+};
+
+OrderStatus.propTypes = {
+  status: PropTypes.number
+};
+
+// ==============================|| ORDER TABLE ||============================== //
+
+export default function QueuesTable() {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   // const [selected] = useState([]);
@@ -152,16 +158,13 @@ export default function OrderTable() {
   // const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
 
   useEffect(() => {
-    getOrderSumQty();
+    processingGet();
   }, []);
 
   const [items, setItems] = useState([]);
-  const getOrderSumQty = () => {
-    const dateNow = moment(new Date()).format('YYYY-MM-DD');
-
+  const processingGet = () => {
     try {
-      getReport.getOrdersProducts(dateNow).then((response) => {
-        console.log('response :', response);
+      getQueues.getStep2Processing().then((response) => {
         setItems(response);
       });
     } catch (e) {
@@ -191,51 +194,29 @@ export default function OrderTable() {
             }
           }}
         >
-          <OrderTableHead order={order} orderBy={orderBy} />
+          <QueuesTableHead order={order} orderBy={orderBy} />
 
           <TableBody>
             {items.map((row, index) => {
               return (
                 <TableRow key={index}>
-                  <TableCell align="center">{index + 1}</TableCell>
-                  <TableCell align="left">{row.name}</TableCell>
-                  <TableCell align="left">{row.product_register ? row.product_register : '-'}</TableCell>
-                  <TableCell align="left">{row.setup_pile_date ? moment(row.setup_pile_date).format('DD/MM/yyyy') : '-'}</TableCell>
-                  <TableCell align="right">
-                    {(parseFloat(row.total_sold) + parseFloat(row.remaining_quantity)).toLocaleString()} T
+                  <TableCell align="center">
+                    <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
                   </TableCell>
-                  <TableCell align="left" sx={{ p: 0 }}>
-                    <Table size="small" lined="none">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell align="left" sx={{ p: 1 }}>
-                            คิว
-                          </TableCell>
-                          <TableCell align="right" sx={{ p: 1 }}>
-                            ตัน
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {row.items.map((item, index) => (
-                          <TableRow key={index}>
-                            <TableCell align="left">{item.token}</TableCell>
-                            <TableCell align="right">{parseFloat((item.total_products * 1).toFixed(3))}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                  <TableCell align="left">{row.registration_no}</TableCell>
+                  <TableCell align="left">{row.driver_name}</TableCell>
+                  <TableCell align="left">{row.driver_mobile}</TableCell>
+                  <TableCell align="left">{row.company_name}</TableCell>
+                  <TableCell align="center">
+                    <Chip color="warning" label={row.status} />
                   </TableCell>
-                  <TableCell align="center">{parseFloat((row.total_sold * 20).toFixed(0))}</TableCell>
-                  <TableCell align="center">{parseFloat((row.total_sold * 1).toFixed(3))}</TableCell>
-                  <TableCell align="center">{parseFloat((row.remaining_quantity * 1).toFixed(3))}</TableCell>
                 </TableRow>
               );
             })}
 
             {items.length == 0 && (
               <TableRow>
-                <TableCell colSpan={9} align="center">
+                <TableCell colSpan={5} align="center">
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>

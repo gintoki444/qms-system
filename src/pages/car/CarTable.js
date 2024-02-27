@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Box, Button, Tooltip } from '@mui/material';
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Box,
+  ButtonGroup,
+  Button,
+  Tooltip,
+  Typography,
+  CircularProgress
+} from '@mui/material';
 
 import axios from '../../../node_modules/axios/index';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -12,9 +25,10 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const headCells = [
   {
     id: 'carNo',
-    align: 'left',
+    align: 'center',
+    width: '5%',
     disablePadding: false,
-    label: 'ID.'
+    label: 'ลำดับ'
   },
   {
     id: 'name',
@@ -37,6 +51,7 @@ const headCells = [
   {
     id: 'action',
     align: 'center',
+    width: '10%',
     disablePadding: false,
     label: 'Actions'
   }
@@ -52,6 +67,7 @@ function CompantTableHead({ car, carBy }) {
             align={headCell.align}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={carBy === headCell.id ? car : false}
+            width={headCell.width}
           >
             {headCell.label}
           </TableCell>
@@ -63,6 +79,7 @@ function CompantTableHead({ car, carBy }) {
 
 function CarTable() {
   const [car, setCar] = useState([]);
+  const [open, setOpen] = useState(false);
 
   const userId = localStorage.getItem('user_id');
 
@@ -87,6 +104,7 @@ function CarTable() {
   }, []);
 
   const getCar = async () => {
+    setOpen(true);
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
@@ -98,6 +116,7 @@ function CarTable() {
       .request(config)
       .then((response) => {
         setCar(response.data);
+        setOpen(false);
       })
       .catch((error) => {
         console.log(error);
@@ -145,6 +164,7 @@ function CarTable() {
       >
         <Table
           aria-labelledby="tableTitle"
+          size="small"
           sx={{
             '& .MuiTableCell-root:first-of-type': {
               pl: 2
@@ -155,52 +175,64 @@ function CarTable() {
           }}
         >
           <CompantTableHead company={car} companyBy={car} />
-
-          <TableBody>
-            {car.map((row, index) => {
-              return (
-                <TableRow key={index}>
-                  <TableCell align="left">{row.car_id}</TableCell>
-                  <TableCell align="left">{row.registration_no}</TableCell>
-                  <TableCell align="left">{row.brand}</TableCell>
-                  <TableCell align="left">{row.color}</TableCell>
-                  {/* {permission.length > 0 &&  */}
-                  <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                    <Tooltip title="แก้ไข">
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        color="primary"
-                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                        onClick={() => updateCar(row.car_id)}
-                      >
-                        <EditOutlined />
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title="ลบ">
-                      <Button
-                        variant="contained"
-                        size="medium"
-                        color="error"
-                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                        onClick={() => deleteCar(row.car_id)}
-                      >
-                        <DeleteOutlined />
-                      </Button>
-                    </Tooltip>
+          {!open ? (
+            <TableBody>
+              {car.map((row, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell align="center">{row.car_id}</TableCell>
+                    <TableCell align="left">{row.registration_no}</TableCell>
+                    <TableCell align="left">{row.brand}</TableCell>
+                    <TableCell align="left">{row.color}</TableCell>
+                    {/* {permission.length > 0 &&  */}
+                    <TableCell align="center">
+                      <ButtonGroup variant="contained" aria-label="Basic button group">
+                        <Tooltip title="แก้ไข">
+                          <Button
+                            variant="contained"
+                            size="medium"
+                            color="primary"
+                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                            onClick={() => updateCar(row.car_id)}
+                          >
+                            <EditOutlined />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip title="ลบ">
+                          <Button
+                            variant="contained"
+                            size="medium"
+                            color="error"
+                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                            onClick={() => deleteCar(row.car_id)}
+                          >
+                            <DeleteOutlined />
+                          </Button>
+                        </Tooltip>
+                      </ButtonGroup>
+                    </TableCell>
+                    {/* } */}
+                  </TableRow>
+                );
+              })}
+              {car.length == 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    ไม่พบข้อมูล
                   </TableCell>
-                  {/* } */}
                 </TableRow>
-              );
-            })}
-            {car.length == 0 && (
+              )}
+            </TableBody>
+          ) : (
+            <TableBody>
               <TableRow>
-                <TableCell colSpan={5} align="center">
-                  ไม่พบข้อมูล
+                <TableCell colSpan={4} align="center">
+                  <CircularProgress />
+                  <Typography variant="body1">Loading....</Typography>
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
+            </TableBody>
+          )}
         </Table>
       </TableContainer>
     </Box>

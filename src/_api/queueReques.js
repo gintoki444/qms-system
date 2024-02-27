@@ -2,6 +2,17 @@
 const apiUrl = process.env.REACT_APP_API_URL;
 
 // ==============================|| ข้อมูล รอเรียกคิว step1 ||============================== //
+export const getAllqueueByDate = async (date) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/allqueuesbyqueuedate?queue_date=${date}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// ==============================|| ข้อมูล รอเรียกคิว step1 ||============================== //
 export const getStep1Waitting = async () => {
   const requestOptions = {
     method: 'GET',

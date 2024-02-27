@@ -10,6 +10,9 @@ import axios from '../../../node_modules/axios/index';
 const apiUrl = process.env.REACT_APP_API_URL;
 // const userId = localStorage.getItem('user_id');
 
+import QRCode from 'react-qr-code';
+import logo from '../../assets/images/ICON-02.png';
+
 // material-ui
 import {
   Button,
@@ -24,7 +27,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
+  DialogActions,
+  Backdrop,
+  CircularProgress
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 // import MenuItem from '@mui/material/MenuItem';
@@ -34,17 +39,21 @@ import MainCard from 'components/MainCard';
 import moment from 'moment';
 
 function ReserveDetail() {
+  const [loading, setLoading] = useState(false);
+
   // =============== Get Reserve ID ===============//
   const [reserveData, setReservData] = useState({});
   const { id } = useParams();
+  const prurl = window.location.origin + '/reserve/update/' + id;
   const getReserve = () => {
+    setLoading(true);
     const urlapi = apiUrl + `/reserve/` + id;
     axios
       .get(urlapi)
       .then((res) => {
         if (res) {
           res.data.reserve.map((result) => {
-            console.log(result)
+            console.log(result);
             setReservData(result);
           });
         }
@@ -60,6 +69,7 @@ function ReserveDetail() {
       .get(urlapi)
       .then((res) => {
         setOrderList(res.data);
+        setLoading(false);
       })
       .catch((err) => console.log(err));
   };
@@ -310,6 +320,14 @@ function ReserveDetail() {
   };
   return (
     <Grid alignItems="center" justifyContent="space-between">
+      {loading && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={loading}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
         <DialogTitle id="responsive-dialog-title">{'แจ้งเตือน'}</DialogTitle>
         <DialogContent>
@@ -324,10 +342,10 @@ function ReserveDetail() {
           </Button>
         </DialogActions>
       </Dialog>
-      <Grid container spacing={3} rowSpacing={2} columnSpacing={2.75}>
+      <Grid container spacing={3} rowSpacing={1} columnSpacing={1.75}>
         <Grid item xs={12} lg={8}>
           <MainCard>
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               <Grid item xs={12}>
                 <Typography variant="h5">ข้อมูลจองคิวรับสินค้า</Typography>
                 <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
@@ -362,7 +380,7 @@ function ReserveDetail() {
               </Grid>
 
               <Grid item xs={12}>
-                <Divider sx={{ mb: { xs: 0, sm: 0 }, mt: 0 }} />
+                <Divider sx={{ p: 0 }} />
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="body1">
@@ -372,8 +390,8 @@ function ReserveDetail() {
 
               <Grid item xs={12}>
                 {orderList.map((order, index) => (
-                  <Grid item xs={12} key={index} sx={{mb:2}}>
-                    <Grid container spacing={3} sx={{ mb: '15px' }}>
+                  <Grid item xs={12} key={index} sx={{ mb: 2 }}>
+                    <Grid container spacing={2} sx={{ mb: '15px' }}>
                       <Grid item xs={6}>
                         <Typography variant="body1">
                           <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
@@ -424,10 +442,30 @@ function ReserveDetail() {
                   เบอร์โทรศัพท์ :{reserveData.mobile_no}
                 </Typography>
               </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body1" gutterBottom>
-                  เลขที่ใบขับขี่ :{reserveData.license_no}
+
+              <Grid item xs={12}>
+                <Divider sx={{ p: 0 }} />
+              </Grid>
+              <Grid item xs={12} align="center">
+                <Typography variant="h5" gutterBottom>
+                  ข้อมูลการรับสินค้า
                 </Typography>
+
+                <Grid item xs={12} align="center">
+                  <Divider sx={{ p: 2 }} light />
+                  <img src={logo} alt="Company Logo" className="logo" style={{ width: '100px', textAlign: 'center' }} />
+                  <Divider sx={{ p: 2 }} light />
+                </Grid>
+
+                <Grid item xs={12} align="center">
+                  <QRCode value={prurl} className="qr-code" size={128} />
+                  <Divider sx={{ p: 2 }} light />
+
+                  <Typography variant="body2" gutterBottom>
+                    {prurl}
+                  </Typography>
+                  <Divider sx={{ p: 2 }} light />
+                </Grid>
               </Grid>
             </Grid>
           </MainCard>
@@ -439,7 +477,7 @@ function ReserveDetail() {
                 color="success"
                 onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity, reserveData.brand_code)}
               >
-                ออกบัตรคิว {reserveData.reserve_id + ' - ' + reserveData.total_quantity + ' - ' + reserveData.brand_code}
+                ออกบัตรคิว
               </Button>
             )}
 
