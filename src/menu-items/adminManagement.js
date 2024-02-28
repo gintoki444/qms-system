@@ -9,14 +9,14 @@ const icons = {
 
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
 
-const management = {
+const adminManagement = {
   id: 'management',
   title: 'การจัดการข้อมูล',
   type: 'group',
-  roles: 5,
+  roles: 8,
   children: [
     {
-      id: 'company',
+      id: 'admincompany',
       title: 'ข้อมูลร้านค้า/บริษัท',
       type: 'item',
       url: '/company',
@@ -25,7 +25,7 @@ const management = {
       // breadcrumbs: false
     },
     {
-      id: 'car',
+      id: 'admincar',
       title: 'ข้อมูลรถ',
       type: 'item',
       url: '/car',
@@ -34,7 +34,7 @@ const management = {
       // breadcrumbs: false
     },
     {
-      id: 'drivers',
+      id: 'admindrivers',
       title: 'ข้อมูลคนขับรถ',
       type: 'item',
       url: '/drivers',
@@ -43,14 +43,14 @@ const management = {
       // breadcrumbs: false
     },
     {
-      id: 'userReserves',
+      id: 'adminReserves',
       title: 'ข้อมูลการจองคิว',
       type: 'item',
       url: '/reserve',
       icon: icons.BookOutlined
     },
     {
-      id: 'userQueue',
+      id: 'adminQueue',
       title: 'ข้อมูลคิว',
       type: 'item',
       url: '/queues',
@@ -59,4 +59,4 @@ const management = {
   ]
 };
 
-export default management;
+export default adminManagement;

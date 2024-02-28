@@ -1,11 +1,9 @@
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import moment from 'moment';
 
 // get queue api
-const apiUrl = process.env.REACT_APP_API_URL;
 import * as queueRequest from '_api/queueReques';
 
 // material-ui
@@ -17,23 +15,17 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  ButtonGroup,
   Button,
   Chip,
   Tooltip,
   Typography,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   CircularProgress
 } from '@mui/material';
 
 import {
-  ProfileOutlined,
+  ProfileOutlined
   // EditOutlined
-  DeleteOutlined
+  // DeleteOutlined
 } from '@ant-design/icons';
 
 const currentDate = moment(new Date()).format('YYYY-MM-DD');
@@ -173,10 +165,7 @@ QueueStatus.propTypes = {
   status: PropTypes.string
 };
 
-export default function QueueTable() {
-  const [open, setOpen] = useState(false);
-  const userRoles = useSelector((state) => state.auth.roles);
-
+export default function QueueStepTable() {
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([]);
   const [order] = useState('asc');
@@ -200,91 +189,12 @@ export default function QueueTable() {
     }
   };
 
-  // ยกเลิกข้อมูลการจองคิว
-  const [reserve_id, setReserve_id] = useState(false);
-  const [id_del, setDel] = useState(0);
-  const [textnotify, setText] = useState('');
-
-  const handleClickOpen = (queue_id, reserve_id, step1_status) => {
-    if (step1_status === 'processing' || step1_status === 'completed') {
-      alert('คิวนี้ถูกเรียกแล้ว! ไม่สามารถลบข้อมูลนี้ได้');
-      return;
-    }
-    setReserve_id(reserve_id);
-    setText('ลบข้อมูล');
-    setDel(queue_id);
-    setOpen(true);
-  };
-
-  const handleClose = (flag) => {
-    if (flag === 1) {
-      deteteQueue(id_del);
-      //update = waiting การจองเมื่อลบคิว queue
-      updateReserveStatus(reserve_id);
-    }
-    setOpen(false);
-  };
-
-  const deteteQueue = (queueId) => {
-    //ลบคิว
-    var requestOptions = {
-      method: 'DELETE',
-      redirect: 'follow'
-    };
-
-    fetch(apiUrl + '/deletequeuestep/' + queueId, requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        if (result['status'] === 'ok') {
-          getQueue();
-        }
-      })
-      .catch((error) => console.log('error', error));
-  };
-
-  const updateReserveStatus = (reserve_id) => {
-    var myHeaders = new Headers();
-    myHeaders.append('Content-Type', 'application/json');
-
-    var raw = JSON.stringify({
-      status: 'waiting'
-    });
-
-    var requestOptions = {
-      method: 'PUT',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow'
-    };
-
-    fetch(apiUrl + '/updatereservestatus/' + reserve_id, requestOptions)
-      .then((response) => response.json())
-      .catch((error) => console.log('error', error));
-  };
-
   const navigate = useNavigate();
   const updateDrivers = (id) => {
     navigate('/queues/detail/' + id);
   };
   return (
     <Box>
-      <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-        <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }}>
-          {'แจ้งเตือน'}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText style={{ fontFamily: 'kanit' }}>ต้องการ {textnotify} หรือไม่?</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={() => handleClose(0)} style={{ fontFamily: 'kanit' }}>
-            ยกเลิก
-          </Button>
-          <Button onClick={() => handleClose(1)} autoFocus style={{ fontFamily: 'kanit' }}>
-            ยืนยัน
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       <TableContainer
         sx={{
           width: '100%',
@@ -327,38 +237,17 @@ export default function QueueTable() {
                     <TableCell align="center">{row.step3_status !== 'none' ? <QueueStatus status={row.step3_status} /> : '-'}</TableCell>
                     <TableCell align="left">{row.step4_status !== 'none' ? <QueueStatus status={row.step4_status} /> : '-'}</TableCell>
                     <TableCell align="center">
-                      <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
-                        <Tooltip title="รายละเอียด">
-                          <span>
-                            <Button
-                              sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                              variant="contained"
-                              size="medium"
-                              color="info"
-                              onClick={() => updateDrivers(row.queue_id)}
-                            >
-                              <ProfileOutlined />
-                            </Button>
-                          </span>
-                        </Tooltip>
-
-                        {userRoles && userRoles === 10 && (
-                          <Tooltip title="ลบ">
-                            <span>
-                              <Button
-                                variant="contained"
-                                sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                size="medium"
-                                disabled={row.status === 'completed'}
-                                color="error"
-                                onClick={() => handleClickOpen(row.queue_id, row.reserve_id, row.step1_status)}
-                              >
-                                <DeleteOutlined />
-                              </Button>
-                            </span>
-                          </Tooltip>
-                        )}
-                      </ButtonGroup>
+                      <Tooltip title="รายละเอียด">
+                        <Button
+                          sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                          variant="contained"
+                          size="medium"
+                          color="info"
+                          onClick={() => updateDrivers(row.queue_id)}
+                        >
+                          <ProfileOutlined />
+                        </Button>
+                      </Tooltip>
                       {/* <Button 
                       sx={{ minWidth: '33px!important', p: '6px 0px' }}
                       variant="contained" size="medium" color="error" onClick={() => deleteDrivers(row.reserve_id)}>

@@ -29,6 +29,7 @@ import {
   DialogContentText,
   DialogActions,
   Typography,
+  Backdrop,
   CircularProgress
 } from '@mui/material';
 
@@ -42,19 +43,19 @@ import axios from 'axios';
 const headCells = [
   {
     id: 'dateReserve',
-    align: 'left',
+    align: 'center',
     disablePadding: true,
     label: 'วันที่จอง'
   },
   {
     id: 'dateQueue',
-    align: 'left',
+    align: 'center',
     disablePadding: true,
     label: 'วันที่เข้ารับ'
   },
   {
     id: 'registration_no',
-    align: 'left',
+    align: 'center',
     disablePadding: true,
     label: 'ทะเบียนรถ'
   },
@@ -100,7 +101,7 @@ const headCells = [
     id: 'totalQuantity',
     align: 'right',
     disablePadding: false,
-    label: 'จำนวน'
+    label: 'จำนวน (ตัน)'
   },
   {
     id: 'status',
@@ -177,8 +178,9 @@ OrderStatus.propTypes = {
   status: PropTypes.string
 };
 
-export default function ReserveTable() {
+export default function ReserveTable({ startDate, endDate }) {
   const [loading, setLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
   const [items, setItems] = useState([]);
   const [order] = useState('asc');
@@ -187,16 +189,15 @@ export default function ReserveTable() {
   const userId = localStorage.getItem('user_id');
 
   useEffect(() => {
-    console.log('userRoles :', userRoles);
     getReserve();
-  }, []);
+  }, [startDate, endDate]);
 
   const getReserve = () => {
     setLoading(true);
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
-      url: apiUrl + '/allreserves/' + userId,
+      url: apiUrl + '/allreservespickup2?user_id=' + userId + '&pickup_date1=' + startDate + '&pickup_date2=' + endDate,
       headers: {}
     };
 
@@ -205,8 +206,6 @@ export default function ReserveTable() {
       .then((response) => {
         setItems(response.data);
         setLoading(false);
-
-        // setItems(response.data.filter((x) => x.status !== 'completed'));
       })
       .catch((error) => {
         console.log(error);
@@ -226,12 +225,9 @@ export default function ReserveTable() {
       headers: {}
     };
 
-    console.log(config.url);
-
     axios
       .request(config)
       .then((result) => {
-        console.log(result);
         if (result.data.status === 'ok') {
           alert(result.data.message);
           getDrivers();
@@ -275,6 +271,7 @@ export default function ReserveTable() {
   const handleClose = (flag) => {
     if (flag === 1) {
       //click มาจากการลบ
+      setSaveLoading(true);
       addQueue(reserve_id, total_quantity);
     }
     setOpen(false);
@@ -291,9 +288,7 @@ export default function ReserveTable() {
     return await new Promise((resolve) => {
       axios.request(config).then((response) => {
         if (response.data.status === 'ok') {
-          console.log('response.data.queuecount :', response.data.queuecount);
           response.data.queuecount.map((data) => {
-            console.log('data :', data.queuecount);
             resolve(data.queuecount);
           });
         } else {
@@ -324,8 +319,6 @@ export default function ReserveTable() {
           created_at: currentDate,
           updated_at: currentDate
         });
-
-        console.log(raw);
 
         var requestOptions = {
           method: 'POST',
@@ -368,9 +361,7 @@ export default function ReserveTable() {
 
     fetch(apiUrl + '/updatereservestatus/' + reserve_id, requestOptions)
       .then((response) => response.json())
-      .then((result) => {
-        console.log('updatereservestatus: ' + result);
-      })
+      .then(() => {})
       .catch((error) => console.log('error', error));
   };
 
@@ -404,9 +395,11 @@ export default function ReserveTable() {
         if (total_quantity > 0) {
           //สร้างข้อมูลคิว
           const queue_number = (await getQueuesCount()) + 1;
-          //console.log(queue_number)
+
           const queue_id_createf = await createQueuef(id, brand_code, queue_number);
-          console.log('queue_id_createf: ' + queue_id_createf);
+
+          //แจ้งเตือนหลังจากสร้าง Queue แล้ว
+          await getMessageCreateQueue(queue_id_createf, id);
 
           //สร้าง step 1-4
           //createStep(queue_id_createf)
@@ -416,13 +409,114 @@ export default function ReserveTable() {
         }
       } else {
         //alert("สร้างคิวแล้ว")
-        const queue_id = await getQueueIdf(id);
-        window.location.href = '/queue/' + queue_id + '/' + id;
+        // const queue_id = await getQueueIdf(id);
+        window.location.href = '/queues/detail/' + queue_id;
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
+
+  //สร้าง ข้อความ Line notification
+  const getMessageCreateQueue = async (queue_id, reserve_id) => {
+    const queue_info = await getQueue(queue_id);
+    const order_info = await getOrder(reserve_id);
+
+    // การดึงข้อมูลสินค้าและจำนวนสินค้าแต่ละชิ้น
+    const orderProducts = order_info.map((order) => {
+      // เริ่มต้นด้วยข้อความว่าง
+      let message_order = '';
+
+      // สร้างข้อความสำหรับแต่ละสินค้า
+      order.items.forEach((item) => {
+        message_order += 'product: ' + item.name + ', qty: ' + `${parseFloat(item.quantity).toFixed(3)}` + ' ตัน' + '\n';
+      });
+
+      // คืนค่าข้อความที่สร้างขึ้นมา
+      return message_order;
+    });
+
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+
+    var link = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+    link = link + '/queues/detail/' + queue_id;
+
+    const messageLine = queue_info + 'รายการสินค้า:-' + '\n' + orderProducts + '\n' + link;
+    lineNotify(messageLine);
+  };
+
+  function getQueue(id) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        var requestOptions = {
+          method: 'GET',
+          redirect: 'follow'
+        };
+
+        fetch(apiUrl + '/queue/' + id, requestOptions)
+          .then((response) => response.json())
+          .then((result) => {
+            // setQueueToken(result[0]['token'])
+            // setQueues(result)
+
+            const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+            const token_m = result[0]['token'];
+            const company_name_m = 'บริษัท: ' + result[0]['company_name'];
+            const registration_no_m = 'ทะเบียนรถ: ' + result[0]['registration_no'];
+            const driver_name_m = 'คนขับรถ: ' + result[0]['driver_name'];
+            const driver_mobile_m = 'เบอร์โทร: ' + result[0]['mobile_no'];
+            const product_name_m = '';
+
+            const textMessage =
+              'แจ้งเตือนการสร้างคิว:- ' +
+              '\n' +
+              'วันที่: ' +
+              currentDate +
+              '\n' +
+              '\n' +
+              'หมายเลขคิว: ' +
+              token_m +
+              '\n' +
+              company_name_m +
+              '\n' +
+              registration_no_m +
+              '\n' +
+              driver_name_m +
+              '\n' +
+              driver_mobile_m +
+              '\n' +
+              product_name_m +
+              '\n';
+
+            // setMessage(textMessage)
+            resolve(textMessage);
+          })
+          .catch((error) => console.log('error', error));
+      }, 100);
+    });
+  }
+
+  function getOrder(id) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        var requestOptions = {
+          method: 'GET',
+          redirect: 'follow'
+        };
+
+        fetch(apiUrl + '/orders/' + id, requestOptions)
+          .then((response) => response.json())
+          .then((result) => {
+            // setOrders(result)
+            resolve(result);
+          })
+          .catch((error) => console.log('error', error));
+        //resolve('Async operation completed');
+      }, 100);
+    });
+  }
 
   //สร้าง ขั้นตอนการรับสินค้า
   function createStepsf(queue_id) {
@@ -485,8 +579,8 @@ export default function ReserveTable() {
 
         fetch(apiUrl + '/transactions', requestOptions)
           .then((response) => response.json())
-          .then((result) => {
-            console.log(result);
+          .then(() => {
+            setLoading(false);
             window.location.href = '/queues/detail/' + queue_id;
           })
           .catch((error) => console.log('error', error));
@@ -496,10 +590,34 @@ export default function ReserveTable() {
     });
   }
 
+  const lineNotify = (message) => {
+    const myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+
+    const raw = JSON.stringify({
+      message: message
+    });
+
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    };
+
+    fetch(apiUrl + '/line-notify', requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => console.error(error));
+  };
+
   // ==============================|| Reserve Detail ||============================== //
   const reserveDetail = (id) => {
     navigate('/reserve/detail/' + id);
   };
+
   return (
     <Box>
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
@@ -516,6 +634,15 @@ export default function ReserveTable() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {saveLoading && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={saveLoading}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
 
       <TableContainer
         sx={{
@@ -580,7 +707,7 @@ export default function ReserveTable() {
                           </span>
                         </Tooltip>
 
-                        {userRoles === 8 && (
+                        {userRoles === 10 && (
                           <Tooltip title="สร้างคิว">
                             <span>
                               <Button

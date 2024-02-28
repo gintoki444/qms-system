@@ -4,7 +4,18 @@ import React, { useState, useEffect } from 'react';
 // import { Link as RouterLink } from 'react-router-dom';
 
 // material-ui
-import { Box, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Chip } from '@mui/material';
+import {
+  Box,
+  Stack,
+  Table,
+  // TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography
+  // Chip
+} from '@mui/material';
 
 // third-party
 // import NumberFormat from 'react-number-format';
@@ -164,8 +175,11 @@ export default function QueuesTable() {
   const [items, setItems] = useState([]);
   const processingGet = () => {
     try {
+      console.log(items);
       getQueues.getStep2Processing().then((response) => {
+        console.log(response);
         setItems(response);
+        console.log(items);
       });
     } catch (e) {
       console.log(e);
@@ -196,23 +210,24 @@ export default function QueuesTable() {
         >
           <QueuesTableHead order={order} orderBy={orderBy} />
 
-          <TableBody>
-            {items.map((row, index) => {
-              return (
-                <TableRow key={index}>
-                  <TableCell align="center">
-                    <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
-                  </TableCell>
-                  <TableCell align="left">{row.registration_no}</TableCell>
-                  <TableCell align="left">{row.driver_name}</TableCell>
-                  <TableCell align="left">{row.driver_mobile}</TableCell>
-                  <TableCell align="left">{row.company_name}</TableCell>
-                  <TableCell align="center">
-                    <Chip color="warning" label={row.status} />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+          {/* <TableBody>
+            {items &&
+              items.map((row, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell align="center">
+                      <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
+                    </TableCell>
+                    <TableCell align="left">{row.registration_no}</TableCell>
+                    <TableCell align="left">{row.driver_name}</TableCell>
+                    <TableCell align="left">{row.driver_mobile}</TableCell>
+                    <TableCell align="left">{row.company_name}</TableCell>
+                    <TableCell align="center">
+                      <Chip color="warning" label={row.status} />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
 
             {items.length == 0 && (
               <TableRow>
@@ -221,7 +236,7 @@ export default function QueuesTable() {
                 </TableCell>
               </TableRow>
             )}
-          </TableBody>
+          </TableBody> */}
           {/* <TableBody>
             {stableSort(rows, getComparator(order, orderBy)).map((row, index) => {
               const isItemSelected = isSelected(row.trackingNo);

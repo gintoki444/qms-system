@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 // third party
 import * as Yup from 'yup';
@@ -28,6 +29,7 @@ import MainCard from 'components/MainCard';
 import moment from 'moment';
 
 function UpdateCompany() {
+
   const [open, setOpen] = useState(false);
   let [initialValue, setInitialValue] = useState({
     name: '',
@@ -105,7 +107,7 @@ function UpdateCompany() {
   };
 
   // =============== บันทึกข้อมูล ===============//
-  const userId = localStorage.getItem('user_id');
+  const userId = useSelector((state) => state.auth.user_id);
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     const formData = new FormData();

@@ -8,11 +8,11 @@ const icons = {
 
 // ==============================|| MENU ITEMS - DASHBOARD ||============================== //
 
-const dashboard = {
+const dashboardUser = {
   id: 'group-dashboard',
   title: '',
   type: 'group',
-  roles: 10,
+  roles: 5,
   children: [
     {
       id: 'dashboard',
@@ -25,4 +25,4 @@ const dashboard = {
   ]
 };
 
-export default dashboard;
+export default dashboardUser;

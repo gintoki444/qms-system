@@ -37,6 +37,7 @@ function ReservePrint() {
   const location = useLocation();
 
   const receivedID = location.state?.reserveId;
+  const backLink = location.state?.link;
   const prurl = window.location.origin + '/reserve/update/' + receivedID;
 
   //pickup_date
@@ -111,7 +112,7 @@ function ReservePrint() {
   };
 
   const backTo = () => {
-    navigate('/reserve/detail/' + receivedID);
+    navigate(backLink);
   };
   return (
     <>
@@ -219,6 +220,14 @@ function ReservePrint() {
             </Grid>
 
             <Grid item xs={12}>
+              <Typography variant="h5">
+                <u>
+                  <strong>ข้อมูลรายการสั่งซื้อสินค้า </strong>
+                </u>
+                <Divider sx={{ mb: 1 }} light />
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
               {orders.map((order) => (
                 <Grid container rowSpacing={0} columnSpacing={2.75} key={order.order_id}>
                   <Grid item xs={6}>
@@ -238,12 +247,12 @@ function ReservePrint() {
                       <strong>รายละเอียด : </strong> {order.description}
                     </Typography>
                   </Grid>
-                  <Grid item xs={12} sx={{ mt: 1 }}>
-                    <Typography variant="h5" gutterBottom>
+                  <Grid item xs={12} sx={{ mt: 1, ml: 1, mr: 1 }}>
+                    <Typography variant="body1" gutterBottom>
                       <strong>ข้อมูลสินค้า</strong>
                     </Typography>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} sx={{ ml: 1, mr: 1 }}>
                     {order.items.map((item) => (
                       <Grid container rowSpacing={0} columnSpacing={2.75} key={item.item_id}>
                         <Grid item xs={6}>

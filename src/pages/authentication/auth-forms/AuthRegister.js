@@ -87,8 +87,8 @@ const AuthRegister = () => {
         firstname: values.firstname,
         lastname: values.lastname,
         company_id: '',
-        role_id: '3',
-        role: 'Subscriber',
+        role_id: '',
+        role: '',
         country: '',
         email: values.email,
         avatar: '',
@@ -109,11 +109,9 @@ const AuthRegister = () => {
 
             axios.post(apiUrl + '/login', loginData).then((login) => {
               if (login.data.status === 'ok') {
-                // To store data
-                localStorage.setItem('token', login.data.token);
-                // เก็บค่าไว้ใช้ใยการบันทึกมูลใน application
+                // To store datan);
+                localStorage.setItem('token', res.data.token);
                 localStorage.setItem('user_id', res.data.user_id);
-                localStorage.setItem('email', res.data.email);
                 window.location = '/';
               }
             });

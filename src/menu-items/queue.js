@@ -1,5 +1,5 @@
 // assets
-import { SafetyOutlined, MenuUnfoldOutlined, MenuFoldOutlined, InboxOutlined} from '@ant-design/icons';
+import { SafetyOutlined, MenuUnfoldOutlined, MenuFoldOutlined, InboxOutlined } from '@ant-design/icons';
 
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
 
@@ -7,7 +7,7 @@ const queues = {
   id: 'queues',
   title: 'จัดการคิวรับสินค้า',
   type: 'group',
-  roles: '8',
+  roles: 9,
   children: [
     {
       id: 'weighEmpty',

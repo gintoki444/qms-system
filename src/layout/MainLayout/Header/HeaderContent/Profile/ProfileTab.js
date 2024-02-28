@@ -7,7 +7,13 @@ import { useTheme } from '@mui/material/styles';
 import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 
 // assets
-import { EditOutlined, ProfileOutlined, LogoutOutlined, UserOutlined, WalletOutlined } from '@ant-design/icons';
+import {
+  // EditOutlined,
+  // ProfileOutlined,
+  LogoutOutlined
+  // UserOutlined
+  // WalletOutlined
+} from '@ant-design/icons';
 
 // ==============================|| HEADER PROFILE - PROFILE TAB ||============================== //
 
@@ -16,31 +22,33 @@ const ProfileTab = () => {
   const { logout } = useAuth();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const handleListItemClick = (event, index) => {
-    setSelectedIndex(index);
-  };
+  // setSelectedIndex(0)
+  // const handleListItemClick = (event, index) => {
+  //   setSelectedIndex(index);
+  // };
 
   const handleClickLogout = () => {
     // Perform logout logic
+    setSelectedIndex();
     logout();
   };
 
   return (
     <List component="nav" sx={{ p: 0, '& .MuiListItemIcon-root': { minWidth: 32, color: theme.palette.grey[500] } }}>
-      <ListItemButton selected={selectedIndex === 0} onClick={(event) => handleListItemClick(event, 0)}>
+      {/* <ListItemButton selected={selectedIndex === 0} onClick={(event) => handleListItemClick(event, 0)}>
         <ListItemIcon>
           <EditOutlined />
         </ListItemIcon>
         <ListItemText primary="Edit Profile" />
-      </ListItemButton>
-      <ListItemButton selected={selectedIndex === 1} onClick={(event) => handleListItemClick(event, 1)}>
+      </ListItemButton> */}
+      {/* <ListItemButton selected={selectedIndex === 1} onClick={(event) => handleListItemClick(event, 1)}>
         <ListItemIcon>
           <UserOutlined />
         </ListItemIcon>
         <ListItemText primary="View Profile" />
-      </ListItemButton>
+      </ListItemButton> */}
 
-      <ListItemButton selected={selectedIndex === 3} onClick={(event) => handleListItemClick(event, 3)}>
+      {/* <ListItemButton selected={selectedIndex === 3} onClick={(event) => handleListItemClick(event, 3)}>
         <ListItemIcon>
           <ProfileOutlined />
         </ListItemIcon>
@@ -51,7 +59,7 @@ const ProfileTab = () => {
           <WalletOutlined />
         </ListItemIcon>
         <ListItemText primary="Billing" />
-      </ListItemButton>
+      </ListItemButton> */}
       <ListItemButton selected={selectedIndex === 2} onClick={handleClickLogout}>
         <ListItemIcon>
           <LogoutOutlined />

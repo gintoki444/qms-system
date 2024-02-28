@@ -275,6 +275,10 @@ function UpdateReserve() {
     total_quantity: reservationData.total_quantity
   };
 
+  const reservePrint = (id) => {
+    navigate('/prints/reserve', { state: { reserveId: id, link: '/reserve/update/' + id } });
+  };
+
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {open && (
@@ -462,11 +466,12 @@ function UpdateReserve() {
                           placeholder="เลือกคลังสินค้า"
                           fullWidth
                         >
-                          {warehousesList.map((warehouses) => (
-                            <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
-                              {warehouses.description}
-                            </MenuItem>
-                          ))}
+                          {warehousesList &&
+                            warehousesList.map((warehouses) => (
+                              <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
+                                {warehouses.description}
+                              </MenuItem>
+                            ))}
                         </TextField>
                         {touched.company && errors.company && (
                           <FormHelperText error id="helper-text-company-car">
@@ -482,6 +487,7 @@ function UpdateReserve() {
                         <OutlinedInput
                           id="total_quantity"
                           type="text"
+                          sx={{ fontWeight: 600 }}
                           disabled
                           value={parseFloat(values.total_quantity).toFixed(4)}
                           name="color"
@@ -526,8 +532,7 @@ function UpdateReserve() {
                                 </Typography>
                               </Grid>
                             </Grid>
-                            <Grid item xs={12} md={12}>
-                            </Grid>
+                            <Grid item xs={12} md={12}></Grid>
                             <Grid item xs={12} md={6}>
                               <Table size="small">
                                 <TableHead>
@@ -557,21 +562,25 @@ function UpdateReserve() {
                             <strong>ไม่มีข้อมูล </strong>
                           </Typography>
                         )}
+                        <Stack direction="row" alignItems="center" spacing={0}>
+                          <Button size="mediam" variant="outlined" color="success" onClick={() => addOrder()}>
+                            เพิ่มข้อมูลสินค้า
+                          </Button>
+                        </Stack>
                       </Grid>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Stack direction="row" alignItems="center" spacing={0}>
-                        <Button size="mediam" variant="outlined" color="success" onClick={() => addOrder()}>
-                          เพิ่มข้อมูลสินค้า
-                        </Button>
-                      </Stack>
                     </Grid>
                   </Grid>
 
                   <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
                     <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+
+                    {orderList.length > 0 && (
+                      <Button size="mediam" variant="contained" color="info" onClick={() => reservePrint(id)}>
+                        พิมพ์
+                      </Button>
+                    )}
                     <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
-                      แก้ไขข้อมูลการจอง
+                      บันทึกข้อมูลการจอง
                     </Button>
 
                     <Button

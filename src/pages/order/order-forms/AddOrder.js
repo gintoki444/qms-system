@@ -54,7 +54,6 @@ function AddOrder() {
         if (res) {
           res.data.reserve.map((result) => {
             setReservationData(result);
-            console.log('setReservationData: ', result);
           });
         }
       })
@@ -87,8 +86,8 @@ function AddOrder() {
   // =============== useEffect ===============//
   useEffect(() => {
     // getOrder();
+    getReserve();
     getProduct();
-    getReserve(); 
   }, [id]);
 
   // =============== Validate Forms ===============//
@@ -249,214 +248,230 @@ function AddOrder() {
   };
   return (
     <Grid alignItems="center" justifyContent="space-between">
-      <Grid md={12} sx={{ m: 3 }}>
-        <Typography variant="h4">เลขที่การจอง: {id} </Typography>
-        <Typography variant="p" sx={{ pt: 5 }}>
-          <strong>ข้อมูลการสั่งซื้อ</strong>: {reservationData.company}{' '}
-        </Typography>
-      </Grid>
-      <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-        <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits}>
-          {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors }) => (
-            <form noValidate onSubmit={handleSubmit}>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Typography variant="h5">เพิ่มข้อมูลการสั่งซื้อสินค้า</Typography>
-                  <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>เลขที่คำสั่งซื้อ *</InputLabel>
-                    <OutlinedInput
-                      id="ref_order_id"
-                      type="text"
-                      value={values.ref_order_id}
-                      name="ref_order_id"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="เลขที่คำสั่งซื้อ *"
-                      error={Boolean(touched.ref_order_id && errors.ref_order_id)}
-                    />
+      <Grid container rowSpacing={1} columnSpacing={1.75}>
+        <Grid item xs={12} lg={12}>
+          <Grid sx={{ m: 3, ml: 0 }} container spacing={1}>
+            <Grid item xs={12}>
+              <Typography variant="h4">เลขที่การจอง: {id} </Typography>
+              <Divider sx={{ mb: { xs: 1, sm: 2 }, mt: 1 }} />
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="p" sx={{ pt: 5 }}>
+                <strong>ร้านค้า/บริษัท</strong>: {reservationData.company}{' '}
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="p" sx={{ pt: 2 }}>
+                <strong>วันที่เข้ารับสินค้า</strong>: {reservationData.pickup_date}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item xs={12} lg={12}>
+          <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
+            <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits}>
+              {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors }) => (
+                <form noValidate onSubmit={handleSubmit}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <Typography variant="h5">เพิ่มข้อมูลการสั่งซื้อสินค้า</Typography>
+                      <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
+                        <InputLabel>เลขที่คำสั่งซื้อ *</InputLabel>
+                        <OutlinedInput
+                          id="ref_order_id"
+                          type="text"
+                          value={values.ref_order_id}
+                          name="ref_order_id"
+                          onBlur={handleBlur}
+                          onChange={handleChange}
+                          placeholder="เลขที่คำสั่งซื้อ *"
+                          error={Boolean(touched.ref_order_id && errors.ref_order_id)}
+                        />
 
-                    {touched.ref_order_id && errors.ref_order_id && (
-                      <FormHelperText error id="helper-text-ref_order_id">
-                        {errors.ref_order_id}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+                        {touched.ref_order_id && errors.ref_order_id && (
+                          <FormHelperText error id="helper-text-ref_order_id">
+                            {errors.ref_order_id}
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                    </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>วันที่สั่งซื้อสินค้า*</InputLabel>
-                    <TextField
-                      required
-                      fullWidth
-                      type="date"
-                      id="order_date"
-                      name="order_date"
-                      onBlur={handleBlur}
-                      value={values.order_date}
-                      onChange={handleChange}
-                    />
-                    {touched.order_date && errors.order_date && (
-                      <FormHelperText error id="helper-text-order_date">
-                        {errors.order_date}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
+                        <InputLabel>วันที่สั่งซื้อสินค้า*</InputLabel>
+                        <TextField
+                          required
+                          fullWidth
+                          type="date"
+                          id="order_date"
+                          name="order_date"
+                          onBlur={handleBlur}
+                          value={values.order_date}
+                          onChange={handleChange}
+                        />
+                        {touched.order_date && errors.order_date && (
+                          <FormHelperText error id="helper-text-order_date">
+                            {errors.order_date}
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                    </Grid>
 
-                <Grid item xs={12} md={12}>
-                  <Stack spacing={1}>
-                    <InputLabel>รายละเอียดวันสั่งซื้อสินค้า *</InputLabel>
-                    <OutlinedInput
-                      id="description"
-                      type="description"
-                      value={values.description}
-                      name="description"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="รายละเอียดการสั่งซื้อสินค้า *"
-                      error={Boolean(touched.description && errors.description)}
-                    />
-                    {touched.description && errors.description && (
-                      <FormHelperText error id="helper-text-description">
-                        {errors.description}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+                    <Grid item xs={12} md={12}>
+                      <Stack spacing={1}>
+                        <InputLabel>รายละเอียดวันสั่งซื้อสินค้า *</InputLabel>
+                        <OutlinedInput
+                          id="description"
+                          type="description"
+                          value={values.description}
+                          name="description"
+                          onBlur={handleBlur}
+                          onChange={handleChange}
+                          placeholder="รายละเอียดการสั่งซื้อสินค้า *"
+                          error={Boolean(touched.description && errors.description)}
+                        />
+                        {touched.description && errors.description && (
+                          <FormHelperText error id="helper-text-description">
+                            {errors.description}
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                    </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>สินค้า</TableCell>
-                        <TableCell align="left">จำนวน (ตัน)</TableCell>
-                        <TableCell align="center">Action</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {items.map((item, index) => (
-                        <TableRow key={index}>
-                          <TableCell>
-                            <FormControl sx={{ m: 1, minWidth: 200 }} size="small">
-                              <Select
-                                labelId="demo-simple-select-label"
-                                id={`items.${index}.product_id`}
-                                placeholder="สินค้า"
-                                size="small"
-                                value={item.product_id}
-                                onChange={(e) => handleInputChange(e, index)}
-                                name={`product_id`}
-                              >
-                                {productList.map((product) => (
-                                  <MenuItem key={product.product_id} value={product.product_id}>
-                                    {product.name}
-                                  </MenuItem>
-                                ))}
-                              </Select>
+                    <Grid item xs={12} md={6}>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>สินค้า</TableCell>
+                            <TableCell align="left">จำนวน (ตัน)</TableCell>
+                            <TableCell align="center">Action</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {items.map((item, index) => (
+                            <TableRow key={index}>
+                              <TableCell>
+                                <FormControl sx={{ m: 1, minWidth: 200 }} size="small">
+                                  <Select
+                                    labelId="demo-simple-select-label"
+                                    id={`items.${index}.product_id`}
+                                    placeholder="สินค้า"
+                                    size="small"
+                                    value={item.product_id}
+                                    onChange={(e) => handleInputChange(e, index)}
+                                    name={`product_id`}
+                                  >
+                                    {productList.map((product) => (
+                                      <MenuItem key={product.product_id} value={product.product_id}>
+                                        {product.name}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
 
-                              {touched.items && touched.items[index] && errors.items && errors.items[index] && (
-                                <>
-                                  {touched.items[index].product_id && errors.items[index].product_id && (
-                                    <FormHelperText error id="helper-text-description">
-                                      {errors.items[index].product_id}
-                                    </FormHelperText>
+                                  {touched.items && touched.items[index] && errors.items && errors.items[index] && (
+                                    <>
+                                      {touched.items[index].product_id && errors.items[index].product_id && (
+                                        <FormHelperText error id="helper-text-description">
+                                          {errors.items[index].product_id}
+                                        </FormHelperText>
+                                      )}
+                                    </>
                                   )}
-                                </>
-                              )}
-                              {/* {touched.items && touched.items[index] && errors.items && errors.items[index] && (
+                                  {/* {touched.items && touched.items[index] && errors.items && errors.items[index] && (
                                 <FormHelperText error id="helper-text-description">
                                   {errors.items[index].product_id}
                                 </FormHelperText>
                               )} */}
-                            </FormControl>
-                          </TableCell>
-                          <TableCell>
-                            <TextField
-                              required
-                              value={item.quantity}
-                              onChange={(e) => handleInputChange(e, index)}
-                              name={`quantity`}
-                              autoComplete="quantity"
-                              size="small"
-                              type="number"
-                              inputProps={{ min: 1, step: 1, pattern: '^\\d*\\.?\\d{0,4}$' }}
-                              InputProps={{ inputMode: 'numeric' }}
-                            />
-                            {touched.items && touched.items[index] && errors.items && errors.items[index] && (
-                              <>
-                                {touched.items[index].quantity && errors.items[index].quantity && (
-                                  <FormHelperText error id="helper-text-description">
-                                    {errors.items[index].quantity}
-                                  </FormHelperText>
+                                </FormControl>
+                              </TableCell>
+                              <TableCell>
+                                <TextField
+                                  required
+                                  value={item.quantity}
+                                  onChange={(e) => handleInputChange(e, index)}
+                                  name={`quantity`}
+                                  autoComplete="quantity"
+                                  size="small"
+                                  type="number"
+                                  inputProps={{ min: 1, step: 1, pattern: '^\\d*\\.?\\d{0,4}$' }}
+                                  InputProps={{ inputMode: 'numeric' }}
+                                />
+                                {touched.items && touched.items[index] && errors.items && errors.items[index] && (
+                                  <>
+                                    {touched.items[index].quantity && errors.items[index].quantity && (
+                                      <FormHelperText error id="helper-text-description">
+                                        {errors.items[index].quantity}
+                                      </FormHelperText>
+                                    )}
+                                  </>
                                 )}
-                              </>
-                            )}
-                            {/* {touched.items && touched.items[index] && errors.items && errors.items[index] && (
+                                {/* {touched.items && touched.items[index] && errors.items && errors.items[index] && (
                               <FormHelperText error id="helper-text-description">
                                 {errors.items[index].quantity}
                               </FormHelperText>
                             )} */}
-                          </TableCell>
-                          <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                            {coutRowsProduct === index + 1 && (
-                              <Button
-                                size="mediam"
-                                color="info"
-                                sx={{ p: '6px 0', minWidth: '33px!important', fontSize: '24px' }}
-                                onClick={() => {
-                                  // items.push({ product_id: '', quantity: 0 });
-                                  addItem();
-                                }}
-                              >
-                                <PlusSquareOutlined />
-                              </Button>
-                            )}
+                              </TableCell>
+                              <TableCell align="center" sx={{ '& button': { m: 1 } }}>
+                                {coutRowsProduct === index + 1 && (
+                                  <Button
+                                    size="mediam"
+                                    color="info"
+                                    sx={{ p: '6px 0', minWidth: '33px!important', fontSize: '24px' }}
+                                    onClick={() => {
+                                      // items.push({ product_id: '', quantity: 0 });
+                                      addItem();
+                                    }}
+                                  >
+                                    <PlusSquareOutlined />
+                                  </Button>
+                                )}
 
-                            {coutRowsProduct > index + 1 && (
-                              <Button
-                                sx={{ p: '6px 0', minWidth: '33px!important', fontSize: '24px' }}
-                                onClick={() => removeItem(index)}
-                                size="mediam"
-                                color="error"
-                              >
-                                <MinusSquareOutlined />
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      <TableRow>
-                        <TableBody xs={12} sx={{ '& button': { m: 1 } }}></TableBody>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </Grid>
+                                {coutRowsProduct > index + 1 && (
+                                  <Button
+                                    sx={{ p: '6px 0', minWidth: '33px!important', fontSize: '24px' }}
+                                    onClick={() => removeItem(index)}
+                                    size="mediam"
+                                    color="error"
+                                  >
+                                    <MinusSquareOutlined />
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          <TableRow>
+                            <TableBody xs={12} sx={{ '& button': { m: 1 } }}></TableBody>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </Grid>
 
-                <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                  <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 1 }} />
-                  <Button disableElevation disabled={isSubmitting} size="large" type="submit" variant="contained" color="success">
-                    บันทึกข้อมูลสินค้า
-                  </Button>
-                  <Button
-                    size="large"
-                    variant="contained"
-                    color="error"
-                    onClick={() => {
-                      backToReserce();
-                    }}
-                  >
-                    ย้อนกลับ
-                  </Button>
-                </Grid>
-              </Grid>
-            </form>
-          )}
-        </Formik>
-      </MainCard>
+                    <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
+                      <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 1 }} />
+                      <Button disableElevation disabled={isSubmitting} size="large" type="submit" variant="contained" color="success">
+                        บันทึกข้อมูลสินค้า
+                      </Button>
+                      <Button
+                        size="large"
+                        variant="contained"
+                        color="error"
+                        onClick={() => {
+                          backToReserce();
+                        }}
+                      >
+                        ย้อนกลับ
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </form>
+              )}
+            </Formik>
+          </MainCard>
+        </Grid>
+      </Grid>
     </Grid>
   );
 }

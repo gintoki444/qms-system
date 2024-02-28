@@ -1,5 +1,8 @@
 import PropTypes from 'prop-types';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import * as userRequest from '_api/userRequest';
+import { useAuth } from 'components/AuthenUser';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -26,7 +29,7 @@ import ProfileTab from './ProfileTab';
 import SettingTab from './SettingTab';
 
 // assets
-import avatar1 from 'assets/images/users/avatar-1.png';
+import avatar1 from 'assets/images/users/avatar-blank.jpg';
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 
 // tab panel wrapper
@@ -54,9 +57,14 @@ function a11yProps(index) {
 // ==============================|| HEADER CONTENT - PROFILE ||============================== //
 
 const Profile = () => {
+  const userID = useSelector((state) => state.auth.user_id);
+  const userRoles = useSelector((state) => state.auth.roles);
+  const [userData, setUserData] = useState([]);
+  const { logout } = useAuth();
   const theme = useTheme();
 
   const handleLogout = async () => {
+    logout();
     // logout
   };
 
@@ -79,6 +87,23 @@ const Profile = () => {
     setValue(newValue);
   };
 
+  useEffect(() => {
+    getUser();
+  }, [userID, userRoles]);
+
+  const getUser = () => {
+    userRequest.getAlluserId(userID).then((response) => {
+      response.map((result) => {
+        console.log(`${result.role_id} - ${userRoles}`);
+        if (result.role_id != userRoles) {
+          logout();
+        } else {
+          setUserData(result);
+        }
+      });
+    });
+  };
+
   const iconBackColorOpen = 'grey.300';
 
   return (
@@ -98,7 +123,10 @@ const Profile = () => {
       >
         <Stack direction="row" spacing={2} alignItems="center" sx={{ p: 0.5 }}>
           <Avatar alt="profile user" src={avatar1} sx={{ width: 32, height: 32 }} />
-          <Typography variant="subtitle1">John Doe</Typography>
+          <Typography variant="subtitle1">
+            {' '}
+            {userData.firstname} {userData.lastname}{' '}
+          </Typography>
         </Stack>
       </ButtonBase>
       <Popper
@@ -141,9 +169,11 @@ const Profile = () => {
                           <Stack direction="row" spacing={1.25} alignItems="center">
                             <Avatar alt="profile user" src={avatar1} sx={{ width: 32, height: 32 }} />
                             <Stack>
-                              <Typography variant="h6">John Doe</Typography>
+                              <Typography variant="h6">
+                                {userData.firstname} {userData.lastname}{' '}
+                              </Typography>
                               <Typography variant="body2" color="textSecondary">
-                                UI/UX Designer
+                                {userData.role}
                               </Typography>
                             </Stack>
                           </Stack>

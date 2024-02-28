@@ -7,7 +7,7 @@ const admins = {
   id: 'admins',
   title: 'ผู้ดูแลระบบ',
   type: 'group',
-  roles: '8',
+  roles: 1,
   children: [
     {
       id: 'users',

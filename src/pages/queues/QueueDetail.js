@@ -1,7 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useMediaQuery, Stepper, Step, StepLabel, Button, Typography, Grid, Divider, Chip } from '@mui/material';
+import {
+  useMediaQuery,
+  Stepper,
+  Step,
+  StepLabel,
+  Button,
+  Typography,
+  Grid,
+  Divider,
+  Chip,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Backdrop,
+  CircularProgress
+} from '@mui/material';
 
 import MainCard from 'components/MainCard';
 import PropTypes from 'prop-types';
@@ -11,8 +29,9 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const steps = ['ชั่งเบา', 'ขึ้นสินค้า', 'ชั่งหนัก', 'เสร็จสิ้น'];
 
 function QueueDetail() {
+  const userRoles = useSelector((state) => state.auth.roles);
   const { id } = useParams();
-  console.log('id :', id);
+  const [loading, setLoading] = useState(false);
 
   const isMobile = useMediaQuery('(max-width:600px)');
   const [activeStep, setActiveStep] = useState(0);
@@ -21,13 +40,14 @@ function QueueDetail() {
     getQueueById(id);
     getQueueCount(id, 'completed');
     getQueue(id);
-  }, [id]);
+  }, [id, userRoles]);
 
   const [queue_token, setQueueToken] = useState('');
   const [queues, setQueues] = useState([]);
 
   const getQueue = (id) => {
     return new Promise(() => {
+      setLoading(true);
       setTimeout(() => {
         var requestOptions = {
           method: 'GET',
@@ -37,14 +57,17 @@ function QueueDetail() {
         fetch(apiUrl + '/queue/' + id, requestOptions)
           .then((response) => response.json())
           .then((result) => {
-            setQueueToken(result[0]['token']);
+            console.log(result);
+            if (result.lenght > 0) {
+              setQueueToken(result[0]['token']);
 
-            result.map((data) => {
-              setQueues(data);
-              getOrder(data.reserve_id);
-            });
-
-            console.log('queue_token :', queue_token);
+              result.map((data) => {
+                setQueues(data);
+                getOrder(data.reserve_id);
+              });
+            } else {
+              navigate('/queues');
+            }
           })
           .catch((error) => console.log('error', error));
       }, 100);
@@ -87,8 +110,7 @@ function QueueDetail() {
               setTotalItem(data.total_amount);
             });
             setOrders(result);
-            console.log('orders :', result);
-            console.log(orders);
+            setLoading(false);
           })
           .catch((error) => console.log('error', error));
         //resolve('Async operation completed');
@@ -107,13 +129,14 @@ function QueueDetail() {
       .then((response) => response.json())
       .then((result) => {
         setItems(result);
-        console.log('items: ', items);
-        console.log('items: ', result);
       })
       .catch((error) => console.log('error', error));
   };
 
   const navigate = useNavigate();
+  const printQueues = () => {
+    navigate('/queues/prints', { state: { queuesId: id } });
+  };
   const backToQueues = () => {
     navigate('/queues');
   };
@@ -121,6 +144,14 @@ function QueueDetail() {
   return (
     <>
       <Grid alignItems="center" justifyContent="space-between">
+        {loading && (
+          <Backdrop
+            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+            open={loading}
+          >
+            <CircularProgress color="primary" />
+          </Backdrop>
+        )}
         <Grid container spacing={3} rowSpacing={2} columnSpacing={2.75}>
           <Grid item xs={12} lg={8}>
             <MainCard>
@@ -129,7 +160,7 @@ function QueueDetail() {
                   {isMobile ? (
                     <div>
                       <Grid item xs={12}>
-                        <Typography variant="h5">ข้อมูลการรับสินค้า</Typography>
+                        <Typography variant="h4">คิวที่ :{queues.queue_number}</Typography>
                         <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                       </Grid>
 
@@ -147,7 +178,7 @@ function QueueDetail() {
                   ) : (
                     <div>
                       <Grid item xs={12}>
-                        <Typography variant="h5">ข้อมูลการรับสินค้า</Typography>
+                        <Typography variant="h4">คิวที่ :{queues.queue_number}</Typography>
                         <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                       </Grid>
 
@@ -166,7 +197,20 @@ function QueueDetail() {
                   )}
                   <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} light />
                 </Grid>
+
                 <Grid item xs={12} sx={{ '& button': { m: 1 }, p: '0 6%!important' }}>
+                  {userRoles === 10 && (
+                    <Button
+                      size="mediam"
+                      variant="contained"
+                      color="info"
+                      onClick={() => {
+                        printQueues();
+                      }}
+                    >
+                      พิมพ์บัตรคิว
+                    </Button>
+                  )}
                   <Button
                     size="mediam"
                     variant="contained"
@@ -325,7 +369,6 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
     ];
 
     const queueTxt = statusText[id].detail.find((x) => x.status == status);
-    console.log('textTeset ', queueTxt.status);
 
     return <Chip color={queueTxt.color} label={queueTxt.title} />;
   };
@@ -339,7 +382,7 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
     <Grid container spacing={2} sx={{ p: '0 5%' }}>
       <Grid item xs={6}>
         <Typography variant="h5">
-          <strong>รหัสคิว :</strong> {queue_token}
+          <strong>หมายเลขคิว :</strong> {queue_token}
         </Typography>
       </Grid>
 
@@ -349,7 +392,7 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
             index === stepId && (
               <Typography key={index} variant="h5">
                 <strong>สถานะ : </strong>
-                <QueueStatus id={stepId} status={item.status} />
+                <QueueStatus id={`${stepId}`} status={item.status} />
               </Typography>
             )
         )}
@@ -385,25 +428,61 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
             <Grid item xs={12} sx={{ mt: 1 }}>
               <Divider sx={{ mb: { xs: 1, sm: 2 } }} />
               <Typography variant="h5">
-                <strong>รายการสั่งซื้อ:</strong>
+                <strong>ข้อมูลรายการสั่งซื้อ:</strong>
               </Typography>
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} sx={{ ml: 2, mr: 2 }}>
               {order.items.map((item) => (
-                <Grid container rowSpacing={0} columnSpacing={2.75} key={item.item_id}>
-                  <Grid item xs={6}>
-                    <Typography variant="body1" gutterBottom>
-                      <strong>สินค้า :</strong> {item.name}
-                    </Typography>
+                <Grid item xs={12} key={item} sx={{ mb: 2 }}>
+                  <Grid container spacing={2} sx={{ mb: '15px' }}>
+                    <Grid item xs={12} md={12}>
+                      <Typography variant="body1">
+                        <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={12}>
+                      <Typography variant="body1">
+                        <strong>รายละเอียด : </strong> {order.description}
+                      </Typography>
+                    </Grid>
                   </Grid>
-
-                  <Grid item xs={6}>
-                    <Typography variant="body1" gutterBottom>
-                      <strong>จำนวน : </strong>
-                      {item.quantity} ตัน
-                    </Typography>
+                  <Grid item xs={12} md={12}></Grid>
+                  <Grid item xs={12} md={6}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ p: '12px' }}>สินค้า</TableCell>
+                          <TableCell align="right" sx={{ p: '12px' }}>
+                            จำนวน (ตัน)
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {order.items.map((item, index) => (
+                          <TableRow key={index}>
+                            <TableCell width={'50%'}>{item.name}</TableCell>
+                            <TableCell align="right">{item.quantity} ตัน</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </Grid>
+                  <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                 </Grid>
+                // <Grid container rowSpacing={0} columnSpacing={2.75} key={item.item_id}>
+                //   <Grid item xs={6}>
+                //     <Typography variant="body1" gutterBottom>
+                //       <strong>สินค้า :</strong> {item.name}
+                //     </Typography>
+                //   </Grid>
+
+                //   <Grid item xs={6}>
+                //     <Typography variant="body1" gutterBottom>
+                //       <strong>จำนวน : </strong>
+                //       {item.quantity} ตัน
+                //     </Typography>
+                //   </Grid>
+                // </Grid>
               ))}
             </Grid>
           </Grid>

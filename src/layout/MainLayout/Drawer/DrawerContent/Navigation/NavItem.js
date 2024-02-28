@@ -55,6 +55,7 @@ const NavItem = ({ item, level }) => {
       onClick={() => itemHandler(item.id)}
       selected={isSelected}
       sx={{
+        fontSize: '20px',
         zIndex: 1201,
         pl: drawerOpen ? `${level * 28}px` : 1.5,
         py: !drawerOpen && level === 1 ? 1.25 : 1,

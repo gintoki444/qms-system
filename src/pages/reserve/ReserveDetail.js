@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-// third party
-// import * as Yup from 'yup';
-// import { Formik } from 'formik';
+// Get Role use
+import { useSelector } from 'react-redux';
+
 import axios from '../../../node_modules/axios/index';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
-// const userId = localStorage.getItem('user_id');
 
 import QRCode from 'react-qr-code';
 import logo from '../../assets/images/ICON-02.png';
@@ -32,14 +31,13 @@ import {
   CircularProgress
 } from '@mui/material';
 import MainCard from 'components/MainCard';
-// import MenuItem from '@mui/material/MenuItem';
-// import TextField from '@mui/material/TextField';
 
 // DateTime
 import moment from 'moment';
 
 function ReserveDetail() {
   const [loading, setLoading] = useState(false);
+  const userRoles = useSelector((state) => state.auth.roles);
 
   // =============== Get Reserve ID ===============//
   const [reserveData, setReservData] = useState({});
@@ -53,8 +51,8 @@ function ReserveDetail() {
       .then((res) => {
         if (res) {
           res.data.reserve.map((result) => {
-            console.log(result);
             setReservData(result);
+            setLoading(false);
           });
         }
       })
@@ -64,6 +62,8 @@ function ReserveDetail() {
   // =============== Get orders ID ===============//
   const [orderList, setOrderList] = useState([]);
   const getOrder = async () => {
+    setLoading(true);
+
     const urlapi = apiUrl + `/orders/` + id;
     await axios
       .get(urlapi)
@@ -113,8 +113,6 @@ function ReserveDetail() {
   const handleClose = (flag) => {
     if (flag === 1) {
       //click มาจากการลบ
-      console.log('reserve_id :', reserve_id);
-      console.log('total_quantity :', total_quantity);
       addQueue(reserve_id, total_quantity);
     }
     setOpen(false);
@@ -143,8 +141,6 @@ function ReserveDetail() {
 
   //สร้าง Queue รับค่า reserve_id
   function createQueuef(reserve_id, brand_code) {
-    console.log('reserve_id: ', reserve_id);
-    console.log('brand_code: ', brand_code);
     return new Promise((resolve) => {
       setTimeout(() => {
         //วันที่ปัจจุบัน
@@ -162,8 +158,6 @@ function ReserveDetail() {
           created_at: currentDate,
           updated_at: currentDate
         });
-
-        console.log(raw);
 
         var requestOptions = {
           method: 'POST',
@@ -299,8 +293,7 @@ function ReserveDetail() {
 
         fetch(apiUrl + '/transactions', requestOptions)
           .then((response) => response.json())
-          .then((result) => {
-            console.log(result);
+          .then(() => {
             window.location.href = '/queue/' + queue_id + '/' + reserve_id;
           })
           .catch((error) => console.log('error', error));
@@ -316,7 +309,11 @@ function ReserveDetail() {
   };
 
   const reservePrint = (id) => {
-    navigate('/prints/reserve', { state: { reserveId: id } });
+    navigate('/prints/reserve', { state: { reserveId: id, link: '/reserve/detail/' + id } });
+  };
+
+  const reserveEdit = (id) => {
+    navigate('/reserve/update/' + id);
   };
   return (
     <Grid alignItems="center" justifyContent="space-between">
@@ -342,111 +339,165 @@ function ReserveDetail() {
           </Button>
         </DialogActions>
       </Dialog>
-      <Grid container spacing={3} rowSpacing={1} columnSpacing={1.75}>
-        <Grid item xs={12} lg={8}>
+      <Grid container rowSpacing={1} columnSpacing={1.75}>
+        <Grid item xs={12} lg={7}>
           <MainCard>
-            <Grid container spacing={2}>
+            <Grid container spacing={1}>
               <Grid item xs={12}>
                 <Typography variant="h5">ข้อมูลจองคิวรับสินค้า</Typography>
                 <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
               </Grid>
 
+              {/* Role 1 Company */}
               <Grid item xs={12}>
-                <Typography variant="body1">
-                  <strong>ข้อมูลร้าค้า/บริษัท </strong>
+                <Typography variant="h5">
+                  <u>
+                    <strong>ข้อมูลร้านค้า/บริษัท </strong>
+                  </u>
+                  <Divider sx={{ mb: 1 }} light />
                 </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Grid container spacing={1} sx={{ pl: 2, pr: 2 }}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body1" gutterBottom>
+                      <strong>ชื่อร้านค้า/บริษัท :</strong> {reserveData.company}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body1" gutterBottom>
+                      <strong>เลขทีผู้เสียภาษี :</strong> {reserveData.tax_no}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body1" gutterBottom>
+                      <strong>วันที่จอง : </strong>
+                      {moment(reserveData.pickup_date).format('DD/MM/YYYY')}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body1" gutterBottom>
+                      <strong>เบอร์โทรศัพท์ : </strong>
+                      {reserveData.phone}
+                    </Typography>
+                  </Grid>
+                </Grid>
               </Grid>
 
-              <Grid item xs={6}>
-                <Typography variant="body1" gutterBottom>
-                  ชื่อร้าค้า/บริษัท : {reserveData.company}
-                </Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body1" gutterBottom>
-                  เลขทีผู้เสียภาษี : {reserveData.tax_no}
-                </Typography>
+              <Grid item xs={12}>
+                <Divider sx={{ p: 0, mb: 1 }} />
               </Grid>
 
-              <Grid item xs={6}>
-                <Typography variant="body1" gutterBottom>
-                  วันที่จอง : {moment(reserveData.pickup_date).format('DD/MM/YYYY')}
+              {/* Role 2 Driver */}
+              <Grid item xs={12}>
+                <Typography variant="h5">
+                  <u>
+                    <strong>ข้อมูลคนขับรถ </strong>
+                  </u>
                 </Typography>
+                <Divider sx={{ mb: 1 }} light />
               </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body1" gutterBottom>
-                  เบอร์โทรศัพท์ : {reserveData.phone}
-                </Typography>
+              <Grid item xs={12} md={12}>
+                <Grid container spacing={1} sx={{ pl: 2, pr: 2 }}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body1" gutterBottom>
+                      <strong>ชื่อ :</strong>
+                      {reserveData.driver}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body1" gutterBottom>
+                      <strong>เลขที่ใบขับขี่ :</strong>
+                      {reserveData.license_no}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body1" gutterBottom>
+                      <strong>เบอร์โทรศัพท์ :</strong>
+                      {reserveData.mobile_no}
+                    </Typography>
+                  </Grid>
+                </Grid>
               </Grid>
 
+              {/* Role 3 Product */}
               <Grid item xs={12}>
                 <Divider sx={{ p: 0 }} />
               </Grid>
-              <Grid item xs={12}>
-                <Typography variant="body1">
-                  <strong>ข้อมูลสินค้า </strong>
-                </Typography>
-              </Grid>
 
               <Grid item xs={12}>
-                {orderList.map((order, index) => (
-                  <Grid item xs={12} key={index} sx={{ mb: 2 }}>
-                    <Grid container spacing={2} sx={{ mb: '15px' }}>
-                      <Grid item xs={6}>
-                        <Typography variant="body1">
-                          <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
-                        </Typography>
+                <Typography variant="h5">
+                  <u>
+                    <strong>ข้อมูลรายการสั่งซื้อสินค้า </strong>
+                  </u>
+                  <Divider sx={{ mb: 1 }} light />
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Grid container spacing={1} sx={{ pl: 2, pr: 2 }}>
+                  {orderList.map((order, index) => (
+                    <Grid item xs={12} key={index} sx={{ mt: 1 }}>
+                      <Grid container spacing={2} sx={{ mb: '15px' }}>
+                        {' '}
+                        <Grid item xs={12} md={6}>
+                          <Typography variant="body1">
+                            <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
+                          </Typography>
+                        </Grid>{' '}
+                        <Grid item xs={12} md={6}>
+                          <Typography variant="body1">
+                            <strong>รายละเอียด : </strong> {order.description}
+                          </Typography>
+                        </Grid>
                       </Grid>
-                      <Grid item xs={6}>
+
+                      <Grid item xs={12}>
                         <Typography variant="body1">
-                          <strong>รายละเอียด : </strong> {order.description}
+                          <u>
+                            <strong>ข้อมูลสินค้า </strong>
+                          </u>
                         </Typography>
+                        <Divider sx={{ mb: 1 }} light />
+                      </Grid>
+                      <Grid item xs={12} md={12}>
+                        <Table size="small">
+                          <TableBody>
+                            {order.items.map((item, index) => (
+                              <TableRow key={index}>
+                                <TableCell width={'50%'}>{item.name}</TableCell>
+                                <TableCell>{item.quantity} ตัน</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
                       </Grid>
                     </Grid>
-                    <Table size="small">
-                      <TableBody>
-                        {order.items.map((item, index) => (
-                          <TableRow key={index}>
-                            <TableCell width={'50%'}>{item.name}</TableCell>
-                            <TableCell>{item.quantity} ตัน</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </Grid>
-                ))}
+                  ))}
+                </Grid>
 
                 {orderList.length === 0 && (
-                  <Typography variant="body1">
-                    <strong>ไม่มีข้อมูล </strong>
-                  </Typography>
+                  <>
+                    <Grid item xs={12} sx={{ mt: 2 }}>
+                      <Typography variant="h5">
+                        <u>
+                          <strong>ข้อมูลสินค้า </strong>
+                        </u>
+                      </Typography>
+                      <Divider sx={{ mb: 1 }} light />
+                    </Grid>
+                    <Grid item xs={12} md={12}>
+                      <Typography variant="body1">
+                        <strong>ไม่มีข้อมูล </strong>
+                      </Typography>
+                      <Divider sx={{ mb: 1, mt: 2 }} />
+                    </Grid>
+                  </>
                 )}
               </Grid>
-              <Grid item xs={12}>
-                <Typography variant="body1">
-                  <strong>ข้อมูลคนขับรถ </strong>
-                </Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body1" gutterBottom>
-                  ชื่อ :{reserveData.driver}
-                </Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body1" gutterBottom>
-                  เลขที่ใบขับขี่ :{reserveData.license_no}
-                </Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body1" gutterBottom>
-                  เบอร์โทรศัพท์ :{reserveData.mobile_no}
-                </Typography>
-              </Grid>
 
-              <Grid item xs={12}>
-                <Divider sx={{ p: 0 }} />
-              </Grid>
               <Grid item xs={12} align="center">
+                <Divider sx={{ pt: 1 }} light />
                 <Typography variant="h5" gutterBottom>
                   ข้อมูลการรับสินค้า
                 </Typography>
@@ -470,7 +521,7 @@ function ReserveDetail() {
             </Grid>
           </MainCard>
           <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-            {orderList.length > 0 && reserveData.status !== 'completed' && (
+            {orderList.length > 0 && reserveData.status !== 'completed' && userRoles === 9 && (
               <Button
                 size="mediam"
                 variant="outlined"
@@ -484,6 +535,12 @@ function ReserveDetail() {
             {orderList.length > 0 && (
               <Button size="mediam" variant="contained" color="info" onClick={() => reservePrint(reserveData.reserve_id)}>
                 พิมพ์
+              </Button>
+            )}
+
+            {orderList.length > 0 && reserveData.status !== 'completed' && (
+              <Button size="mediam" type="submit" variant="contained" color="primary" onClick={() => reserveEdit(reserveData.reserve_id)}>
+                แก้ไขข้อมูลการจอง
               </Button>
             )}
 

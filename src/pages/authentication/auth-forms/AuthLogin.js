@@ -73,12 +73,9 @@ const AuthLogin = () => {
         .post(apiUrl + '/login', jsonData)
         .then((res) => {
           if (res.data.status === 'ok') {
-            console.log(res.data);
             // To store data
             localStorage.setItem('token', res.data.token);
-            // เก็บค่าไว้ใช้ใยการบันทึกมูลใน application
             localStorage.setItem('user_id', res.data.user_id);
-            localStorage.setItem('email', res.data.email);
             window.location = '/';
           } else {
             // alert('Login failed: ' + res.data.message);

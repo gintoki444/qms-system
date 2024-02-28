@@ -5,6 +5,7 @@
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import axios from '../../../../node_modules/axios/index';
+import { useSelector } from 'react-redux';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -16,9 +17,28 @@ import MainCard from 'components/MainCard';
 // DateTime
 import moment from 'moment';
 
+
+function AddCompany() {
+  const userId = useSelector((state) => state.auth.user_id);
+  
+  const initialValue = {
+    name: '',
+    country: '',
+    open_time: '',
+    description: '',
+    tax_no: '',
+    phone: '',
+    address: '',
+    zipcode: '',
+    contact_person: '',
+    contact_number: ''
+  };
+
+  
 // =============== บันทึกข้อมูล ===============//
-const userId = localStorage.getItem('user_id');
+
 const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
+
   const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
   const formData = new FormData();
   try {
@@ -79,20 +99,6 @@ const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) =>
     setSubmitting(false);
   }
 };
-
-function AddCompany() {
-  const initialValue = {
-    name: '',
-    country: '',
-    open_time: '',
-    description: '',
-    tax_no: '',
-    phone: '',
-    address: '',
-    zipcode: '',
-    contact_person: '',
-    contact_number: ''
-  };
   return (
     <Grid container alignItems="center" justifyContent="space-between">
       <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>

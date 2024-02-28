@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+
 import {
   Table,
   TableHead,
@@ -86,7 +88,8 @@ function CompanyTable() {
   const [company, setCompany] = useState([]);
   const [open, setOpen] = useState(false);
 
-  const userId = localStorage.getItem('user_id');
+  const userId = useSelector((state) => state.auth.user_id);
+
 
   useEffect(() => {
     getCompany();
