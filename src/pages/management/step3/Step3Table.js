@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import {
   useMediaQuery,
+  Grid,
   Box,
   Table,
   TableBody,
@@ -11,20 +12,21 @@ import {
   TableRow,
   Button,
   Chip,
-  Stack,
   Typography,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
+  DialogActions,
+  ButtonGroup,
+  InputAdornment,
+  FormHelperText,
+  FormControl,
+  Input
+  // CircularProgress
   // ButtonGroup
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-
-// project import
-import Dot from 'components/@extended/Dot';
-
 // Link api queues
 import * as getQueues from '_api/queueReques';
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -38,7 +40,7 @@ import moment from 'moment';
 // import { useDispatch, useSelector } from 'react-redux';
 // import { setStation } from 'store/reducers/station';
 
-export const Step3Table = ({ status }) => {
+export const Step3Table = ({ status, title, onStatusChange }) => {
   // const station_count = useSelector((state) => state.station.station_count);
   // const dispatch = useDispatch();
   // console.log(station_count);
@@ -50,21 +52,42 @@ export const Step3Table = ({ status }) => {
       align: 'center',
       disablePadding: false,
       width: '5%',
-      label: 'ลำดับคิว.'
+      label: 'ลำดับ'
+    },
+    {
+      id: 'pickerDate',
+      align: 'left',
+      disablePadding: false,
+      width: '8%',
+      label: 'วันที่เข้ารับสินค้า'
     },
     {
       id: 'queueID',
-      align: 'left',
+      align: 'center',
       disablePadding: false,
       width: '5%',
-      label: 'รหัสคิว.'
+      label: 'หมายเลขคิว'
     },
     {
       id: 'registration_no',
-      align: 'left',
+      align: 'center',
       disablePadding: true,
       width: '10%',
       label: 'ทะเบียนรถ'
+    },
+    {
+      id: 'station',
+      align: 'center',
+      disablePadding: true,
+      width: '170px',
+      label: 'สถานีบริการ'
+    },
+    {
+      id: 'branName',
+      align: 'left',
+      disablePadding: false,
+      width: '15%',
+      label: 'ร้านค้า/บริษัท'
     },
     {
       id: 'driver',
@@ -81,31 +104,38 @@ export const Step3Table = ({ status }) => {
       label: 'เบอร์โทรศัพท์'
     },
     {
-      id: 'branName',
+      id: 'teamLoading',
       align: 'left',
       disablePadding: false,
-      width: '15%',
-      label: 'ร้านค้า/บริษัท'
+      width: '5%',
+      label: 'ทีมขึ้นสินค้า'
     },
     {
       id: 'times',
       align: 'left',
       disablePadding: false,
-      width: '15%',
+      width: '10%',
       label: 'เวลาเริ่ม'
     },
     {
-      id: 'status',
+      id: 'selectedStation',
       align: 'center',
       disablePadding: false,
       width: '5%',
       label: 'สถานะ'
     },
     {
-      id: 'action',
+      id: 'weightStap1',
       align: 'center',
+      disablePadding: true,
+      width: '10%',
+      label: 'น้ำหนักชั่งเบา'
+    },
+    {
+      id: 'action',
+      align: 'right',
       disablePadding: false,
-      width: '15%',
+      width: '120px',
       label: 'Actions'
     }
   ];
@@ -114,14 +144,18 @@ export const Step3Table = ({ status }) => {
       <TableHead>
         <TableRow>
           {headCells.map((headCell) => (
-            <TableCell
-              key={headCell.id}
-              align={headCell.align}
-              width={headCell.width}
-              padding={headCell.disablePadding ? 'none' : 'normal'}
-            >
-              {headCell.label}
-            </TableCell>
+            <>
+              {(status === 'waiting' && headCell.id === 'weightStap1') || (
+                <TableCell
+                  key={headCell.id}
+                  align={headCell.align}
+                  width={headCell.width}
+                  padding={headCell.disablePadding ? 'none' : 'normal'}
+                >
+                  {headCell.label}
+                </TableCell>
+              )}
+            </>
           ))}
         </TableRow>
       </TableHead>
@@ -139,42 +173,57 @@ export const Step3Table = ({ status }) => {
   const [station_count, setStationCount] = useState(0);
   const [loading, setLoading] = useState(true); // สร้าง state เพื่อติดตามสถานะการโหลด
   const [team_id, setTeamId] = useState(0);
+  const [message, setMessage] = useState('');
   //เพิ่ม function get จำนวนสถานีของ step 1
   const station_num = 1;
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (status === 'waiting') {
-        waitingGet();
-      } else if (status === 'processing') {
-        processingGet();
-      }
-
-      await getStepCount(3, 'processing');
-      setLoading(false);
-    };
-
     fetchData();
-  }, [status]);
+  }, [status, onStatusChange]);
 
-  const waitingGet = () => {
+  const fetchData = async () => {
     try {
-      getQueues.getStep3Waitting().then((response) => {
+      setLoading(true);
+      if (status === 'waiting') {
+        await waitingGet();
+      } else if (status === 'processing') {
+        await processingGet();
+      }
+    } catch (e) {
+      console.log(e);
+    }
+
+    await getStepCount(3, 'processing');
+  };
+  const waitingGet = async () => {
+    try {
+      await getQueues.getStep3Waitting().then((response) => {
         setItems(response);
+        setLoading(false);
       });
     } catch (e) {
       console.log(e);
     }
   };
 
-  const processingGet = () => {
+  //ข้อมูล รอเรียกคิว step1
+  const initialData = [0];
+  // const [inputValues, setInputValues] = useState(initialData);
+  const processingGet = async () => {
     try {
-      getQueues.getStep3Processing().then((response) => {
+      await getQueues.getStep3Processing().then((response) => {
         setItems(response);
+        setLoading(false);
       });
     } catch (e) {
       console.log(e);
     }
+  };
+  const [weight, setWeight] = useState(initialData);
+  const handleChange = (index, value) => {
+    const newInputValues = [...weight];
+    newInputValues[index] = value;
+    setWeight(newInputValues);
   };
 
   const step1Update = (step_id, statusupdate, station_id) => {
@@ -202,8 +251,8 @@ export const Step3Table = ({ status }) => {
       .then((response) => response.json())
       .then(async (result) => {
         if (result['status'] === 'ok') {
-          waitingGet();
-          processingGet();
+          await waitingGet();
+          await processingGet();
           //3=Step ชั่งหนัก
           await getStepCount(3, 'processing');
           setLoading(false);
@@ -213,7 +262,6 @@ export const Step3Table = ({ status }) => {
   };
 
   const step2Update = (id, statusupdate, station_id) => {
-    setLoading(true);
 
     var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     var myHeaders = new Headers();
@@ -283,12 +331,6 @@ export const Step3Table = ({ status }) => {
 
   //Update ทีมขึ้นสินค้าสำหรับ step3
   const updateLoadingTeam = (step_id) => {
-    /*
-  if (loadingteam === "") {
-    alert("กรุณาเลือกทีมขึ้นสินค้า")
-    return;
- }
-  */
     const myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
 
@@ -316,15 +358,17 @@ export const Step3Table = ({ status }) => {
       })
       .catch((error) => console.error(error));
   };
-  const handleClickOpen = (step_id, fr, queue_id, team_id) => {
-    setLoading(true);
 
+  const handleClickOpen = (step_id, fr, queue_id, team_id) => {
     if (fr === 'call') {
+      setMessage('ชั่งหนัก–STEP3 เรียกคิว');
       setText('เรียกคิว');
     } else {
       if (fr === 'close') {
+        setMessage('ชั่งหนัก–STEP3 ปิดคิว');
         setText('ปิดคิว');
       } else {
+        setMessage('ชั่งหนัก–STEP3 ยกเลิกเรียกคิว');
         setText('ยกเลิก');
       }
     }
@@ -362,8 +406,11 @@ export const Step3Table = ({ status }) => {
         .then((result) => {
           //console.log(result)
           if (result['status'] === 'ok') {
-            console.log('updateStartTime is ok');
-            resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
+            resolve(result);
+
+            // Reload
+            fetchData();
+            onStatusChange(status === 'waiting' ? 'processing' : 'waiting');
           } else {
             console.log('not update updateStartTime');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
@@ -410,13 +457,26 @@ export const Step3Table = ({ status }) => {
   };
 
   const handleClose = (flag) => {
+    setLoading(true);
     // flag = 1 = ยืนยัน
     if (flag === 1) {
       //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
       if (fr === 'call') {
         // station_count = จำนวนคิวที่กำลังเข้ารับบรการ, station_num = จำนวนหัวจ่ายในสถานีทั้งหมด
+        setWeight(0);
         if (station_count < station_num) {
           //เพิ่ม function get station id 3 = station id
+
+          // การใช้งาน Line Notify
+          getStepToken(id_update)
+            .then(({ queue_id, token }) => {
+              lineNotify(queue_id, token);
+            })
+            .catch((error) => {
+              console.error('Error:', error);
+              // ทำอะไรกับข้อผิดพลาด
+            });
+
           step1Update(id_update, 'processing', 23);
           updateStartTime(id_update);
         } else {
@@ -426,14 +486,41 @@ export const Step3Table = ({ status }) => {
       } else {
         if (fr === 'close') {
           //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว
-          updateLoadingTeam(id_update_next, team_id);
-          updateLoadingTeam(id_update, team_id);
-          step2Update(id_update_next, 'waiting', 27);
-          step1Update(id_update, 'completed', 23);
-          updateEndTime(id_update);
-          updateStartTime(id_update_next);
+          if (weight === 0 || weight === '') {
+            alert('กรุณาใสน้ำหนักจากการชั่งหนัก');
+            setLoading(false);
+          } else {
+            // การใช้งาน Line Notify
+            getStepToken(id_update)
+              .then(({ queue_id, token }) => {
+                lineNotify(queue_id, token);
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+                // ทำอะไรกับข้อผิดพลาด
+              });
+
+            updateLoadingTeam(id_update_next, team_id);
+            updateLoadingTeam(id_update, team_id);
+            step2Update(id_update_next, 'waiting', 27);
+            step1Update(id_update, 'completed', 23);
+            updateEndTime(id_update);
+            updateStartTime(id_update_next);
+            updateWeight2(id_update);
+          }
         } else {
           //ยกเลิก
+          setWeight(0);
+          // การใช้งาน Line Notify
+          getStepToken(id_update)
+            .then(({ queue_id, token }) => {
+              lineNotify(queue_id, token);
+            })
+            .catch((error) => {
+              console.error('Error:', error);
+              // ทำอะไรกับข้อผิดพลาด
+            });
+
           step1Update(id_update, 'waiting', 27);
           updateStartTime(id_update);
         }
@@ -443,36 +530,93 @@ export const Step3Table = ({ status }) => {
     }
     setOpen(false);
   };
-  // const handleClose = (flag) => {
-  //   // flag = 1 = ยืนยัน
-  //   if (flag === 1) {
-  //     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
-  //     if (fr === 'call') {
-  //       // station_count = จำนวนคิวที่กำลังเข้ารับบรการ, station_num = จำนวนหัวจ่ายในสถานีทั้งหมด
-  //       if (station_count < station_num) {
-  //         //เพิ่ม function get station id 3 = station id
-  //         step1Update(id_update, 'processing', 23);
-  //       } else {
-  //         alert('สถานีบริการเต็ม');
-  //         setLoading(false);
-  //       }
-  //     } else {
-  //       if (fr === 'close') {
-  //         //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว
-  //         updateLoadingTeam(id_update_next, team_id);
-  //         updateLoadingTeam(id_update, team_id);
-  //         step2Update(id_update_next, 'waiting', 27);
-  //         step1Update(id_update, 'completed', 23);
-  //       } else {
-  //         //ยกเลิก
-  //         step1Update(id_update, 'waiting', 27);
-  //       }
-  //     }
-  //   } else {
-  //     setLoading(false);
-  //   }
-  //   setOpen(false);
-  // };
+
+  const updateWeight2 = (step_id) => {
+    return new Promise((resolve, reject) => {
+      const myHeaders = new Headers();
+      myHeaders.append('Content-Type', 'application/json');
+
+      const raw = JSON.stringify({
+        weight2: weight
+      });
+
+      const requestOptions = {
+        method: 'PUT',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+      };
+
+      fetch(apiUrl + '/updateweight2/' + step_id, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          //console.log(result)
+          if (result['status'] === 'ok') {
+            setWeight(0);
+            resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
+          } else {
+            reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
+          }
+        })
+        .catch((error) => console.error(error));
+    });
+  };
+
+  /* แจ้งเตือน Line Notify */
+
+  const lineNotify = (queue_id, token) => {
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+
+    var link = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+    link = link + '/queues/detail/' + queue_id;
+
+    const myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+
+    const raw = JSON.stringify({
+      message: message + ' หมายเลขคิว: ' + token + '\n' + 'น้ำหนักชั่งหนัก: ' + weight + ' ตัน' + '\n' + link
+    });
+
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    };
+
+    fetch(apiUrl + '/line-notify', requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => console.error(error));
+  };
+
+  const getStepToken = (step_id) => {
+    return new Promise((resolve, reject) => {
+      const requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+      };
+
+      fetch(apiUrl + '/getsteptoken/' + step_id, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          if (result.length > 0) {
+            const { queue_id, reserve_id, token } = result[0];
+            resolve({ queue_id, reserve_id, token });
+          } else {
+            reject('No data found');
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          reject(error);
+        });
+    });
+  };
 
   return (
     <>
@@ -495,137 +639,165 @@ export const Step3Table = ({ status }) => {
             </Button>
           </DialogActions>
         </Dialog>
-        <TableContainer
-          sx={{
-            width: '100%',
-            overflowX: 'auto',
-            position: 'relative',
-            display: 'block',
-            maxWidth: '100%',
-            '& td, & th': { whiteSpace: 'nowrap' }
-          }}
-        >
-          <Table
-            aria-labelledby="tableTitle"
+
+        <Grid sx={{ p: 2 }}>
+          <Typography variant="h4">
+            {title}
+            {status === 'processing' && (
+              <span>
+                {' '}
+                ( {station_count}/{station_num} สถานี )
+              </span>
+            )}
+          </Typography>
+        </Grid>
+        <Grid>
+          <TableContainer
             sx={{
-              '& .MuiTableCell-root:first-of-type': {
-                pl: 2
-              },
-              '& .MuiTableCell-root:last-of-type': {
-                pr: 3
-              }
+              width: '100%',
+              overflowX: 'auto',
+              position: 'relative',
+              display: 'block',
+              maxWidth: '100%',
+              '& td, & th': { whiteSpace: 'nowrap' }
             }}
           >
-            <QueueTableHead />
-            {loading ? (
-              <TableBody>
-                <TableRow>
-                  <TableCell colSpan={8} align="center">
-                    <CircularProgress />
-                    <Typography variant="body1">Loading....</Typography>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            ) : (
-              <TableBody>
-                {items.map((row, index) => {
-                  return (
-                    <TableRow key={index}>
-                      <TableCell align="left">
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          {status == 'waiting' && <Dot color="warning" />}
-                          {status == 'processing' && <Dot color="success" />}
-                          <Typography>{index + 1}</Typography>
-                        </Stack>
-                      </TableCell>
-                      <TableCell align="left">
-                        <Chip color="info" label={row.token} variant="outlined" />
-                      </TableCell>
-                      <TableCell align="left">{row.registration_no}</TableCell>
-                      <TableCell align="left">{row.driver_name}</TableCell>
-                      <TableCell align="left">{row.driver_mobile}</TableCell>
-                      <TableCell align="left">{row.company_name}</TableCell>
-                      <TableCell align="left">
-                        {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
-                        {row.start_time ? row.start_time.slice(11, 19) : '-'}
-                      </TableCell>
-                      <TableCell align="center">
-                        {status == 'waiting' && <Chip color="secondary" label={row.status} />}
-                        {status == 'processing' && <Chip color="warning" label={row.status} />}
-                      </TableCell>
-
-                      <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                        {status == 'waiting' && (
-                          <Button
-                            // sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            variant="contained"
-                            size="small"
-                            color="info"
-                            onClick={() => handleClickOpen(row.step_id, 'call', row.queue_id)}
-                            endIcon={<RightSquareOutlined />}
-                          >
-                            เรียกคิว
-                          </Button>
-                        )}
-                        {status == 'processing' && (
-                          <div>
-                            <Button
-                              // startIcon={<ArrowBackIosIcon />}
-                              variant="contained"
-                              size="small"
-                              onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.station_id)}
-                              style={{ fontFamily: 'kanit' }}
-                              color="error"
-                            >
-                              ยกเลิก
-                            </Button>
-                            <Button
-                              // endIcon={<DoneIcon />}
-                              size="small"
-                              variant="contained"
-                              onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row.station_id)}
-                              style={{ fontFamily: 'kanit' }}
-                            >
-                              ปิดคิว
-                            </Button>
-                            {/* <Button
-                            // sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            variant="contained"
-                            size="medium"
-                            color="error"
-                            onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id)}
-                          >
-                            ยกเลิก
-                          </Button>
-
-                          <Button
-                            // sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            variant="contained"
-                            size="medium"
-                            color="primary"
-                            onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id)}
-                            // endIcon={<RightSquareOutlined />}
-                          >
-                            ปิดคิว
-                          </Button> */}
-                          </div>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-
-                {items.length == 0 && (
+            <Table
+              aria-labelledby="tableTitle"
+              sx={{
+                '& .MuiTableCell-root:first-of-type': {
+                  pl: 2
+                },
+                '& .MuiTableCell-root:last-of-type': {
+                  pr: 3
+                }
+              }}
+            >
+              <QueueTableHead />
+              {loading ? (
+                <TableBody>
                   <TableRow>
-                    <TableCell colSpan={8} align="center">
-                      ไม่พบข้อมูล
+                    <TableCell colSpan={12} align="center">
+                      <CircularProgress />
+                      <Typography variant="body1">Loading....</Typography>
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            )}
-          </Table>
-        </TableContainer>
+                </TableBody>
+              ) : (
+                <TableBody>
+                  {items.map((row, index) => {
+                    return (
+                      <TableRow key={index}>
+                        <TableCell align="center">
+                          <Typography>
+                            <strong>{index + 1}</strong>
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
+                        <TableCell align="left">
+                          <Chip color="primary" label={row.token} />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>
+                        </TableCell>
+                        <TableCell align="left">
+                          <Typography sx={{ width: '240px' }}>{row.company_name}</Typography>
+                        </TableCell>
+                        <TableCell align="left">{row.driver_name}</TableCell>
+                        <TableCell align="left">{row.driver_mobile}</TableCell>
+                        <TableCell align="left"> {row.team_name ? row.team_name : '-'}</TableCell>
+                        <TableCell align="left">
+                          {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
+                          {row.start_datetime ? row.start_datetime.slice(11, 19) : row.start_time.slice(11, 19)}
+                        </TableCell>
+                        <TableCell align="center">
+                          {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอคิวชั่งหนัก'} />}
+                          {status == 'processing' && <Chip color="success" sx={{ width: '95px' }} label={'กำลังชั่งหนัก'} />}
+                        </TableCell>
+
+                        {status == 'processing' && (
+                          <TableCell align="center">
+                            <FormControl variant="standard" sx={{ m: 1, mt: 3, width: '100px', fontFamily: 'kanit' }}>
+                              <Input
+                                id="standard-adornment-weight"
+                                endAdornment={
+                                  <InputAdornment position="end" style={{ fontFamily: 'kanit' }}>
+                                    ตัน
+                                  </InputAdornment>
+                                }
+                                aria-describedby="standard-weight-helper-text"
+                                inputProps={{
+                                  type: 'number',
+                                  'aria-label': 'weight'
+                                }}
+                                value={weight}
+                                onChange={(e) => handleChange(index, e.target.value)}
+                                style={{ fontFamily: 'kanit' }}
+                              />
+                              <FormHelperText id="standard-weight-helper-text" style={{ fontFamily: 'kanit' }}>
+                                น้ำหนักชั่งเบา
+                              </FormHelperText>
+                            </FormControl>
+                          </TableCell>
+                        )}
+                        <TableCell align="right" width="120" sx={{ width: 120, maxWidth: 120 }}>
+                          <ButtonGroup aria-label="button group" sx={{ alignItems: 'center' }}>
+                            {status == 'waiting' && (
+                              <Button
+                                // sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                variant="contained"
+                                size="small"
+                                color="info"
+                                onClick={() => handleClickOpen(row.step_id, 'call', row.queue_id, row.team_id)}
+                                endIcon={<RightSquareOutlined />}
+                              >
+                                เรียกคิว
+                              </Button>
+                            )}
+                            {status == 'processing' && (
+                              <div>
+                                <Button
+                                  // startIcon={<ArrowBackIosIcon />}
+                                  variant="contained"
+                                  size="small"
+                                  onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.team_id)}
+                                  style={{ fontFamily: 'kanit' }}
+                                  color="error"
+                                >
+                                  ยกเลิก
+                                </Button>
+                                <Button
+                                  // endIcon={<DoneIcon />}
+                                  size="small"
+                                  variant="contained"
+                                  onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row.team_id)}
+                                  style={{ fontFamily: 'kanit' }}
+                                >
+                                  ปิดคิว
+                                </Button>
+                              </div>
+                            )}
+                          </ButtonGroup>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+
+                  {items.length == 0 && (
+                    <TableRow>
+                      <TableCell colSpan={12} align="center">
+                        ไม่พบข้อมูล
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              )}
+            </Table>
+          </TableContainer>
+        </Grid>
       </Box>
     </>
   );

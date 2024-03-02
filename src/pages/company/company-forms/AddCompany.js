@@ -13,18 +13,17 @@ const apiUrl = process.env.REACT_APP_API_URL;
 // material-ui
 import { Button, FormHelperText, Grid, InputLabel, OutlinedInput, Stack, Typography, Divider } from '@mui/material';
 import MainCard from 'components/MainCard';
-
+import { SaveOutlined } from '@ant-design/icons';
 // DateTime
 import moment from 'moment';
 
-
 function AddCompany() {
   const userId = useSelector((state) => state.auth.user_id);
-  
+
   const initialValue = {
     name: '',
     country: '',
-    open_time: '',
+    open_time: '08.00-18.00',
     description: '',
     tax_no: '',
     phone: '',
@@ -34,71 +33,69 @@ function AddCompany() {
     contact_number: ''
   };
 
-  
-// =============== บันทึกข้อมูล ===============//
+  // =============== บันทึกข้อมูล ===============//
 
-const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
+  const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
+    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const formData = new FormData();
+    try {
+      values.user_id = userId;
+      values.created_at = currentDate;
+      values.updated_at = currentDate;
+      values.location_lat = '0000';
+      values.location_lng = '0000';
 
-  const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-  const formData = new FormData();
-  try {
-    values.user_id = userId;
-    values.created_at = currentDate;
-    values.updated_at = currentDate;
-    values.location_lat = '0000';
-    values.location_lng = '0000';
+      formData.append('user_id', values.user_id);
+      formData.append('name', values.name);
+      formData.append('country', values.country);
+      formData.append('open_time', values.open_time);
+      formData.append('description', values.description);
+      formData.append('tax_no', values.tax_no);
+      formData.append('phone', values.phone);
+      formData.append('address', values.address);
+      formData.append('zipcode', values.zipcode);
+      formData.append('location_lat', values.location_lat);
+      formData.append('location_lng', values.location_lng);
+      formData.append('contact_number', values.contact_number);
+      formData.append('contact_person', values.contact_person);
+      formData.append('created_at', values.created_at);
+      formData.append('updated_at', values.updated_at);
 
-    formData.append('user_id', values.user_id);
-    formData.append('name', values.name);
-    formData.append('country', values.country);
-    formData.append('open_time', values.open_time);
-    formData.append('description', values.description);
-    formData.append('tax_no', values.tax_no);
-    formData.append('phone', values.phone);
-    formData.append('address', values.address);
-    formData.append('zipcode', values.zipcode);
-    formData.append('location_lat', values.location_lat);
-    formData.append('location_lng', values.location_lng);
-    formData.append('contact_number', values.contact_number);
-    formData.append('contact_person', values.contact_person);
-    formData.append('created_at', values.created_at);
-    formData.append('updated_at', values.updated_at);
+      console.log(values);
 
-    console.log(values);
+      let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: apiUrl + '/addcompany',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: formData
+      };
 
-    let config = {
-      method: 'post',
-      maxBodyLength: Infinity,
-      url: apiUrl + '/addcompany',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      data: formData
-    };
+      axios
+        .request(config)
+        .then((result) => {
+          console.log('result :', result);
+          if (result.data.status === 'ok') {
+            window.location.href = '/company';
+          } else {
+            alert(result['message']['sqlMessage']);
+          }
 
-    axios
-      .request(config)
-      .then((result) => {
-        console.log('result :', result);
-        if (result.data.status === 'ok') {
-          window.location.href = '/company';
-        } else {
-          alert(result['message']['sqlMessage']);
-        }
-
-        setStatus({ success: false });
-        setSubmitting(false);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  } catch (err) {
-    console.error(err);
-    setStatus({ success: false });
-    setErrors({ submit: err.message });
-    setSubmitting(false);
-  }
-};
+          setStatus({ success: false });
+          setSubmitting(false);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } catch (err) {
+      console.error(err);
+      setStatus({ success: false });
+      setErrors({ submit: err.message });
+      setSubmitting(false);
+    }
+  };
   return (
     <Grid container alignItems="center" justifyContent="space-between">
       <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
@@ -111,7 +108,7 @@ const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) =>
             description: Yup.string().max(255).required('กรุณาระบุรายละเอียดของบริษัท'),
             tax_no: Yup.string().min(13).max(13).required('กรุณาระบุเลขที่ผู้เสียภาษี'),
             phone: Yup.string()
-              .min(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
+              .min(8, 'กรุณาระบุเบอร์โทรศัพท์อย่างน้อย 8 หลัก')
               .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
               .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
               .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
@@ -364,7 +361,15 @@ const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) =>
                 </Grid>
 
                 <Grid item xs={12}>
-                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
+                  <Button
+                    disableElevation
+                    disabled={isSubmitting}
+                    size="mediam"
+                    type="submit"
+                    variant="contained"
+                    color="success"
+                    startIcon={<SaveOutlined />}
+                  >
                     เพิ่มข้อมูลร้านค้า/บริษัท
                   </Button>
                 </Grid>

@@ -31,6 +31,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import MainCard from 'components/MainCard';
+import { DiffOutlined, PrinterOutlined, EditOutlined, RollbackOutlined } from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
@@ -61,7 +62,7 @@ function ReserveDetail() {
 
   // =============== Get orders ID ===============//
   const [orderList, setOrderList] = useState([]);
-  const getOrder = async () => {
+  const getOrders = async () => {
     setLoading(true);
 
     const urlapi = apiUrl + `/orders/` + id;
@@ -74,9 +75,9 @@ function ReserveDetail() {
       .catch((err) => console.log(err));
   };
   useEffect(() => {
-    getOrder();
     getReserve();
-  }, [id]);
+    getOrders();
+  }, [id, userRoles]);
 
   // ==============================|| Create Queue ||============================== //
   const [open, setOpen] = useState(false);
@@ -113,6 +114,7 @@ function ReserveDetail() {
   const handleClose = (flag) => {
     if (flag === 1) {
       //click มาจากการลบ
+      setLoading(true);
       addQueue(reserve_id, total_quantity);
     }
     setOpen(false);
@@ -140,9 +142,9 @@ function ReserveDetail() {
   }
 
   //สร้าง Queue รับค่า reserve_id
-  function createQueuef(reserve_id, brand_code) {
+  function createQueuef(reserve_id, brand_code, queue_number) {
     return new Promise((resolve) => {
-      setTimeout(() => {
+      setTimeout(() => { 
         //วันที่ปัจจุบัน
         const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
         const queueDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
@@ -153,7 +155,9 @@ function ReserveDetail() {
         var raw = JSON.stringify({
           reserve_id: reserve_id,
           queue_date: queueDate,
-          token: brand_code + padZero(reserve_id),
+          // token: brand_code + padZero(reserve_id),
+          token: brand_code + padZero(queue_number),
+          //"token": brand_code + padZero(reserve_id),
           description: brand_code + '-Reserver id: ' + padZero(reserve_id),
           created_at: currentDate,
           updated_at: currentDate
@@ -215,25 +219,154 @@ function ReserveDetail() {
       if (queuecountf === 0) {
         if (total_quantity > 0) {
           //สร้างข้อมูลคิว
-          const queue_id_createf = await createQueuef(id, brand_code);
+          const queue_number = (await getQueuesCount()) + 1;
+
+          const queue_id_createf = await createQueuef(id, brand_code, queue_number);
+
+          //แจ้งเตือนหลังจากสร้าง Queue แล้ว
+          await getMessageCreateQueue(queue_id_createf, id);
 
           //สร้าง step 1-4
-          await createStepsf(queue_id_createf, id);
+          //createStep(queue_id_createf)
+          await createStepsf(queue_id_createf);
+          setLoading(true);
         } else {
           alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
         }
       } else {
         //alert("สร้างคิวแล้ว")
-        const queue_id = await getQueueIdf(id);
-        window.location.href = '/queue/' + queue_id + '/' + id;
+        // const queue_id = await getQueueIdf(id);
+        window.location.href = '/queues/detail/' + queue_id;
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
+  //สร้าง get Queues Counts
+  const getQueuesCount = () => {
+    return new Promise((resolve, reject) => {
+      const currentDate = moment(new Date()).format('YYYY-MM-DD');
+
+      const requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+      };
+
+      fetch(apiUrl + '/queues/count?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          resolve(result['queue_count']);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  };
+
+  //สร้าง ข้อความ Line notification
+  const getMessageCreateQueue = async (queue_id, reserve_id) => {
+    const queue_info = await getQueue(queue_id);
+    const order_info = await getOrder(reserve_id);
+
+    // การดึงข้อมูลสินค้าและจำนวนสินค้าแต่ละชิ้น
+    const orderProducts = order_info.map((order) => {
+      // เริ่มต้นด้วยข้อความว่าง
+      let message_order = '';
+
+      // สร้างข้อความสำหรับแต่ละสินค้า
+      order.items.forEach((item) => {
+        message_order += 'product: ' + item.name + ', qty: ' + `${parseFloat(item.quantity).toFixed(3)}` + ' ตัน' + '\n';
+      });
+
+      // คืนค่าข้อความที่สร้างขึ้นมา
+      return message_order;
+    });
+
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+
+    var link = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+    link = link + '/queues/detail/' + queue_id;
+
+    const messageLine = queue_info + 'รายการสินค้า:-' + '\n' + orderProducts + '\n' + link;
+    lineNotify(messageLine);
+  };
+
+  function getQueue(id) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        var requestOptions = {
+          method: 'GET',
+          redirect: 'follow'
+        };
+
+        fetch(apiUrl + '/queue/' + id, requestOptions)
+          .then((response) => response.json())
+          .then((result) => {
+            // setQueueToken(result[0]['token'])
+            // setQueues(result)
+
+            const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+            const token_m = result[0]['token'];
+            const company_name_m = 'บริษัท: ' + result[0]['company_name'];
+            const registration_no_m = 'ทะเบียนรถ: ' + result[0]['registration_no'];
+            const driver_name_m = 'คนขับรถ: ' + result[0]['driver_name'];
+            const driver_mobile_m = 'เบอร์โทร: ' + result[0]['mobile_no'];
+            const product_name_m = '';
+
+            const textMessage =
+              'แจ้งเตือนการสร้างคิว:- ' +
+              '\n' +
+              'วันที่: ' +
+              currentDate +
+              '\n' +
+              '\n' +
+              'หมายเลขคิว: ' +
+              token_m +
+              '\n' +
+              company_name_m +
+              '\n' +
+              registration_no_m +
+              '\n' +
+              driver_name_m +
+              '\n' +
+              driver_mobile_m +
+              '\n' +
+              product_name_m +
+              '\n';
+
+            // setMessage(textMessage)
+            resolve(textMessage);
+          })
+          .catch((error) => console.log('error', error));
+      }, 100);
+    });
+  }
+
+  function getOrder(id) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        var requestOptions = {
+          method: 'GET',
+          redirect: 'follow'
+        };
+
+        fetch(apiUrl + '/orders/' + id, requestOptions)
+          .then((response) => response.json())
+          .then((result) => {
+            // setOrders(result)
+            resolve(result);
+          })
+          .catch((error) => console.log('error', error));
+        //resolve('Async operation completed');
+      }, 100);
+    });
+  }
+
   //สร้าง ขั้นตอนการรับสินค้า
-  function createStepsf(queue_id, reserve_id) {
+  function createStepsf(queue_id) {
     return new Promise((resolve) => {
       setTimeout(() => {
         var myHeaders = new Headers();
@@ -294,7 +427,7 @@ function ReserveDetail() {
         fetch(apiUrl + '/transactions', requestOptions)
           .then((response) => response.json())
           .then(() => {
-            window.location.href = '/queue/' + queue_id + '/' + reserve_id;
+            window.location.href = '/queues/detail/' + queue_id;
           })
           .catch((error) => console.log('error', error));
 
@@ -302,6 +435,30 @@ function ReserveDetail() {
       }, 100);
     });
   }
+
+  //สร้าง Message lineNotify
+  const lineNotify = (message) => {
+    const myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+
+    const raw = JSON.stringify({
+      message: message
+    });
+
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    };
+
+    fetch(apiUrl + '/line-notify', requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => console.error(error));
+  };
 
   const navigate = useNavigate();
   const backToReserce = () => {
@@ -521,26 +678,40 @@ function ReserveDetail() {
             </Grid>
           </MainCard>
           <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-            {orderList.length > 0 && reserveData.status !== 'completed' && userRoles === 9 && (
+            {orderList.length > 0 && reserveData.status !== 'completed' && userRoles === 10 && (
               <Button
                 size="mediam"
                 variant="outlined"
                 color="success"
-                onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity, reserveData.brand_code)}
+                onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity, reserveData.group_code)}
+                startIcon={<DiffOutlined />}
               >
-                ออกบัตรคิว
+                สร้างคิว
               </Button>
             )}
 
             {orderList.length > 0 && (
-              <Button size="mediam" variant="contained" color="info" onClick={() => reservePrint(reserveData.reserve_id)}>
+              <Button
+                size="mediam"
+                variant="contained"
+                color="info"
+                onClick={() => reservePrint(reserveData.reserve_id)}
+                startIcon={<PrinterOutlined />}
+              >
                 พิมพ์
               </Button>
             )}
 
             {orderList.length > 0 && reserveData.status !== 'completed' && (
-              <Button size="mediam" type="submit" variant="contained" color="primary" onClick={() => reserveEdit(reserveData.reserve_id)}>
-                แก้ไขข้อมูลการจอง
+              <Button
+                size="mediam"
+                type="submit"
+                variant="contained"
+                color="primary"
+                onClick={() => reserveEdit(reserveData.reserve_id)}
+                startIcon={<EditOutlined />}
+              >
+                แก้ไขข้อมูล
               </Button>
             )}
 
@@ -551,6 +722,7 @@ function ReserveDetail() {
               onClick={() => {
                 backToReserce();
               }}
+              startIcon={<RollbackOutlined />}
             >
               ย้อนกลับ
             </Button>

@@ -8,6 +8,7 @@ import { Formik } from 'formik';
 import axios from '../../../../node_modules/axios/index';
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
+import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 
 // material-ui
 import {
@@ -222,7 +223,15 @@ function UpdateCar() {
                 </Grid>
 
                 <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
+                  <Button
+                    disableElevation
+                    disabled={isSubmitting}
+                    size="mediam"
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    startIcon={<SaveOutlined />}
+                  >
                     บันทึกข้อมูล
                   </Button>
                   <Button
@@ -232,6 +241,7 @@ function UpdateCar() {
                     onClick={() => {
                       backToCar();
                     }}
+                    startIcon={<RollbackOutlined />}
                   >
                     ยกเลิก
                   </Button>

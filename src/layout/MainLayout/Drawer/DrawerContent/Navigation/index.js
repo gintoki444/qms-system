@@ -14,17 +14,14 @@ import { useSelector } from 'react-redux';
 const Navigation = () => {
   let newMenuItem = menuItem;
   const userRole = useSelector((state) => state.auth?.roles);
-  let roles = userRole;
-  if (roles) newMenuItem.items = menuItem.items.filter((x) => x.roles === roles);
 
-  if (!roles) {
-    roles = 5;
-  }
-  useEffect(() => {
-    if (!roles) {
-      roles = 5;
-    }
-  }, [roles]);
+  // let roles = userRole;
+  // if (roles) newMenuItem.items = menuItem.items.filter((x) => x.roles === roles);
+
+  // if (!roles) {
+  //   roles = 5;
+  // }
+  useEffect(() => {}, [userRole]);
 
   // if (roles) {
   //   newMenuItem.items = menuItem.items.filter((x) => x.roles === roles);
@@ -33,7 +30,7 @@ const Navigation = () => {
   // console.log('newMenuItem.items :', newMenuItem.items);
 
   const navGroups = newMenuItem.items.map((item) => {
-    if (roles && item.roles === roles) {
+    if (userRole && item.roles === userRole) {
       switch (item.type) {
         case 'group':
           return <NavGroup key={item.id} item={item} />;
@@ -47,7 +44,7 @@ const Navigation = () => {
     }
   });
 
-  return <>{roles === null ? <p style={{ textAlign: 'center' }}>Loading...</p> : <Box sx={{ pt: 2 }}>{navGroups}</Box>}</>;
+  return <>{userRole === null ? <p style={{ textAlign: 'center' }}>Loading...</p> : <Box sx={{ pt: 2 }}>{navGroups}</Box>}</>;
 };
 
 export default Navigation;

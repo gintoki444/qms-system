@@ -17,7 +17,7 @@ const adminManagement = {
   children: [
     {
       id: 'admincompany',
-      title: 'ข้อมูลร้านค้า/บริษัท',
+      title: 'ข้อมูลร้านค้า / บริษัท',
       type: 'item',
       url: '/company',
       icon: ShopOutlined,

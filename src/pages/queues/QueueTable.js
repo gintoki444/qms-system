@@ -84,25 +84,25 @@ const headCells = [
   },
   {
     id: 'step1',
-    align: 'left',
+    align: 'center',
     disablePadding: false,
     label: 'ชั่งเบา(S1)'
   },
   {
     id: 'step2',
-    align: 'left',
+    align: 'center',
     disablePadding: false,
     label: ' ขึ้นสินค้า(S2)'
   },
   {
     id: 'step3',
-    align: 'left',
+    align: 'center',
     disablePadding: false,
     label: 'ชั่งหนัก(S3)'
   },
   {
     id: 'step4',
-    align: 'left',
+    align: 'center',
     disablePadding: false,
     label: 'เสร็จสิ้น(S4)'
   },
@@ -218,6 +218,8 @@ export default function QueueTable() {
 
   const handleClose = (flag) => {
     if (flag === 1) {
+      setLoading(true);
+
       deteteQueue(id_del);
       //update = waiting การจองเมื่อลบคิว queue
       updateReserveStatus(reserve_id);
@@ -259,6 +261,9 @@ export default function QueueTable() {
 
     fetch(apiUrl + '/updatereservestatus/' + reserve_id, requestOptions)
       .then((response) => response.json())
+      .then(() => {
+        setLoading(false);
+      })
       .catch((error) => console.log('error', error));
   };
 
@@ -310,64 +315,65 @@ export default function QueueTable() {
           <QueueTableHead order={order} orderBy={orderBy} />
           {!loading ? (
             <TableBody>
-              {items.map((row, index) => {
-                return (
-                  <TableRow key={index}>
-                    <TableCell align="center">{row.queue_number}</TableCell>
-                    <TableCell align="left">{moment(row.queue_date).format('MM-DD-YYYY')}</TableCell>
-                    <TableCell align="center">
-                      <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
-                    </TableCell>
-                    <TableCell align="left">{row.company_name}</TableCell>
-                    <TableCell align="left">{row.registration_no}</TableCell>
-                    <TableCell align="left">{row.driver_name}</TableCell>
-                    <TableCell align="left">{row.driver_mobile}</TableCell>
-                    <TableCell align="left">{row.step1_status !== 'none' ? <QueueStatus status={row.step1_status} /> : '-'}</TableCell>
-                    <TableCell align="left">{row.step2_status !== 'none' ? <QueueStatus status={row.step2_status} /> : '-'}</TableCell>
-                    <TableCell align="center">{row.step3_status !== 'none' ? <QueueStatus status={row.step3_status} /> : '-'}</TableCell>
-                    <TableCell align="left">{row.step4_status !== 'none' ? <QueueStatus status={row.step4_status} /> : '-'}</TableCell>
-                    <TableCell align="center">
-                      <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
-                        <Tooltip title="รายละเอียด">
-                          <span>
-                            <Button
-                              sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                              variant="contained"
-                              size="medium"
-                              color="info"
-                              onClick={() => updateDrivers(row.queue_id)}
-                            >
-                              <ProfileOutlined />
-                            </Button>
-                          </span>
-                        </Tooltip>
-
-                        {userRoles && userRoles === 10 && (
-                          <Tooltip title="ลบ">
+              {items.length > 0 &&
+                items.map((row, index) => {
+                  return (
+                    <TableRow key={index}>
+                      <TableCell align="center">{row.queue_number}</TableCell>
+                      <TableCell align="left">{moment(row.queue_date).format('MM-DD-YYYY')}</TableCell>
+                      <TableCell align="center">
+                        <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
+                      </TableCell>
+                      <TableCell align="left">{row.company_name}</TableCell>
+                      <TableCell align="left">{row.registration_no}</TableCell>
+                      <TableCell align="left">{row.driver_name}</TableCell>
+                      <TableCell align="left">{row.driver_mobile}</TableCell>
+                      <TableCell align="center">{row.step1_status !== 'none' ? <QueueStatus status={row.step1_status} /> : '-'}</TableCell>
+                      <TableCell align="center">{row.step2_status !== 'none' ? <QueueStatus status={row.step2_status} /> : '-'}</TableCell>
+                      <TableCell align="center">{row.step3_status !== 'none' ? <QueueStatus status={row.step3_status} /> : '-'}</TableCell>
+                      <TableCell align="center">{row.step4_status !== 'none' ? <QueueStatus status={row.step4_status} /> : '-'}</TableCell>
+                      <TableCell align="center">
+                        <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
+                          <Tooltip title="รายละเอียด">
                             <span>
                               <Button
-                                variant="contained"
                                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                variant="contained"
                                 size="medium"
-                                disabled={row.status === 'completed'}
-                                color="error"
-                                onClick={() => handleClickOpen(row.queue_id, row.reserve_id, row.step1_status)}
+                                color="info"
+                                onClick={() => updateDrivers(row.queue_id)}
                               >
-                                <DeleteOutlined />
+                                <ProfileOutlined />
                               </Button>
                             </span>
                           </Tooltip>
-                        )}
-                      </ButtonGroup>
-                      {/* <Button 
+
+                          {userRoles && userRoles === 10 && (
+                            <Tooltip title="ลบ">
+                              <span>
+                                <Button
+                                  variant="contained"
+                                  sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                  size="medium"
+                                  disabled={row.status === 'completed'}
+                                  color="error"
+                                  onClick={() => handleClickOpen(row.queue_id, row.reserve_id, row.step1_status)}
+                                >
+                                  <DeleteOutlined />
+                                </Button>
+                              </span>
+                            </Tooltip>
+                          )}
+                        </ButtonGroup>
+                        {/* <Button 
                       sx={{ minWidth: '33px!important', p: '6px 0px' }}
                       variant="contained" size="medium" color="error" onClick={() => deleteDrivers(row.reserve_id)}>
                       <DeleteOutlined />
                     </Button> */}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
 
               {items.length == 0 && (
                 <TableRow>

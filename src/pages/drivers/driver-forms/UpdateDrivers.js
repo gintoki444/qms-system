@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import axios from '../../../../node_modules/axios/index';
+import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -256,7 +257,15 @@ function UpdateDrivers() {
                 </Grid>
 
                 <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
+                  <Button
+                    disableElevation
+                    disabled={isSubmitting}
+                    size="mediam"
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    startIcon={<SaveOutlined />}
+                  >
                     บันทึกข้อมูล
                   </Button>
                   <Button
@@ -266,6 +275,7 @@ function UpdateDrivers() {
                     onClick={() => {
                       backToDrivers();
                     }}
+                    startIcon={<RollbackOutlined />}
                   >
                     ยกเลิก
                   </Button>

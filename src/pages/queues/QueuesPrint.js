@@ -9,7 +9,10 @@ import moment from 'moment';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 import { useLocation } from 'react-router-dom';
-
+// ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
+const padZero = (num) => {
+  return num < 10 ? `0${num}` : num;
+};
 const printPageStyle = {
   width: '82mm',
   minHeight: '80mm',
@@ -101,7 +104,7 @@ function QueuesPrint() {
               <QRCode value={prurl} className="qr-code" size={128} />
 
               <Typography variant="h5" gutterBottom sx={{ mt: 3 }}>
-                คิว : <strong style={{ color: 'red', fontSize: '32px' }}>{queues.queue_number}</strong>
+                คิว : <strong style={{ color: 'red', fontSize: '32px' }}>{padZero(queues.queue_number)}</strong>
               </Typography>
 
               <Typography variant="h5" gutterBottom>

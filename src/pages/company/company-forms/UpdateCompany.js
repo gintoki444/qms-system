@@ -9,6 +9,7 @@ import { Formik } from 'formik';
 
 // Get api company
 import * as companyRequest from '_api/companyRequest';
+import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 
 // material-ui
 import {
@@ -29,7 +30,6 @@ import MainCard from 'components/MainCard';
 import moment from 'moment';
 
 function UpdateCompany() {
-
   const [open, setOpen] = useState(false);
   let [initialValue, setInitialValue] = useState({
     name: '',
@@ -52,7 +52,7 @@ function UpdateCompany() {
     description: Yup.string().max(255).required('กรุณาระบุรายละเอียดของบริษัท'),
     tax_no: Yup.string().min(13).max(13).required('กรุณาระบุเลขที่ผู้เสียภาษี'),
     phone: Yup.string()
-      .min(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
+      .min(8, 'กรุณาระบุเบอร์โทรศัพท์อย่างน้อย 8 หลัก')
       .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
       .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
       .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
@@ -73,7 +73,7 @@ function UpdateCompany() {
   useEffect(() => {
     getCompany(id);
   }, [id]);
- 
+
   // =============== Get ข้อมูล Company ===============//
 
   const getCompany = async (id) => {
@@ -110,7 +110,7 @@ function UpdateCompany() {
   const userId = useSelector((state) => state.auth.user_id);
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-    const formData = new FormData();
+    // const formData = new FormData();
     try {
       values.user_id = userId;
       values.created_at = currentDate;
@@ -118,50 +118,13 @@ function UpdateCompany() {
       values.location_lat = '0000';
       values.location_lng = '0000';
 
-      formData.append('user_id', values.user_id);
-      formData.append('name', values.name);
-      formData.append('country', values.country);
-      formData.append('open_time', values.open_time);
-      formData.append('description', values.description);
-      formData.append('tax_no', values.tax_no);
-      formData.append('phone', values.phone);
-      formData.append('address', values.address);
-      formData.append('zipcode', values.zipcode);
-      formData.append('location_lat', values.location_lat);
-      formData.append('location_lng', values.location_lng);
-      formData.append('contact_number', values.contact_number);
-      formData.append('contact_person', values.contact_person);
-      formData.append('created_at', values.created_at);
-      formData.append('updated_at', values.updated_at);
-
-      console.log(values);
-
-      let config = {
-        method: 'put',
-        maxBodyLength: Infinity,
-        url: apiUrl + '/updatecompany/' + id,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: formData
-      };
-
-      axios
-        .request(config)
-        .then((result) => {
-          console.log('result :', result);
-          if (result.data.status === 'ok') {
-            window.location.href = '/company';
-          } else {
-            alert(result['message']['sqlMessage']);
-          }
-
-          setStatus({ success: false });
-          setSubmitting(false);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      companyRequest.updateCompany(id, values).then((result) => {
+        if (result.status === 'ok') {
+          window.location.href = '/company';
+        } else {
+          alert(result['message']['sqlMessage']);
+        }
+      });
     } catch (err) {
       console.error(err);
       setStatus({ success: false });
@@ -422,7 +385,15 @@ function UpdateCompany() {
                 </Grid>
 
                 <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
+                  <Button
+                    disableElevation
+                    disabled={isSubmitting}
+                    size="mediam"
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    startIcon={<SaveOutlined />}
+                  >
                     บันทึกข้อมูล
                   </Button>
                   <Button
@@ -432,6 +403,7 @@ function UpdateCompany() {
                     onClick={() => {
                       backToCompany();
                     }}
+                    startIcon={<RollbackOutlined />}
                   >
                     ยกเลิก
                   </Button>

@@ -6,7 +6,7 @@ export default function TableCell(theme) {
       styleOverrides: {
         root: {
           fontSize: '0.9rem',
-          padding: 12,
+          padding: 8,
           borderColor: theme.palette.divider
         },
         head: {

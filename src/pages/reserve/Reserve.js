@@ -43,7 +43,7 @@ function Reserve() {
   };
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
-      {!userRole && (
+    {userRole === 5 && (
         <Stack sx={{ width: '100%', mb: '18px' }} spacing={2}>
           <Alert severity="warning">กรุณารอการอนุมัติการใช้งานจากผู้ดูแลระบบ</Alert>
         </Stack>

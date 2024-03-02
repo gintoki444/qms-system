@@ -8,17 +8,32 @@ import axios from '../../../../node_modules/axios/index';
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 const userId = localStorage.getItem('user_id');
+import * as reserveRequest from '_api/reserveRequest';
+import * as lineNotifyApi from '_api/linenotify';
 
 // material-ui
-import { Button, FormHelperText, Grid, InputLabel, OutlinedInput, Stack, Typography, Divider } from '@mui/material';
+import {
+  Button,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Typography,
+  Divider,
+  Backdrop,
+  CircularProgress
+} from '@mui/material';
 import MainCard from 'components/MainCard';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
+import { SaveOutlined } from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
 
 function AddReserve() {
+  const [loading, setLoading] = useState(false);
   const currentDate = new Date().toISOString().split('T')[0];
 
   // =============== Get Company ===============//
@@ -124,6 +139,7 @@ function AddReserve() {
 
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
+    setLoading(true);
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     try {
@@ -146,8 +162,7 @@ function AddReserve() {
         .request(config)
         .then((result) => {
           if (result.data.status === 'ok') {
-            window.location.href = '/reserve/update/'+result.data.results.insertId;
-            console.log('result :', result);
+            setMessageCreateReserve(result.data.results.insertId);
           } else {
             alert(result['message']['sqlMessage']);
           }
@@ -166,8 +181,53 @@ function AddReserve() {
     }
   };
 
+  const setMessageCreateReserve = async (id) => {
+    const prurl = window.location.origin + '/reserve/update/' + id;
+
+    await reserveRequest.getReserDetailID(id).then((result) => {
+      result.reserve.map((data) => {
+        const company_name_m = 'บริษัท: ' + data.name;
+        const registration_no_m = 'ทะเบียนรถ: ' + data.registration_no;
+        const driver_name_m = 'คนขับรถ: ' + data.driver;
+        const driver_mobile_m = 'เบอร์โทร: ' + data.mobile_no;
+
+        const textMessage =
+          'แจ้งเตือนการ จองคิวรับสินค้า' +
+          '\n' +
+          'วันที่: ' +
+          moment(new Date()).format('DD/MM/YYYY HH:mm:ss') +
+          '\n' +
+          '\n' +
+          company_name_m +
+          '\n' +
+          registration_no_m +
+          '\n' +
+          driver_name_m +
+          '\n' +
+          driver_mobile_m +
+          +'\n' +
+          '\n' +
+          '\n' +
+          prurl;
+
+        lineNotifyApi.sendLinenotify(textMessage).then(() => {
+          window.location.href = '/reserve/update/' + id;
+          setLoading(false);
+        });
+      });
+    });
+  };
+
   return (
     <Grid alignItems="center" justifyContent="space-between">
+      {loading && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={loading}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
         <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits}>
           {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors }) => (
@@ -381,8 +441,16 @@ function AddReserve() {
                 </Grid>
 
                 <Grid item xs={12}>
-                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
-                    เพิ่มข้อมูลรถ
+                  <Button
+                    disableElevation
+                    disabled={isSubmitting}
+                    size="mediam"
+                    type="submit"
+                    variant="contained"
+                    color="success"
+                    startIcon={<SaveOutlined />}
+                  >
+                    เพิ่มข้อมูลจองคิว
                   </Button>
                 </Grid>
               </Grid>

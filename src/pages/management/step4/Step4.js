@@ -1,11 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { Step4Table } from './Step4Table';
 
-import { Grid, Stack, Typography, Box } from '@mui/material';
+import { Grid, Stack, Box } from '@mui/material';
 import MainCard from 'components/MainCard';
 
 function Step4() {
+  const [commonStatus, setCommonStatus] = useState('');
+  const handleStatusChange = (newStatus) => {
+    // Change the common status and trigger a data reload in the other instance
+    if (newStatus !== commonStatus) {
+      console.log(newStatus + '+' + commonStatus);
+      setCommonStatus(newStatus);
+    } else if (newStatus === commonStatus) {
+      console.log(commonStatus + '+' + newStatus);
+      setCommonStatus('');
+    } else {
+      setCommonStatus('commonStatus');
+    }
+  };
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
       <Grid item xs={12} md={7} lg={8}>
@@ -17,27 +30,20 @@ function Step4() {
 
         <Grid container alignItems="center" justifyContent="flex-end">
           <Grid item xs={12}>
-            <Typography variant="h3">กำลังออกประตู</Typography>
-          </Grid>
-
-          <Grid item xs={12}>
             <MainCard content={false} sx={{ mt: 1.5 }}>
               <Box sx={{ pt: 1, pr: 2 }}>
-                <Step4Table status={'processing'} />
+                <Step4Table onStatusChange={handleStatusChange} status={'processing'} title={'กำลังรับบริการ'} />
               </Box>
             </MainCard>
           </Grid>
         </Grid>
 
         <Grid container alignItems="center" justifyContent="flex-end" sx={{ mt: 3 }}>
-          <Grid item xs={12}>
-            <Typography variant="h3">รอคิว</Typography>
-          </Grid>
 
           <Grid item xs={12}>
             <MainCard content={false} sx={{ mt: 1.5 }}>
               <Box sx={{ pt: 1, pr: 2 }}>
-                <Step4Table status={'waiting'} />
+                <Step4Table onStatusChange={handleStatusChange} status={'waiting'} title={'รอเรียกคิว'}  />
               </Box>
             </MainCard>
           </Grid>

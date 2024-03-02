@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 // third party
 import * as Yup from 'yup';
@@ -8,7 +9,7 @@ import axios from '../../../../node_modules/axios/index';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
-const userId = localStorage.getItem('user_id');
+// const userId = localStorage.getItem('user_id');
 
 // material-ui
 import {
@@ -26,18 +27,30 @@ import {
   TableBody,
   TableCell,
   Backdrop,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
   CircularProgress
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
+// import { SaveOutlined, DiffOutlined, PrinterOutlined, RollbackOutlined } from '@ant-design/icons';
+import { DiffOutlined, PlusCircleOutlined, PrinterOutlined, SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
 
 function UpdateReserve() {
-  const [open, setOpen] = useState(false);
+  const userRoles = useSelector((state) => state.auth.roles);
+  const [loading, setLoading] = useState(false);
+  const [checkDate, setCheckDate] = useState(false);
   const currentDate = new Date().toISOString().split('T')[0];
+  const dateNow = moment(new Date()).format('YYYY-MM-DD');
+  const [user_Id, setUserId] = useState(false);
+
   // =============== Get Reserve ID ===============//
   const [reservationData, setReservationData] = useState({
     description: '',
@@ -75,15 +88,22 @@ function UpdateReserve() {
     driver: ''
   });
   const { id } = useParams();
+
   const getReserve = () => {
-    setOpen(true);
+    setLoading(true);
     const urlapi = apiUrl + `/reserve/` + id;
     axios
       .get(urlapi)
       .then((res) => {
         if (res) {
           res.data.reserve.map((result) => {
+            console.log(result.user_id);
+            setUserId(result.user_id);
+            if (currentDate == moment(result.pickup_date).format('YYYY-MM-DD')) {
+              setCheckDate(true);
+            }
             setReservationData(result);
+            getCompanyLsit();
           });
         }
       })
@@ -93,12 +113,14 @@ function UpdateReserve() {
   // =============== Get Company ===============//
   const [companyList, setCompanyList] = useState([]);
   const getCompanyLsit = () => {
-    const urlapi = apiUrl + `/allcompany/` + userId;
+    console.log('user_Id', user_Id);
+    const urlapi = apiUrl + `/allcompany/` + user_Id;
     axios
       .get(urlapi)
       .then((res) => {
         if (res) {
           setCompanyList(res.data);
+          getCarLsit();
         }
       })
       .catch((err) => console.log(err));
@@ -107,12 +129,13 @@ function UpdateReserve() {
   // =============== Get Car ===============//
   const [carList, setCarList] = useState([]);
   const getCarLsit = () => {
-    const urlapi = apiUrl + `/allcars/` + userId;
+    const urlapi = apiUrl + `/allcars/` + user_Id;
     axios
       .get(urlapi)
       .then((res) => {
         if (res) {
           setCarList(res.data);
+          getDriverLsit();
         }
       })
       .catch((err) => console.log(err));
@@ -121,12 +144,13 @@ function UpdateReserve() {
   // =============== Get Driver ===============//
   const [driverList, setDriverList] = useState([]);
   const getDriverLsit = () => {
-    const urlapi = apiUrl + `/alldrivers/` + userId;
+    const urlapi = apiUrl + `/alldrivers/` + user_Id;
     axios
       .get(urlapi)
       .then((res) => {
         if (res) {
           setDriverList(res.data);
+          getOrders();
         }
       })
       .catch((err) => console.log(err));
@@ -164,39 +188,26 @@ function UpdateReserve() {
 
   // =============== Get order ===============//
   const [orderList, setOrderList] = useState([]);
-  const getOrder = async () => {
+  const getOrders = async () => {
     const urlapi = apiUrl + `/orders/` + id;
     await axios
       .get(urlapi)
       .then((res) => {
         setOrderList(res.data);
-        setOpen(false);
+        setLoading(false);
       })
       .catch((err) => console.log(err));
   };
 
-  // =============== Get Product ===============//
-  // const [productList, setProductList] = useState([]);
-  // const getProduct = async () => {
-  //   const urlapi = apiUrl + `/allproducts`;
-  //   await axios
-  //     .get(urlapi)
-  //     .then((res) => {
-  //       setProductList(res.data);
-  //     })
-  //     .catch((err) => console.log(err));
-  // };
   // =============== useEffect ===============//
   useEffect(() => {
-    getCompanyLsit();
-    getCarLsit();
-    getDriverLsit();
-    getWarehouses();
-    getBrandList();
-    getOrder();
-    // getProduct();
     getReserve();
-  }, [id]);
+    if (user_Id) {
+      getWarehouses();
+      getBrandList();
+    }
+    // getProduct();
+  }, [user_Id]);
 
   // =============== Validate Forms ===============//
   const validationSchema = Yup.object().shape({
@@ -211,7 +222,7 @@ function UpdateReserve() {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     try {
-      values.user_id = userId;
+      values.user_id = user_Id;
       values.pickup_date = moment(values.pickup_date).format('YYYY-MM-DD HH:mm:ss');
       values.created_at = currentDate;
       values.updated_at = currentDate;
@@ -275,20 +286,420 @@ function UpdateReserve() {
     total_quantity: reservationData.total_quantity
   };
 
+  // ==============================|| Create Queue ||============================== //
+  const [open, setOpen] = useState(false);
+  const [notifytext, setNotifyText] = useState('');
+  const [reserve_id, setReserveId] = useState(0);
+  const [total_quantity, setTotalQuantity] = useState(0);
+  const [brand_code, setBrandCode] = useState('');
+
+  // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
+  const padZero = (num) => {
+    return num < 10 ? `0${num}` : num;
+  };
+
+  const handleClickOpen = (id, total_quantity, brand_code) => {
+    try {
+      if (total_quantity === '0') {
+        alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
+        return;
+      } else {
+        setNotifyText('ต้องการสร้างคิวหรือไม่?');
+        //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
+        console.log('id :', id);
+        console.log('total_quantity :', total_quantity);
+        console.log('brand_code :', brand_code);
+
+        setReserveId(id);
+        setTotalQuantity(total_quantity);
+        setBrandCode(brand_code);
+        setOpen(true);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+    //กำหนดข้อความแจ้งเตือน
+    // setNotifyText('ต้องการสร้างคิวหรือไม่?');
+  };
+
+  const handleClose = (flag) => {
+    if (flag === 1) {
+      //click มาจากการลบ
+      setLoading(true);
+      addQueue(reserve_id, total_quantity);
+    }
+    setOpen(false);
+  };
+
+  //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
+  async function checkQueueDataf(reserve_id) {
+    let config = {
+      method: 'get',
+      maxBodyLength: Infinity,
+      url: apiUrl + '/queuecountbyres/' + reserve_id,
+      headers: {}
+    };
+    return await new Promise((resolve) => {
+      axios.request(config).then((response) => {
+        if (response.data.status === 'ok') {
+          response.data.queuecount.map((data) => {
+            resolve(data.queuecount);
+          });
+        } else {
+          alert(result['message']);
+        }
+      });
+    });
+  }
+
+  //สร้าง Queue รับค่า reserve_id
+  function createQueuef(reserve_id, brand_code, queue_number) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        //วันที่ปัจจุบัน
+        const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+        const queueDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
+        var myHeaders = new Headers();
+        myHeaders.append('Content-Type', 'application/json');
+
+        var raw = JSON.stringify({
+          reserve_id: reserve_id,
+          queue_date: queueDate,
+          // token: brand_code + padZero(reserve_id),
+          token: brand_code + padZero(queue_number),
+          //"token": brand_code + padZero(reserve_id),
+          description: brand_code + '-Reserver id: ' + padZero(reserve_id),
+          created_at: currentDate,
+          updated_at: currentDate
+        });
+
+        var requestOptions = {
+          method: 'POST',
+          headers: myHeaders,
+          body: raw,
+          redirect: 'follow'
+        };
+
+        fetch(apiUrl + '/addqueue', requestOptions)
+          .then((response) => response.json())
+          .then((result) => {
+            if (result['status'] === 'ok') {
+              //update การจองในการสร้าง queue
+              updateReserveStatus(reserve_id);
+
+              resolve(result['results']['insertId']);
+            }
+          })
+          .catch((error) => console.log('error', error));
+        //resolve('Async operation completed');
+      }, 300);
+    });
+  }
+
+  //update การจองในการสร้าง queue
+  const updateReserveStatus = (reserve_id) => {
+    var myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+
+    var raw = JSON.stringify({
+      status: 'completed'
+    });
+
+    var requestOptions = {
+      method: 'PUT',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    };
+
+    fetch(apiUrl + '/updatereservestatus/' + reserve_id, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log('updatereservestatus: ' + result);
+      })
+      .catch((error) => console.log('error', error));
+  };
+
+  //สร้าง addQueue รับค่า reserve_id ,total_quantity
+  const addQueue = async (id, total_quantity) => {
+    try {
+      //ตรวจสอบข้อมูลคิว มีการสร้างจาก reserve id นี้แล้วหรือยัง
+      const queuecountf = await checkQueueDataf(id);
+
+      if (queuecountf === 0) {
+        if (total_quantity > 0) {
+          //สร้างข้อมูลคิว
+          const queue_number = (await getQueuesCount()) + 1;
+
+          const queue_id_createf = await createQueuef(id, brand_code, queue_number);
+
+          //แจ้งเตือนหลังจากสร้าง Queue แล้ว
+          await getMessageCreateQueue(queue_id_createf, id);
+
+          //สร้าง step 1-4
+          //createStep(queue_id_createf)
+          await createStepsf(queue_id_createf);
+          setLoading(true);
+        } else {
+          alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
+        }
+      } else {
+        //alert("สร้างคิวแล้ว")
+        // const queue_id = await getQueueIdf(id);
+        window.location.href = '/queues/detail/' + queue_id;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  //สร้าง get Queues Counts
+  const getQueuesCount = () => {
+    return new Promise((resolve, reject) => {
+      const currentDate = moment(new Date()).format('YYYY-MM-DD');
+
+      const requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+      };
+
+      fetch(apiUrl + '/queues/count?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          resolve(result['queue_count']);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  };
+
+  //สร้าง ข้อความ Line notification
+  const getMessageCreateQueue = async (queue_id, reserve_id) => {
+    const queue_info = await getQueue(queue_id);
+    const order_info = await getOrder(reserve_id);
+
+    // การดึงข้อมูลสินค้าและจำนวนสินค้าแต่ละชิ้น
+    const orderProducts = order_info.map((order) => {
+      // เริ่มต้นด้วยข้อความว่าง
+      let message_order = '';
+
+      // สร้างข้อความสำหรับแต่ละสินค้า
+      order.items.forEach((item) => {
+        message_order += 'product: ' + item.name + ', qty: ' + `${parseFloat(item.quantity).toFixed(3)}` + ' ตัน' + '\n';
+      });
+
+      // คืนค่าข้อความที่สร้างขึ้นมา
+      return message_order;
+    });
+
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+
+    var link = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+    link = link + '/queues/detail/' + queue_id;
+
+    const messageLine = queue_info + 'รายการสินค้า:-' + '\n' + orderProducts + '\n' + link;
+    lineNotify(messageLine);
+  };
+
+  function getQueue(id) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        var requestOptions = {
+          method: 'GET',
+          redirect: 'follow'
+        };
+
+        fetch(apiUrl + '/queue/' + id, requestOptions)
+          .then((response) => response.json())
+          .then((result) => {
+            // setQueueToken(result[0]['token'])
+            // setQueues(result)
+
+            const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+            const token_m = result[0]['token'];
+            const company_name_m = 'บริษัท: ' + result[0]['company_name'];
+            const registration_no_m = 'ทะเบียนรถ: ' + result[0]['registration_no'];
+            const driver_name_m = 'คนขับรถ: ' + result[0]['driver_name'];
+            const driver_mobile_m = 'เบอร์โทร: ' + result[0]['mobile_no'];
+            const product_name_m = '';
+
+            const textMessage =
+              'แจ้งเตือนการสร้างคิว:- ' +
+              '\n' +
+              'วันที่: ' +
+              currentDate +
+              '\n' +
+              '\n' +
+              'หมายเลขคิว: ' +
+              token_m +
+              '\n' +
+              company_name_m +
+              '\n' +
+              registration_no_m +
+              '\n' +
+              driver_name_m +
+              '\n' +
+              driver_mobile_m +
+              '\n' +
+              product_name_m +
+              '\n';
+
+            // setMessage(textMessage)
+            resolve(textMessage);
+          })
+          .catch((error) => console.log('error', error));
+      }, 100);
+    });
+  }
+
+  function getOrder(id) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        var requestOptions = {
+          method: 'GET',
+          redirect: 'follow'
+        };
+
+        fetch(apiUrl + '/orders/' + id, requestOptions)
+          .then((response) => response.json())
+          .then((result) => {
+            // setOrders(result)
+            resolve(result);
+          })
+          .catch((error) => console.log('error', error));
+        //resolve('Async operation completed');
+      }, 100);
+    });
+  }
+
+  //สร้าง ขั้นตอนการรับสินค้า
+  function createStepsf(queue_id) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        var myHeaders = new Headers();
+        myHeaders.append('Content-Type', 'application/json');
+
+        var raw = JSON.stringify({
+          transactions: [
+            {
+              order: 1,
+              description: 'ชั่งเบา',
+              queue_id: queue_id,
+              status: 'waiting',
+              station_id: 27,
+              remark: 'ทดสอบ-ชั่งเบา',
+              created_at: '2024-01-27',
+              updated_at: '2024-01-27'
+            },
+            {
+              order: 2,
+              description: 'ขึ้นสินค้า',
+              queue_id: queue_id,
+              status: 'none',
+              station_id: 27,
+              remark: 'ทดสอบ-ขึ้นสินค้า',
+              created_at: '2024-01-15',
+              updated_at: '2024-01-15'
+            },
+            {
+              order: 3,
+              description: 'ชั่งหนัก',
+              queue_id: queue_id,
+              status: 'none',
+              station_id: 27,
+              remark: 'ทดสอบ-ชั่งหนัก ',
+              created_at: '2024-01-13',
+              updated_at: '2024-01-13'
+            },
+            {
+              order: 4,
+              description: 'เสร็จสิ้น',
+              queue_id: queue_id,
+              status: 'none',
+              station_id: 27,
+              remark: 'ทดสอบ-เสร็จสิ้น',
+              created_at: '2024-01-13',
+              updated_at: '2024-01-13'
+            }
+          ]
+        });
+
+        var requestOptions = {
+          method: 'POST',
+          headers: myHeaders,
+          body: raw,
+          redirect: 'follow'
+        };
+
+        fetch(apiUrl + '/transactions', requestOptions)
+          .then((response) => response.json())
+          .then(() => {
+            window.location.href = '/queues/detail/' + queue_id;
+          })
+          .catch((error) => console.log('error', error));
+
+        resolve('Async operation completed');
+      }, 100);
+    });
+  }
+
+  //สร้าง Message lineNotify
+  const lineNotify = (message) => {
+    const myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+
+    const raw = JSON.stringify({
+      message: message
+    });
+
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    };
+
+    fetch(apiUrl + '/line-notify', requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => console.error(error));
+  };
+
   const reservePrint = (id) => {
     navigate('/prints/reserve', { state: { reserveId: id, link: '/reserve/update/' + id } });
   };
 
   return (
     <Grid alignItems="center" justifyContent="space-between">
-      {open && (
+      {loading && (
         <Backdrop
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
-          open={open}
+          open={loading}
         >
           <CircularProgress color="primary" />
         </Backdrop>
       )}
+
+      <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
+        <DialogTitle id="responsive-dialog-title">{'แจ้งเตือน'}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{notifytext}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={() => handleClose(0)}>
+            ยกเลิก
+          </Button>
+          <Button onClick={() => handleClose(1)} autoFocus>
+            ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Grid container spacing={3}>
         <Grid item xs={12} md={12}>
           <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
@@ -510,7 +921,7 @@ function UpdateReserve() {
                       </Grid>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                       {orderList.length === 0 && (
-                        <Grid item xs={6}>
+                        <Grid item xs={6} sx={{ p: 2 }}>
                           <Typography variant="body1">
                             <strong>ไม่มีข้อมูลสินค้า</strong>
                           </Typography>
@@ -556,14 +967,14 @@ function UpdateReserve() {
                             <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                           </Grid>
                         ))}
-
-                        {orderList.length === 0 && (
-                          <Typography variant="body1">
-                            <strong>ไม่มีข้อมูล </strong>
-                          </Typography>
-                        )}
                         <Stack direction="row" alignItems="center" spacing={0}>
-                          <Button size="mediam" variant="outlined" color="success" onClick={() => addOrder()}>
+                          <Button
+                            size="mediam"
+                            variant="outlined"
+                            color="success"
+                            onClick={() => addOrder()}
+                            startIcon={<PlusCircleOutlined />}
+                          >
                             เพิ่มข้อมูลสินค้า
                           </Button>
                         </Stack>
@@ -571,15 +982,48 @@ function UpdateReserve() {
                     </Grid>
                   </Grid>
 
-                  <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
+                  <Grid item xs={12} sx={{ '& button': { m: 1 }, pl: '8px' }}>
                     <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                    {orderList.length > 0 && reservationData.status !== 'completed' && userRoles === 10 && checkDate == true && (
+                      <Button
+                        size="mediam"
+                        variant="outlined"
+                        color="success"
+                        disabled={
+                          values.status === 'completed' ||
+                          dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
+                          values.total_quantity == 0 ||
+                          checkDate == false
+                        }
+                        onClick={() =>
+                          handleClickOpen(reservationData.reserve_id, reservationData.total_quantity, reservationData.group_code)
+                        }
+                        startIcon={<DiffOutlined />}
+                      >
+                        สร้างคิว
+                      </Button>
+                    )}
 
                     {orderList.length > 0 && (
-                      <Button size="mediam" variant="contained" color="info" onClick={() => reservePrint(id)}>
+                      <Button
+                        size="mediam"
+                        variant="contained"
+                        color="info"
+                        onClick={() => reservePrint(id)}
+                        startIcon={<PrinterOutlined />}
+                      >
                         พิมพ์
                       </Button>
                     )}
-                    <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
+                    <Button
+                      disableElevation
+                      disabled={isSubmitting}
+                      size="mediam"
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                      startIcon={<SaveOutlined />}
+                    >
                       บันทึกข้อมูลการจอง
                     </Button>
 
@@ -590,6 +1034,7 @@ function UpdateReserve() {
                       onClick={() => {
                         backToReserce();
                       }}
+                      startIcon={<RollbackOutlined />}
                     >
                       ย้อนกลับ
                     </Button>

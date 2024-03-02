@@ -39,7 +39,7 @@ const headCells = [
   },
   {
     id: 'role',
-    align: 'center',
+    align: 'left',
     disablePadding: false,
     label: 'Role'
   },
@@ -142,7 +142,7 @@ function UsersTable() {
                   <TableCell align="left">{row.avatar}</TableCell>
                   <TableCell align="left">{row.firstname + ' ' + row.lastname}</TableCell>
                   <TableCell align="left">{row.email}</TableCell>
-                  <TableCell align="center">{row.role ? row.role : '-'}</TableCell>
+                  <TableCell align="left">{row.role ? row.role : '-'}</TableCell>
                   <TableCell align="center" sx={{ '& button': { m: 1 } }}>
                     <Button
                       variant="contained"

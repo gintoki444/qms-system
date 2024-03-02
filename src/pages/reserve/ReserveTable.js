@@ -42,11 +42,17 @@ import axios from 'axios';
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
-    id: 'dateReserve',
+    id: 'No',
     align: 'center',
     disablePadding: true,
-    label: 'วันที่จอง'
+    label: 'ลำดับ'
   },
+  // {
+  //   id: 'dateReserve',
+  //   align: 'center',
+  //   disablePadding: true,
+  //   label: 'วันที่จอง'
+  // },
   {
     id: 'dateQueue',
     align: 'center',
@@ -108,6 +114,12 @@ const headCells = [
     align: 'center',
     disablePadding: false,
     label: 'สถานะออกคิว'
+  },
+  {
+    id: 'dateReserve',
+    align: 'center',
+    disablePadding: true,
+    label: 'วันที่จอง'
   },
   {
     id: 'action',
@@ -185,19 +197,30 @@ export default function ReserveTable({ startDate, endDate }) {
   const [items, setItems] = useState([]);
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
+  const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
   const userId = localStorage.getItem('user_id');
 
   useEffect(() => {
-    getReserve();
-  }, [startDate, endDate]);
+    if (userRoles) {
+      getReserve();
+    }
+  }, [userRoles, startDate, endDate]);
 
   const getReserve = () => {
+    let urlGet = '';
+    if (userRoles == 1 || userRoles == 10) {
+      console.log('userRoles :', userRoles);
+      urlGet = apiUrl + '/allreservesrange?pickup_date1=' + startDate + '&pickup_date2=' + endDate;
+    } else {
+      console.log('user_id :', userRoles);
+      urlGet = apiUrl + '/allreservespickup2?user_id=' + userId + '&pickup_date1=' + startDate + '&pickup_date2=' + endDate;
+    }
     setLoading(true);
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
-      url: apiUrl + '/allreservespickup2?user_id=' + userId + '&pickup_date1=' + startDate + '&pickup_date2=' + endDate,
+      url: urlGet,
       headers: {}
     };
 
@@ -669,96 +692,100 @@ export default function ReserveTable({ startDate, endDate }) {
           <OrderTableHead order={order} orderBy={orderBy} />
           {!loading ? (
             <TableBody>
-              {items.map((row, index) => {
-                return (
-                  <TableRow key={index}>
-                    <TableCell align="left">{moment(row.created_date).format('DD/MM/YYYY')}</TableCell>
-                    <TableCell align="left">
-                      <Chip color={'primary'} label={moment(row.pickup_date).format('DD/MM/YYYY')} sx={{ minWidth: 95 }} />
-                    </TableCell>
-                    <TableCell align="left">
-                      <Chip color={'primary'} label={row.registration_no} sx={{ width: 95, border: 1 }} />
-                    </TableCell>
-                    <TableCell align="center"> {row.brand_code}</TableCell>
-                    <TableCell align="left">
-                      {row.r_description.substring(0, 30)} {row.r_description.length >= 20 && '...'}
-                    </TableCell>
-                    <TableCell align="left">{row.company}</TableCell>
-                    <TableCell align="left">{row.contact_person}</TableCell>
-                    <TableCell align="left">{row.contact_number}</TableCell>
-                    <TableCell align="left">{row.driver}</TableCell>
-                    <TableCell align="right"> {parseFloat((row.total_quantity * 1).toFixed(3))}</TableCell>
-                    <TableCell align="center">
-                      <OrderStatus status={row.status} />
-                    </TableCell>
-                    <TableCell align="center">
-                      <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
-                        <Tooltip title="รายละเอียด">
-                          <span>
-                            <Button
-                              variant="contained"
-                              sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                              size="medium"
-                              color="success"
-                              onClick={() => reserveDetail(row.reserve_id)}
-                            >
-                              <ProfileOutlined />
-                            </Button>
-                          </span>
-                        </Tooltip>
-
-                        {userRoles === 10 && (
-                          <Tooltip title="สร้างคิว">
+              {items.length > 0 &&
+                items.map((row, index) => {
+                  return (
+                    <TableRow key={index}>
+                      <TableCell align="left">{index + 1}</TableCell>
+                      {/* <TableCell align="left">{moment(row.created_date).format('DD/MM/YYYY')}</TableCell> */}
+                      <TableCell align="left">
+                        <Chip color={'primary'} label={moment(row.pickup_date).format('DD/MM/YYYY')} sx={{ minWidth: 95 }} />
+                      </TableCell>
+                      <TableCell align="left">
+                        <Chip color={'primary'} label={row.registration_no} sx={{ width: 95, border: 1 }} />
+                      </TableCell>
+                      <TableCell align="center"> {row.brand_code}</TableCell>
+                      <TableCell align="left">
+                        {row.r_description.substring(0, 30)} {row.r_description.length >= 20 && '...'}
+                      </TableCell>
+                      <TableCell align="left">{row.company}</TableCell>
+                      <TableCell align="left">{row.contact_person}</TableCell>
+                      <TableCell align="left">{row.contact_number}</TableCell>
+                      <TableCell align="left">{row.driver}</TableCell>
+                      <TableCell align="right"> {parseFloat((row.total_quantity * 1).toFixed(3))}</TableCell>
+                      <TableCell align="center">
+                        <OrderStatus status={row.status} />
+                      </TableCell>
+                      <TableCell align="center">
+                        <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
+                          <Tooltip title="รายละเอียด">
                             <span>
                               <Button
-                                // disabled
+                                variant="contained"
+                                sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                size="medium"
+                                color="success"
+                                onClick={() => reserveDetail(row.reserve_id)}
+                              >
+                                <ProfileOutlined />
+                              </Button>
+                            </span>
+                          </Tooltip>
+                          {userRoles === 10 ||
+                            (userRoles === 1 && (
+                              <Tooltip title="สร้างคิว">
+                                <span>
+                                  <Button
+                                    // disabled
+                                    variant="contained"
+                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                    size="medium"
+                                    disabled={
+                                      row.status === 'completed' ||
+                                      currentDate !== moment(row.pickup_date).format('YYYY-MM-DD') ||
+                                      row.total_quantity == 0
+                                    }
+                                    color="info"
+                                    onClick={() => handleClickOpen(row.reserve_id, row.total_quantity, row.brand_code)}
+                                  >
+                                    <DiffOutlined />
+                                  </Button>
+                                </span>
+                              </Tooltip>
+                            ))}
+                          <Tooltip title="แก้ไข">
+                            <span>
+                              <Button
                                 variant="contained"
                                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                 size="medium"
                                 disabled={row.status === 'completed'}
-                                color="info"
-                                onClick={() => handleClickOpen(row.reserve_id, row.total_quantity, row.brand_code)}
+                                color="primary"
+                                onClick={() => updateDrivers(row.reserve_id)}
                               >
-                                <DiffOutlined />
+                                <EditOutlined />
                               </Button>
                             </span>
                           </Tooltip>
-                        )}
-
-                        <Tooltip title="แก้ไข">
-                          <span>
-                            <Button
-                              variant="contained"
-                              sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                              size="medium"
-                              disabled={row.status === 'completed'}
-                              color="primary"
-                              onClick={() => updateDrivers(row.reserve_id)}
-                            >
-                              <EditOutlined />
-                            </Button>
-                          </span>
-                        </Tooltip>
-
-                        <Tooltip title="ลบ">
-                          <span>
-                            <Button
-                              variant="contained"
-                              sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                              size="medium"
-                              disabled={row.status === 'completed'}
-                              color="error"
-                              onClick={() => deleteDrivers(row.reserve_id)}
-                            >
-                              <DeleteOutlined />
-                            </Button>
-                          </span>
-                        </Tooltip>
-                      </ButtonGroup>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                          <Tooltip title="ลบ">
+                            <span>
+                              <Button
+                                variant="contained"
+                                sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                size="medium"
+                                disabled={row.status === 'completed'}
+                                color="error"
+                                onClick={() => deleteDrivers(row.reserve_id)}
+                              >
+                                <DeleteOutlined />
+                              </Button>
+                            </span>
+                          </Tooltip>
+                        </ButtonGroup>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
 
               {items.length == 0 && (
                 <TableRow>

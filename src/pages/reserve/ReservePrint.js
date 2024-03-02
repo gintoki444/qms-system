@@ -238,7 +238,7 @@ function ReservePrint() {
 
                   <Grid item xs={6}>
                     <Typography variant="body1" gutterBottom>
-                      <strong>วันที่สั่งซื้อ :</strong> {order.order_date ? moment(order.rder_date).format('dd/MM/yyyy') : '-'}{' '}
+                      <strong>วันที่สั่งซื้อ :</strong> {order.order_date ? moment(order.rder_date).format('DD/MM/YYYY') : '-'}{' '}
                     </Typography>
                   </Grid>
 

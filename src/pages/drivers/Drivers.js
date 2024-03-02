@@ -20,7 +20,7 @@ function Drivers() {
     <Grid alignItems="center" justifyContent="space-between">
       <Grid container rowSpacing={1} columnSpacing={1.75}>
         <Grid item xs={12} md={7} lg={8}>
-          {!userRole && (
+          {userRole === 5 && (
             <Stack sx={{ width: '100%', mb: '18px' }} spacing={2}>
               <Alert severity="warning">กรุณารอการอนุมัติการใช้งานจากผู้ดูแลระบบ</Alert>
             </Stack>

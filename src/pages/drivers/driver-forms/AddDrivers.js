@@ -11,6 +11,7 @@ const apiUrl = process.env.REACT_APP_API_URL;
 // material-ui
 import { Button, FormHelperText, Grid, InputLabel, OutlinedInput, Stack, Typography, Divider } from '@mui/material';
 import MainCard from 'components/MainCard';
+import { SaveOutlined } from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
@@ -196,7 +197,15 @@ function AddDrivers() {
                 </Grid>
 
                 <Grid item xs={12}>
-                  <Button disableElevation disabled={isSubmitting} size="mediam" type="submit" variant="contained" color="primary">
+                  <Button
+                    disableElevation
+                    disabled={isSubmitting}
+                    size="mediam"
+                    type="submit"
+                    variant="contained"
+                    color="success"
+                    startIcon={<SaveOutlined />}
+                  >
                     เพิ่มข้อมูลรถ
                   </Button>
                 </Grid>

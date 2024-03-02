@@ -32,7 +32,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 
 // get Icons
-import { PlusSquareOutlined, MinusSquareOutlined } from '@ant-design/icons';
+import { PlusSquareOutlined, MinusSquareOutlined, SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 // DateTime
 import moment from 'moment';
 
@@ -143,7 +143,6 @@ function AddOrder() {
           updated_at: currentDate,
           items
         };
-        console.log(raw);
 
         let config = {
           method: 'post',
@@ -162,7 +161,6 @@ function AddOrder() {
             if (result.data.status === 'ok') {
               //Update total_amount
               updateReserveTotal();
-              editReserve();
               resolve(result['status']);
             }
           })
@@ -183,6 +181,7 @@ function AddOrder() {
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
+        editReserve();
       })
       .catch((error) => console.log('error', error));
   };
@@ -262,7 +261,7 @@ function AddOrder() {
             </Grid>
             <Grid item xs={12}>
               <Typography variant="p" sx={{ pt: 2 }}>
-                <strong>วันที่เข้ารับสินค้า</strong>: {reservationData.pickup_date}
+                <strong>วันที่เข้ารับสินค้า</strong>: {moment(reservationData.pickup_date).format('DD/MM/YYYY')}
               </Typography>
             </Grid>
           </Grid>
@@ -451,16 +450,25 @@ function AddOrder() {
 
                     <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 1 }} />
-                      <Button disableElevation disabled={isSubmitting} size="large" type="submit" variant="contained" color="success">
+                      <Button
+                        disableElevation
+                        disabled={isSubmitting}
+                        size="mediam"
+                        type="submit"
+                        variant="contained"
+                        color="success"
+                        startIcon={<SaveOutlined />}
+                      >
                         บันทึกข้อมูลสินค้า
                       </Button>
                       <Button
-                        size="large"
+                        size="mediam"
                         variant="contained"
                         color="error"
                         onClick={() => {
                           backToReserce();
                         }}
+                        startIcon={<RollbackOutlined />}
                       >
                         ย้อนกลับ
                       </Button>

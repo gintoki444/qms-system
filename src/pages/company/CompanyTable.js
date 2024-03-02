@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+// import { useSelector } from 'react-redux';
 
 import {
   Table,
@@ -51,7 +51,7 @@ const headCells = [
   },
   {
     id: 'customerName',
-    align: 'center',
+    align: 'left',
     disablePadding: false,
     label: 'ชื่อผู้ติดต่อ'
   },
@@ -88,12 +88,12 @@ function CompanyTable() {
   const [company, setCompany] = useState([]);
   const [open, setOpen] = useState(false);
 
-  const userId = useSelector((state) => state.auth.user_id);
-
+  // const userId = useSelector((state) => state.auth.user_id);
+  const userId = localStorage.getItem('user_id');
 
   useEffect(() => {
     getCompany();
-  }, []);
+  }, [userId]);
 
   const getCompany = () => {
     setOpen(true);
@@ -116,26 +116,16 @@ function CompanyTable() {
   };
 
   const deleteCompany = (id) => {
-    let config = {
-      method: 'delete',
-      maxBodyLength: Infinity,
-      url: apiUrl + '/deletecompany/' + id,
-      headers: {}
-    };
-
-    axios
-      .request(config)
-      .then((result) => {
-        if (result.data.status === 'ok') {
-          alert(result.data.message);
-          getCompany();
-        } else {
-          alert(result.data['message']['sqlMessage']);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
+    setOpen(true);
+    try {
+      companyRequest.deleteCompany(id).then(() => {
+        getCompany();
+        setOpen(false);
       });
+    } catch (e) {
+      console.log(e);
+      setOpen(false);
+    }
   };
 
   return (
@@ -164,7 +154,7 @@ function CompanyTable() {
         >
           <CompantTableHead company={company} companyBy={company} />
 
-          {!open ? (
+          {!open && userId ? (
             <TableBody>
               {company.map((row, index) => {
                 return (
@@ -173,7 +163,7 @@ function CompanyTable() {
                     <TableCell align="left">{row.name}</TableCell>
                     <TableCell align="left">{row.tax_no}</TableCell>
                     <TableCell align="left">{row.phone}</TableCell>
-                    <TableCell align="center">{row.contact_person}</TableCell>
+                    <TableCell align="left">{row.contact_person}</TableCell>
                     <TableCell align="left">{row.contact_number}</TableCell>
                     <TableCell align="center">
                       <ButtonGroup variant="contained" aria-label="Basic button group">

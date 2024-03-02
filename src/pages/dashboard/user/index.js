@@ -44,12 +44,6 @@ function DashboardUser() {
       <Grid item xs={12} sm={6} md={4} lg={3}>
         <AnalyticEcommerce title="จำนวนการจอง" count={`0/0`} extra={currentDate} subtitle="ประจำวันที่" color="warning" />
       </Grid>
-      <Grid item xs={12} sm={6} md={4} lg={3}>
-        <AnalyticEcommerce title="Total Order" count="35,078" percentage={27.4} isLoss color="warning" extra="1,943" />
-      </Grid>
-      <Grid item xs={12} sm={6} md={4} lg={3}>
-        <AnalyticEcommerce title="Total Sales" count="$35,078" percentage={27.4} isLoss color="warning" extra="$20,395" />
-      </Grid>
     </Grid>
   );
 }
