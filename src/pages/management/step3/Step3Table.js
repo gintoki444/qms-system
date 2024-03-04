@@ -77,9 +77,9 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
     },
     {
       id: 'station',
-      align: 'center',
+      align: 'left',
       disablePadding: true,
-      width: '170px',
+      width: '10%',
       label: 'สถานีบริการ'
     },
     {
@@ -107,7 +107,7 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
       id: 'teamLoading',
       align: 'left',
       disablePadding: false,
-      width: '5%',
+      width: '10%',
       label: 'ทีมขึ้นสินค้า'
     },
     {
@@ -129,7 +129,7 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
       align: 'center',
       disablePadding: true,
       width: '10%',
-      label: 'น้ำหนักชั่งเบา'
+      label: 'น้ำหนักชั่งหนัก'
     },
     {
       id: 'action',
@@ -184,17 +184,20 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
   const fetchData = async () => {
     try {
       setLoading(true);
+
+      // Use different API functions based on the status
       if (status === 'waiting') {
         await waitingGet();
       } else if (status === 'processing') {
         await processingGet();
       }
-    } catch (e) {
-      console.log(e);
+      await getStepCount(3, 'processing');
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      // Handle errors if needed
     }
-
-    await getStepCount(3, 'processing');
   };
+
   const waitingGet = async () => {
     try {
       await getQueues.getStep3Waitting().then((response) => {
@@ -206,9 +209,7 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
     }
   };
 
-  //ข้อมูล รอเรียกคิว step1
-  const initialData = [0];
-  // const [inputValues, setInputValues] = useState(initialData);
+  //ข้อมูล รอเรียกคิว step
   const processingGet = async () => {
     try {
       await getQueues.getStep3Processing().then((response) => {
@@ -219,16 +220,15 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
       console.log(e);
     }
   };
+
+  const initialData = 0;
   const [weight, setWeight] = useState(initialData);
-  const handleChange = (index, value) => {
-    const newInputValues = [...weight];
-    newInputValues[index] = value;
-    setWeight(newInputValues);
+
+  const handleChange = (value) => {
+    setWeight(parseFloat(value));
   };
 
   const step1Update = (step_id, statusupdate, station_id) => {
-    setLoading(true);
-
     var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     var myHeaders = new Headers();
@@ -251,18 +251,16 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
       .then((response) => response.json())
       .then(async (result) => {
         if (result['status'] === 'ok') {
-          await waitingGet();
-          await processingGet();
+          // await waitingGet();
+          // await processingGet();
           //3=Step ชั่งหนัก
           await getStepCount(3, 'processing');
-          setLoading(false);
         }
       })
       .catch((error) => console.log('error', error));
   };
 
   const step2Update = (id, statusupdate, station_id) => {
-
     var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     var myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
@@ -409,8 +407,9 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
             resolve(result);
 
             // Reload
-            fetchData();
             onStatusChange(status === 'waiting' ? 'processing' : 'waiting');
+            fetchData();
+            setLoading(false);
           } else {
             console.log('not update updateStartTime');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
@@ -505,8 +504,8 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
             step2Update(id_update_next, 'waiting', 27);
             step1Update(id_update, 'completed', 23);
             updateEndTime(id_update);
-            updateStartTime(id_update_next);
             updateWeight2(id_update);
+            updateStartTime(id_update_next);
           }
         } else {
           //ยกเลิก
@@ -694,13 +693,13 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
                           </Typography>
                         </TableCell>
                         <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
-                        <TableCell align="left">
+                        <TableCell align="center">
                           <Chip color="primary" label={row.token} />
                         </TableCell>
                         <TableCell align="center">
                           <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="left">
                           <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>
                         </TableCell>
                         <TableCell align="left">
@@ -734,11 +733,11 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
                                   'aria-label': 'weight'
                                 }}
                                 value={weight}
-                                onChange={(e) => handleChange(index, e.target.value)}
+                                onChange={(e) => handleChange(e.target.value)}
                                 style={{ fontFamily: 'kanit' }}
                               />
                               <FormHelperText id="standard-weight-helper-text" style={{ fontFamily: 'kanit' }}>
-                                น้ำหนักชั่งเบา
+                                น้ำหนักชั่งหนัก
                               </FormHelperText>
                             </FormControl>
                           </TableCell>

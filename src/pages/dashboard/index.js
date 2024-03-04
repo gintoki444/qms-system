@@ -1,8 +1,9 @@
 // import React from 'react';
 import { useSelector } from 'react-redux';
 import AdminDashboard from './admin/index';
-import DashboardUser from './user/index';
-import { Stack, Alert, Grid } from '@mui/material';
+// import DashboardUser from './user/index';
+import Reserve from 'pages/reserve/Reserve';
+import { Grid, Typography } from '@mui/material';
 
 function DashboardDefault() {
   const token = localStorage.getItem('token');
@@ -11,16 +12,14 @@ function DashboardDefault() {
   return (
     <>
       {token &&
-        ((userRole && userRole === 9) || userRole === 10 ? (
+        ((userRole && userRole === 9) || userRole === 10 || userRole === 1 ? (
           <AdminDashboard />
         ) : (
           <Grid>
-            {userRole === 5 && (
-              <Stack sx={{ width: '100%', mb: '18px' }} spacing={2}>
-                <Alert severity="warning">กรุณารอการอนุมัติการใช้งานจากผู้ดูแลระบบ</Alert>
-              </Stack>
-            )}
-            <DashboardUser />
+            <Grid sx={{ mt: 2, mb: 3 }}>
+              <Typography variant="h5">ข้อมูลการจองคิว</Typography>
+            </Grid>
+            <Reserve />
           </Grid>
         ))}
     </>

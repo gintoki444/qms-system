@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 // material-ui
@@ -23,6 +23,7 @@ import { setProfile } from 'store/reducers/auth';
 // ==============================|| MAIN LAYOUT ||============================== //
 
 const MainLayout = () => {
+  const naviage = useNavigate();
   const theme = useTheme();
   const matchDownLG = useMediaQuery(theme.breakpoints.down('lg'));
   const dispatch = useDispatch();
@@ -60,8 +61,9 @@ const MainLayout = () => {
           })
         );
       } else {
-        localStorage.clear();
-        window.location = '/login';
+        localStorage.removeItem('token');
+        localStorage.removeItem('user_id');
+        naviage('/login');
       }
     });
   };

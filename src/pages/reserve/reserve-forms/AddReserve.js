@@ -108,6 +108,20 @@ function AddReserve() {
       .catch((error) => console.log('error', error));
   };
 
+  // =============== Get Stations ===============//
+  const [stationsList, setStationsList] = useState([]);
+  const getStation = () => {
+    const urlapi = apiUrl + `/allstations`;
+    axios
+      .get(urlapi)
+      .then((res) => {
+        if (res) {
+          setStationsList(res.data.filter((x) => x.station_group_id === 3));
+        }
+      })
+      .catch((err) => console.log(err));
+  };
+
   // =============== useEffect ===============//
   useEffect(() => {
     getCompanyLsit();
@@ -115,6 +129,7 @@ function AddReserve() {
     getDriverLsit();
     getWarehouses();
     getBrandList();
+    getStation();
   }, []);
 
   const initialValue = {
@@ -125,6 +140,7 @@ function AddReserve() {
     description: '',
     pickup_date: moment(new Date()).format('YYYY-MM-DD'),
     warehouse_id: '',
+    reserve_station_id: '',
     status: 'waiting',
     total_quantity: 0
   };
@@ -134,6 +150,7 @@ function AddReserve() {
     company_id: Yup.string().required('กรุณาเลือกบริษัท/ร้านค้า'),
     brand_group_id: Yup.string().required('กรุณาเลือกกลุ่มสินค้า'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
+    reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
     description: Yup.string().required('กรุณากรอกหัวข้อการจอง')
   });
 
@@ -158,6 +175,9 @@ function AddReserve() {
         data: values
       };
 
+      console.log('values :', values);
+
+      // if (userId === 999) {
       axios
         .request(config)
         .then((result) => {
@@ -173,6 +193,7 @@ function AddReserve() {
         .catch((error) => {
           console.log(error);
         });
+      // }
     } catch (err) {
       console.error(err);
       setStatus({ success: false });
@@ -311,9 +332,9 @@ function AddReserve() {
                         </MenuItem>
                       ))}
                     </TextField>
-                    {touched.company && errors.company && (
+                    {touched.car_id && errors.car_id && (
                       <FormHelperText error id="helper-text-company-car">
-                        {errors.company}
+                        {errors.car_id}
                       </FormHelperText>
                     )}
                   </Stack>
@@ -435,6 +456,32 @@ function AddReserve() {
                     {touched.total_quantity && errors.total_quantity && (
                       <FormHelperText error id="helper-text-total_quantity">
                         {errors.total_quantity}
+                      </FormHelperText>
+                    )}
+                  </Stack>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Stack spacing={1}>
+                    <InputLabel>หัวจ่าย</InputLabel>
+                    <TextField
+                      select
+                      variant="outlined"
+                      name="reserve_station_id"
+                      value={values.reserve_station_id}
+                      onChange={handleChange}
+                      placeholder="เลือกคลังสินค้า"
+                      fullWidth
+                    >
+                      {stationsList.map((station) => (
+                        <MenuItem key={station.station_id} value={station.station_id}>
+                          {station.station_description}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                    {touched.reserve_station_id && errors.reserve_station_id && (
+                      <FormHelperText error id="helper-text-reserve_station_id">
+                        {errors.reserve_station_id}
                       </FormHelperText>
                     )}
                   </Stack>

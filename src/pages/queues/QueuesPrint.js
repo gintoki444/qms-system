@@ -103,8 +103,12 @@ function QueuesPrint() {
             <Grid item xs={12} align="center">
               <QRCode value={prurl} className="qr-code" size={128} />
 
-              <Typography variant="h5" gutterBottom sx={{ mt: 3 }}>
-                คิว : <strong style={{ color: 'red', fontSize: '32px' }}>{padZero(queues.queue_number)}</strong>
+              <Typography variant="h5" gutterBottom sx={{ mt: 3, mb: 0 }}>
+                หมายเลขคิว : {queues.token}
+              </Typography>
+
+              <Typography variant="h5" gutterBottom sx={{ mt: 0 }}>
+                ลำดับคิว : <strong style={{ color: 'red', fontSize: '32px' }}>{padZero(queues.queue_number)}</strong>
               </Typography>
 
               <Typography variant="h5" gutterBottom>
@@ -118,7 +122,7 @@ function QueuesPrint() {
         </Grid>
       </Paper>
 
-      <Grid item xs={12} sx={{ '& button': { m: 1 }, mt: 3 }}>
+      <Grid item xs={12} sx={{ '& button': { m: 1 }, mt: 3, width: { xs: '100%', lg: '82mm' } }} align="center">
         <Button variant="contained" color="primary" onClick={handlePrint} style={{ display: isPrinting ? 'none' : 'inline-flex' }}>
           พิมพ์
         </Button>

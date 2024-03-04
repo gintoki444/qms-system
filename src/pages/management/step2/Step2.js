@@ -16,7 +16,7 @@ function Step2() {
       console.log(commonStatus + '+' + newStatus);
       setCommonStatus('');
     } else {
-      setCommonStatus('commonStatus');
+      setCommonStatus(commonStatus);
     }
   };
   return (

@@ -29,10 +29,10 @@ function Car() {
               <Alert severity="warning">กรุณารอการอนุมัติการใช้งานจากผู้ดูแลระบบ</Alert>
             </Stack>
           )}
-          
+
           <Grid container alignItems="center" justifyContent="flex-end">
             <Grid item align="right">
-              {userRole && (
+              {userRole && userRole !== 5 && (
                 <Stack direction="row" alignItems="right" spacing={0}>
                   <Button size="mediam" color="success" variant="outlined" onClick={() => addCar()} startIcon={<PlusCircleOutlined />}>
                     เพิ่มข้อมูล

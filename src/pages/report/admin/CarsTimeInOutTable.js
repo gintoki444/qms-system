@@ -16,12 +16,14 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
-  // tableCellClasses
   Typography
   // , Chip
 } from '@mui/material';
 
+import { CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
+
 import moment from 'moment';
+
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
@@ -31,58 +33,70 @@ const headCells = [
     label: 'ลำดับ'
   },
   {
-    id: 'Products',
+    id: 'times',
     align: 'left',
     disablePadding: false,
-    label: 'สินค้า'
+    label: 'วันที่'
   },
   {
-    id: 'product_register',
+    id: 'queue',
+    align: 'center',
+    disablePadding: true,
+    label: 'คิวที่'
+  },
+  {
+    id: 'queueNum',
     align: 'left',
     disablePadding: true,
-    label: 'ทะเบียน'
+    label: 'หมายเลขคิว'
   },
   {
-    id: 'setup_pile_date',
+    id: 'timeIn',
     align: 'left',
     disablePadding: true,
-    label: 'วันที่ตั้งกอง'
+    label: 'เวลาเข้า'
   },
   {
-    id: 'total_sold',
-    align: 'right',
+    id: 'timeOut',
+    align: 'left',
     disablePadding: true,
-    label: 'ยอดตั้งต้น (ตัน)'
+    label: 'เวลาออก'
   },
   {
-    id: 'total_yok_sold',
-    align: 'right',
-    disablePadding: true,
-    label: 'ยอดยกมา (ตัน)'
+    id: 'company',
+    align: 'left',
+    disablePadding: false,
+    label: 'ชื่อร้าน'
   },
   {
-    id: 'remaining_total',
+    id: 'registration_no',
+    align: 'left',
+    disablePadding: false,
+    label: 'ทะเบียนรถ'
+  },
+  {
+    id: 'tel',
+    align: 'left',
+    disablePadding: false,
+    label: 'เบอร์โทร'
+  },
+  {
+    id: 'driveName',
+    align: 'left',
+    disablePadding: false,
+    label: 'ชื่อผู้ขับ'
+  },
+  {
+    id: 'checking1',
     align: 'center',
     disablePadding: false,
-    label: 'จ่าย (ตัน)'
+    label: 'คลุมผ้าใบ(ตัวแม่)'
   },
   {
-    id: 'total_sold_1',
-    align: 'right',
+    id: 'checking2',
+    align: 'center',
     disablePadding: false,
-    label: 'รวมจ่าย (กระสอบ)'
-  },
-  {
-    id: 'total_sold_2',
-    align: 'right',
-    disablePadding: false,
-    label: 'รวมจ่าย (ตัน)'
-  },
-  {
-    id: 'total_sold_3',
-    align: 'right',
-    disablePadding: false,
-    label: 'คงเหลือ (ตัน)'
+    label: 'คลุมผ้าใบ(ตัวลูก)'
   }
 ];
 
@@ -106,28 +120,37 @@ function OrderTableHead({ order, orderBy }) {
     </TableHead>
   );
 }
+
 OrderTableHead.propTypes = {
   order: PropTypes.string,
   orderBy: PropTypes.string
 };
 
-export default function OrderTable() {
+export default function CarsTimeInOutTable({ startDate, endDate }) {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [loading, setLoading] = useState(true);
   // const [selected] = useState([]);
-  const currentDate = moment(new Date()).format('YYYY-MM-DD');
+  //   const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
   // const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
 
+  // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
+  const padZero = (num) => {
+    return num < 10 ? `0${num}` : num;
+  };
   useEffect(() => {
     fetchData();
-  }, []);
+
+    // const intervalId = setInterval(fetchData, 6000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิลลิวินาที)
+
+    // return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
+  }, [startDate, endDate]);
 
   const [items, setItems] = useState([]);
+
   const fetchData = async () => {
     getOrderSumQty();
-    //setLoading(false);
   };
 
   const getOrderSumQty = () => {
@@ -136,7 +159,7 @@ export default function OrderTable() {
       redirect: 'follow'
     };
 
-    fetch(apiUrl + '/ordersproducts?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
+    fetch(apiUrl + '/carstimeinout?start_date=' + startDate + '&end_date=' + endDate, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         setItems(result);
@@ -145,10 +168,11 @@ export default function OrderTable() {
       })
       .catch((error) => console.error(error));
   };
+
   // รวม grand total ของ quantity ของทุกรายการ items
-  const grandTotalQuantity = items.reduce((acc, item) => {
-    return acc + parseFloat(item.total_sold);
-  }, 0);
+  //   const grandTotalQuantity = items.reduce((acc, item) => {
+  //     return acc + parseFloat(item.total_sold);
+  //   }, 0);
   return (
     <Box>
       <TableContainer
@@ -182,81 +206,60 @@ export default function OrderTable() {
                       {index + 1}
                     </TableCell>
                     <TableCell align="left" style={{ fontFamily: 'kanit' }}>
-                      {row.name}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
-                      {row.product_register ? row.product_register : '-'}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
-                      {row.setup_pile_date ? moment(row.setup_pile_date).format('DD/MM/yyyy') : '-'}
-                    </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'kanit' }}>
-                      {parseFloat((row.stock_quantity * 1).toFixed(3)).toLocaleString('en-US')}
-                    </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'kanit' }}>
-                      {parseFloat((row.begin_day_stock * 1).toFixed(3)).toLocaleString('en-US')}
-                      {/* 
-                 {(parseFloat(row.total_sold) + parseFloat(row.remaining_quantity)).toLocaleString()}
-                 */}
+                      {row.queue_date ? moment(new Date()).format('DD-MM-YYYY') : '-'}
                     </TableCell>
                     <TableCell align="center" style={{ fontFamily: 'kanit' }}>
-                      <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px' }}>
-                        <div>
-                          <table border={'0'}>
-                            <thead></thead>
-                            <tbody>
-                              <tr>
-                                <td align="center">
-                                  <strong>คิว</strong>
-                                </td>
-                                {row.items.map((item, index) => (
-                                  <td key={index} align="center">
-                                    {item.token}
-                                  </td>
-                                ))}
-                              </tr>
-                              <tr>
-                                <td align="center">
-                                  <strong>ตัน</strong>
-                                </td>
-                                {row.items.map((item, index) => (
-                                  <td key={index} align="center">
-                                    {parseFloat((item.total_products * 1).toFixed(3))}
-                                  </td>
-                                ))}
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
+                      {padZero(row.queue_number)}
+                    </TableCell>
+                    <TableCell align="center" style={{ fontFamily: 'kanit' }}>
+                      {row.token}
+                    </TableCell>
+                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                      <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
+                        {row.start_time ? row.start_time.slice(11, 19) : '-'}
                       </div>
                     </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'kanit' }}>
-                      {parseFloat((row.total_sold * 20).toFixed(0)).toLocaleString('en-US')}
+                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                      <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
+                        {row.end_time ? row.end_time.slice(11, 19) : '-'}
+                      </div>
                     </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'kanit' }}>
-                      {parseFloat((row.total_sold * 1).toFixed(3)).toLocaleString('en-US')}
+                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                      {row.company_name}
                     </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'kanit' }}>
-                      {parseFloat((row.remaining_quantity * 1).toFixed(3)).toLocaleString('en-US')}
+                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                      {row.registration_no}
                     </TableCell>
-                    <TableCell></TableCell>
+                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                      {row.driver_mobile}
+                    </TableCell>
+                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                      {row.driver_name}
+                    </TableCell>
+                    <TableCell align="center" style={{ fontFamily: 'kanit' }}>
+                      {row.parent_has_cover == 'Y' ? (
+                        <Typography sx={{ fontSize: 24, color: 'green' }}>
+                          <CheckCircleOutlined color="success" />
+                        </Typography>
+                      ) : (
+                        <Typography sx={{ fontSize: 24, color: 'red' }}>
+                          <CloseCircleOutlined />
+                        </Typography>
+                      )}
+                    </TableCell>
+                    <TableCell align="center" style={{ fontFamily: 'kanit' }}>
+                      {row.trailer_has_cover == 'Y' ? (
+                        <Typography sx={{ fontSize: 24, color: 'green' }}>
+                          <CheckCircleOutlined color="success" />
+                        </Typography>
+                      ) : (
+                        <Typography sx={{ fontSize: 24, color: 'red' }}>
+                          <CloseCircleOutlined />
+                        </Typography>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
-              <TableRow>
-                <TableCell colSpan={8} align="right" sx={{ p: 3 }}>
-                  <Typography variant="h5">ยอดรวมจ่าย: </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="h5">
-                    <span style={{ color: 'red' }}>{parseFloat((grandTotalQuantity * 20).toFixed(0)).toLocaleString()}</span> กระสอบ
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="h5">
-                    <span style={{ color: 'red' }}>{parseFloat(grandTotalQuantity.toFixed(3))}</span> ตัน{' '}
-                  </Typography>
-                </TableCell>
-              </TableRow>
 
               {items.length == 0 && (
                 <TableRow>

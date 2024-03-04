@@ -15,13 +15,14 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  CircularProgress,
   // tableCellClasses
+  CircularProgress,
   Typography
   // , Chip
 } from '@mui/material';
 
 import moment from 'moment';
+
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
@@ -43,46 +44,34 @@ const headCells = [
     label: 'ทะเบียน'
   },
   {
-    id: 'setup_pile_date',
+    id: 'brand',
     align: 'left',
     disablePadding: true,
-    label: 'วันที่ตั้งกอง'
+    label: 'ตรา'
   },
   {
     id: 'total_sold',
     align: 'right',
     disablePadding: true,
-    label: 'ยอดตั้งต้น (ตัน)'
+    label: 'รวมจ่าย (กระสอบ)'
   },
   {
     id: 'total_yok_sold',
     align: 'right',
     disablePadding: true,
-    label: 'ยอดยกมา (ตัน)'
-  },
-  {
-    id: 'remaining_total',
-    align: 'center',
-    disablePadding: false,
-    label: 'จ่าย (ตัน)'
-  },
-  {
-    id: 'total_sold_1',
-    align: 'right',
-    disablePadding: false,
-    label: 'รวมจ่าย (กระสอบ)'
-  },
-  {
-    id: 'total_sold_2',
-    align: 'right',
-    disablePadding: false,
     label: 'รวมจ่าย (ตัน)'
   },
   {
-    id: 'total_sold_3',
-    align: 'right',
+    id: 'remaining_total',
+    align: 'left',
     disablePadding: false,
-    label: 'คงเหลือ (ตัน)'
+    label: 'โกดัง'
+  },
+  {
+    id: 'date',
+    align: 'left',
+    disablePadding: false,
+    label: 'วันที่กอง'
   }
 ];
 
@@ -106,28 +95,32 @@ function OrderTableHead({ order, orderBy }) {
     </TableHead>
   );
 }
+
 OrderTableHead.propTypes = {
   order: PropTypes.string,
   orderBy: PropTypes.string
 };
 
-export default function OrderTable() {
+export default function OrderSumQtyTable({ startDate, endDate }) {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [loading, setLoading] = useState(true);
   // const [selected] = useState([]);
-  const currentDate = moment(new Date()).format('YYYY-MM-DD');
+  //   const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
   // const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
 
   useEffect(() => {
     fetchData();
-  }, []);
+
+    const intervalId = setInterval(fetchData, 6000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิลลิวินาที)
+
+    return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
+  }, [startDate, endDate]);
 
   const [items, setItems] = useState([]);
   const fetchData = async () => {
     getOrderSumQty();
-    //setLoading(false);
   };
 
   const getOrderSumQty = () => {
@@ -136,7 +129,7 @@ export default function OrderTable() {
       redirect: 'follow'
     };
 
-    fetch(apiUrl + '/ordersproducts?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
+    fetch(apiUrl + '/ordersproducts2?start_date=' + startDate + '&end_date=' + endDate, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         setItems(result);
@@ -145,6 +138,7 @@ export default function OrderTable() {
       })
       .catch((error) => console.error(error));
   };
+
   // รวม grand total ของ quantity ของทุกรายการ items
   const grandTotalQuantity = items.reduce((acc, item) => {
     return acc + parseFloat(item.total_sold);
@@ -188,62 +182,26 @@ export default function OrderTable() {
                       {row.product_register ? row.product_register : '-'}
                     </TableCell>
                     <TableCell align="left" style={{ fontFamily: 'kanit' }}>
-                      {row.setup_pile_date ? moment(row.setup_pile_date).format('DD/MM/yyyy') : '-'}
+                      {row.brand_group}
                     </TableCell>
                     <TableCell align="right" style={{ fontFamily: 'kanit' }}>
-                      {parseFloat((row.stock_quantity * 1).toFixed(3)).toLocaleString('en-US')}
+                      {parseFloat((row.total_sold * 20).toFixed(0))}
                     </TableCell>
                     <TableCell align="right" style={{ fontFamily: 'kanit' }}>
-                      {parseFloat((row.begin_day_stock * 1).toFixed(3)).toLocaleString('en-US')}
-                      {/* 
-                 {(parseFloat(row.total_sold) + parseFloat(row.remaining_quantity)).toLocaleString()}
-                 */}
+                      {parseFloat((row.total_sold * 1).toFixed(3))
+                        .toFixed(3)
+                        .padStart(5, '0')}
                     </TableCell>
-                    <TableCell align="center" style={{ fontFamily: 'kanit' }}>
-                      <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px' }}>
-                        <div>
-                          <table border={'0'}>
-                            <thead></thead>
-                            <tbody>
-                              <tr>
-                                <td align="center">
-                                  <strong>คิว</strong>
-                                </td>
-                                {row.items.map((item, index) => (
-                                  <td key={index} align="center">
-                                    {item.token}
-                                  </td>
-                                ))}
-                              </tr>
-                              <tr>
-                                <td align="center">
-                                  <strong>ตัน</strong>
-                                </td>
-                                {row.items.map((item, index) => (
-                                  <td key={index} align="center">
-                                    {parseFloat((item.total_products * 1).toFixed(3))}
-                                  </td>
-                                ))}
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
+                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                      {row.warehouse_name}
                     </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'kanit' }}>
-                      {parseFloat((row.total_sold * 20).toFixed(0)).toLocaleString('en-US')}
+                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                      {row.setup_pile_date ? moment(new Date()).format('DD-MM-YYYY') : '-'}
                     </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'kanit' }}>
-                      {parseFloat((row.total_sold * 1).toFixed(3)).toLocaleString('en-US')}
-                    </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'kanit' }}>
-                      {parseFloat((row.remaining_quantity * 1).toFixed(3)).toLocaleString('en-US')}
-                    </TableCell>
-                    <TableCell></TableCell>
                   </TableRow>
                 ))}
               <TableRow>
-                <TableCell colSpan={8} align="right" sx={{ p: 3 }}>
+                <TableCell colSpan={6} align="right" sx={{ p: 3 }}>
                   <Typography variant="h5">ยอดรวมจ่าย: </Typography>
                 </TableCell>
                 <TableCell align="right">

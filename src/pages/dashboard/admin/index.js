@@ -20,76 +20,36 @@ import {
 } from '@mui/material';
 
 // project import
-// import OrdersTable from './admin/OrdersTable';
-// import IncomeAreaChart from './admin/IncomeAreaChart';
-// import MonthlyBarChart from './MonthlyBarChart';
-// import ReportAreaChart from './ReportAreaChart';
-// import SalesColumnChart from './SalesColumnChart';
 import MainCard from 'components/MainCard';
-// import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
-import OrdersTable from './OrdersTable';
-import IncomeAreaChart from './IncomeAreaChart';
-import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
+import AnalyticQueues from 'components/cards/statistics/AnlyticQueue';
+import Step1Processing from './Step1Processing';
+import Step2Processing from './Step2Processing';
+import Step3Processing from './Step3Processing';
+import Step4Processing from './Step4Processing';
 
-// assets
-// import { GiftOutlined, MessageOutlined, SettingOutlined } from '@ant-design/icons';
-// import avatar1 from 'assets/images/users/avatar-1.png';
-// import avatar2 from 'assets/images/users/avatar-2.png';
-// import avatar3 from 'assets/images/users/avatar-3.png';
-// import avatar4 from 'assets/images/users/avatar-4.png';
-
+// const apiUrl = process.env.REACT_APP_API_URL;
+import * as reportRequest from '_api/reportRequest';
 const apiUrl = process.env.REACT_APP_API_URL;
+
 import moment from 'moment/min/moment-with-locales';
-// import QueuesTable from './admin/QueueReport';
-import QueuesTable from 'pages/queues/QueueTable';
-
-
-// avatar style
-// const avatarSX = {
-//   width: 36,
-//   height: 36,
-//   fontSize: '1rem'
-// };
-
-// action style
-// const actionSX = {
-//   mt: 0.75,
-//   ml: 1,
-//   top: 'auto',
-//   right: 'auto',
-//   alignSelf: 'flex-start',
-//   transform: 'none'
-// };
-
-// sales report status
-// const status = [
-//   {
-//     value: 'today',
-//     label: 'Today'
-//   },
-//   {
-//     value: 'month',
-//     label: 'This Month'
-//   },
-//   {
-//     value: 'year',
-//     label: 'This Year'
-//   }
-// ];
+import OrderTable from './OrdersTable';
+import IncomeAreaChart from './IncomeAreaChart';
 
 // ==============================|| DASHBOARD - DEFAULT ||============================== //
 
 const AdminDashboard = () => {
   const currentDate = moment().locale('th').format('LL');
+  const getNowDate = moment(new Date()).format('YYYY-MM-DD');
 
   // const [value, setValue] = useState('today');
   // const [slot, setSlot] = useState('week');
 
+  const [queue_count_completed, setQueueCountCompleted] = useState(0);
   const [queue_count, setQueueCount] = useState(0);
+  const [queue_average_time, setQueueAgerageTime] = useState(0);
 
   useEffect(() => {
     fetchData();
-
     const intervalId = setInterval(fetchData, 6000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิลลิวินาที)
 
     return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
@@ -97,319 +57,170 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     getQueuesCount();
+    getQueuesCompleted();
+    getQueuesAverageTime();
     dataGetReserves();
   };
 
   const getQueuesCount = () => {
-    const dateNow = moment(new Date()).format('YYYY-MM-DD');
-
-    const requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-
-    fetch(apiUrl + '/queues/count?start_date=' + dateNow + '&end_date=' + dateNow, requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        setQueueCount(result.queue_count);
-      })
-      .catch((error) => console.error(error));
+    reportRequest.getQueuesCounts(getNowDate).then((response) => {
+      setQueueCount(response.queue_count);
+    });
   };
 
+  const getQueuesCompleted = () => {
+    reportRequest.getQueuesCountCompleted(getNowDate).then((response) => {
+      setQueueCountCompleted(response.queue_count);
+    });
+  };
+
+  const getQueuesAverageTime = () => {
+    reportRequest.getQueuesAverageTime(getNowDate).then((response) => {
+      setQueueAgerageTime(response['average_minutes']);
+    });
+  };
   const [items, setItems] = useState([]);
+
   const dataGetReserves = async () => {
     fetch(apiUrl + '/allreserves')
       .then((res) => res.json())
       .then((result) => {
         setTimeout(() => {
-          console.log('result :', result);
           setItems(result.filter((x) => x.status === 'waiting'));
           //setLoading(false);
         }, 100);
       });
   };
+
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
-      {/* row 1 */}
-      <Grid item xs={12} sx={{ mb: -2.25 }}>
-        <Typography variant="h5">แดชบอร์ด</Typography>
-      </Grid>
-      <Grid item xs={12} sm={6} md={4} lg={3}>
-        <AnalyticEcommerce
-          title="จำนวนออกคิว"
-          count={`${queue_count}`}
-          // percentage={59.3}
-          extra={currentDate}
-          subtitle="ประจำวันที่"
-          color="success"
-        />
-      </Grid>
-      <Grid item xs={12} sm={6} md={4} lg={3}>
-        <AnalyticEcommerce title="จำนวนการจอง" count={`${items.length}`} extra={currentDate} subtitle="ประจำวันที่" color="warning" />
-      </Grid>
-      <Grid item xs={12} sm={6} md={4} lg={3}>
-        <AnalyticEcommerce title="Total Order" count="35,078" percentage={27.4} isLoss color="warning" extra="1,943" />
-      </Grid>
-      <Grid item xs={12} sm={6} md={4} lg={3}>
-        <AnalyticEcommerce title="Total Sales" count="$35,078" percentage={27.4} isLoss color="warning" extra="$20,395" />
-      </Grid>
+      <Grid item xs={12} sm={10} md={10} lg={10}>
+        <MainCard sx={{ mt: 2 }} content={true}>
+          <Grid container rowSpacing={4.5} columnSpacing={2.75}>
+            {/* row 1 */}
+            <Grid item xs={12} sx={{ mb: -2.25 }}>
+              <Typography variant="h5">แดชบอร์ด : วันที่ {currentDate}</Typography>
+            </Grid>
 
-      <Grid item md={8} sx={{ display: { sm: 'none', md: 'block', lg: 'none' } }} />
-
-      {/* row 2 */}
-      <Grid item xs={12} md={7} lg={12}>
-        <Grid container alignItems="center" justifyContent="space-between">
-          <Grid item>
-            <Typography variant="h5">{moment().locale('th').format('LLLL')}</Typography>
-          </Grid>
-          {/* <Grid item>
-            <Stack direction="row" alignItems="center" spacing={0}>
-              <Button
-                size="small"
-                onClick={() => setSlot('month')}
-                color={slot === 'month' ? 'primary' : 'secondary'}
-                variant={slot === 'month' ? 'outlined' : 'text'}
-              >
-                Month
-              </Button>
-              <Button
-                size="small"
-                onClick={() => setSlot('week')}
-                color={slot === 'week' ? 'primary' : 'secondary'}
-                variant={slot === 'week' ? 'outlined' : 'text'}
-              >
-                Week
-              </Button>
-            </Stack>
-          </Grid> */}
-        </Grid>
-        <MainCard content={false} sx={{ mt: 1.5 }}>
-          <Box sx={{ pt: 1, pr: 2 }}>
-            <IncomeAreaChart />
-          </Box>
-        </MainCard>
-      </Grid>
-      {/* <Grid item xs={12} md={5} lg={4}>
-        <Grid container alignItems="center" justifyContent="space-between">
-          <Grid item>
-            <Typography variant="h5">Income Overview</Typography>
-          </Grid>
-          <Grid item />
-        </Grid>
-        <MainCard sx={{ mt: 2 }} content={false}>
-          <Box sx={{ p: 3, pb: 0 }}>
-            <Stack spacing={2}>
-              <Typography variant="h6" color="textSecondary">
-                This Week Statistics
-              </Typography>
-              <Typography variant="h3">$7,650</Typography>
-            </Stack>
-          </Box>
-          <MonthlyBarChart />
-        </MainCard>
-      </Grid> */}
-
-      {/* row 3 */}
-      <Grid item xs={12} md={12} lg={12}>
-        <Grid container alignItems="center" justifyContent="space-between">
-          <Grid item>
-            <Typography variant="h5">หัวจ่ายที่กำลังขึ้นสินค้า</Typography>
-          </Grid>
-          <Grid item />
-        </Grid>
-        <MainCard sx={{ mt: 2 }} content={false}>
-          <QueuesTable />
-        </MainCard>
-      </Grid>
-      {/* <Grid item xs={12} md={5} lg={4}>
-        <Grid container alignItems="center" justifyContent="space-between">
-          <Grid item>
-            <Typography variant="h5">Analytics Report</Typography>
-          </Grid>
-          <Grid item />
-        </Grid>
-        <MainCard sx={{ mt: 2 }} content={false}>
-          <List sx={{ p: 0, '& .MuiListItemButton-root': { py: 2 } }}>
-            <ListItemButton divider>
-              <ListItemText primary="Company Finance Growth" />
-              <Typography variant="h5">+45.14%</Typography>
-            </ListItemButton>
-            <ListItemButton divider>
-              <ListItemText primary="Company Expenses Ratio" />
-              <Typography variant="h5">0.58%</Typography>
-            </ListItemButton>
-            <ListItemButton>
-              <ListItemText primary="Business Risk Cases" />
-              <Typography variant="h5">Low</Typography>
-            </ListItemButton>
-          </List>
-          <ReportAreaChart />
-        </MainCard>
-      </Grid> */}
-
-      {/* row 4 */}
-      <Grid item xs={12} md={12} lg={12}>
-        <Grid container alignItems="center" justifyContent="space-between">
-          <Grid item>
-            <Typography variant="h5">รายการจ่ายสินค้าประจำวัน {moment().locale('th').format('LL')}</Typography>
-          </Grid>
-          <Grid item />
-        </Grid>
-        <MainCard sx={{ mt: 2 }} content={false}>
-          <OrdersTable />
-        </MainCard>
-      </Grid>
-      {/* <Grid item xs={12} md={7} lg={8}>
-        <Grid container alignItems="center" justifyContent="space-between">
-          <Grid item>
-            <Typography variant="h5">Sales Report</Typography>
-          </Grid>
-          <Grid item>
-            <TextField
-              id="standard-select-currency"
-              size="small"
-              select
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              sx={{ '& .MuiInputBase-input': { py: 0.5, fontSize: '0.875rem' } }}
-            >
-              {status.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-        </Grid>
-        <MainCard sx={{ mt: 1.75 }}>
-          <Stack spacing={1.5} sx={{ mb: -12 }}>
-            <Typography variant="h6" color="secondary">
-              Net Profit
-            </Typography>
-            <Typography variant="h4">$1560</Typography>
-          </Stack>
-          <SalesColumnChart />
-        </MainCard>
-      </Grid>
-      <Grid item xs={12} md={5} lg={4}>
-        <Grid container alignItems="center" justifyContent="space-between">
-          <Grid item>
-            <Typography variant="h5">Transaction History</Typography>
-          </Grid>
-          <Grid item />
-        </Grid>
-        <MainCard sx={{ mt: 2 }} content={false}>
-          <List
-            component="nav"
-            sx={{
-              px: 0,
-              py: 0,
-              '& .MuiListItemButton-root': {
-                py: 1.5,
-                '& .MuiAvatar-root': avatarSX,
-                '& .MuiListItemSecondaryAction-root': { ...actionSX, position: 'relative' }
-              }
-            }}
-          >
-            <ListItemButton divider>
-              <ListItemAvatar>
-                <Avatar
-                  sx={{
-                    color: 'success.main',
-                    bgcolor: 'success.lighter'
-                  }}
-                >
-                  <GiftOutlined />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={<Typography variant="subtitle1">Order #002434</Typography>} secondary="Today, 2:00 AM" />
-              <ListItemSecondaryAction>
-                <Stack alignItems="flex-end">
-                  <Typography variant="subtitle1" noWrap>
-                    + $1,430
-                  </Typography>
-                  <Typography variant="h6" color="secondary" noWrap>
-                    78%
-                  </Typography>
-                </Stack>
-              </ListItemSecondaryAction>
-            </ListItemButton>
-            <ListItemButton divider>
-              <ListItemAvatar>
-                <Avatar
-                  sx={{
-                    color: 'primary.main',
-                    bgcolor: 'primary.lighter'
-                  }}
-                >
-                  <MessageOutlined />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={<Typography variant="subtitle1">Order #984947</Typography>} secondary="5 August, 1:45 PM" />
-              <ListItemSecondaryAction>
-                <Stack alignItems="flex-end">
-                  <Typography variant="subtitle1" noWrap>
-                    + $302
-                  </Typography>
-                  <Typography variant="h6" color="secondary" noWrap>
-                    8%
-                  </Typography>
-                </Stack>
-              </ListItemSecondaryAction>
-            </ListItemButton>
-            <ListItemButton>
-              <ListItemAvatar>
-                <Avatar
-                  sx={{
-                    color: 'error.main',
-                    bgcolor: 'error.lighter'
-                  }}
-                >
-                  <SettingOutlined />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={<Typography variant="subtitle1">Order #988784</Typography>} secondary="7 hours ago" />
-              <ListItemSecondaryAction>
-                <Stack alignItems="flex-end">
-                  <Typography variant="subtitle1" noWrap>
-                    + $682
-                  </Typography>
-                  <Typography variant="h6" color="secondary" noWrap>
-                    16%
-                  </Typography>
-                </Stack>
-              </ListItemSecondaryAction>
-            </ListItemButton>
-          </List>
-        </MainCard>
-        <MainCard sx={{ mt: 2 }}>
-          <Stack spacing={3}>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <Stack>
-                  <Typography variant="h5" noWrap>
-                    Help & Support Chat
-                  </Typography>
-                  <Typography variant="caption" color="secondary" noWrap>
-                    Typical replay within 5 min
-                  </Typography>
-                </Stack>
-              </Grid>
-              <Grid item>
-                <AvatarGroup sx={{ '& .MuiAvatar-root': { width: 32, height: 32 } }}>
-                  <Avatar alt="Remy Sharp" src={avatar1} />
-                  <Avatar alt="Travis Howard" src={avatar2} />
-                  <Avatar alt="Cindy Baker" src={avatar3} />
-                  <Avatar alt="Agnes Walker" src={avatar4} />
-                </AvatarGroup>
+            <Grid item xs={12} md={7} lg={9}>
+              <MainCard content={false}>
+                <Box sx={{ pt: 1, pr: 2 }}>
+                  {/* <IncomeAreaChart /> */}
+                  <IncomeAreaChart />
+                </Box>
+              </MainCard>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4} lg={3}>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <AnalyticQueues
+                    title="จำนวนคิวรับสินค้า"
+                    count={`${queue_count_completed}/${queue_count}`}
+                    // percentage={59.3}
+                    extra={`${parseFloat((queue_average_time * 1).toFixed(0)).toLocaleString('en-US')}`}
+                    subtitle="เฉลี่ย "
+                    percentage={`${((queue_count_completed / queue_count) * 100).toFixed(0)}`}
+                    color="primary"
+                    unit=" นาที/คิว"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <AnalyticQueues
+                    title="จำนวนการจอง"
+                    count={`${items.length}`}
+                    // percentage={59.3}
+                    extra={'ยังไม่ได้ออกคิว'}
+                    // subtitle=" "
+                    // percentage={((queue_count_completed / queue_count) * 100).toFixed(0)}
+                    color="warning"
+                    // unit=" นาที/คิว"
+                  />
+                </Grid>
               </Grid>
             </Grid>
-            <Button size="small" variant="contained" sx={{ textTransform: 'capitalize' }}>
-              Need Help?
-            </Button>
-          </Stack>
+            {/* row 2 */}
+            {/* <Grid item xs={12} md={12} lg={12}>
+              <Grid container alignItems="center" justifyContent="space-between">
+                <Grid item>
+                  <Typography variant="h5">{moment().locale('th').format('LLLL')}</Typography>
+                </Grid>
+              </Grid>
+              <MainCard content={false} sx={{ mt: 1.5 }}>
+                <Box sx={{ pt: 1, pr: 2 }}></Box>
+              </MainCard>
+            </Grid> */}
+
+            {/* row 3 */}
+            <Grid item xs={12} md={12} lg={12}>
+              <Grid container alignItems="center" justifyContent="space-between">
+                <Grid item>
+                  <Typography variant="h4">กำลังให้บริการ (ชั่งเบา-Step1)</Typography>
+                </Grid>
+                <Grid item />
+              </Grid>
+              <MainCard sx={{ mt: 2 }} content={false}>
+                <Step1Processing />
+              </MainCard>
+            </Grid>
+
+            {/* row 4 */}
+            <Grid item xs={12} md={12} lg={12}>
+              <Grid container alignItems="center" justifyContent="space-between">
+                <Grid item>
+                  {' '}
+                  <Typography variant="h4">หัวจ่ายที่กำลังขึ้นสินค้า (ขึ้นสินค้า-Step2)</Typography>
+                </Grid>
+                <Grid item />
+              </Grid>
+              <MainCard sx={{ mt: 2 }} content={false}>
+                <Step2Processing />
+              </MainCard>
+            </Grid>
+
+            {/* row 5 */}
+            <Grid item xs={12} md={12} lg={12}>
+              <Grid container alignItems="center" justifyContent="space-between">
+                <Grid item>
+                  {' '}
+                  <Typography variant="h4">กำลังให้บริการ (ชั่งหนัก-Step3)</Typography>
+                </Grid>
+                <Grid item />
+              </Grid>
+              <MainCard sx={{ mt: 2 }} content={false}>
+                <Step3Processing />
+              </MainCard>
+            </Grid>
+
+            {/* row 6 */}
+            <Grid item xs={12} md={12} lg={12}>
+              <Grid container alignItems="center" justifyContent="space-between">
+                <Grid item>
+                  {' '}
+                  <Typography variant="h4">กำลังให้บริการ (เสร็จสิ้น-Step4)</Typography>
+                </Grid>
+                <Grid item />
+              </Grid>
+              <MainCard sx={{ mt: 2 }} content={false}>
+                <Step4Processing />
+              </MainCard>
+            </Grid>
+
+            {/* row 4 */}
+            <Grid item xs={12} md={12} lg={12}>
+              <Grid container alignItems="center" justifyContent="space-between">
+                <Grid item>
+                  <Typography variant="h4">รายการจ่ายสินค้าประจำวัน {moment().locale('th').format('LL')}</Typography>
+                </Grid>
+                <Grid item />
+              </Grid>
+              <MainCard sx={{ mt: 2 }} content={false}>
+                {/* <OrdersTable /> */}
+                <OrderTable />
+              </MainCard>
+            </Grid>
+          </Grid>
         </MainCard>
-      </Grid> */}
+      </Grid>
     </Grid>
   );
 };

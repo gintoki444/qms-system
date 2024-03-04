@@ -12,7 +12,7 @@ import { useSelector } from 'react-redux';
 // ==============================|| DRAWER CONTENT - NAVIGATION ||============================== //
 
 const Navigation = () => {
-  let newMenuItem = menuItem;
+  // let newMenuItem = menuItem;
   const userRole = useSelector((state) => state.auth?.roles);
 
   // let roles = userRole;
@@ -29,8 +29,12 @@ const Navigation = () => {
   // }
   // console.log('newMenuItem.items :', newMenuItem.items);
 
-  const navGroups = newMenuItem.items.map((item) => {
-    if (userRole && item.roles === userRole) {
+  if (userRole !== null) {
+    let filteredMenuItems = menuItem.items.filter((item) => {
+      return userRole == item.roles.filter((x) => x == userRole);
+    });
+    const navGroups = filteredMenuItems.map((item) => {
+      // if (userRole && item.roles === userRole) {
       switch (item.type) {
         case 'group':
           return <NavGroup key={item.id} item={item} />;
@@ -41,10 +45,14 @@ const Navigation = () => {
             </Typography>
           );
       }
-    }
-  });
+      // }
+    });
 
-  return <>{userRole === null ? <p style={{ textAlign: 'center' }}>Loading...</p> : <Box sx={{ pt: 2 }}>{navGroups}</Box>}</>;
+    return <Box sx={{ pt: 2 }}>{navGroups}</Box>;
+  } else {
+    // Render a loading state or handle the case where userRoles or menuItems are not available yet
+    return <p style={{ textAlign: 'center' }}>Loading...</p>;
+  }
 };
 
 export default Navigation;

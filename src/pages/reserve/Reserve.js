@@ -43,7 +43,7 @@ function Reserve() {
   };
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
-    {userRole === 5 && (
+      {userRole === 5 && (
         <Stack sx={{ width: '100%', mb: '18px' }} spacing={2}>
           <Alert severity="warning">กรุณารอการอนุมัติการใช้งานจากผู้ดูแลระบบ</Alert>
         </Stack>
@@ -89,7 +89,7 @@ function Reserve() {
             </Button>
           </Grid>
           <Grid item xs={3} align="right">
-            {userRole && (
+            {userRole && userRole !== 5 && (
               <Button size="mediam" color="success" variant="outlined" onClick={() => addReserve()} startIcon={<PlusCircleOutlined />}>
                 เพิ่มข้อมูล
               </Button>

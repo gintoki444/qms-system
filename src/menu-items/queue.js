@@ -1,14 +1,21 @@
 // assets
-import { SafetyOutlined, MenuUnfoldOutlined, MenuFoldOutlined, InboxOutlined } from '@ant-design/icons';
+import { SafetyOutlined, MenuUnfoldOutlined, MenuFoldOutlined, InboxOutlined,ContainerOutlined } from '@ant-design/icons';
 
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
 
 const queues = {
   id: 'queues',
-  title: 'จัดการคิวรับสินค้า',
+  title: 'ข้อมูลคิวรับสินค้า',
   type: 'group',
-  roles: 9,
+  roles: [1, 9],
   children: [
+    {
+      id: 'userQueue',
+      title: 'ข้อมูลคิว',
+      type: 'item',
+      url: '/queues',
+      icon: ContainerOutlined
+    },
     {
       id: 'weighEmpty',
       title: 'Step1-ชั่งเบา',

@@ -205,7 +205,7 @@ function QueueDetail() {
                   )}
                 </Grid>
 
-                <Grid item xs={12} sx={{ '& button': { m: 1 }, p: '0 -6%!important' }}>
+                <Grid item xs={12} sx={{ '& button': { m: 1 }, p: '0 -6%!important' }} align="center">
                   {userRoles === 10 && (
                     <Button
                       size="mediam"
@@ -217,7 +217,21 @@ function QueueDetail() {
                       }}
                       startIcon={<PrinterOutlined />}
                     >
-                      พิมพ์บัตรคิว
+                      ตัวอย่างก่อนพิมพ์
+                    </Button>
+                  )}
+                  {userRoles === 1 && (
+                    <Button
+                      size="mediam"
+                      variant="contained"
+                      color="info"
+                      d
+                      onClick={() => {
+                        printQueues();
+                      }}
+                      startIcon={<PrinterOutlined />}
+                    >
+                      ตัวอย่างก่อนพิมพ์
                     </Button>
                   )}
                   <Button

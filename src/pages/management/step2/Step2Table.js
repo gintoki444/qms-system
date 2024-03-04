@@ -69,7 +69,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     },
     {
       id: 'station',
-      align: 'center',
+      align: 'left',
       disablePadding: true,
       width: '170px',
       label: 'สถานีบริการ'
@@ -78,14 +78,14 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
       id: 'branName',
       align: 'left',
       disablePadding: false,
-      width: '',
+      width: '10%',
       label: 'ร้านค้า/บริษัท'
     },
     {
       id: 'driver',
       align: 'left',
       disablePadding: true,
-      width: '10%',
+      width: '13%',
       label: 'ชื่อผู้ขับ'
     },
     {
@@ -154,7 +154,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
   const [textnotify, setText] = useState('');
   const [station_count, setStationCount] = useState(0);
   const [loading, setLoading] = useState(true); // สร้าง state เพื่อติดตามสถานะการโหลด
-  const [selectedStation, setSelectedStation] = useState('');
+  // const [selectedStation, setSelectedStation] = useState('');
   const [selectedLoadingTeam, setSelectedLoadingTeam] = useState('');
   const [stations, setStations] = useState([]);
   const [loadingteams, setLoadingTeams] = useState([]);
@@ -166,7 +166,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
   const station_num = 17;
 
   //const [loadingteam, setLoadingTeam] = React.useState('');
-  const [staion_id, setStationId] = React.useState(0);
+  const [staion_id, setStationId] = useState(0);
 
   useEffect(() => {
     fetchData();
@@ -400,10 +400,13 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     });
   };
 
+  //Update start_time of step
+
   const handleClickOpen = (step_id, fr, queues_id, station_id) => {
+
+    //ข้อความแจ้งเตือน
     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
     if (fr === 'call') {
-      console.log('click');
       setText('เรียกคิว');
       setMessage('ขึ้นสินค้า–STEP2 เรียกคิว');
     } else {
@@ -417,6 +420,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     }
 
     //กดปุ่มมาจากไหน
+
     setFrom(fr);
     setUpdate(step_id);
     setStationId(station_id);
@@ -425,7 +429,6 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     setOpen(true);
   };
 
-  //Update start_time of step
   const updateStartTime = (step_id) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
@@ -505,9 +508,9 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
       if (fr === 'call') {
         if (station_count < station_num) {
           setOpen(false);
-          if (selectedStation) {
+          if (staion_id) {
             setStationCount(station_count + 1);
-            await step1Update(id_update, 'processing', selectedStation);
+            await step1Update(id_update, 'processing', staion_id);
             await updateStartTime(id_update);
           } else {
             alert('กรุณาเลือกหัวจ่าย');
@@ -675,10 +678,22 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     setSelectedLoadingTeam(event.target.value);
   };
 
-  const handleStationChange = (event) => {
-    console.log('click ', items2);
-    setSelectedStation(event.target.value);
+  const [selectedStations, setSelectedStations] = useState({}); // ใช้ state สำหรับการเก็บสถานีที่ถูกเลือกในแต่ละแถว
+
+  const handleStationChange = (event, row) => {
+    const { value } = event.target;
+    setSelectedStations((prevState) => ({
+      ...prevState,
+      [row.step_id]: value // เก็บค่าสถานีที่ถูกเลือกในแต่ละแถวโดยใช้ step_id เป็น key
+    }));
+
+    // sendStationIdToBackend(row.step_id, value);
   };
+
+  // const sendStationIdToBackend = (stationId) => {
+  //   //console.log(stepId, stationId)
+  //   setSelectedStation(stationId);
+  // };
 
   return (
     <>
@@ -754,13 +769,13 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                           </Typography>
                         </TableCell>
                         <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
-                        <TableCell align="left">
+                        <TableCell align="center">
                           <Chip color="primary" label={row.token} />
                         </TableCell>
                         <TableCell align="center">
                           <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="left">
                           <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>
                         </TableCell>
                         <TableCell align="left">
@@ -779,16 +794,16 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
 
                         <TableCell align="center" style={{ fontFamily: 'kanit' }}>
                           {status == 'waiting' && (
-                            <FormControl sx={{ minWidth: 140, maxWidth: 140 }} size="small">
-                              <InputLabel id={'select-label-' + index} style={{ fontFamily: 'kanit' }} size="small">
+                            <FormControl sx={{ minWidth: 140 }} size="small">
+                              <InputLabel id={`station-select-label-${row.step_id}`} style={{ fontFamily: 'kanit' }} size="small">
                                 หัวจ่าย
                               </InputLabel>
                               <Select
                                 size="small"
+                                labelId={`station-select-label-${row.step_id}`}
                                 label="หัวจ่าย"
-                                id={'select-label-' + index}
-                                value={selectedStation}
-                                onChange={handleStationChange}
+                                value={selectedStations[row.step_id] || row.reserve_station_id} // ใช้สถานีที่ถูกเลือกในแต่ละแถวหรือสถานีที่ถูกจองเริ่มต้น
+                                onChange={(event) => handleStationChange(event, row)}
                               >
                                 {stations.map((station) => (
                                   <MenuItem key={station.station_id} value={station.station_id}>
@@ -800,7 +815,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                           )}
 
                           {status == 'processing' && (
-                            <FormControl sx={{ minWidth: 140, maxWidth: 140 }} size="small">
+                            <FormControl sx={{ minWidth: 140 }} size="small">
                               <InputLabel id={'select-label-' + index} style={{ fontFamily: 'kanit' }} size="small">
                                 ทีมขึ้นสินค้า
                               </InputLabel>
@@ -831,7 +846,14 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                                   variant="contained"
                                   size="small"
                                   color="info"
-                                  onClick={() => handleClickOpen(row.step_id, 'call', row.queue_id)}
+                                  onClick={() =>
+                                    handleClickOpen(
+                                      row.step_id,
+                                      'call',
+                                      row.queue_id,
+                                      selectedStations[row.step_id] || row.reserve_station_id
+                                    )
+                                  }
                                   endIcon={<RightSquareOutlined />}
                                 >
                                   เรียกคิว

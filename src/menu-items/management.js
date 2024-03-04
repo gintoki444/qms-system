@@ -11,9 +11,9 @@ const icons = {
 
 const management = {
   id: 'management',
-  title: 'การจัดการข้อมูล',
+  title: 'ข้อมูลลูกค้า',
   type: 'group',
-  roles: 5,
+  roles: [1, 5, 8],
   children: [
     {
       id: 'company',
@@ -49,13 +49,6 @@ const management = {
       url: '/reserve',
       icon: icons.BookOutlined
     },
-    {
-      id: 'userQueue',
-      title: 'ข้อมูลคิว',
-      type: 'item',
-      url: '/queues',
-      icon: icons.ContainerOutlined
-    }
   ]
 };
 

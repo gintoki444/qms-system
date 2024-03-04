@@ -9,8 +9,8 @@ import axios from '../../../node_modules/axios/index';
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 
-import QRCode from 'react-qr-code';
-import logo from '../../assets/images/ICON-02.png';
+// import QRCode from 'react-qr-code';
+// import logo from '../../assets/images/ICON-02.png';
 
 // material-ui
 import {
@@ -43,7 +43,7 @@ function ReserveDetail() {
   // =============== Get Reserve ID ===============//
   const [reserveData, setReservData] = useState({});
   const { id } = useParams();
-  const prurl = window.location.origin + '/reserve/update/' + id;
+  // const prurl = window.location.origin + '/reserve/update/' + id;
   const getReserve = () => {
     setLoading(true);
     const urlapi = apiUrl + `/reserve/` + id;
@@ -144,7 +144,7 @@ function ReserveDetail() {
   //สร้าง Queue รับค่า reserve_id
   function createQueuef(reserve_id, brand_code, queue_number) {
     return new Promise((resolve) => {
-      setTimeout(() => { 
+      setTimeout(() => {
         //วันที่ปัจจุบัน
         const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
         const queueDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
@@ -369,6 +369,8 @@ function ReserveDetail() {
   function createStepsf(queue_id) {
     return new Promise((resolve) => {
       setTimeout(() => {
+        const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
 
@@ -381,8 +383,8 @@ function ReserveDetail() {
               status: 'waiting',
               station_id: 27,
               remark: 'ทดสอบ-ชั่งเบา',
-              created_at: '2024-01-27',
-              updated_at: '2024-01-27'
+              created_at: currentDate,
+              updated_at: currentDate
             },
             {
               order: 2,
@@ -391,8 +393,8 @@ function ReserveDetail() {
               status: 'none',
               station_id: 27,
               remark: 'ทดสอบ-ขึ้นสินค้า',
-              created_at: '2024-01-15',
-              updated_at: '2024-01-15'
+              created_at: currentDate,
+              updated_at: currentDate
             },
             {
               order: 3,
@@ -401,8 +403,8 @@ function ReserveDetail() {
               status: 'none',
               station_id: 27,
               remark: 'ทดสอบ-ชั่งหนัก ',
-              created_at: '2024-01-13',
-              updated_at: '2024-01-13'
+              created_at: currentDate,
+              updated_at: currentDate
             },
             {
               order: 4,
@@ -411,8 +413,8 @@ function ReserveDetail() {
               status: 'none',
               station_id: 27,
               remark: 'ทดสอบ-เสร็จสิ้น',
-              created_at: '2024-01-13',
-              updated_at: '2024-01-13'
+              created_at: currentDate,
+              updated_at: currentDate
             }
           ]
         });
@@ -592,7 +594,7 @@ function ReserveDetail() {
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Grid container spacing={1} sx={{ pl: 2, pr: 2 }}>
+                <Grid container spacing={1} sx={{ pl: 2, pr: 2, mb: 2 }}>
                   {orderList.map((order, index) => (
                     <Grid item xs={12} key={index} sx={{ mt: 1 }}>
                       <Grid container spacing={2} sx={{ mb: '15px' }}>
@@ -652,7 +654,7 @@ function ReserveDetail() {
                   </>
                 )}
               </Grid>
-
+              {/* 
               <Grid item xs={12} align="center">
                 <Divider sx={{ pt: 1 }} light />
                 <Typography variant="h5" gutterBottom>
@@ -674,11 +676,22 @@ function ReserveDetail() {
                   </Typography>
                   <Divider sx={{ p: 2 }} light />
                 </Grid>
-              </Grid>
+              </Grid> */}
             </Grid>
           </MainCard>
-          <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
+          <Grid item xs={12} sx={{ '& button': { m: 1, mt: 2 } }} align="center">
             {orderList.length > 0 && reserveData.status !== 'completed' && userRoles === 10 && (
+              <Button
+                size="mediam"
+                variant="outlined"
+                color="success"
+                onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity, reserveData.group_code)}
+                startIcon={<DiffOutlined />}
+              >
+                สร้างคิว
+              </Button>
+            )}
+            {orderList.length > 0 && reserveData.status !== 'completed' && userRoles === 1 && (
               <Button
                 size="mediam"
                 variant="outlined"

@@ -1,16 +1,19 @@
 // import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 
+import * as reportRequest from '_api/reportRequest';
+
 // material-ui
 import { useTheme } from '@mui/material/styles';
 
 // third-party
 import ReactApexChart from 'react-apexcharts';
+import moment from 'moment';
 
 // chart options
 const areaChartOptions = {
   chart: {
-    height: 450,
+    height: 270,
     type: 'area',
     toolbar: {
       show: false
@@ -37,30 +40,20 @@ const IncomeAreaChart = () => {
   const line = theme.palette.divider;
 
   const [options, setOptions] = useState(areaChartOptions);
+  const [series, setSeries] = useState([]);
+  const [rawdata, setRawData] = useState([]);
+  const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
   useEffect(() => {
     setOptions((prevState) => ({
       ...prevState,
       colors: [theme.palette.primary.main, theme.palette.primary[700]],
-      
+
       xaxis: {
-        categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        categories: rawdata.map((item) => `${item.hour_created}:00`),
         labels: {
           style: {
-            colors: [
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary
-            ]
+            colors: [secondary]
           }
         },
         axisBorder: {
@@ -84,29 +77,32 @@ const IncomeAreaChart = () => {
         theme: 'light'
       }
     }));
-  }, [primary, secondary, line, theme]);
-
-  const [series, setSeries] = useState([
-    {
-      name: 'Page Views',
-      data: [0, 86, 28, 115, 48, 210, 136]
-    },
-    {
-      name: 'Sessions',
-      data: [0, 43, 14, 56, 24, 105, 68]
-    }
-  ]);
+  }, [primary, secondary, line, theme, rawdata]);
 
   useEffect(() => {
-    setSeries([
-      {
-        name: 'Page Views',
-        data: [31, 40, 28, 51, 42, 109, 100]
-      }
-    ]);
+    fetchData();
+    const intervalId = setInterval(fetchData, 60000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิdลลิวินาที)
+    return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
   }, []);
 
-  return <ReactApexChart options={options} series={series} type="area" height={450} />;
+  const fetchData = async () => {
+    getDataChart();
+  };
+  const getDataChart = async () => {
+    await reportRequest.getDataChart(currentDate).then((respronse) => {
+      setRawData(respronse);
+      setSeries([
+        {
+          name: 'จำนวนคิว',
+          data: respronse.map((item) => item.queue_count)
+        }
+      ]);
+    });
+  };
+
+  // ==============================|| Get Data ||============================== //
+
+  return <ReactApexChart options={options} series={series} type="area" height={270} />;
 };
 
 export default IncomeAreaChart;

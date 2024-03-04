@@ -17,7 +17,7 @@ export default function ThemeCustomization({ children }) {
   const theme = Palette('light', 'default');
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const themeTypography = Typography(`'Kanit', sans-serif`);
+  const themeTypography = Typography(`'Noto Sans Thai', sans-serif`);
   const themeCustomShadows = useMemo(() => CustomShadows(theme), [theme]);
 
   const themeOptions = useMemo(
@@ -48,6 +48,16 @@ export default function ThemeCustomization({ children }) {
 
   const themes = createTheme(themeOptions);
   themes.components = componentsOverride(themes);
+
+  // ==============================|| Back to page  ||============================== //
+
+  const token = localStorage.getItem('token');
+  const pathname = window.location.pathname;
+
+  if (!token && pathname !== '/login') {
+    localStorage.setItem('backToPage', window.location.href);
+    window.location = '/login';
+  }
 
   return (
     <StyledEngineProvider injectFirst>

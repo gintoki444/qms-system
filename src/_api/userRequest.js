@@ -40,12 +40,7 @@ export const getRoleUsers = async () => {
 export const putUsers = async (id, data) => {
   const myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');
-
-  console.log(id);
-  console.log(data);
-
   const raw = JSON.stringify(data);
-
   const requestOptions = {
     method: 'PUT',
     headers: myHeaders,
@@ -54,6 +49,40 @@ export const putUsers = async (id, data) => {
   };
 
   const response = await fetch(apiUrl + '/updateuser/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const postAddUserRoles = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/add_user_roles/', requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const postLogin = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/login', requestOptions);
 
   const result = await response.json();
   return result;

@@ -79,7 +79,7 @@ export const StepTable = ({ status, title, onStatusChange }) => {
     },
     {
       id: 'station',
-      align: 'center',
+      align: 'left',
       disablePadding: true,
       width: '10%',
       label: 'สถานีบริการ'
@@ -88,14 +88,14 @@ export const StepTable = ({ status, title, onStatusChange }) => {
       id: 'branName',
       align: 'left',
       disablePadding: false,
-      width: '',
+      width: '12%',
       label: 'ร้านค้า/บริษัท'
     },
     {
       id: 'driver',
       align: 'left',
       disablePadding: true,
-      width: '',
+      width: '12%',
       label: 'ชื่อผู้ขับ'
     },
     {
@@ -185,8 +185,6 @@ export const StepTable = ({ status, title, onStatusChange }) => {
   };
 
   //ข้อมูล รอเรียกคิว step1
-  const initialData = [0];
-  const [weight, setWeight] = useState(initialData);
   const processingGet = async () => {
     try {
       await getQueues.getStep1Processing().then((response) => {
@@ -199,11 +197,10 @@ export const StepTable = ({ status, title, onStatusChange }) => {
     }
   };
 
-  const handleChange = (index, value) => {
-    const newInputValues = [...weight];
-    newInputValues[index] = parseFloat(value);
-    setWeight(newInputValues);
-    console.log(value);
+  const initialData = 0;
+  const [weight, setWeight] = useState(initialData);
+  const handleChange = ( value) => {
+    setWeight(parseFloat(value));
   };
 
   //เปิดการแจ้งเตือน
@@ -269,7 +266,7 @@ export const StepTable = ({ status, title, onStatusChange }) => {
       }
 
       if (fr === 'close') {
-        if (weight[0] === 0 || weight[0] === '') {
+        if (weight === 0 || weight === '') {
           alert('กรุณาใสน้ำหนักจากการชั่งเบา');
         } else {
           //alert(weight);
@@ -663,9 +660,9 @@ export const StepTable = ({ status, title, onStatusChange }) => {
                               <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />
                             </TableCell>
 
-                            {status == 'waiting' && <TableCell align="center">-</TableCell>}
+                            {status == 'waiting' && <TableCell align="left">-</TableCell>}
                             {status == 'processing' && (
-                              <TableCell align="center">
+                              <TableCell align="left">
                                 <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>
                               </TableCell>
                             )}
@@ -699,7 +696,7 @@ export const StepTable = ({ status, title, onStatusChange }) => {
                                       'aria-label': 'weight'
                                     }}
                                     value={weight}
-                                    onChange={(e) => handleChange(index, e.target.value)}
+                                    onChange={(e) => handleChange(e.target.value)}
                                     style={{ fontFamily: 'kanit' }}
                                   />
                                   <FormHelperText id="standard-weight-helper-text" style={{ fontFamily: 'kanit' }}>

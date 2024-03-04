@@ -79,6 +79,7 @@ function UpdateReserve() {
     contact_person: '',
     contact_number: '',
     registration_no: '',
+    reserve_station_id: '',
     brand: '',
     color: '',
     license_no: '',
@@ -99,7 +100,7 @@ function UpdateReserve() {
           res.data.reserve.map((result) => {
             console.log(result.user_id);
             setUserId(result.user_id);
-            if (currentDate == moment(result.pickup_date).format('YYYY-MM-DD')) {
+            if (dateNow == moment(result.pickup_date).format('YYYY-MM-DD')) {
               setCheckDate(true);
             }
             setReservationData(result);
@@ -199,12 +200,26 @@ function UpdateReserve() {
       .catch((err) => console.log(err));
   };
 
+  // =============== Get Stations ===============//
+  const [stationsList, setStationsList] = useState([]);
+  const getStation = () => {
+    const urlapi = apiUrl + `/allstations`;
+    axios
+      .get(urlapi)
+      .then((res) => {
+        if (res) {
+          setStationsList(res.data.filter((x) => x.station_group_id === 3));
+        }
+      })
+      .catch((err) => console.log(err));
+  };
   // =============== useEffect ===============//
   useEffect(() => {
     getReserve();
     if (user_Id) {
       getWarehouses();
       getBrandList();
+      getStation();
     }
     // getProduct();
   }, [user_Id]);
@@ -213,6 +228,7 @@ function UpdateReserve() {
   const validationSchema = Yup.object().shape({
     company_id: Yup.string().required('กรุณาเลือกบริษัท/ร้านค้า'),
     brand_group_id: Yup.string().required('กรุณาเลือกกลุ่มสินค้า'),
+    reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
     description: Yup.string().required('กรุณากรอกiรายละเอียดการจอง')
   });
@@ -283,6 +299,7 @@ function UpdateReserve() {
     pickup_date: moment(reservationData.pickup_date).format('YYYY-MM-DD'),
     warehouse_id: reservationData.warehouse_id || '',
     status: reservationData.status,
+    reserve_station_id: reservationData.reserve_station_id,
     total_quantity: reservationData.total_quantity
   };
 
@@ -580,6 +597,8 @@ function UpdateReserve() {
   function createStepsf(queue_id) {
     return new Promise((resolve) => {
       setTimeout(() => {
+        const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
 
@@ -592,8 +611,8 @@ function UpdateReserve() {
               status: 'waiting',
               station_id: 27,
               remark: 'ทดสอบ-ชั่งเบา',
-              created_at: '2024-01-27',
-              updated_at: '2024-01-27'
+              created_at: currentDate,
+              updated_at: currentDate
             },
             {
               order: 2,
@@ -602,8 +621,8 @@ function UpdateReserve() {
               status: 'none',
               station_id: 27,
               remark: 'ทดสอบ-ขึ้นสินค้า',
-              created_at: '2024-01-15',
-              updated_at: '2024-01-15'
+              created_at: currentDate,
+              updated_at: currentDate
             },
             {
               order: 3,
@@ -612,8 +631,8 @@ function UpdateReserve() {
               status: 'none',
               station_id: 27,
               remark: 'ทดสอบ-ชั่งหนัก ',
-              created_at: '2024-01-13',
-              updated_at: '2024-01-13'
+              created_at: currentDate,
+              updated_at: currentDate
             },
             {
               order: 4,
@@ -622,8 +641,8 @@ function UpdateReserve() {
               status: 'none',
               station_id: 27,
               remark: 'ทดสอบ-เสร็จสิ้น',
-              created_at: '2024-01-13',
-              updated_at: '2024-01-13'
+              created_at: currentDate,
+              updated_at: currentDate
             }
           ]
         });
@@ -915,6 +934,32 @@ function UpdateReserve() {
                         )}
                       </Stack>
                     </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
+                        <InputLabel>หัวจ่าย</InputLabel>
+                        <TextField
+                          select
+                          variant="outlined"
+                          name="reserve_station_id"
+                          value={values.reserve_station_id}
+                          onChange={handleChange}
+                          placeholder="เลือกคลังสินค้า"
+                          fullWidth
+                        >
+                          {stationsList.map((station) => (
+                            <MenuItem key={station.station_id} value={station.station_id}>
+                              {station.station_description}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                        {touched.reserve_station_id && errors.reserve_station_id && (
+                          <FormHelperText error id="helper-text-reserve_station_id">
+                            {errors.reserve_station_id}
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                    </Grid>
                     <Grid item xs={12}>
                       <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="h5">ข้อมูลรายการสั่งซื้อสินค้า</Typography>
@@ -1004,6 +1049,25 @@ function UpdateReserve() {
                       </Button>
                     )}
 
+                    {orderList.length > 0 && reservationData.status !== 'completed' && userRoles === 1 && checkDate == true && (
+                      <Button
+                        size="mediam"
+                        variant="outlined"
+                        color="success"
+                        disabled={
+                          values.status === 'completed' ||
+                          dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
+                          values.total_quantity == 0 ||
+                          checkDate == false
+                        }
+                        onClick={() =>
+                          handleClickOpen(reservationData.reserve_id, reservationData.total_quantity, reservationData.group_code)
+                        }
+                        startIcon={<DiffOutlined />}
+                      >
+                        สร้างคิว
+                      </Button>
+                    )}
                     {orderList.length > 0 && (
                       <Button
                         size="mediam"

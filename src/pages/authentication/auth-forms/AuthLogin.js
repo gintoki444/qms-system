@@ -44,6 +44,7 @@ const AuthLogin = () => {
   const [popupErrors, setPopupErrors] = useState(false);
 
   const [showPassword, setShowPassword] = React.useState(false);
+  let backTopage = localStorage.getItem('backToPage');
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -76,7 +77,13 @@ const AuthLogin = () => {
             // To store data
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user_id', res.data.user_id);
-            window.location = '/';
+
+            if (backTopage) {
+              window.location = backTopage;
+              localStorage.removeItem('backToPage');
+            } else {
+              window.location = '/';
+            }
           } else {
             // alert('Login failed: ' + res.data.message);
             setMassageErrors(res.data.message);

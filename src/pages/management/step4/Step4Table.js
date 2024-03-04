@@ -76,7 +76,7 @@ export const Step4Table = ({ status, title, onStatusChange }) => {
     },
     {
       id: 'station',
-      align: 'center',
+      align: 'left',
       disablePadding: true,
       width: '170px',
       label: 'สถานีบริการ'
@@ -162,7 +162,7 @@ export const Step4Table = ({ status, title, onStatusChange }) => {
                 </TableCell>
               )}
 
-              {status === 'waiting' && headCell.id !== 'checkBox2' && headCell.id !== 'checkBox1' &&(
+              {status === 'waiting' && headCell.id !== 'checkBox2' && headCell.id !== 'checkBox1' && (
                 <TableCell
                   key={headCell.id}
                   align={headCell.align}
@@ -257,8 +257,8 @@ export const Step4Table = ({ status, title, onStatusChange }) => {
       .then((response) => response.json())
       .then((result) => {
         if (result['status'] === 'ok') {
-          waitingGet();
-          processingGet();
+          // waitingGet();
+          // processingGet();
           //2=Step ขึ้นสินค้า
           getStepCount(4, 'processing');
           setLoading(false);
@@ -687,11 +687,12 @@ export const Step4Table = ({ status, title, onStatusChange }) => {
                           <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />
                         </TableCell>
 
-                        {status == 'waiting' && <TableCell align="center">-</TableCell>}
+                        {status == 'waiting' && <TableCell left="left">-</TableCell>}
                         {status == 'processing' && (
-                          <TableCell align="center">
+                          <TableCell align="left">
                             <Typography>
-                              {row.station_description.substring(0, 20)} {row.station_description.length >= 20 && '...'}
+                              {row.station_description}
+                              {/* {row.station_description.substring(0, 20)} {row.station_description.length >= 20 && '...'} */}
                             </Typography>
                           </TableCell>
                         )}
@@ -709,8 +710,8 @@ export const Step4Table = ({ status, title, onStatusChange }) => {
                           {row.start_datetime ? row.start_datetime.slice(11, 19) : row.start_time.slice(11, 19)}
                         </TableCell>
                         <TableCell align="center">
-                          {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอคิวชั่งเบา'} />}
-                          {status == 'processing' && <Chip color="success" sx={{ width: '95px' }} label={'กำลังชั่งเบา'} />}
+                          {status == 'waiting' && <Chip color="warning" sx={{ width: '110px' }} label={'รอคิวตรวจสอบ'} />}
+                          {status == 'processing' && <Chip color="success" sx={{ width: '110px' }} label={'กำลังตรวจสอบ'} />}
                         </TableCell>
                         {status == 'processing' && (
                           <>

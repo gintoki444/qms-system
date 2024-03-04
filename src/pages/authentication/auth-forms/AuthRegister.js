@@ -35,7 +35,7 @@ import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
-
+import * as userRequest from '_api/userRequest';
 // ============================|| FIREBASE - REGISTER ||============================ //
 
 const AuthRegister = () => {
@@ -43,6 +43,7 @@ const AuthRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [massageStatus, setMassageStatus] = useState('');
   const [massageErrors, setMassageErrors] = useState('');
   const [popupErrors, setPopupErrors] = useState(false);
 
@@ -107,16 +108,48 @@ const AuthRegister = () => {
               password: values.password
             };
 
-            axios.post(apiUrl + '/login', loginData).then((login) => {
-              if (login.data.status === 'ok') {
-                // To store datan);
-                localStorage.setItem('token', res.data.token);
-                localStorage.setItem('user_id', res.data.user_id);
-                window.location = '/';
-              }
+            userRequest.postLogin(loginData).then((login) => {
+              console.log(login);
+              userRequest.putUsers(login.user_id, jsonData).then((response) => {
+                console.log(response);
+
+                userRequest.postLogin(loginData).then((result) => {
+                  console.log(result);
+
+                  localStorage.setItem('token', result.token);
+                  localStorage.setItem('user_id', result.user_id);
+
+                  setMassageErrors(values.email + ': สมัครสมาชิกสำเร็จ!');
+                  setMassageStatus('success');
+                  setPopupErrors(true);
+                  window.location = '/login';
+                });
+              });
             });
+
+            // axios.post(apiUrl + '/login', loginData).then((login) => {
+            //   if (login.data.status === 'ok') {
+            //     // const dataRoleUser = {
+            //     //   user_id: login.data.user_id,
+            //     //   role_id: 5
+            //     // };
+
+            //     userRequest.putUsers(login.data.user_id, jsonData).then(() => {
+
+            //     });
+            //     // userRequest.postAddUserRoles(dataRoleUser).then(() => {
+            //     //     // localStorage.setItem('token', login.data.token);
+            //     //     // localStorage.setItem('user_id', login.data.user_id);
+            //     //     setMassageErrors(values.email + ': สมัครสมาชิกสำเร็จ!');
+            //     //     setMassageStatus('success');
+            //     //     setPopupErrors(true);
+            //     //     // window.location = '/login';
+            //     //   });
+            //   }
+            // });
           } else {
             setMassageErrors('คุณได้ใช้อีเมล :' + values.email + ' สมัครสมาชิกแล้ว !');
+            setMassageStatus('error');
             setPopupErrors(true);
           }
         })
@@ -135,7 +168,7 @@ const AuthRegister = () => {
     <>
       {popupErrors == true && (
         <Stack sx={{ width: '100%', mb: '18px' }} spacing={2}>
-          <Alert severity="error">{massageErrors}</Alert>
+          <Alert severity={massageStatus}>{massageErrors}</Alert>
         </Stack>
       )}
       <Formik

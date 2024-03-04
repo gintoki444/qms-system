@@ -33,7 +33,7 @@ const Company = () => {
               <Alert severity="warning">กรุณารอการอนุมัติการใช้งานจากผู้ดูแลระบบ</Alert>
             </Stack>
           )}
-          {userRole && (
+          {userRole && userRole !== 5 && (
             <Grid container alignItems="center" justifyContent="flex-end">
               <Stack direction="row" alignItems="center" spacing={0}>
                 <Button size="mediam" color="success" variant="outlined" onClick={() => addCompany()} startIcon={<PlusCircleOutlined />}>

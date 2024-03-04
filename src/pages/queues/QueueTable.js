@@ -177,7 +177,7 @@ export default function QueueTable() {
   const [open, setOpen] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
@@ -189,7 +189,6 @@ export default function QueueTable() {
   }, []);
 
   const getQueue = () => {
-    setLoading(true);
     try {
       queueRequest.getAllqueueByDate(currentDate).then((response) => {
         setItems(response);
@@ -320,7 +319,7 @@ export default function QueueTable() {
                   return (
                     <TableRow key={index}>
                       <TableCell align="center">{row.queue_number}</TableCell>
-                      <TableCell align="left">{moment(row.queue_date).format('MM-DD-YYYY')}</TableCell>
+                      <TableCell align="left">{moment(row.queue_date).format('MM/DD/YYYY')}</TableCell>
                       <TableCell align="center">
                         <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
                       </TableCell>
@@ -349,6 +348,23 @@ export default function QueueTable() {
                           </Tooltip>
 
                           {userRoles && userRoles === 10 && (
+                            <Tooltip title="ลบ">
+                              <span>
+                                <Button
+                                  variant="contained"
+                                  sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                  size="medium"
+                                  disabled={row.status === 'completed'}
+                                  color="error"
+                                  onClick={() => handleClickOpen(row.queue_id, row.reserve_id, row.step1_status)}
+                                >
+                                  <DeleteOutlined />
+                                </Button>
+                              </span>
+                            </Tooltip>
+                          )}
+
+                          {userRoles && userRoles === 1 && (
                             <Tooltip title="ลบ">
                               <span>
                                 <Button

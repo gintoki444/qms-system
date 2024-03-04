@@ -67,7 +67,7 @@ const headCells = [
   },
   {
     id: 'brandCode',
-    align: 'left',
+    align: 'centers',
     disablePadding: true,
     label: 'เบรน Code'
   },
@@ -114,12 +114,6 @@ const headCells = [
     align: 'center',
     disablePadding: false,
     label: 'สถานะออกคิว'
-  },
-  {
-    id: 'dateReserve',
-    align: 'center',
-    disablePadding: true,
-    label: 'วันที่จอง'
   },
   {
     id: 'action',
@@ -210,10 +204,8 @@ export default function ReserveTable({ startDate, endDate }) {
   const getReserve = () => {
     let urlGet = '';
     if (userRoles == 1 || userRoles == 10) {
-      console.log('userRoles :', userRoles);
       urlGet = apiUrl + '/allreservesrange?pickup_date1=' + startDate + '&pickup_date2=' + endDate;
     } else {
-      console.log('user_id :', userRoles);
       urlGet = apiUrl + '/allreservespickup2?user_id=' + userId + '&pickup_date1=' + startDate + '&pickup_date2=' + endDate;
     }
     setLoading(true);
@@ -467,6 +459,7 @@ export default function ReserveTable({ startDate, endDate }) {
     link = link + '/queues/detail/' + queue_id;
 
     const messageLine = queue_info + 'รายการสินค้า:-' + '\n' + orderProducts + '\n' + link;
+
     lineNotify(messageLine);
   };
 
@@ -545,6 +538,8 @@ export default function ReserveTable({ startDate, endDate }) {
   function createStepsf(queue_id) {
     return new Promise((resolve) => {
       setTimeout(() => {
+        const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
 
@@ -557,8 +552,8 @@ export default function ReserveTable({ startDate, endDate }) {
               status: 'waiting',
               station_id: 27,
               remark: 'ทดสอบ-ชั่งเบา',
-              created_at: '2024-01-27',
-              updated_at: '2024-01-27'
+              created_at: currentDate,
+              updated_at: currentDate
             },
             {
               order: 2,
@@ -567,8 +562,8 @@ export default function ReserveTable({ startDate, endDate }) {
               status: 'none',
               station_id: 27,
               remark: 'ทดสอบ-ขึ้นสินค้า',
-              created_at: '2024-01-15',
-              updated_at: '2024-01-15'
+              created_at: currentDate,
+              updated_at: currentDate
             },
             {
               order: 3,
@@ -577,8 +572,8 @@ export default function ReserveTable({ startDate, endDate }) {
               status: 'none',
               station_id: 27,
               remark: 'ทดสอบ-ชั่งหนัก ',
-              created_at: '2024-01-13',
-              updated_at: '2024-01-13'
+              created_at: currentDate,
+              updated_at: currentDate
             },
             {
               order: 4,
@@ -587,8 +582,8 @@ export default function ReserveTable({ startDate, endDate }) {
               status: 'none',
               station_id: 27,
               remark: 'ทดสอบ-เสร็จสิ้น',
-              created_at: '2024-01-13',
-              updated_at: '2024-01-13'
+              created_at: currentDate,
+              updated_at: currentDate
             }
           ]
         });
@@ -603,7 +598,6 @@ export default function ReserveTable({ startDate, endDate }) {
         fetch(apiUrl + '/transactions', requestOptions)
           .then((response) => response.json())
           .then(() => {
-            setLoading(false);
             window.location.href = '/queues/detail/' + queue_id;
           })
           .catch((error) => console.log('error', error));
@@ -696,12 +690,12 @@ export default function ReserveTable({ startDate, endDate }) {
                 items.map((row, index) => {
                   return (
                     <TableRow key={index}>
-                      <TableCell align="left">{index + 1}</TableCell>
+                      <TableCell align="center">{index + 1}</TableCell>
                       {/* <TableCell align="left">{moment(row.created_date).format('DD/MM/YYYY')}</TableCell> */}
-                      <TableCell align="left">
+                      <TableCell align="center">
                         <Chip color={'primary'} label={moment(row.pickup_date).format('DD/MM/YYYY')} sx={{ minWidth: 95 }} />
                       </TableCell>
-                      <TableCell align="left">
+                      <TableCell align="center">
                         <Chip color={'primary'} label={row.registration_no} sx={{ width: 95, border: 1 }} />
                       </TableCell>
                       <TableCell align="center"> {row.brand_code}</TableCell>
@@ -731,28 +725,48 @@ export default function ReserveTable({ startDate, endDate }) {
                               </Button>
                             </span>
                           </Tooltip>
-                          {userRoles === 10 ||
-                            (userRoles === 1 && (
-                              <Tooltip title="สร้างคิว">
-                                <span>
-                                  <Button
-                                    // disabled
-                                    variant="contained"
-                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                    size="medium"
-                                    disabled={
-                                      row.status === 'completed' ||
-                                      currentDate !== moment(row.pickup_date).format('YYYY-MM-DD') ||
-                                      row.total_quantity == 0
-                                    }
-                                    color="info"
-                                    onClick={() => handleClickOpen(row.reserve_id, row.total_quantity, row.brand_code)}
-                                  >
-                                    <DiffOutlined />
-                                  </Button>
-                                </span>
-                              </Tooltip>
-                            ))}
+                          {userRoles === 10 && (
+                            <Tooltip title="สร้างคิว">
+                              <span>
+                                <Button
+                                  // disabled
+                                  variant="contained"
+                                  sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                  size="medium"
+                                  disabled={
+                                    row.status === 'completed' ||
+                                    currentDate !== moment(row.pickup_date).format('YYYY-MM-DD') ||
+                                    row.total_quantity == 0
+                                  }
+                                  color="info"
+                                  onClick={() => handleClickOpen(row.reserve_id, row.total_quantity, row.brand_code)}
+                                >
+                                  <DiffOutlined />
+                                </Button>
+                              </span>
+                            </Tooltip>
+                          )}
+                          {userRoles === 1 && (
+                            <Tooltip title="สร้างคิว">
+                              <span>
+                                <Button
+                                  // disabled
+                                  variant="contained"
+                                  sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                  size="medium"
+                                  disabled={
+                                    row.status === 'completed' ||
+                                    currentDate !== moment(row.pickup_date).format('YYYY-MM-DD') ||
+                                    row.total_quantity == 0
+                                  }
+                                  color="info"
+                                  onClick={() => handleClickOpen(row.reserve_id, row.total_quantity, row.brand_code)}
+                                >
+                                  <DiffOutlined />
+                                </Button>
+                              </span>
+                            </Tooltip>
+                          )}
                           <Tooltip title="แก้ไข">
                             <span>
                               <Button

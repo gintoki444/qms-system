@@ -11,9 +11,9 @@ const icons = {
 
 const adminSale = {
   id: 'management',
-  title: 'การจัดการข้อมูล',
+  title: 'ข้อมูลคิวรับสินค้า',
   type: 'group',
-  roles: 10,
+  roles: [10],
   children: [
     {
       id: 'userReserves',
