@@ -175,9 +175,7 @@ export default function QueuesTable() {
   const [items, setItems] = useState([]);
   const processingGet = () => {
     try {
-      console.log(items);
       getQueues.getStep2Processing().then((response) => {
-        console.log(response);
         setItems(response);
         console.log(items);
       });

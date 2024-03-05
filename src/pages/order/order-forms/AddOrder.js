@@ -157,7 +157,6 @@ function AddOrder() {
         axios
           .request(config)
           .then((result) => {
-            console.log(result);
             if (result.data.status === 'ok') {
               //Update total_amount
               updateReserveTotal();

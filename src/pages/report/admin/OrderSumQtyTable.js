@@ -133,7 +133,6 @@ export default function OrderSumQtyTable({ startDate, endDate }) {
       .then((response) => response.json())
       .then((result) => {
         setItems(result);
-        //console.log(result);
         setLoading(false);
       })
       .catch((error) => console.error(error));
@@ -172,30 +171,30 @@ export default function OrderSumQtyTable({ startDate, endDate }) {
               {items.length > 0 &&
                 items.map((row, index) => (
                   <TableRow key={row.step_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                    <TableCell align="center" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {index + 1}
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.name}
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.product_register ? row.product_register : '-'}
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.brand_group}
                     </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="right" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {parseFloat((row.total_sold * 20).toFixed(0))}
                     </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="right" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {parseFloat((row.total_sold * 1).toFixed(3))
                         .toFixed(3)
                         .padStart(5, '0')}
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.warehouse_name}
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.setup_pile_date ? moment(new Date()).format('DD-MM-YYYY') : '-'}
                     </TableCell>
                   </TableRow>

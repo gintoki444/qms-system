@@ -139,8 +139,8 @@ function AddReserve() {
     driver_id: '',
     description: '',
     pickup_date: moment(new Date()).format('YYYY-MM-DD'),
-    warehouse_id: '',
-    reserve_station_id: '',
+    warehouse_id: 0,
+    reserve_station_id: 0,
     status: 'waiting',
     total_quantity: 0
   };

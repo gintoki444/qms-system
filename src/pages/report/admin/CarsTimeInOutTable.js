@@ -132,7 +132,6 @@ export default function CarsTimeInOutTable({ startDate, endDate }) {
   const [loading, setLoading] = useState(true);
   // const [selected] = useState([]);
   //   const currentDate = moment(new Date()).format('YYYY-MM-DD');
-
   // const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
 
   // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
@@ -163,7 +162,6 @@ export default function CarsTimeInOutTable({ startDate, endDate }) {
       .then((response) => response.json())
       .then((result) => {
         setItems(result);
-        //console.log(result);
         setLoading(false);
       })
       .catch((error) => console.error(error));
@@ -202,41 +200,41 @@ export default function CarsTimeInOutTable({ startDate, endDate }) {
               {items.length > 0 &&
                 items.map((row, index) => (
                   <TableRow key={row.step_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                    <TableCell align="center" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {index + 1}
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.queue_date ? moment(new Date()).format('DD-MM-YYYY') : '-'}
                     </TableCell>
-                    <TableCell align="center" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {padZero(row.queue_number)}
                     </TableCell>
-                    <TableCell align="center" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.token}
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
                         {row.start_time ? row.start_time.slice(11, 19) : '-'}
                       </div>
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
                         {row.end_time ? row.end_time.slice(11, 19) : '-'}
                       </div>
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.company_name}
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.registration_no}
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.driver_mobile}
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.driver_name}
                     </TableCell>
-                    <TableCell align="center" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.parent_has_cover == 'Y' ? (
                         <Typography sx={{ fontSize: 24, color: 'green' }}>
                           <CheckCircleOutlined color="success" />
@@ -247,7 +245,7 @@ export default function CarsTimeInOutTable({ startDate, endDate }) {
                         </Typography>
                       )}
                     </TableCell>
-                    <TableCell align="center" style={{ fontFamily: 'kanit' }}>
+                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
                       {row.trailer_has_cover == 'Y' ? (
                         <Typography sx={{ fontSize: 24, color: 'green' }}>
                           <CheckCircleOutlined color="success" />

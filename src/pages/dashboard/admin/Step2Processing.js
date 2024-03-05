@@ -163,23 +163,23 @@ export default function Step2Processing() {
             {items.length > 0 &&
               items.map((row, index) => (
                 <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                  <TableCell align="center" style={{ fontFamily: 'kanit' }}>
+                  <TableCell align="center" >
                     <Chip color="primary" sx={{ width: '95px' }} label={row.token} />
                   </TableCell>
                   <TableCell align="left">{row.station_description}</TableCell>
-                  <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                  <TableCell align="left" >
                     <Chip color="primary" sx={{ width: '95px' }} label={row.registration_no} />
                   </TableCell>
-                  <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                  <TableCell align="left" >
                     {row.company_name}
                   </TableCell>
-                  <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                  <TableCell align="left" >
                     {row.driver_name}
                   </TableCell>
-                  <TableCell align="left" style={{ fontFamily: 'kanit' }}>
+                  <TableCell align="left" >
                     {row.driver_mobile}
                   </TableCell>
-                  <TableCell align="center" style={{ fontFamily: 'kanit' }}>
+                  <TableCell align="center" >
                     <Chip color="success" sx={{ width: '110px' }} label={'กำลังขึ้นสินค้า'} />
                   </TableCell>
                 </TableRow>
