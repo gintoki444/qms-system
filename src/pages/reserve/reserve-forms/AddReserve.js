@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 
 // third party
 import * as Yup from 'yup';
@@ -35,6 +36,7 @@ import moment from 'moment';
 function AddReserve() {
   const [loading, setLoading] = useState(false);
   const currentDate = new Date().toISOString().split('T')[0];
+  const userRoles = useSelector((state) => state.auth.roles);
 
   // =============== Get Company ===============//
   const [companyList, setCompanyList] = useState([]);
@@ -124,13 +126,15 @@ function AddReserve() {
 
   // =============== useEffect ===============//
   useEffect(() => {
-    getCompanyLsit();
-    getCarLsit();
-    getDriverLsit();
-    getWarehouses();
-    getBrandList();
-    getStation();
-  }, []);
+    if (userRoles) {
+      getCompanyLsit();
+      getCarLsit();
+      getDriverLsit();
+      getWarehouses();
+      getBrandList();
+      getStation();
+    }
+  }, [userRoles]);
 
   const initialValue = {
     company_id: '',
@@ -139,8 +143,8 @@ function AddReserve() {
     driver_id: '',
     description: '',
     pickup_date: moment(new Date()).format('YYYY-MM-DD'),
-    warehouse_id: 0,
-    reserve_station_id: 0,
+    warehouse_id: 2,
+    reserve_station_id: 3,
     status: 'waiting',
     total_quantity: 0
   };
@@ -175,8 +179,6 @@ function AddReserve() {
         data: values
       };
 
-      console.log('values :', values);
-
       // if (userId === 999) {
       axios
         .request(config)
@@ -184,7 +186,7 @@ function AddReserve() {
           if (result.data.status === 'ok') {
             setMessageCreateReserve(result.data.results.insertId);
           } else {
-            alert(result['message']['sqlMessage']);
+            alert(result.message.sqlMessage);
           }
 
           setStatus({ success: false });
@@ -412,32 +414,33 @@ function AddReserve() {
                   </Stack>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>คลังสินค้า</InputLabel>
-                    <TextField
-                      select
-                      variant="outlined"
-                      name="warehouse_id"
-                      value={values.warehouse_id}
-                      onChange={handleChange}
-                      placeholder="เลือกคลังสินค้า"
-                      fullWidth
-                    >
-                      {warehousesList.map((warehouses) => (
-                        <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
-                          {warehouses.description}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                    {touched.company && errors.company && (
-                      <FormHelperText error id="helper-text-company-car">
-                        {errors.company}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
-
+                {userRoles === 0 && (
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>คลังสินค้า</InputLabel>
+                      <TextField
+                        select
+                        variant="outlined"
+                        name="warehouse_id"
+                        value={values.warehouse_id}
+                        onChange={handleChange}
+                        placeholder="เลือกคลังสินค้า"
+                        fullWidth
+                      >
+                        {warehousesList.map((warehouses) => (
+                          <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
+                            {warehouses.description}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                      {touched.company && errors.company && (
+                        <FormHelperText error id="helper-text-company-car">
+                          {errors.company}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
+                )}
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
                     <InputLabel>จำนวนสินค้า</InputLabel>
@@ -461,32 +464,33 @@ function AddReserve() {
                   </Stack>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>หัวจ่าย</InputLabel>
-                    <TextField
-                      select
-                      variant="outlined"
-                      name="reserve_station_id"
-                      value={values.reserve_station_id}
-                      onChange={handleChange}
-                      placeholder="เลือกคลังสินค้า"
-                      fullWidth
-                    >
-                      {stationsList.map((station) => (
-                        <MenuItem key={station.station_id} value={station.station_id}>
-                          {station.station_description}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                    {touched.reserve_station_id && errors.reserve_station_id && (
-                      <FormHelperText error id="helper-text-reserve_station_id">
-                        {errors.reserve_station_id}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
-
+                {userRoles === 0 && (
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>หัวจ่าย</InputLabel>
+                      <TextField
+                        select
+                        variant="outlined"
+                        name="reserve_station_id"
+                        value={values.reserve_station_id}
+                        onChange={handleChange}
+                        placeholder="เลือกคลังสินค้า"
+                        fullWidth
+                      >
+                        {stationsList.map((station) => (
+                          <MenuItem key={station.station_id} value={station.station_id}>
+                            {station.station_description}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                      {touched.reserve_station_id && errors.reserve_station_id && (
+                        <FormHelperText error id="helper-text-reserve_station_id">
+                          {errors.reserve_station_id}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
+                )}
                 <Grid item xs={12}>
                   <Button
                     disableElevation

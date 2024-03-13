@@ -50,8 +50,8 @@ function Reserve() {
       )}
 
       <Grid item xs={12} md={7} lg={8}>
-        <Grid container alignItems="center" justifyContent="flex-end" columnSpacing={1}>
-          <Grid item xs={3}>
+        <Grid container alignItems="center" justifyContent="flex-end" spacing={2}>
+          <Grid item xs={12} md={3}>
             <Stack spacing={1}>
               <TextField
                 required
@@ -67,7 +67,7 @@ function Reserve() {
               />
             </Stack>
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={12} md={3}>
             <Stack spacing={1}>
               <TextField
                 required
@@ -83,12 +83,12 @@ function Reserve() {
               />
             </Stack>
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={12} md={3}>
             <Button size="mediam" color="primary" variant="contained" onClick={() => handleSearch()} startIcon={<SearchOutlined />}>
               ค้นหา
             </Button>
           </Grid>
-          <Grid item xs={3} align="right">
+          <Grid item xs={12} md={3} align="right">
             {userRole && userRole !== 5 && (
               <Button size="mediam" color="success" variant="outlined" onClick={() => addReserve()} startIcon={<PlusCircleOutlined />}>
                 เพิ่มข้อมูล

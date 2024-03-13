@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import logo from '../../assets/images/ICON-02.png';
+// import logo from '../../assets/images/ICON-02.png';
 import QRCode from 'react-qr-code';
 
 import { Grid, Paper, Typography, Button, Divider, Backdrop, CircularProgress } from '@mui/material';
@@ -23,7 +23,6 @@ function QueuesPrint() {
   const location = useLocation();
 
   const queuesId = location.state?.queuesId;
-  console.log(queuesId);
   const [loading, setLoading] = useState(false);
 
   const prurl = window.location.origin + '/queues/detail/' + queuesId;
@@ -48,8 +47,6 @@ function QueuesPrint() {
           .then((result) => {
             result.map((data) => {
               setQueues(data);
-              console.log(data);
-              console.log(queues);
             });
             setLoading(false);
           })
@@ -89,7 +86,7 @@ function QueuesPrint() {
         <Grid alignItems="center" justifyContent="space-between">
           <Grid container rowSpacing={1} columnSpacing={2.75} sx={{ pt: 2 }}>
             <Grid item xs={12} align="center">
-              <img src={logo} alt="Company Logo" className="logo" style={{ width: '80px', textAlign: 'center' }} />
+              {/* <img src={logo} alt="Company Logo" className="logo" style={{ width: '80px', textAlign: 'center' }} /> */}
               <Typography variant="h5" gutterBottom sx={{ mt: 3 }}>
                 บริษัท ไอซีพี เฟอทิไลเซอร์ จำกัก
               </Typography>

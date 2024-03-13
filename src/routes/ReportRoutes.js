@@ -12,7 +12,6 @@ const DailyProductOut = Loadable(lazy(() => import('pages/report/admin/DailyProd
 const OrderSumQty = Loadable(lazy(() => import('pages/report/admin/OrderSumQty')));
 const CarsTimeInOut = Loadable(lazy(() => import('pages/report/admin/CarsTimeInOut')));
 
-
 // ==============================|| AUTH ROUTING ||============================== //
 
 const ReportRoutes = {

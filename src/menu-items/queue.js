@@ -10,6 +10,13 @@ const queues = {
   roles: [1, 9],
   children: [
     {
+      id: 'step0',
+      title: 'จัดการคิวรับสินค้า',
+      type: 'item',
+      url: '/admin/step0',
+      icon: ContainerOutlined
+    },
+    {
       id: 'userQueue',
       title: 'ข้อมูลคิว',
       type: 'item',

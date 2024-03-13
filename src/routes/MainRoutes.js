@@ -16,7 +16,7 @@ const AddOrder = Loadable(lazy(() => import('pages/order/order-forms/AddOrder'))
 // Queues List
 const Queues = Loadable(lazy(() => import('pages/queues/Queues')));
 const QueuesDetail = Loadable(lazy(() => import('pages/queues/QueueDetail')));
-const QueuesPrint = Loadable(lazy(() => import('pages/queues/QueuesPrint')))
+const QueuesPrint = Loadable(lazy(() => import('pages/queues/QueuesPrint')));
 
 // render - management
 const Company = Loadable(lazy(() => import('pages/company/Company')));
@@ -77,7 +77,6 @@ const MainRoutes = {
           path: 'prints',
           element: <QueuesPrint />
         }
-        
       ]
     },
     {

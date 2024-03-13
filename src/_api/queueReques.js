@@ -12,7 +12,7 @@ export const getQueueDetailID = async (id) => {
   return result;
 };
 
-// ==============================|| ข้อมูล รอเรียกคิว step1 ||============================== //
+// ==============================|| ข้อมูล รายการคิว ตามวันที่ ||============================== //
 export const getAllqueueByDate = async (date) => {
   const requestOptions = {
     method: 'GET',
@@ -20,7 +20,17 @@ export const getAllqueueByDate = async (date) => {
   };
   const response = await fetch(apiUrl + `/allqueuesbyqueuedate?queue_date=${date}`, requestOptions);
   const result = await response.json();
-  console.log(result)
+  return result;
+};
+
+// ==============================|| ข้อมูล รายการคิว ตามวันที่ ||============================== //
+export const getAllqueueByDateV2 = async (startDate, endDate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/allqueuesbyqueuedate2?queue_date1=${startDate}&queue_date2=${endDate}`, requestOptions);
+  const result = await response.json();
   return result;
 };
 
@@ -108,6 +118,28 @@ export const getStep4Processing = async () => {
     redirect: 'follow'
   };
   const response = await fetch(apiUrl + '/step4processing/', requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// ==============================|| ข้อมูล Step By Queue Id   ||============================== //
+export const getStepByQueueId = async (number, id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/stepbyqueueid/${number}/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// ==============================|| ข้อมูล Queue Count   ||============================== //
+export const getQueueCount = async (id, status) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/queuecount/${id}/${status}`, requestOptions);
   const result = await response.json();
   return result;
 };

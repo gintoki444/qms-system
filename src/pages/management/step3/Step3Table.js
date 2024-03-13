@@ -141,7 +141,7 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
   ];
   function QueueTableHead() {
     return (
-      <TableHead>
+      <TableHead key={status+"01"}>
         <TableRow>
           {headCells.map((headCell) => (
             <>

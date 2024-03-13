@@ -38,8 +38,6 @@ const CarsTimeInOut = () => {
       startDate: selectedDate1,
       endDate: selectedDate2
     });
-
-    console.log(selectedDateRange)
   };
   return (
     <Grid alignItems="center" justifyContent="space-between">

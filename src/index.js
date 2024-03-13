@@ -10,31 +10,27 @@ import { Provider as ReduxProvider } from 'react-redux';
 
 // apex-chart
 import 'assets/third-party/apex-chart.css';
+import { AuthProvider } from 'components/AuthenUser';
 
 // project import
 import App from './App';
 import { store } from 'store';
 import reportWebVitals from './reportWebVitals';
 
-import { AuthProvider } from 'components/AuthenUser';
-
-// const getToken = localStorage.getItem('token');
-// console.log('getToken :', getToken);
-
 // ==============================|| MAIN - REACT DOM RENDER  ||============================== //
 
 const container = document.getElementById('root');
 const root = createRoot(container); // createRoot(container!) if you use TypeScript
 root.render(
-  <AuthProvider>
-    <StrictMode>
-      <ReduxProvider store={store}>
-        <BrowserRouter basename="">
+  <StrictMode>
+    <ReduxProvider store={store}>
+      <BrowserRouter basename="">
+        <AuthProvider>
           <App />
-        </BrowserRouter>
-      </ReduxProvider>
-    </StrictMode>
-  </AuthProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ReduxProvider>
+  </StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function

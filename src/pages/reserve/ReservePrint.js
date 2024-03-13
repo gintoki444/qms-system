@@ -27,7 +27,7 @@ function ReservePrint() {
   const [driver_name, setDriverName] = useState('');
   const [license_no, setLicenseNo] = useState('');
   const [brand_group_description, setBrandGroupDescription] = useState('');
-  const [warehouse_description, setWarehouseDescription] = useState('');
+  // const [warehouse_description, setWarehouseDescription] = useState('');
   const [reserve_description, setReserveDescription] = useState('');
   const [tax_no, setTaxNo] = useState('');
   const [pickup_date, setPickupDate] = useState('');
@@ -66,7 +66,7 @@ function ReservePrint() {
           setDriverName(result['reserve'][0]['firstname'] + ' ' + result['reserve'][0]['lastname']);
           setLicenseNo(result['reserve'][0]['license_no']);
           setBrandGroupDescription(result['reserve'][0]['brand_group_description']);
-          setWarehouseDescription(result['reserve'][0]['warehouse_description']);
+          // setWarehouseDescription(result['reserve'][0]['warehouse_description']);
           setReserveDescription(result['reserve'][0]['reserve_description']);
           setTaxNo(result['reserve'][0]['tax_no']);
           setPickupDate(result['reserve'][0]['pickup_date']);
@@ -203,11 +203,11 @@ function ReservePrint() {
               </Typography>
             </Grid>
 
-            <Grid item xs={6}>
+            {/* <Grid item xs={6}>
               <Typography variant="body1" gutterBottom>
                 <strong> คลังสินค้า:</strong> {warehouse_description}{' '}
               </Typography>
-            </Grid>
+            </Grid> */}
 
             <Grid item xs={6}>
               <Typography variant="body1" gutterBottom>

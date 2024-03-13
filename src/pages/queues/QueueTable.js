@@ -36,7 +36,7 @@ import {
   DeleteOutlined
 } from '@ant-design/icons';
 
-const currentDate = moment(new Date()).format('YYYY-MM-DD');
+// const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
@@ -173,7 +173,7 @@ QueueStatus.propTypes = {
   status: PropTypes.string
 };
 
-export default function QueueTable() {
+export default function QueueTable({ startDate, endDate }) {
   const [open, setOpen] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
 
@@ -186,11 +186,11 @@ export default function QueueTable() {
 
   useEffect(() => {
     getQueue();
-  }, []);
+  }, [startDate, endDate]);
 
   const getQueue = () => {
     try {
-      queueRequest.getAllqueueByDate(currentDate).then((response) => {
+      queueRequest.getAllqueueByDateV2(startDate, endDate).then((response) => {
         setItems(response);
         setLoading(false);
       });

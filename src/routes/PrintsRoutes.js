@@ -19,7 +19,7 @@ const PrintRoutes = {
     {
       path: 'reserve',
       element: <ReservePrint />
-    },
+    }
     // {
     //   path: 'queues',
     //   element: <QueuesPrint />

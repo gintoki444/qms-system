@@ -21,14 +21,14 @@ const adminSale = {
       type: 'item',
       url: '/reserve',
       icon: icons.BookOutlined
-    },
-    {
-      id: 'userQueue',
-      title: 'ข้อมูลคิว',
-      type: 'item',
-      url: '/queues',
-      icon: icons.ContainerOutlined
     }
+    // {
+    //   id: 'userQueue',
+    //   title: 'ข้อมูลคิว',
+    //   type: 'item',
+    //   url: '/queues',
+    //   icon: icons.ContainerOutlined
+    // }
   ]
 };
 

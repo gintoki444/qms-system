@@ -601,19 +601,17 @@ export const Step4Table = ({ status, title, onStatusChange }) => {
     <>
       <Box>
         <Dialog fullScreen={fullScreen} open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-          <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }}>
-            {'แจ้งเตือน'}
-          </DialogTitle>
+          <DialogTitle id="responsive-dialog-title">{'แจ้งเตือน'}</DialogTitle>
           <DialogContent>
-            <DialogContentText style={{ fontFamily: 'kanit' }}>
+            <DialogContentText>
               ต้องการ {textnotify} ID:{id_update} หรือไม่?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button autoFocus onClick={() => handleClose(0)} style={{ fontFamily: 'kanit' }}>
+            <Button autoFocus onClick={() => handleClose(0)}>
               ยกเลิก
             </Button>
-            <Button onClick={() => handleClose(1)} autoFocus style={{ fontFamily: 'kanit' }}>
+            <Button onClick={() => handleClose(1)} autoFocus>
               ยืนยัน
             </Button>
           </DialogActions>
@@ -702,9 +700,7 @@ export const Step4Table = ({ status, title, onStatusChange }) => {
                         </TableCell>
                         <TableCell align="left">{row.driver_name}</TableCell>
                         <TableCell align="left">{row.driver_mobile}</TableCell>
-                        <TableCell align="left" style={{ fontFamily: 'kanit' }}>
-                          {row.team_name ? row.team_name : '-'}
-                        </TableCell>
+                        <TableCell align="left">{row.team_name ? row.team_name : '-'}</TableCell>
                         <TableCell align="left" width="10%">
                           {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
                           {row.start_datetime ? row.start_datetime.slice(11, 19) : row.start_time.slice(11, 19)}

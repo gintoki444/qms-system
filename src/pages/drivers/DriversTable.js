@@ -43,6 +43,12 @@ const headCells = [
     label: 'เบอร์โทร'
   },
   {
+    id: 'id_no',
+    align: 'left',
+    disablePadding: false,
+    label: 'เลขที่บัตรประชาชน'
+  },
+  {
     id: 'license_no',
     align: 'left',
     disablePadding: false,
@@ -165,6 +171,7 @@ function DriverTable() {
                     <TableCell align="center">{index+1}</TableCell>
                     <TableCell align="left">{row.firstname + ' ' + row.lastname}</TableCell>
                     <TableCell align="left">{row.mobile_no}</TableCell>
+                    <TableCell align="left">{row.id_no}{'-'}</TableCell>
                     <TableCell align="left">{row.license_no}</TableCell>
                     <TableCell align="center">
                       <ButtonGroup variant="contained" aria-label="Basic button group">

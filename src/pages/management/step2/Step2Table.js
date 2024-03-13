@@ -27,9 +27,11 @@ import {
   ButtonGroup
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import MainCard from 'components/MainCard';
 
 // Link api queues
 import * as getQueues from '_api/queueReques';
+import * as stepRequest from '_api/StepRequest';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 import CircularProgress from '@mui/material/CircularProgress';
@@ -113,7 +115,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
       id: 'statusTitle',
       align: 'center',
       disablePadding: false,
-      label: status === 'waiting' ? 'หัวจ่าย' : 'ทีมขึ้นสินค้า'
+      label: status === 'waiting' ? 'หัวจ่าย' : ''
     },
     {
       id: 'action',
@@ -155,7 +157,6 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
   const [station_count, setStationCount] = useState(0);
   const [loading, setLoading] = useState(true); // สร้าง state เพื่อติดตามสถานะการโหลด
   // const [selectedStation, setSelectedStation] = useState('');
-  const [selectedLoadingTeam, setSelectedLoadingTeam] = useState('');
   const [stations, setStations] = useState([]);
   const [loadingteams, setLoadingTeams] = useState([]);
   const [saveLoading, setSaveLoading] = useState(false);
@@ -184,6 +185,8 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
       }
       await getStation();
       await getLoadingTeam();
+      await getCheckers();
+      await getContractors();
       await getStepCount(2, 'processing');
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -223,6 +226,68 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     } catch (e) {
       console.log(e);
     }
+  };
+
+  const getStation = () => {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+
+    return new Promise((resolve, reject) => {
+      fetch(apiUrl + '/allstations', requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          setStations(result.filter((x) => x.station_group_id === 3));
+          resolve(); // ส่งคืนเมื่อการเรียก API เสร็จสมบูรณ์
+        })
+        .catch((error) => {
+          console.error(error);
+          reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
+        });
+    });
+  };
+
+  const getLoadingTeam = () => {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+
+    return new Promise((resolve, reject) => {
+      fetch(apiUrl + '/allloadingteams', requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          setLoadingTeams(result);
+          resolve(); // ส่งคืนเมื่อการเรียก API เสร็จสมบูรณ์
+        })
+        .catch((error) => {
+          console.error(error);
+          reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
+        });
+    });
+  };
+
+  const [Checkers, seCheckers] = useState([]);
+  const getCheckers = async () => {
+    await stepRequest.getAllCheckers().then((result) => {
+      try {
+        seCheckers(result);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  };
+
+  const [contractors, seContractors] = useState([]);
+  const getContractors = async () => {
+    await stepRequest.getAllCheckers().then((result) => {
+      try {
+        seContractors(result);
+      } catch (error) {
+        console.log(error);
+      }
+    });
   };
 
   const getStepCount = (step_order, step_status) => {
@@ -401,33 +466,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
   };
 
   //Update start_time of step
-
-  const handleClickOpen = (step_id, fr, queues_id, station_id) => {
-
-    //ข้อความแจ้งเตือน
-    //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
-    if (fr === 'call') {
-      setText('เรียกคิว');
-      setMessage('ขึ้นสินค้า–STEP2 เรียกคิว');
-    } else {
-      if (fr === 'close') {
-        setMessage('ขึ้นสินค้า–STEP2 ปิดคิว');
-        setText('ปิดคิว');
-      } else {
-        setMessage('ขึ้นสินค้า–STEP2 ยกเลิกเรียกคิว');
-        setText('ยกเลิก');
-      }
-    }
-
-    //กดปุ่มมาจากไหน
-
-    setFrom(fr);
-    setUpdate(step_id);
-    setStationId(station_id);
-    //get steps_id of step 3 from queues_id for next queues
-    getStepId(3, queues_id);
-    setOpen(true);
-  };
+  const [queues, setQueues] = useState([]);
 
   const updateStartTime = (step_id) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
@@ -501,6 +540,33 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     });
   };
 
+  const handleClickOpen = (step_id, fr, queues_id, station_id, queuesData) => {
+    //ข้อความแจ้งเตือน
+    //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
+    if (fr === 'call') {
+      setText('เรียกคิว');
+      setMessage('ขึ้นสินค้า–STEP2 เรียกคิว');
+    } else {
+      if (fr === 'close') {
+        setMessage('ขึ้นสินค้า–STEP2 ปิดคิว');
+        setText('ปิดคิว');
+      } else {
+        setMessage('ขึ้นสินค้า–STEP2 ยกเลิกเรียกคิว');
+        setText('ยกเลิก');
+      }
+    }
+
+    //กดปุ่มมาจากไหน
+
+    setFrom(fr);
+    setUpdate(step_id);
+    setStationId(station_id);
+    //get steps_id of step 3 from queues_id for next queues
+    getStepId(3, queues_id);
+    setQueues(queuesData);
+    setOpen(true);
+  };
+
   const handleClose = async (flag) => {
     setLoading(true);
     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
@@ -523,6 +589,8 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
       } else {
         if (fr === 'close') {
           //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว 27 = Station ว่าง
+          setLoading(false);
+          console.log('selectedLoadingTeam: ', selectedLoadingTeam);
 
           if (selectedLoadingTeam === '') {
             alert('กรุณาเลือกทีมขึ้นสินค้า');
@@ -533,23 +601,25 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
           try {
             setOpen(false);
 
-            // การใช้งาน Line Notify
-            getStepToken(id_update)
-              .then(({ queue_id, token }) => {
-                lineNotify(queue_id, token);
-              })
-              .catch((error) => {
-                console.error('Error:', error);
-                // ทำอะไรกับข้อผิดพลาด
-              });
+            if (id_update === 99999) {
+              // การใช้งาน Line Notify
+              getStepToken(id_update)
+                .then(({ queue_id, token }) => {
+                  lineNotify(queue_id, token);
+                })
+                .catch((error) => {
+                  console.error('Error:', error);
+                  // ทำอะไรกับข้อผิดพลาด
+                });
 
-            setStationCount(station_count - 1);
-            await updateLoadingTeam(id_update);
-            await updateLoadingTeam(id_update_next);
-            await step2Update(id_update_next, 'waiting', 27);
-            await updateEndTime(id_update);
-            await updateStartTime(id_update_next);
-            await step1Update(id_update, 'completed', staion_id);
+              setStationCount(station_count - 1);
+              await updateLoadingTeam(id_update);
+              await updateLoadingTeam(id_update_next);
+              await step2Update(id_update_next, 'waiting', 27);
+              await updateEndTime(id_update);
+              await updateStartTime(id_update_next);
+              await step1Update(id_update, 'completed', staion_id);
+            }
           } catch (error) {
             console.error(error);
             // จัดการข้อผิดพลาดตามที่ต้องการ
@@ -634,53 +704,39 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
         });
     });
   };
-  const getStation = () => {
-    const requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
 
-    return new Promise((resolve, reject) => {
-      fetch(apiUrl + '/allstations', requestOptions)
-        .then((response) => response.json())
-        .then((result) => {
-          setStations(result.filter((x) => x.station_group_id === 3));
-          resolve(); // ส่งคืนเมื่อการเรียก API เสร็จสมบูรณ์
-        })
-        .catch((error) => {
-          console.error(error);
-          reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
-        });
-    });
-  };
+  // const handleLoadingTeamChange = (event) => {
+  //   setSelectedLoadingTeam(event.target.value);
+  // };
+  const [selectedLoadingTeam, setSelectedLoadingTeam] = useState({});
+  const [selectChecker, setSelectChecker] = useState({});
+  // const [selectContractors, setSelectContractors] = useState({});
+  // const [selectChecker, setSelectChecker] = useState({});
 
-  const getLoadingTeam = () => {
-    const requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-
-    return new Promise((resolve, reject) => {
-      fetch(apiUrl + '/allloadingteams', requestOptions)
-        .then((response) => response.json())
-        .then((result) => {
-          setLoadingTeams(result);
-          resolve(); // ส่งคืนเมื่อการเรียก API เสร็จสมบูรณ์
-        })
-        .catch((error) => {
-          console.error(error);
-          reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
-        });
-    });
-  };
-
-  const handleLoadingTeamChange = (event) => {
-    setSelectedLoadingTeam(event.target.value);
+  const handleLoadingTeamChange = (event, row, id) => {
+    // setSelectedLoadingTeam(event.target.value);
+    console.log('id :', id);
+    const { value } = event.target;
+    if (id == 'checker') {
+      setSelectChecker((prevState) => ({
+        ...prevState,
+        [row.step_id]: value
+      }));
+    }
+    if (id == 'loading') {
+      setSelectedLoadingTeam((prevState) => ({
+        ...prevState,
+        [row.step_id]: value
+      }));
+    }
+    console.log(event);
+    console.log(row);
   };
 
   const [selectedStations, setSelectedStations] = useState({}); // ใช้ state สำหรับการเก็บสถานีที่ถูกเลือกในแต่ละแถว
-
   const handleStationChange = (event, row) => {
+    console.log(event);
+    console.log(row);
     const { value } = event.target;
     setSelectedStations((prevState) => ({
       ...prevState,
@@ -718,24 +774,159 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
           </Typography>
         </Grid>
 
-        <Dialog fullScreen={fullScreen} open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-          <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }}>
-            {'แจ้งเตือน'}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText style={{ fontFamily: 'kanit' }}>
-              ต้องการ {textnotify} ID:{id_update} หรือไม่?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button autoFocus onClick={() => handleClose(0)} style={{ fontFamily: 'kanit' }}>
-              ยกเลิก
-            </Button>
-            <Button onClick={() => handleClose(1)} autoFocus style={{ fontFamily: 'kanit' }}>
-              ยืนยัน
-            </Button>
-          </DialogActions>
-        </Dialog>
+        {status == 'waiting' && (
+          <Dialog fullScreen={fullScreen} open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
+            <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }}>
+              {'แจ้งเตือน'}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText style={{ fontFamily: 'kanit' }}>
+                ต้องการ {textnotify} ID:{id_update} หรือไม่?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button autoFocus onClick={() => handleClose(0)} style={{ fontFamily: 'kanit' }}>
+                ยกเลิก
+              </Button>
+              <Button onClick={() => handleClose(1)} autoFocus style={{ fontFamily: 'kanit' }}>
+                ยืนยัน
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
+
+        {status == 'processing' && (
+          <Dialog fullScreen={fullScreen} open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
+            <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }}>
+              <Typography variant="h5">{'ปิดคิวรับสินค้า'}</Typography>
+            </DialogTitle>
+            <DialogContent>
+              <MainCard>
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <Typography variant="h5">
+                      <strong>ข้อมูลผู้ขับขี่:</strong>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body">
+                      <strong>ชื่อผู้ขับ :</strong> {queues.driver_name}{' '}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body">
+                      <strong>ทะเบียนรถ :</strong> {queues.registration_no}{' '}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body">
+                      <strong>เลขที่บัตรประชาชน :</strong> {'-'}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body">
+                      <strong>เลขที่ใบขับขี่ :</strong> {queues.license_no}{' '}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <FormControl sx={{ width: '100%' }} size="small">
+                      <InputLabel id={'select-label-' + queues.queue_id} style={{ fontFamily: 'kanit' }} size="small">
+                        ทีมขึ้นสินค้า
+                      </InputLabel>
+                      <Select
+                        size="small"
+                        label="ทีมขึ้นสินค้า"
+                        id={'select-label-' + queues.queue_id}
+                        // value={selectedLoadingTeam}
+                        // onChange={handleLoadingTeamChange}
+                        value={selectedLoadingTeam[queues.step_id]}
+                        onChange={(event) => handleLoadingTeamChange(event, queues, 'loading')}
+                      >
+                        {loadingteams.length > 0 &&
+                          loadingteams.map((loadingteam) => (
+                            <MenuItem key={loadingteam.team_id} value={loadingteam.team_id}>
+                              {loadingteam.team_name}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <FormControl sx={{ width: '100%' }} size="small">
+                      <InputLabel id={'select-label-' + queues.queue_id} style={{ fontFamily: 'kanit' }} size="small">
+                        เช็กเกอร์
+                      </InputLabel>
+                      <Select
+                        size="small"
+                        label="ทีมขึ้นสินค้า"
+                        id={'select-label-' + queues.queue_id}
+                        // value={selectedLoadingTeam}
+                        // onChange={handleLoadingTeamChange}
+                        value={selectChecker[queues.step_id]}
+                        onChange={(event) => handleLoadingTeamChange(event, queues, 'checker')}
+                      >
+                        {Checkers.length > 0 &&
+                          Checkers.map((checker) => (
+                            <MenuItem key={checker.checker_id} value={checker.checker_id}>
+                              {checker.checker_name}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <FormControl sx={{ width: '100%' }} size="small">
+                      <InputLabel id={'select-label-' + queues.queue_id} style={{ fontFamily: 'kanit' }} size="small">
+                        สายรายงาน
+                      </InputLabel>
+                      <Select
+                        size="small"
+                        label="สายรายงาน"
+                        id={'select-label-' + queues.queue_id}
+                        // value={selectedLoadingTeam}
+                        // onChange={handleLoadingTeamChange}
+                        value={selectChecker[queues.step_id]}
+                        onChange={(event) => handleLoadingTeamChange(event, queues, 'checker')}
+                      >
+                        {contractors.length > 0 &&
+                          contractors.map((contractor) => (
+                            <MenuItem key={contractor.contractor_id} value={contractor.contractor_id}>
+                              {contractor.contractor_name}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  {/* <Grid item xs={12} md={6}>
+                    <Typography variant="h5">
+                      <strong>คลุมผ้าใบ (ตัวลูก) :</strong>
+                      <Checkbox
+                        checked={checked2}
+                        onChange={handleCheckboxChange2}
+                        color="primary"
+                        inputProps={{ 'aria-label': 'Checkbox' }}
+                      />
+                    </Typography>
+                  </Grid> */}
+                </Grid>
+              </MainCard>
+              <DialogContentText>{/* ต้องการ {textnotify} ID:{id_update} หรือไม่? */}</DialogContentText>
+            </DialogContent>
+            <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
+              <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+                ยกเลิก
+              </Button>
+              <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
+                ยืนยัน
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
         <Grid>
           <TableContainer
             sx={{
@@ -813,28 +1004,6 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                               </Select>
                             </FormControl>
                           )}
-
-                          {status == 'processing' && (
-                            <FormControl sx={{ minWidth: 140 }} size="small">
-                              <InputLabel id={'select-label-' + index} style={{ fontFamily: 'kanit' }} size="small">
-                                ทีมขึ้นสินค้า
-                              </InputLabel>
-                              <Select
-                                size="small"
-                                label="ทีมขึ้นสินค้า"
-                                id={'select-label-' + index}
-                                value={selectedLoadingTeam}
-                                onChange={handleLoadingTeamChange}
-                              >
-                                {loadingteams.length > 0 &&
-                                  loadingteams.map((loadingteam) => (
-                                    <MenuItem key={loadingteam.team_id} value={loadingteam.team_id}>
-                                      {loadingteam.team_name}
-                                    </MenuItem>
-                                  ))}
-                              </Select>
-                            </FormControl>
-                          )}
                         </TableCell>
 
                         <TableCell align="right" width="120" sx={{ width: 120, maxWidth: 120 }}>
@@ -868,7 +1037,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                                     // startIcon={<ArrowBackIosIcon />}
                                     variant="contained"
                                     size="small"
-                                    onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.station_id)}
+                                    onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.station_id, row)}
                                     style={{ fontFamily: 'kanit' }}
                                     color="error"
                                   >
@@ -880,7 +1049,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                                     <Button
                                       size="small"
                                       variant="contained"
-                                      onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row.station_id)}
+                                      onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row.station_id, row)}
                                       style={{ fontFamily: 'kanit' }}
                                     >
                                       ปิดคิว

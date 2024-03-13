@@ -20,6 +20,7 @@ function AddDrivers() {
   const initialValue = {
     firstname: '',
     lastname: '',
+    id_no: '',
     license_no: '',
     mobile_no: ''
   };
@@ -87,10 +88,17 @@ function AddDrivers() {
             firstname: Yup.string().max(255).required('กรุณาระบุชื่อ'),
             lastname: Yup.string().max(255).required('กรุณาระบุนามสกุล'),
             license_no: Yup.string()
+              .nullable()
               .matches(/^[0-9]*$/, 'กรุณาระบุเลขใบขับขี่เป็นตัวเลขเท่านั้น')
               .min(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
               .max(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
               .required('กรุณาระบุเลขใบขับขี่'),
+            id_no: Yup.string()
+              .nullable()
+              .matches(/^[0-9]*$/, 'กรุณาระบุเลขบัตรประชาชนเป็นตัวเลขเท่านั้น')
+              .min(13, 'กรุณาระบุเลขบัตรประชาชน 13 หลัก')
+              .max(13, 'กรุณาระบุเลขบัตรประชาชน 13 หลัก')
+              .required('กรุณาระบุเลขบัตรประชาชน'),
             mobile_no: Yup.string()
               .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
               .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
@@ -154,6 +162,30 @@ function AddDrivers() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
+                    <InputLabel htmlFor="id_no-driver">เลขที่บัตรประชาชน*</InputLabel>
+                    <OutlinedInput
+                      id="id_no-driver"
+                      type="text"
+                      value={values.id_no}
+                      name="id_no"
+                      onBlur={handleBlur}
+                      onChange={handleChange}
+                      placeholder="เลขที่บัตรประชาชน"
+                      fullWidth
+                      // error={touched.id_no && Boolean(errors.id_no)}
+                      // helperText={touched.id_no && errors.id_no}
+                      error={Boolean(touched.id_no && errors.id_no)}
+                    />
+                    {touched.id_no && Boolean(errors.id_no) && (
+                      <FormHelperText error id="helper-text-id_no-driver">
+                        {errors.id_no}
+                      </FormHelperText>
+                    )}
+                  </Stack>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Stack spacing={1}>
                     <InputLabel htmlFor="license_no-driver">เลขที่ใบขับขี่*</InputLabel>
                     <OutlinedInput
                       id="license_no-driver"
@@ -164,9 +196,11 @@ function AddDrivers() {
                       onChange={handleChange}
                       placeholder="เลขที่ใบขับขี่"
                       fullWidth
+                      // error={touched.license_no && Boolean(errors.license_no)}
+                      // helperText={touched.license_no && errors.license_no}
                       error={Boolean(touched.license_no && errors.license_no)}
                     />
-                    {touched.license_no && errors.license_no && (
+                    {touched.license_no && Boolean(errors.license_no) && (
                       <FormHelperText error id="helper-text-license_no-driver">
                         {errors.license_no}
                       </FormHelperText>

@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { useRef, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import * as userRequest from '_api/userRequest';
+// import { useAuth } from 'components/AuthenUser';
 import { useAuth } from 'components/AuthenUser';
 
 // material-ui
@@ -65,6 +66,7 @@ const Profile = () => {
   const userRoles = useSelector((state) => state.auth.roles);
   const [userData, setUserData] = useState([]);
   const { logout } = useAuth();
+  
   const theme = useTheme();
 
   const handleLogout = async () => {

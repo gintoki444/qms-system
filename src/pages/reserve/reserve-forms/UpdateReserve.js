@@ -9,6 +9,9 @@ import axios from '../../../../node_modules/axios/index';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
+import * as reseveRequest from '_api/reserveRequest';
+import * as adminRequest from '_api/adminRequest';
+
 // const userId = localStorage.getItem('user_id');
 
 // material-ui
@@ -21,6 +24,7 @@ import {
   Stack,
   Typography,
   Divider,
+  TableContainer,
   Table,
   TableHead,
   TableRow,
@@ -34,11 +38,22 @@ import {
   DialogActions,
   CircularProgress
 } from '@mui/material';
-import MainCard from 'components/MainCard';
+
 import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
+
+import MainCard from 'components/MainCard';
 // import { SaveOutlined, DiffOutlined, PrinterOutlined, RollbackOutlined } from '@ant-design/icons';
-import { DiffOutlined, PlusCircleOutlined, PrinterOutlined, SaveOutlined, RollbackOutlined } from '@ant-design/icons';
+import {
+  DiffOutlined,
+  PlusCircleOutlined,
+  PrinterOutlined,
+  SaveOutlined,
+  RollbackOutlined
+  // , CheckCircleOutlined
+} from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
@@ -88,38 +103,18 @@ function UpdateReserve() {
     company: '',
     driver: ''
   });
-  const { id } = useParams();
 
-  const getReserve = () => {
-    setLoading(true);
-    const urlapi = apiUrl + `/reserve/` + id;
-    axios
-      .get(urlapi)
-      .then((res) => {
-        if (res) {
-          res.data.reserve.map((result) => {
-            console.log(result.user_id);
-            setUserId(result.user_id);
-            if (dateNow == moment(result.pickup_date).format('YYYY-MM-DD')) {
-              setCheckDate(true);
-            }
-            setReservationData(result);
-            getCompanyLsit();
-          });
-        }
-      })
-      .catch((err) => console.log(err));
-  };
+  const { id } = useParams();
 
   // =============== Get Company ===============//
   const [companyList, setCompanyList] = useState([]);
-  const getCompanyLsit = () => {
-    console.log('user_Id', user_Id);
+  const getCompanyList = () => {
     const urlapi = apiUrl + `/allcompany/` + user_Id;
     axios
       .get(urlapi)
       .then((res) => {
         if (res) {
+          console.log(res.data);
           setCompanyList(res.data);
           getCarLsit();
         }
@@ -172,21 +167,6 @@ function UpdateReserve() {
       .catch((error) => console.log('error', error));
   };
 
-  // =============== Get Warehouses ===============//
-  const [warehousesList, setWarehousesList] = useState([]);
-  const getWarehouses = () => {
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-    fetch(apiUrl + '/allwarehouses', requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        setWarehousesList(result);
-      })
-      .catch((error) => console.log('error', error));
-  };
-
   // =============== Get order ===============//
   const [orderList, setOrderList] = useState([]);
   const getOrders = async () => {
@@ -199,30 +179,153 @@ function UpdateReserve() {
       })
       .catch((err) => console.log(err));
   };
+  
+  // // =============== Get Warehouses ===============//
+  // const [selectWarehouse, setSelectWareHouse] = useState('');
+  // const [warehousesList, setWarehousesList] = useState([]);
+  // const getWarehouses = () => {
+  //   adminRequest
+  //     .getAllWareHouse()
+  //     .then((result) => {
+  //       setWarehousesList(result);
+  //     })
+  //     .catch((error) => console.log('error', error));
+  // };
 
-  // =============== Get Stations ===============//
-  const [stationsList, setStationsList] = useState([]);
-  const getStation = () => {
-    const urlapi = apiUrl + `/allstations`;
-    axios
-      .get(urlapi)
-      .then((res) => {
-        if (res) {
-          setStationsList(res.data.filter((x) => x.station_group_id === 3));
-        }
-      })
-      .catch((err) => console.log(err));
-  };
+  // const handleChangeWarehouse = (e) => {
+  //   setTeamLoading([]);
+  //   setTeamLoadingList([]);
+  //   getStation(e.target.value);
+  //   getTeamloading(e.target.value);
+  // };
+
+  // // =============== Get Stations ===============//
+  // const [stationsList, setStationsList] = useState([]);
+  // const getStation = (id) => {
+  //   try {
+  //     adminRequest.getStationsByWareHouse(id).then((response) => {
+  //       setStationsList(response);
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  // // =============== Get TeamLoanding ===============//
+  // // const [team_id, setTeamId] = useState([]);
+  // const [teamloadingList, setTeamLoadingList] = useState([]);
+  // const getTeamloading = (id) => {
+  //   try {
+  //     adminRequest.getLoadingTeamById(id).then((result) => {
+  //       setTeamLoadingList(result);
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  // const [teamLoading, setTeamLoading] = useState([]);
+  // const getTeamManagers = async (id) => {
+  //   try {
+  //     const teamManager = await adminRequest.getTeamManager(id);
+  //     const teamChecker = await adminRequest.getTeamChecker(id);
+  //     const teamForklift = await adminRequest.getTeamForklift(id);
+  //     const combinedData = [...teamManager, ...teamChecker, ...teamForklift];
+  //     setTeamLoading(combinedData);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  // const handleChangeTeam = (e) => {
+  //   setTeamLoading([]);
+  //   getTeamManagers(e);
+  // };
+
+  // // =============== Get Contractor ===============//
+  // const [contractorList, setContractorList] = useState([]);
+  // const getAllContractor = () => {
+  //   try {
+  //     adminRequest.getAllContractors().then((result) => {
+  //       setContractorList(result);
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  // const handleChangeContractor = (e) => {
+  //   getLaborLine(e.target.value);
+  // };
+
+  // =============== Get Contractor and laybor Line ===============//
+  // const [layborLineList, setLayborLineList] = useState([]);
+  // const getLaborLine = (id) => {
+  //   try {
+  //     adminRequest.getContractorById(id).then((result) => {
+  //       setLayborLineList(result.labor_lines);
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
   // =============== useEffect ===============//
   useEffect(() => {
     getReserve();
     if (user_Id) {
-      getWarehouses();
       getBrandList();
-      getStation();
     }
-    // getProduct();
+
+    // if (userRoles === 9 || userRoles === 1) {
+    //   getWarehouses();
+    //   getAllContractor();
+    // }
   }, [user_Id]);
+
+  const getReserve = () => {
+    setLoading(true);
+    const urlapi = apiUrl + `/reserve/` + id;
+    axios
+      .get(urlapi)
+      .then((res) => {
+        if (res) {
+          res.data.reserve.map((result) => {
+            setUserId(result.user_id);
+            if (dateNow == moment(result.pickup_date).format('YYYY-MM-DD')) {
+              setCheckDate(true);
+            }
+            setReservationData(result);
+            getCompanyList();
+
+            // if (userRoles === 9 || userRoles === 1) {
+            //   getStation(result.warehouse_id);
+            //   getTeamloading(result.warehouse_id);
+            //   getTeamManagers(result.team_id);
+            //   getLaborLine(result.contractor_id);
+            // }
+          });
+        }
+      })
+      .catch((err) => console.log(err));
+  };
+
+  // =============== InitialValue ===============//
+  let initialValue = {
+    company_id: reservationData.company_id,
+    car_id: reservationData.car_id,
+    brand_group_id: reservationData.brand_group_id,
+    driver_id: reservationData.driver_id,
+    description: reservationData.reserve_description,
+    pickup_date: moment(reservationData.pickup_date).format('YYYY-MM-DD'),
+    status: reservationData.status,
+    total_quantity: reservationData.total_quantity,
+    reserve_station_id: reservationData.reserve_station_id,
+    warehouse_id: reservationData.warehouse_id,
+    contractor_id: reservationData.contractor_id,
+    team_id: reservationData.team_id,
+    labor_line_id: ''
+  };
 
   // =============== Validate Forms ===============//
   const validationSchema = Yup.object().shape({
@@ -234,79 +337,46 @@ function UpdateReserve() {
   });
 
   // =============== บันทึกข้อมูล ===============//
-  const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
+  const updateTeamLoading = (values) => {
+    adminRequest.putReserveTeam(id, values).then(() => {
+      window.location.href = '/reserve';
+    });
+  };
+  const handleSubmits = async (values) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-
     try {
       values.user_id = user_Id;
       values.pickup_date = moment(values.pickup_date).format('YYYY-MM-DD HH:mm:ss');
       values.created_at = currentDate;
       values.updated_at = currentDate;
 
-      let config = {
-        method: 'put',
-        maxBodyLength: Infinity,
-        url: apiUrl + `/updatereserve/${id}`,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: values
+      const teamValue = {
+        team_id: values.team_id,
+        contractor_id: values.contractor_id
       };
 
-      console.log('values :', values);
-
-      axios
-        .request(config)
+      await reseveRequest
+        .putReserById(id, values)
         .then((result) => {
-          if (result.data.status === 'ok') {
-            window.location.href = '/reserve';
+          console.log('result ', result);
+          if (result.status === 'ok') {
+            updateTeamLoading(teamValue);
           } else {
             alert(result['message']['sqlMessage']);
           }
-
-          setStatus({ success: false });
-          setSubmitting(false);
         })
         .catch((error) => {
           console.log(error);
         });
     } catch (err) {
       console.error(err);
-      setStatus({ success: false });
-      setErrors({ submit: err.message });
-      setSubmitting(false);
     }
-  };
-
-  // =============== เพิ่มรายการสินค้า ===============//
-  const addOrder = () => {
-    window.location = `/order/add/${id}`;
-    // navigate(`/order/add/${id}`);
-  };
-
-  const navigate = useNavigate();
-
-  const backToReserce = () => {
-    navigate('/reserve');
-  };
-
-  const initialValue = {
-    company_id: reservationData.company_id || '',
-    car_id: reservationData.car_id || '',
-    brand_group_id: reservationData.brand_group_id || '',
-    driver_id: reservationData.driver_id || '',
-    description: reservationData.description,
-    pickup_date: moment(reservationData.pickup_date).format('YYYY-MM-DD'),
-    warehouse_id: reservationData.warehouse_id || '',
-    status: reservationData.status,
-    reserve_station_id: reservationData.reserve_station_id,
-    total_quantity: reservationData.total_quantity
   };
 
   // ==============================|| Create Queue ||============================== //
   const [open, setOpen] = useState(false);
-  const [notifytext, setNotifyText] = useState('');
   const [reserve_id, setReserveId] = useState(0);
+  const [notifytext, setNotifyText] = useState('');
   const [total_quantity, setTotalQuantity] = useState(0);
   const [brand_code, setBrandCode] = useState('');
 
@@ -315,18 +385,14 @@ function UpdateReserve() {
     return num < 10 ? `0${num}` : num;
   };
 
-  const handleClickOpen = (id, total_quantity, brand_code) => {
+  const handleClickOpen = (id, total_quantity) => {
     try {
       if (total_quantity === '0') {
         alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
         return;
       } else {
-        setNotifyText('ต้องการสร้างคิวหรือไม่?');
+        setNotifyText('ต้องการอนุมัติการจองคิวหรือไม่?');
         //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
-        console.log('id :', id);
-        console.log('total_quantity :', total_quantity);
-        console.log('brand_code :', brand_code);
-
         setReserveId(id);
         setTotalQuantity(total_quantity);
         setBrandCode(brand_code);
@@ -343,7 +409,9 @@ function UpdateReserve() {
     if (flag === 1) {
       //click มาจากการลบ
       setLoading(true);
+      // if (flag === 99) {
       addQueue(reserve_id, total_quantity);
+      // }
     }
     setOpen(false);
   };
@@ -416,26 +484,15 @@ function UpdateReserve() {
 
   //update การจองในการสร้าง queue
   const updateReserveStatus = (reserve_id) => {
-    var myHeaders = new Headers();
-    myHeaders.append('Content-Type', 'application/json');
-
-    var raw = JSON.stringify({
+    const reserveStatus = {
       status: 'completed'
-    });
-
-    var requestOptions = {
-      method: 'PUT',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow'
     };
-
-    fetch(apiUrl + '/updatereservestatus/' + reserve_id, requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        console.log('updatereservestatus: ' + result);
-      })
-      .catch((error) => console.log('error', error));
+    try {
+      reseveRequest.putReserveStatus(reserve_id, reserveStatus);
+    } catch (error) {
+      setOpen(false);
+      console.log(error);
+    }
   };
 
   //สร้าง addQueue รับค่า reserve_id ,total_quantity
@@ -522,6 +579,7 @@ function UpdateReserve() {
     lineNotify(messageLine);
   };
 
+  //แสดงข้อมูลคิว
   function getQueue(id) {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -573,6 +631,7 @@ function UpdateReserve() {
     });
   }
 
+  //แสดงข้อมูลรายการสินค้า
   function getOrder(id) {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -690,6 +749,19 @@ function UpdateReserve() {
       .catch((error) => console.error(error));
   };
 
+  // =============== เพิ่มรายการสินค้า ===============//
+  const addOrder = () => {
+    // window.location = `/order/add/${id}`;
+    navigate(`/order/add/${id}`);
+  };
+
+  // =============== กลับหน้า Reserve ===============//
+  const navigate = useNavigate();
+  const backToReserce = () => {
+    navigate('/reserve');
+  };
+
+  // =============== พิมพ์ ===============//
   const reservePrint = (id) => {
     navigate('/prints/reserve', { state: { reserveId: id, link: '/reserve/update/' + id } });
   };
@@ -720,7 +792,7 @@ function UpdateReserve() {
         </DialogActions>
       </Dialog>
       <Grid container spacing={3}>
-        <Grid item xs={12} md={12}>
+        <Grid item xs={12} md={10}>
           <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
             {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors }) => (
               <form noValidate onSubmit={handleSubmit}>
@@ -734,7 +806,24 @@ function UpdateReserve() {
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>บริษัท/ร้านค้า*</InputLabel>
-                        <TextField
+                        <FormControl fullWidth>
+                          <Select
+                            labelId="select-label"
+                            id="select"
+                            name="company_id"
+                            value={values.company_id}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            placeholder="เลือกบริษัท/ร้านค้า"
+                          >
+                            {companyList.map((companias) => (
+                              <MenuItem key={companias.company_id} value={companias.company_id}>
+                                {companias.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                        {/* <TextField
                           select
                           variant="outlined"
                           name="company_id"
@@ -749,7 +838,7 @@ function UpdateReserve() {
                               {companias.name}
                             </MenuItem>
                           ))}
-                        </TextField>
+                        </TextField> */}
                         {touched.company_id && errors.company_id && (
                           <FormHelperText error id="helper-text-company-car">
                             {errors.company_id}
@@ -757,6 +846,7 @@ function UpdateReserve() {
                         )}
                       </Stack>
                     </Grid>
+
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>กลุ่มสินค้า*</InputLabel>
@@ -886,33 +976,6 @@ function UpdateReserve() {
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel>คลังสินค้า</InputLabel>
-                        <TextField
-                          select
-                          variant="outlined"
-                          name="warehouse_id"
-                          value={values.warehouse_id}
-                          onChange={handleChange}
-                          placeholder="เลือกคลังสินค้า"
-                          fullWidth
-                        >
-                          {warehousesList &&
-                            warehousesList.map((warehouses) => (
-                              <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
-                                {warehouses.description}
-                              </MenuItem>
-                            ))}
-                        </TextField>
-                        {touched.company && errors.company && (
-                          <FormHelperText error id="helper-text-company-car">
-                            {errors.company}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
                         <InputLabel>จำนวนสินค้า</InputLabel>
                         <OutlinedInput
                           id="total_quantity"
@@ -935,31 +998,6 @@ function UpdateReserve() {
                       </Stack>
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>หัวจ่าย</InputLabel>
-                        <TextField
-                          select
-                          variant="outlined"
-                          name="reserve_station_id"
-                          value={values.reserve_station_id}
-                          onChange={handleChange}
-                          placeholder="เลือกคลังสินค้า"
-                          fullWidth
-                        >
-                          {stationsList.map((station) => (
-                            <MenuItem key={station.station_id} value={station.station_id}>
-                              {station.station_description}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                        {touched.reserve_station_id && errors.reserve_station_id && (
-                          <FormHelperText error id="helper-text-reserve_station_id">
-                            {errors.reserve_station_id}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
                     <Grid item xs={12}>
                       <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="h5">ข้อมูลรายการสั่งซื้อสินค้า</Typography>
@@ -990,24 +1028,37 @@ function UpdateReserve() {
                             </Grid>
                             <Grid item xs={12} md={12}></Grid>
                             <Grid item xs={12} md={6}>
-                              <Table size="small">
-                                <TableHead>
-                                  <TableRow>
-                                    <TableCell sx={{ p: '12px' }}>สินค้า</TableCell>
-                                    <TableCell align="right" sx={{ p: '12px' }}>
-                                      จำนวน (ตัน)
-                                    </TableCell>
-                                  </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {order.items.map((item, index) => (
-                                    <TableRow key={index}>
-                                      <TableCell width={'50%'}>{item.name}</TableCell>
-                                      <TableCell align="right">{item.quantity} ตัน</TableCell>
+                              <TableContainer>
+                                <Table
+                                  aria-labelledby="tableTitle"
+                                  size="small"
+                                  sx={{
+                                    '& .MuiTableCell-root:first-of-type': {
+                                      pl: 2
+                                    },
+                                    '& .MuiTableCell-root:last-of-type': {
+                                      pr: 3
+                                    }
+                                  }}
+                                >
+                                  <TableHead>
+                                    <TableRow>
+                                      <TableCell sx={{ p: '12px' }}>สินค้า</TableCell>
+                                      <TableCell align="right" sx={{ p: '12px' }}>
+                                        จำนวน (ตัน)
+                                      </TableCell>
                                     </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
+                                  </TableHead>
+                                  <TableBody>
+                                    {order.items.map((item, index) => (
+                                      <TableRow key={index}>
+                                        <TableCell width={'50%'}>{item.name}</TableCell>
+                                        <TableCell align="right">{item.quantity} ตัน</TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </TableContainer>
                             </Grid>
                             <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                           </Grid>
@@ -1025,31 +1076,244 @@ function UpdateReserve() {
                         </Stack>
                       </Grid>
                     </Grid>
+
+                    {/* ======= Operation ======= */}
+                    {/* {(userRoles == 9 || userRoles == 1) && (
+                      <Grid item xs={12}>
+                        <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="h5">ข้อมูลการเข้ารับสินค้า</Typography>
+                        </Grid>
+                        <Grid container spacing={3} sx={{ mt: 1 }}>
+                          <Grid item xs={12} md={6}>
+                            <Stack spacing={1}>
+                              <InputLabel>โกดังสินค้า</InputLabel>
+                              <TextField
+                                select
+                                variant="outlined"
+                                name="warehouse_id"
+                                value={values.warehouse_id}
+                                onChange={(e) => {
+                                  setFieldValue('warehouse_id', e.target.value);
+                                  handleChangeWarehouse(e);
+                                }}
+                                placeholder="เลือกโกดังสินค้า"
+                                fullWidth
+                              >
+                                {warehousesList &&
+                                  warehousesList.map((warehouses) => (
+                                    <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
+                                      {warehouses.description}
+                                    </MenuItem>
+                                  ))}
+                              </TextField>
+                              {touched.company && errors.company && (
+                                <FormHelperText error id="helper-text-company-car">
+                                  {errors.company}
+                                </FormHelperText>
+                              )}
+                            </Stack>
+                          </Grid>
+
+                          <Grid item xs={12} md={6}>
+                            <Stack spacing={1}>
+                              <InputLabel>หัวจ่าย</InputLabel>
+                              <TextField
+                                select
+                                variant="outlined"
+                                name="reserve_station_id"
+                                value={values.reserve_station_id}
+                                onChange={handleChange}
+                                placeholder="เลือกคลังสินค้า"
+                                fullWidth
+                              >
+                                {stationsList.map((station) => (
+                                  <MenuItem key={station.station_id} value={station.station_id}>
+                                    {station.station_description}
+                                  </MenuItem>
+                                ))}
+                              </TextField>
+                              {touched.reserve_station_id && errors.reserve_station_id && (
+                                <FormHelperText error id="helper-text-reserve_station_id">
+                                  {errors.reserve_station_id}
+                                </FormHelperText>
+                              )}
+                            </Stack>
+                          </Grid>
+
+                          <Grid item xs={12} md={6}>
+                            <Stack spacing={1}>
+                              <InputLabel>ทีมรับสินค้า</InputLabel>
+                              <FormControl>
+                                <Select
+                                  id="team_id"
+                                  name="team_id"
+                                  displayEmpty
+                                  value={values.team_id}
+                                  onChange={(e) => {
+                                    setFieldValue('team_id', e.target.value);
+                                    handleChangeTeam(e.target.value);
+                                  }}
+                                  input={<OutlinedInput />}
+                                  inputProps={{ 'aria-label': 'Without label' }}
+                                >
+                                  <MenuItem disabled value="">
+                                    ทีมรับสินค้า
+                                  </MenuItem>
+                                  {teamloadingList.map((teamload) => (
+                                    <MenuItem key={teamload.team_id} value={teamload.team_id}>
+                                      {teamload.team_name}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                            </Stack>
+                          </Grid>
+
+                          <Grid item xs={12} md={6}>
+                            <Stack spacing={1}>
+                              <InputLabel>สายแรงงาน {values.contractor_id}</InputLabel>
+                              <TextField
+                                select
+                                variant="outlined"
+                                name="contractor_id"
+                                value={values.contractor_id}
+                                onChange={(e) => {
+                                  setFieldValue('contractor_id', e.target.value);
+                                  handleChangeContractor(e);
+                                }}
+                                placeholder="ทีมรับสินค้า"
+                                fullWidth
+                              >
+                                {contractorList.map((contractorList) => (
+                                  <MenuItem key={contractorList.contractor_id} value={contractorList.contractor_id}>
+                                    {contractorList.contractor_name}
+                                  </MenuItem>
+                                ))}
+                              </TextField>
+                            </Stack>
+                          </Grid>
+
+                          <Grid item xs={12} md={6}>
+                            <Stack spacing={1}>
+                              <InputLabel>หมายเลขสาย</InputLabel>
+                              <TextField
+                                select
+                                variant="outlined"
+                                name="labor_line_id"
+                                value={values.labor_line_id}
+                                onChange={handleChange}
+                                placeholder="ทีมรับสินค้า"
+                                fullWidth
+                              >
+                                {layborLineList.map((layborLine) => (
+                                  <MenuItem key={layborLine.labor_line_id} value={layborLine.labor_line_id}>
+                                    {layborLine.labor_line_name}
+                                  </MenuItem>
+                                ))}
+                              </TextField>
+                            </Stack>
+                          </Grid>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TableContainer>
+                            <Table
+                              aria-labelledby="tableTitle"
+                              size="small"
+                              sx={{
+                                '& .MuiTableCell-root:first-of-type': {
+                                  pl: 2
+                                },
+                                '& .MuiTableCell-root:last-of-type': {
+                                  pr: 3
+                                }
+                              }}
+                            >
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell align="center">ลำดับ</TableCell>
+                                  <TableCell align="center">รายชื่อ</TableCell>
+                                  <TableCell align="center">ตำแหน่ง</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              {teamLoading ? (
+                                <TableBody>
+                                  {teamLoading.map((item, index) => (
+                                    <TableRow key={index}>
+                                      <TableCell align="center">{index + 1}</TableCell>
+                                      <TableCell align="center">
+                                        {item.manager_name && item.manager_name}
+                                        {item.checker_name && item.checker_name}
+                                        {item.forklift_name && item.forklift_name}
+                                      </TableCell>
+                                      <TableCell align="center">
+                                        {item.manager_name && 'หัวหน้าโกดัง'}
+                                        {item.checker_name && 'พนักงานจ่ายสินค้า'}
+                                        {item.forklift_name && 'โฟล์คลิฟท์'}
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              ) : (
+                                <TableRow>
+                                  <TableCell colSpan={13} align="center">
+                                    ไม่พบข้อมูล
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </Table>
+                          </TableContainer>
+                        </Grid>
+                      </Grid>
+                    )} */}
                   </Grid>
 
                   <Grid item xs={12} sx={{ '& button': { m: 1 }, pl: '8px' }}>
                     <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                    {orderList.length > 0 && reservationData.status !== 'completed' && userRoles === 10 && checkDate == true && (
-                      <Button
-                        size="mediam"
-                        variant="outlined"
-                        color="success"
-                        disabled={
-                          values.status === 'completed' ||
-                          dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
-                          values.total_quantity == 0 ||
-                          checkDate == false
-                        }
-                        onClick={() =>
-                          handleClickOpen(reservationData.reserve_id, reservationData.total_quantity, reservationData.group_code)
-                        }
-                        startIcon={<DiffOutlined />}
-                      >
-                        สร้างคิว
-                      </Button>
-                    )}
 
-                    {orderList.length > 0 && reservationData.status !== 'completed' && userRoles === 1 && checkDate == true && (
+                    {/* {orderList.length > 0 &&
+                      reservationData.status !== 'completed' &&
+                      (userRoles === 10 || userRoles === 1) &&
+                      checkDate == true && (
+                        <Button
+                          size="mediam"
+                          variant="outlined"
+                          color="success"
+                          disabled={
+                            values.status === 'completed' ||
+                            dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
+                            values.total_quantity == 0 ||
+                            checkDate == false
+                          }
+                          onClick={() =>
+                            handleClickOpen(reservationData.reserve_id, reservationData.total_quantity, reservationData.group_code)
+                          }
+                          startIcon={<CheckCircleOutlined />}
+                        >
+                          อนุมัติการจอง
+                        </Button>
+                      )} */}
+
+                    {orderList.length > 0 &&
+                      reservationData.status !== 'completed' &&
+                      (userRoles === 9 || userRoles === 1) &&
+                      checkDate == true && (
+                        <Button
+                          size="mediam"
+                          variant="outlined"
+                          color="success"
+                          disabled={
+                            dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') || values.total_quantity == 0 || checkDate == false
+                          }
+                          onClick={() =>
+                            handleClickOpen(reservationData.reserve_id, reservationData.total_quantity, reservationData.group_code)
+                          }
+                          startIcon={<DiffOutlined />}
+                        >
+                          สร้างคิว
+                        </Button>
+                      )}
+
+                    {/* {orderList.length > 0 && reservationData.status !== 'completed' &&  && checkDate == true && (
                       <Button
                         size="mediam"
                         variant="outlined"
@@ -1067,7 +1331,7 @@ function UpdateReserve() {
                       >
                         สร้างคิว
                       </Button>
-                    )}
+                    )} */}
                     {orderList.length > 0 && (
                       <Button
                         size="mediam"
@@ -1079,18 +1343,19 @@ function UpdateReserve() {
                         พิมพ์
                       </Button>
                     )}
-                    <Button
-                      disableElevation
-                      disabled={isSubmitting}
-                      size="mediam"
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      startIcon={<SaveOutlined />}
-                    >
-                      บันทึกข้อมูลการจอง
-                    </Button>
-
+                    {reservationData.status !== 'completed' && (
+                      <Button
+                        disableElevation
+                        disabled={isSubmitting}
+                        size="mediam"
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        startIcon={<SaveOutlined />}
+                      >
+                        บันทึกข้อมูลการจอง
+                      </Button>
+                    )}
                     <Button
                       size="mediam"
                       variant="contained"

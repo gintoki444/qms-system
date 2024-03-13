@@ -67,7 +67,7 @@ const headCells = [
   },
   {
     id: 'brandCode',
-    align: 'centers',
+    align: 'center',
     disablePadding: true,
     label: 'เบรน Code'
   },
@@ -125,18 +125,12 @@ const headCells = [
 ];
 
 // ==============================|| ORDER TABLE - HEADER ||============================== //
-function OrderTableHead({ order, orderBy }) {
+function OrderTableHead() {
   return (
     <TableHead>
       <TableRow>
         {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.align}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            width={headCell.width}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
+          <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'} width={headCell.width}>
             {headCell.label}
           </TableCell>
         ))}
@@ -209,6 +203,7 @@ export default function ReserveTable({ startDate, endDate }) {
       urlGet = apiUrl + '/allreservespickup2?user_id=' + userId + '&pickup_date1=' + startDate + '&pickup_date2=' + endDate;
     }
     setLoading(true);
+
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
@@ -624,9 +619,6 @@ export default function ReserveTable({ startDate, endDate }) {
 
     fetch(apiUrl + '/line-notify', requestOptions)
       .then((response) => response.json())
-      .then((result) => {
-        console.log(result);
-      })
       .catch((error) => console.error(error));
   };
 
