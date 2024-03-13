@@ -28,7 +28,7 @@ import * as adminRequest from '_api/adminRequest';
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
-    id: 'wareHouseNo',
+    id: 'checkerNo',
     align: 'center',
     width: '5%',
     disablePadding: false,
@@ -45,12 +45,6 @@ const headCells = [
     align: 'left',
     disablePadding: false,
     label: 'ข้อมูลติดต่อ'
-  },
-  {
-    id: 'warehouse_id',
-    align: 'left',
-    disablePadding: false,
-    label: 'โกดัง'
   },
   {
     id: 'department',
@@ -87,22 +81,22 @@ function CompantTableHead() {
   );
 }
 
-function WareHouseTable() {
+function CheckersTable() {
   //   const [car, setCar] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [wareHouseList, setWareHouseList] = useState([]);
+  const [checkersList, setCheckersList] = useState([]);
 
   useEffect(() => {
     // getPermission();
-    getWareHouseManager();
+    getCheckers();
   }, []);
 
-  const getWareHouseManager = async () => {
+  const getCheckers = async () => {
     setLoading(true);
     try {
-      adminRequest.getAllWareHouseManager().then((response) => {
-        setWareHouseList(response);
+      adminRequest.getAllCheckers().then((response) => {
+        setCheckersList(response);
         setLoading(false);
       });
     } catch (error) {
@@ -110,12 +104,12 @@ function WareHouseTable() {
     }
   };
 
-  // ลบข้อมูล Manager
-  const [manager_id, setManager_id] = useState(false);
+  // ลบข้อมูล Checker
+  const [checker_id, setchecker_id] = useState(false);
   const [textnotify, setText] = useState('');
 
-  const handleClickOpen = (manager_id) => {
-    setManager_id(manager_id);
+  const handleClickOpen = (checker_id) => {
+    setchecker_id(checker_id);
     setText('ลบข้อมูล');
     setOpen(true);
   };
@@ -123,15 +117,15 @@ function WareHouseTable() {
   const handleClose = (flag) => {
     if (flag === 1) {
       setLoading(true);
-      deteteManager(manager_id);
+      deteteCheckers(checker_id);
     }
     setOpen(false);
   };
 
-  const deteteManager = (id) => {
+  const deteteCheckers = (id) => {
     try {
-      adminRequest.deleteManagerWareHouse(id).then(() => {
-        getWareHouseManager();
+      adminRequest.deleteChecker(id).then(() => {
+        getCheckers();
       });
     } catch (error) {
       console.log(error);
@@ -139,8 +133,8 @@ function WareHouseTable() {
   };
 
   const navigate = useNavigate();
-  const updateWareHouse = (id) => {
-    navigate('/admin/warehouse/update/' + id);
+  const updateChecker = (id) => {
+    navigate('/admin/checkers/update/' + id);
   };
 
   //   const deleteCar = (id) => {
@@ -208,13 +202,12 @@ function WareHouseTable() {
           <CompantTableHead />
           {!loading ? (
             <TableBody>
-              {wareHouseList.map((row, index) => {
+              {checkersList.map((row, index) => {
                 return (
                   <TableRow key={index}>
                     <TableCell align="center">{index+1}</TableCell>
-                    <TableCell align="left">{row.manager_name}</TableCell>
+                    <TableCell align="left">{row.checker_name}</TableCell>
                     <TableCell align="left">{row.contact_info}</TableCell>
-                    <TableCell align="left">{row.description}</TableCell>
                     <TableCell align="left">{row.department}</TableCell>
                     <TableCell align="center">
                       {row.status == 'A' ? (
@@ -236,7 +229,7 @@ function WareHouseTable() {
                             size="medium"
                             color="primary"
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => updateWareHouse(row.manager_id)}
+                            onClick={() => updateChecker(row.checker_id)}
                           >
                             <EditOutlined />
                           </Button>
@@ -247,7 +240,7 @@ function WareHouseTable() {
                             size="medium"
                             color="error"
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => handleClickOpen(row.manager_id)}
+                            onClick={() => handleClickOpen(row.checker_id)}
                           >
                             <DeleteOutlined />
                           </Button>
@@ -258,7 +251,7 @@ function WareHouseTable() {
                   </TableRow>
                 );
               })}
-              {wareHouseList.length == 0 && (
+              {checkersList.length == 0 && (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
                     ไม่พบข้อมูล
@@ -282,4 +275,4 @@ function WareHouseTable() {
   );
 }
 
-export default WareHouseTable;
+export default CheckersTable;

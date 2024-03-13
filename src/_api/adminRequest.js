@@ -78,7 +78,18 @@ export const putManagerWareHouse = async (id, data) => {
     body: raw,
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + '/warehousemanager/' + id, requestOptions);
+  const response = await fetch(apiUrl + '/updatewarehousemanager/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const deleteManagerWareHouse = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deletewarehousemanager/${id}`, requestOptions);
 
   const result = await response.json();
   return result;
@@ -129,13 +140,70 @@ export const addTeamManager = async (data) => {
   return await response.text();
 };
 
-// ==============================|| Warehouse Manages: (สำหรับข้อมูล พนักงานจ่ายสินค้า) ||============================== //
+// ==============================|| Checkers : (สำหรับข้อมูล พนักงานจ่ายสินค้า) ||============================== //
 export const getAllCheckers = async () => {
   const requestOptions = {
     method: 'GET',
     redirect: 'follow'
   };
   const response = await fetch(apiUrl + '/allcheckers/', requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const getCheckerById= async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/checker/${id}`, requestOptions);
+
+  const result = await response.json();
+  return result.checker;
+};
+
+
+export const addChecker = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/addchecker/', requestOptions);
+
+  return await response.text();
+};
+
+export const putChecker = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/updatechecker/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const deleteChecker = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deletechecker/${id}`, requestOptions);
 
   const result = await response.json();
   return result;
@@ -176,6 +244,63 @@ export const getAllForklifts = async () => {
     redirect: 'follow'
   };
   const response = await fetch(apiUrl + '/allforklifts/', requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const getForkliftById= async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/forklift/${id}`, requestOptions);
+
+  const result = await response.json();
+  return result.forklift;
+};
+
+
+export const addForklifts = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/addforklift/', requestOptions);
+
+  return await response.text();
+};
+
+export const putForklifts = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/updateforklift/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const deleteForklifts = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deleteforklift/${id}`, requestOptions);
 
   const result = await response.json();
   return result;

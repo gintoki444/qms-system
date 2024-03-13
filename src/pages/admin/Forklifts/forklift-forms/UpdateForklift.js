@@ -9,7 +9,18 @@ import { Formik } from 'formik';
 import * as adminRequest from '_api/adminRequest';
 
 // material-ui
-import { Button, FormHelperText, Grid, InputLabel, OutlinedInput, Stack, Typography, Divider } from '@mui/material';
+import {
+  Button,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Typography,
+  Divider,
+  Backdrop,
+  CircularProgress
+} from '@mui/material';
 // import MenuItem from '@mui/material/MenuItem';
 // import FormControl from '@mui/material/FormControl';
 // import Select from '@mui/material/Select';
@@ -17,77 +28,52 @@ import { Button, FormHelperText, Grid, InputLabel, OutlinedInput, Stack, Typogra
 import MainCard from 'components/MainCard';
 import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 
-function UpdateWarehouseManager() {
+function UpdateForklift() {
+  const [open, setOpen] = useState(false);
+
   const [initialValue, setInitialValue] = useState({
-    manager_name: '',
+    forklift_name: '',
     contact_info: '',
-    department: '',
-    warehouse_id: '',
-    description: '',
-    end_date: '',
-    status: 'A'
+    department: ''
   });
-  // const lastDate = moment().endOf('year').format('YYYY-MM-DD');
+
   const navigate = useNavigate();
   const { id } = useParams();
 
   useEffect(() => {
-    getManagerWareHouse();
+    getForkliftID();
     // getWareHouses();
   }, [id]);
 
-  const getManagerWareHouse = () => {
-    adminRequest.getManagerWareHouse(id).then((response) => {
+  const getForkliftID = () => {
+    setOpen(true);
+    adminRequest.getForkliftById(id).then((response) => {
       if (response) {
         response.map((result) => {
           setInitialValue({
-            manager_name: result.manager_name,
+            forklift_name: result.forklift_name,
             contact_info: result.contact_info,
-            department: result.department,
-            warehouse_id: result.warehouse_id,
-            description: result.description,
-            end_date: result.end_date,
-            status: result.status
+            department: result.department
           });
+          setOpen(false);
         });
       }
     });
   };
 
   const validations = Yup.object().shape({
-    manager_name: Yup.string().max(255).required('กรุณาระบุชื่อหัวหน้าโกดัง')
-    // contact_info: Yup.string()
-    //   .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
-    //   .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
-    //   .min(9, 'กรุณาระบุเบอร์โทรศัพท์ 9 หลัก')
-    //   .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
-    //   .required('กรุณาระบุเบอร์โทรศัพท์ผู้ติดต่อ')
+    forklift_name: Yup.string().max(255).required('กรุณาระบุชื่อโฟล์คลิฟท์')
   });
 
-  // const [wareHouseList, setWareHouseList] = useState([]);
-  // const getWareHouses = () => {
-  //   try {
-  //     adminRequest.getAllWareHouse().then((response) => {
-  //       setWareHouseList(response);
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values) => {
-
+    setOpen(true);
     try {
-      const dataUpdate = {
-        manager_name: values.manager_name,
-        contact_info: values.contact_info,
-        department: values.department
-      };
-
       adminRequest
-        .putManagerWareHouse(id, dataUpdate)
+        .putForklifts(id, values)
         .then(() => {
-          navigate('/admin/warehouse/');
+          backToPage();
+          setOpen(false);
         })
         .catch((err) => {
           console.error(err);
@@ -98,10 +84,18 @@ function UpdateWarehouseManager() {
   };
 
   const backToPage = () => {
-    navigate('/admin/warehouse/');
+    navigate('/admin/forklifts/');
   };
   return (
     <Grid alignItems="center" justifyContent="space-between">
+      {open && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={open}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <Grid container>
         <Grid item xs={8}>
           <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
@@ -110,27 +104,27 @@ function UpdateWarehouseManager() {
                 <form noValidate onSubmit={handleSubmit}>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
-                      <Typography variant="h5">แก้ไขข้อมูลหัวหน้าโกดัง</Typography>
+                      <Typography variant="h5">แก้ไขข้อมูลโฟล์คลิฟท์</Typography>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                     </Grid>
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel htmlFor="manager_name-car">ชื่อ-นามสกุล*</InputLabel>
+                        <InputLabel htmlFor="forklift_name-car">ชื่อ-นามสกุล*</InputLabel>
                         <OutlinedInput
-                          id="manager_name-car"
+                          id="forklift_name"
                           type="text"
-                          value={values.manager_name}
-                          name="manager_name"
+                          value={values.forklift_name}
+                          name="forklift_name"
                           onBlur={handleBlur}
                           onChange={handleChange}
                           placeholder="ชื่อ-นามสกุล"
                           fullWidth
-                          error={Boolean(touched.manager_name && errors.manager_name)}
+                          error={Boolean(touched.forklift_name && errors.forklift_name)}
                         />
-                        {touched.manager_name && errors.manager_name && (
+                        {touched.forklift_name && errors.forklift_name && (
                           <FormHelperText error id="helper-text-name-company">
-                            {errors.manager_name}
+                            {errors.forklift_name}
                           </FormHelperText>
                         )}
                       </Stack>
@@ -180,38 +174,6 @@ function UpdateWarehouseManager() {
                       </Stack>
                     </Grid>
 
-                    {/* <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel htmlFor="departmentr">แผนก</InputLabel>
-                    <FormControl>
-                      <Select
-                        id="warehouse_id"
-                        name="warehouse_id"
-                        displayEmpty
-                        value={values.warehouse_id}
-                        onChange={handleChange}
-                        input={<OutlinedInput />}
-                        error={Boolean(touched.warehouse_id && errors.warehouse_id)}
-                        inputProps={{ 'aria-label': 'Without label' }}
-                      >
-                        <MenuItem disabled value="">
-                          เลือกโกดัง
-                        </MenuItem>
-                        {wareHouseList.map((warehouse) => (
-                          <MenuItem key={warehouse.warehouse_id} value={warehouse.warehouse_id}>
-                            {warehouse.description}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    {touched.warehouse_id && errors.warehouse_id && (
-                      <FormHelperText error id="helper-text-warehouse_id">
-                        {errors.warehouse_id}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid> */}
-
                     {/* {permission.length > 0 && permission.add_data && ( */}
                     <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
                       <Button
@@ -250,4 +212,4 @@ function UpdateWarehouseManager() {
   );
 }
 
-export default UpdateWarehouseManager;
+export default UpdateForklift;

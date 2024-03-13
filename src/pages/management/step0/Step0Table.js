@@ -34,7 +34,7 @@ import {
 
 import {
   ProfileOutlined,
-  // EditOutlined
+  EditOutlined,
   DeleteOutlined
 } from '@ant-design/icons';
 
@@ -88,7 +88,7 @@ const headCells = [
     id: 'step1',
     align: 'center',
     disablePadding: false,
-    label: 'รอจัดการหัวจ่าย'
+    label: 'สถานะ'
   },
   {
     id: 'action',
@@ -133,7 +133,7 @@ const OrderStatus = ({ status }) => {
       break;
     default:
       color = 'secondary';
-      title = 'None';
+      title = 'รอจัดการหัวจ่าย';
   }
 
   return (
@@ -204,28 +204,9 @@ function Step0Table({ startDate, endDate }) {
     }
   };
 
-  // const getReserve = () => {
-  //   let urlGet = `/allreservesrange?pickup_date1=${startDate}&pickup_date2=${endDate}`;
-  //   setLoading(true);
-
-  //   reserveRequest.getReserByUrl(urlGet).then((response) => {
-  //     try {
-  //       setItems(response.filter((x) => x.status == 'completed'));
-  //       setLoading(false);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   });
-  // };
-
-  // const navigate = useNavigate();
-  // const clickAddQueue = (id) => {
-  //   navigate('/admin/step0/add-queues/' + id);
-  // };
-
-  // const cancelReserve = (id) => {
-  //   console.log('cancel ', +id);
-  // };
+  const updateDrivers = (id) => {
+    navigate('/admin/step0/add-queues/' + id);
+  };
   return (
     <Box>
       <TableContainer
@@ -286,24 +267,22 @@ function Step0Table({ startDate, endDate }) {
                             </span>
                           </Tooltip>
 
-                          {userRoles && userRoles === 10 && (
-                            <Tooltip title="ลบ">
-                              <span>
-                                <Button
-                                  variant="contained"
-                                  sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                  size="medium"
-                                  disabled={row.status === 'completed'}
-                                  color="error"
-                                  onClick={() => handleClickOpen(row.queue_id, row.reserve_id, row.step1_status)}
-                                >
-                                  <DeleteOutlined />
-                                </Button>
-                              </span>
-                            </Tooltip>
-                          )}
+                          <Tooltip title="แก้ไข">
+                            <span>
+                              <Button
+                                variant="contained"
+                                sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                size="medium"
+                                disabled={row.status === 'completed'}
+                                color="primary"
+                                onClick={() => updateDrivers(row.reserve_id)}
+                              >
+                                <EditOutlined />
+                              </Button>
+                            </span>
+                          </Tooltip>
 
-                          {userRoles && userRoles === 1 && (
+                          {userRoles && (userRoles === 10 || userRoles === 1) && (
                             <Tooltip title="ลบ">
                               <span>
                                 <Button

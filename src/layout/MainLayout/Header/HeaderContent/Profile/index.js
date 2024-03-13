@@ -66,7 +66,7 @@ const Profile = () => {
   const userRoles = useSelector((state) => state.auth.roles);
   const [userData, setUserData] = useState([]);
   const { logout } = useAuth();
-  
+
   const theme = useTheme();
 
   const handleLogout = async () => {

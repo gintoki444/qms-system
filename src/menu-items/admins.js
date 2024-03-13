@@ -1,18 +1,7 @@
 // assets
-import {
-  // DashboardOutlined,
-  // ContainerOutlined,
-  // BookOutlined,
-  // ShopOutlined,
-  // CarOutlined,
-  UserOutlined,
-  TeamOutlined
-  // InboxOutlined,
-  // SafetyOutlined,
-  // MenuFoldOutlined,
-  // MenuUnfoldOutlined
-} from '@ant-design/icons';
-
+import { UserOutlined, TeamOutlined,FileDoneOutlined } from '@ant-design/icons';
+import { ReactComponent as ForkliftIcon } from 'assets/icon/icon-forklift.svg';
+import { ReactComponent as WarehouseIcon } from 'assets/icon/icon-warehouse.svg';
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
 
 const admins = {
@@ -35,7 +24,25 @@ const admins = {
       title: 'ข้อมูลผู้จัดการโกดัง',
       type: 'item',
       url: '/admin/warehouse',
-      icon: UserOutlined,
+      icon: WarehouseIcon,
+      target: false
+      // breadcrumbs: false
+    },
+    {
+      id: 'checkers',
+      title: 'ข้อมูลพนักงานจ่ายสินค้า',
+      type: 'item',
+      url: '/admin/checkers',
+      icon: FileDoneOutlined,
+      target: false
+      // breadcrumbs: false
+    },
+    {
+      id: 'forklifts',
+      title: 'ข้อมูลโฟล์คลิฟท์',
+      type: 'item',
+      url: '/admin/forklifts',
+      icon: ForkliftIcon,
       target: false
       // breadcrumbs: false
     },

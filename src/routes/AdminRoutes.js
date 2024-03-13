@@ -13,9 +13,20 @@ const UpdateUser = Loadable(lazy(() => import('pages/User/user-forms/UpdateUser'
 const ManageTeamLoading = Loadable(lazy(() => import('pages/admin/manageTeam/ManageTeamLoading')));
 const AddManageTeam= Loadable(lazy(() => import('pages/admin/manageTeam/manage-team-form/AddManageTeam')));
 
+// render -  WareHouse Manage Team Loading
 const WareHouse = Loadable(lazy(() => import('pages/admin/WareHouse/WareHouseManager')));
 const AddWareHouse = Loadable(lazy(() => import('pages/admin/WareHouse/warehouse-forms/AddWareHouse')));
 const UpdateWareHouse = Loadable(lazy(() => import('pages/admin/WareHouse/warehouse-forms/UpdateWarehouseManager')));
+
+// render -  Checkers
+const Checkers = Loadable(lazy(() => import('pages/admin/Checkers/Checkers')));
+const AddChecker = Loadable(lazy(() => import('pages/admin/Checkers/checker-forms/AddChecker')));
+const UpdateChecker = Loadable(lazy(() => import('pages/admin/Checkers/checker-forms/UpdateChecker')));
+
+// render -  Forklifts
+const Forklifts = Loadable(lazy(() => import('pages/admin/Forklifts/Forklifts')));
+const AddForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklift-forms/AddForklift')));
+const UpdateForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklift-forms/UpdateForklift')));
 
 const Step0 = Loadable(lazy(() => import('pages/management/step0/Step0')));
 const AddQueue = Loadable(lazy(() => import('pages/management/step0/step0-forms/AddQueue')));
@@ -80,6 +91,40 @@ const AdminsRoutes = {
         {
           path: 'update/:id',
           element: <UpdateWareHouse />
+        }
+      ]
+    },
+    {
+      path: 'checkers',
+      children: [
+        {
+          path: '',
+          element: <Checkers />
+        },
+        {
+          path: 'add',
+          element: <AddChecker />
+        },
+        {
+          path: 'update/:id',
+          element: <UpdateChecker />
+        }
+      ]
+    },
+    {
+      path: 'forklifts',
+      children: [
+        {
+          path: '',
+          element: <Forklifts />
+        },
+        {
+          path: 'add',
+          element: <AddForklift />
+        },
+        {
+          path: 'update/:id',
+          element: <UpdateForklift />
         }
       ]
     },
