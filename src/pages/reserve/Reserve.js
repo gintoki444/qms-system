@@ -77,9 +77,6 @@ function Reserve() {
                 name="pickup_date"
                 value={selectedDate2}
                 onChange={handleDateChange2}
-                // inputProps={{
-                //   min: currentDate
-                // }}
               />
             </Stack>
           </Grid>
