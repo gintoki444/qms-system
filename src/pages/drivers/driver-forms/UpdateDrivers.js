@@ -34,6 +34,7 @@ function UpdateDrivers() {
     firstname: '',
     lastname: '',
     license_no: '',
+    id_card_no: '',
     mobile_no: ''
   });
   // =============== Get ข้อมูล Driver ===============//
@@ -56,6 +57,7 @@ function UpdateDrivers() {
               firstname: result.firstname,
               lastname: result.lastname,
               license_no: result.license_no,
+              id_card_no: result.id_card_no,
               mobile_no: result.mobile_no
             });
             setOpen(false);
@@ -88,6 +90,7 @@ function UpdateDrivers() {
       formData.append('firstname', values.firstname);
       formData.append('lastname', values.lastname);
       formData.append('license_no', values.license_no);
+      formData.append('id_card_no', values.id_card_no);
       formData.append('mobile_no', values.mobile_no);
       formData.append('created_at', values.created_at);
       formData.append('updated_at', values.updated_at);
@@ -135,6 +138,12 @@ function UpdateDrivers() {
       .min(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
       .max(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
       .required('กรุณาระบุเลขใบขับขี่'),
+    id_card_no: Yup.string()
+      .nullable()
+      .matches(/^[0-9]*$/, 'กรุณาระบุเลขบัตรประชาชนเป็นตัวเลขเท่านั้น')
+      .min(13, 'กรุณาระบุเลขบัตรประชาชน 13 หลัก')
+      .max(13, 'กรุณาระบุเลขบัตรประชาชน 13 หลัก')
+      .required('กรุณาระบุเลขบัตรประชาชน'),
     mobile_no: Yup.string()
       .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
       .min(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
@@ -207,6 +216,28 @@ function UpdateDrivers() {
                     {touched.lastname && errors.lastname && (
                       <FormHelperText error id="helper-text-lastname-driver">
                         {errors.lastname}
+                      </FormHelperText>
+                    )}
+                  </Stack>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Stack spacing={1}>
+                    <InputLabel htmlFor="id_card_no-driver">เลขที่บัตรประชาชน*</InputLabel>
+                    <OutlinedInput
+                      id="id_card_no-driver"
+                      type="text"
+                      value={values.id_card_no}
+                      name="id_card_no"
+                      onBlur={handleBlur}
+                      onChange={handleChange}
+                      placeholder="เลขที่บัตรประชาชน"
+                      fullWidth
+                      error={Boolean(touched.id_card_no && errors.id_card_no)}
+                    />
+                    {touched.id_card_no && Boolean(errors.id_card_no) && (
+                      <FormHelperText error id="helper-text-id_card_no-driver">
+                        {errors.id_card_no}
                       </FormHelperText>
                     )}
                   </Stack>

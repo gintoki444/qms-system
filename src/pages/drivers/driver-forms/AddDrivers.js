@@ -20,7 +20,7 @@ function AddDrivers() {
   const initialValue = {
     firstname: '',
     lastname: '',
-    id_no: '',
+    id_card_no: '',
     license_no: '',
     mobile_no: ''
   };
@@ -41,6 +41,7 @@ function AddDrivers() {
       formData.append('firstname', values.firstname);
       formData.append('lastname', values.lastname);
       formData.append('license_no', values.license_no);
+      formData.append('id_card_no', values.id_card_no);
       formData.append('mobile_no', values.mobile_no);
       formData.append('created_at', values.created_at);
       formData.append('updated_at', values.updated_at);
@@ -93,7 +94,7 @@ function AddDrivers() {
               .min(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
               .max(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
               .required('กรุณาระบุเลขใบขับขี่'),
-            id_no: Yup.string()
+            id_card_no: Yup.string()
               .nullable()
               .matches(/^[0-9]*$/, 'กรุณาระบุเลขบัตรประชาชนเป็นตัวเลขเท่านั้น')
               .min(13, 'กรุณาระบุเลขบัตรประชาชน 13 หลัก')
@@ -162,23 +163,23 @@ function AddDrivers() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
-                    <InputLabel htmlFor="id_no-driver">เลขที่บัตรประชาชน*</InputLabel>
+                    <InputLabel htmlFor="id_card_no-driver">เลขที่บัตรประชาชน*</InputLabel>
                     <OutlinedInput
-                      id="id_no-driver"
+                      id="id_card_no-driver"
                       type="text"
-                      value={values.id_no}
-                      name="id_no"
+                      value={values.id_card_no}
+                      name="id_card_no"
                       onBlur={handleBlur}
                       onChange={handleChange}
                       placeholder="เลขที่บัตรประชาชน"
                       fullWidth
-                      // error={touched.id_no && Boolean(errors.id_no)}
-                      // helperText={touched.id_no && errors.id_no}
-                      error={Boolean(touched.id_no && errors.id_no)}
+                      // error={touched.id_card_no && Boolean(errors.id_card_no)}
+                      // helperText={touched.id_card_no && errors.id_card_no}
+                      error={Boolean(touched.id_card_no && errors.id_card_no)}
                     />
-                    {touched.id_no && Boolean(errors.id_no) && (
-                      <FormHelperText error id="helper-text-id_no-driver">
-                        {errors.id_no}
+                    {touched.id_card_no && Boolean(errors.id_card_no) && (
+                      <FormHelperText error id="helper-text-id_card_no-driver">
+                        {errors.id_card_no}
                       </FormHelperText>
                     )}
                   </Stack>

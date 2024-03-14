@@ -1,6 +1,17 @@
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 
+// ==============================|| ข้อมูล Step 0   ||============================== //
+export const getAllStep0 = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/step0reserves`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
 // ==============================|| ข้อมูล Checkers   ||============================== //
 export const getAllCheckers = async () => {
   const requestOptions = {

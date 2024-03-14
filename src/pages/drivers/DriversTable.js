@@ -168,10 +168,10 @@ function DriverTable() {
               {driver.map((row, index) => {
                 return (
                   <TableRow key={index}>
-                    <TableCell align="center">{index+1}</TableCell>
+                    <TableCell align="center">{index + 1}</TableCell>
                     <TableCell align="left">{row.firstname + ' ' + row.lastname}</TableCell>
                     <TableCell align="left">{row.mobile_no}</TableCell>
-                    <TableCell align="left">{row.id_no}{'-'}</TableCell>
+                    <TableCell align="left">{row.id_card_no}</TableCell>
                     <TableCell align="left">{row.license_no}</TableCell>
                     <TableCell align="center">
                       <ButtonGroup variant="contained" aria-label="Basic button group">

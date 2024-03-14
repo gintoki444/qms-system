@@ -319,7 +319,7 @@ function AddQueue() {
   // =============== บันทึกข้อมูล ===============//
   const updateTeamLoading = (values) => {
     adminRequest.putReserveTeam(id, values).then(() => {
-      window.location.href = '/reserve';
+      window.location.href = '/admin/step0';
     });
   };
   const handleSubmits = async (values) => {

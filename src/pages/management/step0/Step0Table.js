@@ -1,11 +1,12 @@
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
 
 // Link api url
 // const apiUrl = process.env.REACT_APP_API_URL;
-import * as queueRequest from '_api/queueReques';
+// import * as queueRequest from '_api/queueReques';
+import * as stepRequest from '_api/StepRequest';
 
 // Get Role use
 import { useSelector } from 'react-redux';
@@ -32,11 +33,9 @@ import {
 // project import
 // import Dot from 'components/@extended/Dot';
 
-import {
-  ProfileOutlined,
-  EditOutlined,
-  DeleteOutlined
-} from '@ant-design/icons';
+import { 
+  // ProfileOutlined, 
+  EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 // import axios from 'axios';
 
@@ -182,6 +181,7 @@ QueueStatus.propTypes = {
 };
 
 function Step0Table({ startDate, endDate }) {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
   const userId = useSelector((state) => state.auth.roles);
@@ -195,8 +195,14 @@ function Step0Table({ startDate, endDate }) {
 
   const getQueue = () => {
     try {
-      queueRequest.getAllqueueByDateV2(startDate, endDate).then((response) => {
-        setItems(response.filter((x) => x.step1_status === 'none'));
+      console.log('startDate :', startDate);
+      console.log('endDate :', endDate);
+      // queueRequest.getAllqueueByDateV2(startDate, endDate).then((response) => {
+      //   setItems(response.filter((x) => x.step1_status === 'none'));
+      //   setLoading(false);
+      // });
+      stepRequest.getAllStep0().then((response) => {
+        setItems(response);
         setLoading(false);
       });
     } catch (e) {
@@ -243,17 +249,15 @@ function Step0Table({ startDate, endDate }) {
                       <TableCell align="center">
                         <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
                       </TableCell>
-                      <TableCell align="left">{row.company_name}</TableCell>
+                      <TableCell align="left">{row.company}</TableCell>
                       <TableCell align="left">{row.registration_no}</TableCell>
-                      <TableCell align="left">{row.driver_name}</TableCell>
-                      <TableCell align="left">{row.driver_mobile}</TableCell>
+                      <TableCell align="left">{row.driver}</TableCell>
+                      <TableCell align="left">{row.mobile_no}</TableCell>
                       <TableCell align="center">{row.step1_status !== 'none' ? <QueueStatus status={row.step1_status} /> : '-'}</TableCell>
-                      <TableCell align="center">{row.step2_status !== 'none' ? <QueueStatus status={row.step2_status} /> : '-'}</TableCell>
-                      <TableCell align="center">{row.step3_status !== 'none' ? <QueueStatus status={row.step3_status} /> : '-'}</TableCell>
-                      <TableCell align="center">{row.step4_status !== 'none' ? <QueueStatus status={row.step4_status} /> : '-'}</TableCell>
+
                       <TableCell align="center">
                         <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
-                          <Tooltip title="รายละเอียด">
+                          {/* <Tooltip title="รายละเอียด">
                             <span>
                               <Button
                                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
@@ -265,7 +269,7 @@ function Step0Table({ startDate, endDate }) {
                                 <ProfileOutlined />
                               </Button>
                             </span>
-                          </Tooltip>
+                          </Tooltip> */}
 
                           <Tooltip title="แก้ไข">
                             <span>
@@ -273,7 +277,6 @@ function Step0Table({ startDate, endDate }) {
                                 variant="contained"
                                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                 size="medium"
-                                disabled={row.status === 'completed'}
                                 color="primary"
                                 onClick={() => updateDrivers(row.reserve_id)}
                               >

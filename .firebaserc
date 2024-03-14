@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "qms-testing-01"
-  }
+    "default": "qms-testing-01",
+    "build": "qms-testing-01"
+  },
+  "targets": {},
+  "etags": {}
 }

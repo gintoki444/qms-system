@@ -85,7 +85,6 @@ function AddManageTeam() {
   };
 
   // =============== Get TeamLoanding ===============//
-  // const [team_id, setTeamId] = useState([]);
   const [teamloadingList, setTeamLoadingList] = useState([]);
   const getTeamloading = () => {
     try {
@@ -145,28 +144,6 @@ function AddManageTeam() {
         used_date: values.used_date,
         status: 'A'
       };
-
-      // personName.map((checker) => {
-      //   const teamCheckers = {
-      //     team_id: values.team_id,
-      //     checker_id: checker.checker_id,
-      //     used_date: values.used_date,
-      //     status: 'A'
-      //   };
-      //   console.log('teamCheckers', teamCheckers);
-      // });
-
-      // forkLift.map((forkLifts) => {
-      //   const teamForkLift = {
-      //     team_id: values.team_id,
-      //     forklift_id: forkLifts.forklift_id,
-      //     used_date: values.used_date,
-      //     status: 'A'
-      //   };
-      //   console.log('teamForkLift', teamForkLift);
-      // });
-
-      // console.log('Submit', values);
 
       await adminRequest
         .addTeamManager(teamManager)
@@ -249,42 +226,6 @@ function AddManageTeam() {
                         )}
                       </Stack>
                     </Grid>
-
-                    {/* <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel htmlFor="departmentr">หัวจ่าย</InputLabel>
-                        <FormControl>
-                          <Select
-                            id="warehouse_id"
-                            name="warehouse_id"
-                            displayEmpty
-                            value={values.warehouse_id}
-                            onChange={handleChange}
-                            // onChange={(e) => {
-                            //   handleChangeWareHouse(e);
-                            //   setFieldValue('warehouse_id', e.target.value);
-                            // }}
-                            input={<OutlinedInput />}
-                            error={Boolean(touched.warehouse_id && errors.warehouse_id)}
-                            inputProps={{ 'aria-label': 'Without label' }}
-                          >
-                            <MenuItem disabled value="">
-                              เลือกหัวจ่าย
-                            </MenuItem>
-                            {wareHouseList.map((warehouse) => (
-                              <MenuItem key={warehouse.warehouse_id} value={warehouse.warehouse_id}>
-                                {warehouse.description}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                        {touched.warehouse_id && errors.warehouse_id && (
-                          <FormHelperText error id="helper-text-warehouse_id">
-                            {errors.warehouse_id}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid> */}
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>

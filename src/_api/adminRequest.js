@@ -66,7 +66,7 @@ export const getManagerWareHouse = async (id) => {
 };
 
 export const putManagerWareHouse = async (id, data) => {
-  console.log(data)
+  console.log(data);
 
   const myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');
@@ -152,7 +152,7 @@ export const getAllCheckers = async () => {
   return result;
 };
 
-export const getCheckerById= async (id) => {
+export const getCheckerById = async (id) => {
   const requestOptions = {
     method: 'GET',
     redirect: 'follow'
@@ -162,7 +162,6 @@ export const getCheckerById= async (id) => {
   const result = await response.json();
   return result.checker;
 };
-
 
 export const addChecker = async (data) => {
   const myHeaders = new Headers();
@@ -203,9 +202,9 @@ export const deleteChecker = async (id) => {
     method: 'DELETE',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + `/deletechecker/${id}`, requestOptions);
+  const response = await fetch(apiUrl + `/deleteteamchecker/${id}`, requestOptions);
 
-  const result = await response.json();
+  const result = await response.text();
   return result;
 };
 
@@ -237,7 +236,21 @@ export const addTeamChecker = async (data) => {
   return await response.text();
 };
 
-// ==============================|| Warehouse Manages: (สำหรับข้อมูล โฟร์คลิฟท์) ||============================== //
+export const deleteTeamChecker = async (id) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+
+  const requestOptions = {
+    method: 'DELETE',
+    headers: myHeaders,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/deleteteamchecker/' + id, requestOptions);
+  return await response.text();
+};
+
+// ==============================|| Forklifts: (สำหรับข้อมูล โฟร์คลิฟท์) ||============================== //
 export const getAllForklifts = async () => {
   const requestOptions = {
     method: 'GET',
@@ -249,7 +262,7 @@ export const getAllForklifts = async () => {
   return result;
 };
 
-export const getForkliftById= async (id) => {
+export const getForkliftById = async (id) => {
   const requestOptions = {
     method: 'GET',
     redirect: 'follow'
@@ -260,12 +273,11 @@ export const getForkliftById= async (id) => {
   return result.forklift;
 };
 
-
 export const addForklifts = async (data) => {
   const myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');
   const raw = JSON.stringify(data);
-
+  console.log(data)
   const requestOptions = {
     method: 'POST',
     headers: myHeaders,
@@ -276,6 +288,33 @@ export const addForklifts = async (data) => {
   const response = await fetch(apiUrl + '/addforklift/', requestOptions);
 
   return await response.text();
+};
+
+export const addTeamForklifts = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/addteamforklift/', requestOptions);
+
+  return await response.text();
+};
+
+export const deleteTeamForklift = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deleteteamforklift/${id}`, requestOptions);
+
+  const result = await response.text();
+  return result;
 };
 
 export const putForklifts = async (id, data) => {
