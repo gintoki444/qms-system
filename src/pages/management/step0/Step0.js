@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 import { Grid, Stack, Button, Box, TextField, Alert } from '@mui/material';
 import MainCard from 'components/MainCard';
-import { SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined } from '@ant-design/icons';
 
 import moment from 'moment';
 const currentDate = moment(new Date()).format('YYYY-MM-DD');
@@ -14,7 +14,7 @@ import Step0Table from './Step0Table';
 
 function Step0() {
   const userRole = useSelector((state) => state.auth?.roles);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const [selectedDate1, setSelectedDate1] = useState(currentDate);
   const [selectedDate2, setSelectedDate2] = useState(currentDate);
@@ -37,10 +37,10 @@ function Step0() {
     });
   };
 
-  const addReserve = () => {
-    // window.location = '/car/add';
-    navigate('/reserve/add');
-  };
+  // const addReserve = () => {
+  //   // window.location = '/car/add';
+  //   navigate('/reserve/add');
+  // };
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
       {userRole === 5 && (
@@ -89,11 +89,6 @@ function Step0() {
             </Button>
           </Grid>
           <Grid item xs={12} md={3} align="right">
-            {userRole && userRole !== 5 && (
-              <Button size="mediam" color="success" variant="outlined" onClick={() => addReserve()} startIcon={<PlusCircleOutlined />}>
-                เพิ่มข้อมูล
-              </Button>
-            )}
           </Grid>
         </Grid>
         <MainCard content={false} sx={{ mt: 1.5 }}>

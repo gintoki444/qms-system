@@ -199,7 +199,7 @@ function AddQueue() {
   const [teamloadingList, setTeamLoadingList] = useState([]);
   const getTeamloading = (id) => {
     try {
-      adminRequest.getLoadingTeamById(id).then((result) => {
+      adminRequest.getLoadingTeamByIdwh(id).then((result) => {
         setTeamLoadingList(result);
       });
     } catch (error) {
@@ -220,9 +220,21 @@ function AddQueue() {
     }
   };
 
+  const [teamData, setTeamData] = useState([]);
+  const getTeamloadingByIds = (id) => {
+    try {
+      adminRequest.getLoadingTeamById(id).then((result) => {
+        setTeamData(result);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleChangeTeam = (e) => {
     setTeamLoading([]);
     getTeamManagers(e);
+    getTeamloadingByIds(e);
   };
 
   // =============== Get Contractor ===============//
@@ -304,7 +316,7 @@ function AddQueue() {
     warehouse_id: reservationData.warehouse_id,
     contractor_id: reservationData.contractor_id,
     team_id: reservationData.team_id,
-    labor_line_id: ''
+    labor_line_id: reservationData.labor_line_id
   };
 
   // =============== Validate Forms ===============//
@@ -318,10 +330,14 @@ function AddQueue() {
 
   // =============== บันทึกข้อมูล ===============//
   const updateTeamLoading = (values) => {
-    adminRequest.putReserveTeam(id, values).then(() => {
+    adminRequest.putReserveTeam(id, values).then(() => {});
+  };
+  const updateTeamData = (values) => {
+    adminRequest.putReserveTeamData(id, values).then(() => {
       window.location.href = '/admin/step0';
     });
   };
+
   const handleSubmits = async (values) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     try {
@@ -329,10 +345,12 @@ function AddQueue() {
       values.pickup_date = moment(values.pickup_date).format('YYYY-MM-DD HH:mm:ss');
       values.created_at = currentDate;
       values.updated_at = currentDate;
+      values.team_data = teamData;
 
       const teamValue = {
         team_id: values.team_id,
-        contractor_id: values.contractor_id
+        contractor_id: values.contractor_id,
+        labor_line_id: values.labor_line_id
       };
 
       await reseveRequest
@@ -341,6 +359,7 @@ function AddQueue() {
           console.log('result ', result);
           if (result.status === 'ok') {
             updateTeamLoading(teamValue);
+            updateTeamData(values.team_data);
           } else {
             alert(result['message']['sqlMessage']);
           }
@@ -352,7 +371,6 @@ function AddQueue() {
       console.error(err);
     }
   };
-  
 
   // =============== เพิ่มรายการสินค้า ===============//
   const addOrder = () => {
@@ -838,18 +856,18 @@ function AddQueue() {
 
                   <Grid item xs={12} sx={{ '& button': { m: 1 }, pl: '8px' }}>
                     <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                    
-                      <Button
-                        disableElevation
-                        disabled={isSubmitting}
-                        size="mediam"
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        startIcon={<SaveOutlined />}
-                      >
-                        บันทึกข้อมูลการจอง
-                      </Button>
+
+                    <Button
+                      disableElevation
+                      disabled={isSubmitting}
+                      size="mediam"
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                      startIcon={<SaveOutlined />}
+                    >
+                      บันทึกข้อมูลการจอง
+                    </Button>
                     <Button
                       size="mediam"
                       variant="contained"

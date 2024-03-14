@@ -385,7 +385,7 @@ function UpdateReserve() {
     return num < 10 ? `0${num}` : num;
   };
 
-  const handleClickOpen = (id, total_quantity) => {
+  const handleClickOpen = (id, total_quantity, brand_code) => { 
     try {
       if (total_quantity === '0') {
         alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');

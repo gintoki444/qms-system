@@ -26,7 +26,7 @@ export const getAllCheckers = async () => {
 // ==============================|| ข้อมูล Contractors  ||============================== //
 export const getAllContractors = async () => {
   const requestOptions = {
-    method: 'GET', 
+    method: 'GET',
     redirect: 'follow'
   };
   const response = await fetch(apiUrl + `/allcontractors`, requestOptions);
@@ -52,6 +52,16 @@ export const getAllTeamLoading = async () => {
     redirect: 'follow'
   };
   const response = await fetch(apiUrl + `/allloadingteams`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+export const getLoadingTeamById = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/loadingteambyid/${id}`, requestOptions);
   const result = await response.json();
   return result;
 };

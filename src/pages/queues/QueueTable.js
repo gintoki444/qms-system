@@ -188,8 +188,9 @@ export default function QueueTable({ startDate, endDate }) {
     getQueue();
   }, [startDate, endDate]);
 
-  const getQueue = () => {
+  const getQueue = () => { 
     try {
+        setLoading(true);
       queueRequest.getAllqueueByDateV2(startDate, endDate).then((response) => {
         setItems(response);
         setLoading(false);
@@ -319,7 +320,7 @@ export default function QueueTable({ startDate, endDate }) {
                   return (
                     <TableRow key={index}>
                       <TableCell align="center">{row.queue_number}</TableCell>
-                      <TableCell align="left">{moment(row.queue_date).format('MM/DD/YYYY')}</TableCell>
+                      <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
                       <TableCell align="center">
                         <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
                       </TableCell>

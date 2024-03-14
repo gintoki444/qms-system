@@ -19,6 +19,22 @@ export const putReserveTeam = async (id, data) => {
   return result;
 };
 
+export const putReserveTeamData = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/updatereservedata/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
 // ==============================|| Warehouse: (สำหรับข้อมูล โกดัง) ||============================== //
 export const getStationsByWareHouse = async (id) => {
   const requestOptions = {
@@ -385,13 +401,23 @@ export const getAllLoadingTeam = async () => {
   return result;
 };
 
-export const getLoadingTeamById = async (id) => {
+export const getLoadingTeamByIdwh = async (id) => {
   const requestOptions = {
     method: 'GET',
     redirect: 'follow'
   };
   const response = await fetch(apiUrl + `/loadingteamsbywh/${id}`, requestOptions);
 
+  const result = await response.json();
+  return result;
+};
+
+export const getLoadingTeamById = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/loadingteambyid/${id}`, requestOptions);
   const result = await response.json();
   return result;
 };

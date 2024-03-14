@@ -30,6 +30,7 @@ import { useTheme } from '@mui/material/styles';
 import MainCard from 'components/MainCard';
 
 // Link api queues
+import * as adminRequest from '_api/adminRequest';
 import * as getQueues from '_api/queueReques';
 import * as stepRequest from '_api/StepRequest';
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -171,6 +172,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
 
   useEffect(() => {
     fetchData();
+    getWarehouses();
   }, [status, onStatusChange]);
 
   const fetchData = async () => {
@@ -708,30 +710,28 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
   // const handleLoadingTeamChange = (event) => {
   //   setSelectedLoadingTeam(event.target.value);
   // };
-  const [selectedLoadingTeam, setSelectedLoadingTeam] = useState({});
-  const [selectChecker, setSelectChecker] = useState({});
+  // const [selectedLoadingTeam, setSelectedLoadingTeam] = useState({});
+  // const [selectChecker, setSelectChecker] = useState({});
   // const [selectContractors, setSelectContractors] = useState({});
   // const [selectChecker, setSelectChecker] = useState({});
 
-  const handleLoadingTeamChange = (event, row, id) => {
-    // setSelectedLoadingTeam(event.target.value);
-    console.log('id :', id);
-    const { value } = event.target;
-    if (id == 'checker') {
-      setSelectChecker((prevState) => ({
-        ...prevState,
-        [row.step_id]: value
-      }));
-    }
-    if (id == 'loading') {
-      setSelectedLoadingTeam((prevState) => ({
-        ...prevState,
-        [row.step_id]: value
-      }));
-    }
-    console.log(event);
-    console.log(row);
-  };
+  // const handleLoadingTeamChange = (event, row, id) => {
+  //   const { value } = event.target;
+  //   if (id == 'checker') {
+  //     setSelectChecker((prevState) => ({
+  //       ...prevState,
+  //       [row.step_id]: value
+  //     }));
+  //   }
+  //   if (id == 'loading') {
+  //     setSelectedLoadingTeam((prevState) => ({
+  //       ...prevState,
+  //       [row.step_id]: value
+  //     }));
+  //   }
+  //   console.log(event);
+  //   console.log(row);
+  // };
 
   const [selectedStations, setSelectedStations] = useState({}); // ใช้ state สำหรับการเก็บสถานีที่ถูกเลือกในแต่ละแถว
   const handleStationChange = (event, row) => {
@@ -746,10 +746,52 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     // sendStationIdToBackend(row.step_id, value);
   };
 
-  // const sendStationIdToBackend = (stationId) => {
-  //   //console.log(stepId, stationId)
-  //   setSelectedStation(stationId);
-  // };
+  // =============== Get Warehouses ===============//
+  // const [selectWarehouse, setSelectWareHouse] = useState('');
+  const [warehousesList, setWarehousesList] = useState([]);
+  const getWarehouses = () => {
+    adminRequest
+      .getAllWareHouse()
+      .then((result) => {
+        setWarehousesList(result);
+      })
+      .catch((error) => console.log('error', error));
+  };
+
+  const handleChangeWarehouse = (e) => {
+    console.log(e);
+    // setTeamLoading([]);
+    // setTeamLoadingList([]);
+    getStationById(e.target.value);
+    getTeamloadingById(e.target.value);
+  };
+
+  // =============== Get Stations ===============//
+  const [stationsList, setStationsList] = useState([]);
+  const getStationById = (id) => {
+    try {
+      adminRequest.getStationsByWareHouse(id).then((response) => {
+        setStationsList(response);
+        console.log(stationsList)
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // =============== Get TeamLoanding ===============//
+  // const [team_id, setTeamId] = useState([]);
+  const [teamloadingList, setTeamLoadingList] = useState([]);
+  const getTeamloadingById = (id) => {
+    try {
+      adminRequest.getLoadingTeamById(id).then((result) => {
+        setTeamLoadingList(result);
+        console.log(teamloadingList)
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <>
@@ -776,19 +818,17 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
 
         {status == 'waiting' && (
           <Dialog fullScreen={fullScreen} open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-            <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }}>
-              {'แจ้งเตือน'}
-            </DialogTitle>
+            <DialogTitle id="responsive-dialog-title">{'แจ้งเตือน'}</DialogTitle>
             <DialogContent>
-              <DialogContentText style={{ fontFamily: 'kanit' }}>
+              <DialogContentText>
                 ต้องการ {textnotify} ID:{id_update} หรือไม่?
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button autoFocus onClick={() => handleClose(0)} style={{ fontFamily: 'kanit' }}>
+              <Button autoFocus onClick={() => handleClose(0)}>
                 ยกเลิก
               </Button>
-              <Button onClick={() => handleClose(1)} autoFocus style={{ fontFamily: 'kanit' }}>
+              <Button onClick={() => handleClose(1)} autoFocus>
                 ยืนยัน
               </Button>
             </DialogActions>
@@ -797,133 +837,183 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
 
         {status == 'processing' && (
           <Dialog fullScreen={fullScreen} open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-            <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }}>
-              <Typography variant="h5">{'ปิดคิวรับสินค้า'}</Typography>
-            </DialogTitle>
             {fr === 'close' ? (
-              <DialogContent>
-                <MainCard>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12}>
-                      <Typography variant="h5">
-                        <strong>ข้อมูลผู้ขับขี่:</strong>
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="body">
-                        <strong>ชื่อผู้ขับ :</strong> {queues.driver_name}{' '}
-                      </Typography>
-                    </Grid>
+              <>
+                <DialogTitle id="responsive-dialog-title" align="center">
+                  <Typography variant="h5">{'ปิดคิวรับสินค้า'}</Typography>
+                </DialogTitle>
+                <DialogContent>
+                  <MainCard>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12}>
+                        <Typography variant="h5">
+                          <strong>ข้อมูลผู้ขับขี่:</strong>
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Typography variant="body">
+                          <strong>ชื่อผู้ขับ :</strong> {queues.driver_name}{' '}
+                        </Typography>
+                      </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="body">
-                        <strong>ทะเบียนรถ :</strong> {queues.registration_no}{' '}
-                      </Typography>
-                    </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Typography variant="body">
+                          <strong>ทะเบียนรถ :</strong> {queues.registration_no}{' '}
+                        </Typography>
+                      </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="body">
-                        <strong>เลขที่บัตรประชาชน :</strong> {'-'}
-                      </Typography>
-                    </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Typography variant="body">
+                          <strong>เลขที่บัตรประชาชน :</strong> {'-'}
+                        </Typography>
+                      </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="body">
-                        <strong>เลขที่ใบขับขี่ :</strong> {queues.license_no}{' '}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <FormControl sx={{ width: '100%' }} size="small">
-                        <InputLabel id={'select-label-' + queues.queue_id} style={{ fontFamily: 'kanit' }} size="small">
-                          ทีมขึ้นสินค้า
-                        </InputLabel>
-                        <Select
-                          size="small"
-                          label="ทีมขึ้นสินค้า"
-                          id={'select-label-' + queues.queue_id}
-                          // value={selectedLoadingTeam}
-                          // onChange={handleLoadingTeamChange}
-                          value={selectedLoadingTeam[queues.step_id]}
-                          onChange={(event) => handleLoadingTeamChange(event, queues, 'loading')}
-                        >
-                          {loadingteams.length > 0 &&
-                            loadingteams.map((loadingteam) => (
-                              <MenuItem key={loadingteam.team_id} value={loadingteam.team_id}>
-                                {loadingteam.team_name}
-                              </MenuItem>
-                            ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Typography variant="body">
+                          <strong>เลขที่ใบขับขี่ :</strong> {queues.license_no}{' '}
+                        </Typography>
+                      </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <FormControl sx={{ width: '100%' }} size="small">
-                        <InputLabel id={'select-label-' + queues.queue_id} style={{ fontFamily: 'kanit' }} size="small">
-                          เช็กเกอร์
-                        </InputLabel>
-                        <Select
-                          size="small"
-                          label="ทีมขึ้นสินค้า"
-                          id={'select-label-' + queues.queue_id}
-                          // value={selectedLoadingTeam}
-                          // onChange={handleLoadingTeamChange}
-                          value={selectChecker[queues.step_id]}
-                          onChange={(event) => handleLoadingTeamChange(event, queues, 'checker')}
-                        >
-                          {Checkers.length > 0 &&
-                            Checkers.map((checker) => (
-                              <MenuItem key={checker.checker_id} value={checker.checker_id}>
-                                {checker.checker_name}
-                              </MenuItem>
-                            ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
+                      <Grid item xs={12} md={6}>
+                        <InputLabel>โกดังสินค้า</InputLabel>
+                        <FormControl sx={{ width: '100%' }} size="small">
+                          <Select
+                            displayEmpty
+                            variant="outlined"
+                            value={queues.warehouse_id}
+                            onChange={(e) => {
+                              handleChangeWarehouse(e);
+                            }}
+                            placeholder="เลือกโกดังสินค้า"
+                            fullWidth
+                          >
+                            <MenuItem disabled value="">
+                              โกดังสินค้า
+                            </MenuItem>
+                            {warehousesList &&
+                              warehousesList.map((warehouses) => (
+                                <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
+                                  {warehouses.description}
+                                </MenuItem>
+                              ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <FormControl sx={{ width: '100%' }} size="small">
-                        <InputLabel id={'select-label-' + queues.queue_id} style={{ fontFamily: 'kanit' }} size="small">
-                          สายรายงาน
-                        </InputLabel>
-                        <Select
-                          size="small"
-                          label="สายรายงาน"
-                          id={'select-label-' + queues.queue_id}
-                          // value={selectedLoadingTeam}
-                          // onChange={handleLoadingTeamChange}
-                          value={selectChecker[queues.step_id]}
-                          onChange={(event) => handleLoadingTeamChange(event, queues, 'checker')}
-                        >
-                          {contractors.length > 0 &&
-                            contractors.map((contractor) => (
-                              <MenuItem key={contractor.contractor_id} value={contractor.contractor_id}>
-                                {contractor.contractor_name}
-                              </MenuItem>
-                            ))}
-                        </Select>
-                      </FormControl>
+                      <Grid item xs={12} md={6}>
+                        <InputLabel>หัวจ่าย</InputLabel>
+                        <FormControl sx={{ width: '100%' }} size="small">
+                          <Select
+                            displayEmpty
+                            variant="outlined"
+                            value={queues.warehouse_id}
+                            onChange={(e) => {
+                              handleChangeWarehouse(e);
+                            }}
+                            placeholder="เลือกโกดังสินค้า"
+                            fullWidth
+                          >
+                            <MenuItem disabled value="">
+                              โกดังสินค้า
+                            </MenuItem>
+                            {warehousesList &&
+                              warehousesList.map((warehouses) => (
+                                <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
+                                  {warehouses.description}
+                                </MenuItem>
+                              ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
+
+                      <Grid item xs={12} md={6}>
+                        <FormControl sx={{ width: '100%' }} size="small">
+                          <InputLabel id={'select-label-' + queues.queue_id} size="small">
+                            ทีมขึ้นสินค้า
+                          </InputLabel>
+                          <Select
+                            size="small"
+                            label="ทีมขึ้นสินค้า"
+                            id={'select-label-' + queues.queue_id}
+                            // value={selectedLoadingTeam}
+                            // onChange={handleLoadingTeamChange}
+                            value={queues.step_id}
+                            onChange={(event) => handleLoadingTeamChange(event, queues, 'loading')}
+                          >
+                            {loadingteams.length > 0 &&
+                              loadingteams.map((loadingteam) => (
+                                <MenuItem key={loadingteam.team_id} value={loadingteam.team_id}>
+                                  {loadingteam.team_name}
+                                </MenuItem>
+                              ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
+
+                      <Grid item xs={12} md={6}>
+                        <FormControl sx={{ width: '100%' }} size="small">
+                          <InputLabel id={'select-label-' + queues.queue_id} size="small">
+                            เช็กเกอร์
+                          </InputLabel>
+                          <Select
+                            size="small"
+                            label="ทีมขึ้นสินค้า"
+                            id={'select-label-' + queues.queue_id}
+                            // value={selectedLoadingTeam}
+                            // onChange={handleLoadingTeamChange}
+                            value={queues.checker_id}
+                            onChange={(event) => handleLoadingTeamChange(event, queues, 'checker')}
+                          >
+                            {Checkers.length > 0 &&
+                              Checkers.map((checker) => (
+                                <MenuItem key={checker.checker_id} value={checker.checker_id}>
+                                  {checker.checker_name}
+                                </MenuItem>
+                              ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
+
+                      <Grid item xs={12} md={6}>
+                        <FormControl sx={{ width: '100%' }} size="small">
+                          <InputLabel id={'select-label-' + queues.queue_id} size="small">
+                            สายรายงาน
+                          </InputLabel>
+                          <Select
+                            size="small"
+                            label="สายรายงาน"
+                            id={'select-label-' + queues.queue_id}
+                            // value={selectedLoadingTeam}
+                            // onChange={handleLoadingTeamChange}
+                            // value={selectChecker[queues.step_id]}
+                            onChange={(event) => handleLoadingTeamChange(event, queues, 'checker')}
+                          >
+                            {contractors.length > 0 &&
+                              contractors.map((contractor) => (
+                                <MenuItem key={contractor.contractor_id} value={contractor.contractor_id}>
+                                  {contractor.contractor_name}
+                                </MenuItem>
+                              ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
                     </Grid>
-                    {/* <Grid item xs={12} md={6}>
-                    <Typography variant="h5">
-                      <strong>คลุมผ้าใบ (ตัวลูก) :</strong>
-                      <Checkbox
-                        checked={checked2}
-                        onChange={handleCheckboxChange2}
-                        color="primary"
-                        inputProps={{ 'aria-label': 'Checkbox' }}
-                      />
-                    </Typography>
-                  </Grid> */}
-                  </Grid>
-                </MainCard>
-                <DialogContentText>{/* ต้องการ {textnotify} ID:{id_update} หรือไม่? */}</DialogContentText>
-              </DialogContent>
+                  </MainCard>
+                  <DialogContentText>{/* ต้องการ {textnotify} ID:{id_update} หรือไม่? */}</DialogContentText>
+                </DialogContent>
+              </>
             ) : (
-              <DialogContent>
-                <DialogContentText style={{ fontFamily: 'kanit' }}>
-                  ต้องการ {textnotify} ID:{id_update} หรือไม่?
-                </DialogContentText>
-              </DialogContent>
+              <>
+                <DialogTitle id="responsive-dialog-title" align="center">
+                  <Typography variant="h5">{'ยกเลิกคิวรับสินค้า'}</Typography>
+                </DialogTitle>
+
+                <DialogContent>
+                  <DialogContentText>
+                    ต้องการ {textnotify} ID:{id_update} หรือไม่?
+                  </DialogContentText>
+                </DialogContent>
+              </>
             )}
             <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
               <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
@@ -991,10 +1081,10 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                           {status == 'processing' && <Chip color="success" sx={{ width: '95px' }} label={'ขึ้นสินค้า'} />}
                         </TableCell>
 
-                        <TableCell align="center" style={{ fontFamily: 'kanit' }}>
+                        <TableCell align="center">
                           {status == 'waiting' && (
                             <FormControl sx={{ minWidth: 140 }} size="small">
-                              <InputLabel id={`station-select-label-${row.step_id}`} style={{ fontFamily: 'kanit' }} size="small">
+                              <InputLabel id={`station-select-label-${row.step_id}`} size="small">
                                 หัวจ่าย
                               </InputLabel>
                               <Select
@@ -1046,7 +1136,6 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                                     variant="contained"
                                     size="small"
                                     onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.station_id, row)}
-                                    style={{ fontFamily: 'kanit' }}
                                     color="error"
                                   >
                                     ยกเลิก
@@ -1058,7 +1147,6 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                                       size="small"
                                       variant="contained"
                                       onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row.station_id, row)}
-                                      style={{ fontFamily: 'kanit' }}
                                     >
                                       ปิดคิว
                                     </Button>
