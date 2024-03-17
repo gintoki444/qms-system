@@ -141,7 +141,7 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
   ];
   function QueueTableHead() {
     return (
-      <TableHead key={status+"01"}>
+      <TableHead key={status + '01'}>
         <TableRow>
           {headCells.map((headCell) => (
             <>
@@ -676,7 +676,7 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
               {loading ? (
                 <TableBody>
                   <TableRow>
-                    <TableCell colSpan={12} align="center">
+                    <TableCell colSpan={status == 'processing' ? 13 : 12} align="center">
                       <CircularProgress />
                       <Typography variant="body1">Loading....</Typography>
                     </TableCell>
@@ -787,7 +787,7 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
 
                   {items.length == 0 && (
                     <TableRow>
-                      <TableCell colSpan={12} align="center">
+                      <TableCell colSpan={status == 'processing' ? 13 : 12} align="center">
                         ไม่พบข้อมูล
                       </TableCell>
                     </TableRow>

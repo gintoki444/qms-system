@@ -21,7 +21,7 @@ const admins = {
     },
     {
       id: 'warehouse',
-      title: 'ข้อมูลผู้จัดการโกดัง',
+      title: 'ข้อมูลหัวหน้าโกดัง',
       type: 'item',
       url: '/admin/warehouse',
       icon: WarehouseIcon,

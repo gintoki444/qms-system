@@ -1,6 +1,39 @@
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 
+// ==============================|| ข้อมูล Product Company ||============================== //
+export const getAllproductCompanys = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/allproductcompany`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// ==============================|| ข้อมูล Product Company ||============================== //
+export const getProductBrandById = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/productbrand/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// ==============================|| ข้อมูล Order ||============================== //
+export const getOrderByReserveId = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/orders/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
 // ==============================|| ข้อมูลการจองคิว By url ||============================== //
 export const putReserById = async (id, data) => {
   const myHeaders = new Headers();

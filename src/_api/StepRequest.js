@@ -65,3 +65,57 @@ export const getLoadingTeamById = async (id) => {
   const result = await response.json();
   return result;
 };
+
+// ==============================|| ข้อมูล Reserve  ||============================== //
+export const getReserveById = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/reserve/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// ==============================|| ข้อมูล Reserve  ||============================== //
+export const getProductRegister = async (product_company_id, product_brand_id, product_id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(
+    apiUrl + `/productregister?product_company_id=${product_company_id}&product_brand_id=${product_brand_id}&product_id=${product_id}`,
+    requestOptions
+  );
+  const result = await response.json();
+  return result;
+};
+
+// ==============================|| ข้อมูล Step Count  ||============================== //
+export const getStepCountByIdStatus = async (id, status) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/stepcount/${id}/${status}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// ==============================|| ข้อมูล Step Count  ||============================== //
+export const putRegisterItem = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/updateregisteritem/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};

@@ -758,7 +758,7 @@ function AddQueue() {
 
                           <Grid item xs={12} md={6}>
                             <Stack spacing={1}>
-                              <InputLabel>สายแรงงาน {values.contractor_id}</InputLabel>
+                              <InputLabel>สายแรงงาน {values.contractor_id}</InputLabel> 
                               <TextField
                                 select
                                 variant="outlined"
@@ -789,7 +789,7 @@ function AddQueue() {
                                 name="labor_line_id"
                                 value={values.labor_line_id}
                                 onChange={handleChange}
-                                placeholder="ทีมรับสินค้า"
+                                placeholder="หมายเลขสาย"
                                 fullWidth
                               >
                                 {layborLineList.map((layborLine) => (
@@ -801,8 +801,8 @@ function AddQueue() {
                             </Stack>
                           </Grid>
                         </Grid>
-                        <Grid item xs={12}>
-                          <TableContainer>
+                        <Grid item xs={6}>
+                          <TableContainer sx={{m:'auto'}}>
                             <Table
                               aria-labelledby="tableTitle"
                               size="small"
@@ -818,8 +818,8 @@ function AddQueue() {
                               <TableHead>
                                 <TableRow>
                                   <TableCell align="center">ลำดับ</TableCell>
-                                  <TableCell align="center">รายชื่อ</TableCell>
-                                  <TableCell align="center">ตำแหน่ง</TableCell>
+                                  <TableCell align="left">รายชื่อ</TableCell>
+                                  <TableCell align="left">ตำแหน่ง</TableCell>
                                 </TableRow>
                               </TableHead>
                               {teamLoading ? (
@@ -827,12 +827,12 @@ function AddQueue() {
                                   {teamLoading.map((item, index) => (
                                     <TableRow key={index}>
                                       <TableCell align="center">{index + 1}</TableCell>
-                                      <TableCell align="center">
+                                      <TableCell align="left">
                                         {item.manager_name && item.manager_name}
                                         {item.checker_name && item.checker_name}
                                         {item.forklift_name && item.forklift_name}
                                       </TableCell>
-                                      <TableCell align="center">
+                                      <TableCell align="left">
                                         {item.manager_name && 'หัวหน้าโกดัง'}
                                         {item.checker_name && 'พนักงานจ่ายสินค้า'}
                                         {item.forklift_name && 'โฟล์คลิฟท์'}

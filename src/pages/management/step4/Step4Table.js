@@ -789,7 +789,7 @@ export const Step4Table = ({ status, title, onStatusChange }) => {
 
                   {items.length == 0 && (
                     <TableRow>
-                      <TableCell colSpan={12} align="center">
+                      <TableCell colSpan={status == 'processing' ? 14 : 12} align="center">
                         ไม่พบข้อมูล
                       </TableCell>
                     </TableRow>

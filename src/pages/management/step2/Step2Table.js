@@ -24,7 +24,11 @@ import {
   MenuItem,
   Backdrop,
   Tooltip,
-  ButtonGroup
+  ButtonGroup,
+  Checkbox,
+  // CheckboxGroup,
+  FormControlLabel,
+  OutlinedInput
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import MainCard from 'components/MainCard';
@@ -33,6 +37,7 @@ import MainCard from 'components/MainCard';
 import * as adminRequest from '_api/adminRequest';
 import * as getQueues from '_api/queueReques';
 import * as stepRequest from '_api/StepRequest';
+import * as reserveRequest from '_api/reserveRequest';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 import CircularProgress from '@mui/material/CircularProgress';
@@ -159,7 +164,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
   const [loading, setLoading] = useState(true); // สร้าง state เพื่อติดตามสถานะการโหลด
   // const [selectedStation, setSelectedStation] = useState('');
   const [stations, setStations] = useState([]);
-  const [loadingteams, setLoadingTeams] = useState([]);
+  // const [loadingteams, setLoadingTeams] = useState([]);
   const [saveLoading, setSaveLoading] = useState(false);
   saveLoading;
   const [message, setMessage] = useState('');
@@ -168,11 +173,12 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
   const station_num = 17;
 
   //const [loadingteam, setLoadingTeam] = React.useState('');
-  const [staion_id, setStationId] = useState(0);
+  const [station_id, setStationId] = useState(0);
 
   useEffect(() => {
     fetchData();
     getWarehouses();
+    getAllContractor();
   }, [status, onStatusChange]);
 
   const fetchData = async () => {
@@ -186,13 +192,9 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
         await processingGet();
       }
       await getStation();
-      await getLoadingTeam();
-      await getCheckers();
-      await getContractors();
       await getStepCount(2, 'processing');
     } catch (error) {
       console.error('Error fetching data:', error);
-      // Handle errors if needed
     }
   };
 
@@ -250,65 +252,9 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     });
   };
 
-  const getLoadingTeam = () => {
-    const requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-
-    return new Promise((resolve, reject) => {
-      fetch(apiUrl + '/allloadingteams', requestOptions)
-        .then((response) => response.json())
-        .then((result) => {
-          setLoadingTeams(result);
-          resolve(); // ส่งคืนเมื่อการเรียก API เสร็จสมบูรณ์
-        })
-        .catch((error) => {
-          console.error(error);
-          reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
-        });
-    });
-  };
-
-  const [Checkers, seCheckers] = useState([]);
-  const getCheckers = async () => {
-    await stepRequest.getAllCheckers().then((result) => {
-      try {
-        seCheckers(result);
-      } catch (error) {
-        console.log(error);
-      }
-    });
-  };
-
-  const [contractors, seContractors] = useState([]);
-  const getContractors = async () => {
-    await stepRequest.getAllCheckers().then((result) => {
-      try {
-        seContractors(result);
-      } catch (error) {
-        console.log(error);
-      }
-    });
-  };
-
-  const getStepCount = (step_order, step_status) => {
-    return new Promise((resolve, reject) => {
-      var requestOptions = {
-        method: 'GET',
-        redirect: 'follow'
-      };
-
-      fetch(apiUrl + '/stepcount/' + step_order + '/' + step_status, requestOptions)
-        .then((response) => response.json())
-        .then((result) => {
-          setStationCount(result[0]['step_count']);
-          resolve(); // ส่งคืนเมื่อการเรียก API เสร็จสมบูรณ์
-        })
-        .catch((error) => {
-          console.log('error', error);
-          reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
-        });
+  const getStepCount = async (step_order, step_status) => {
+    await stepRequest.getStepCountByIdStatus(step_order, step_status).then((response) => {
+      if (response.length > 0) response.map((result) => setStationCount(result.step_count));
     });
   };
 
@@ -333,8 +279,13 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
       myHeaders.append('Content-Type', 'application/json');
 
       const raw = JSON.stringify({
-        team_id: selectedLoadingTeam
+        team_id: teamId,
+        contractor_id: contractorId,
+        labor_line_id: labor_line_id
       });
+
+      // updateTeamLoading(queues.reserve_id, teamValue);
+      // updateTeamData(queues.reserve_id, teamData);
 
       const requestOptions = {
         method: 'PUT',
@@ -360,7 +311,6 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
   };
 
   //Update สถานะคิวที่ให้บริการ
-
   const step1Update = (step_id, statusupdate, stations_id) => {
     return new Promise((resolve, reject) => {
       setLoading(true);
@@ -374,14 +324,11 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
         if (fr === 'call') {
           // ตัวเลขที่ต้องการค้นหา stations_id ที่เลือกไปแล้ว
           const foundItem = items2.find((item) => item.station_id === stations_id);
-          console.log('foundItem ;', foundItem);
-          console.log('items2 ;', items2);
 
           if (foundItem) {
             // พบ item ที่มี station_id ที่ต้องการ
             alert("หัวจ่าย '" + foundItem.station_description + "' ไม่ว่าง");
             setLoading(false);
-            console.log('Found item:', foundItem);
             return;
           } else {
             // การใช้งาน Line Notify
@@ -469,7 +416,6 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
 
   //Update start_time of step
   const [queues, setQueues] = useState([]);
-
   const updateStartTime = (step_id) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
@@ -531,15 +477,111 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
         .then((result) => {
           //console.log(result)
           if (result['status'] === 'ok') {
-            console.log('updateEndTime is ok');
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
-            console.log('not update updateEndTime');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
           }
         })
         .catch((error) => console.error(error));
     });
+  };
+
+  // =============== Get Reserve ===============//
+  const getReserveId = async (id) => {
+    stepRequest.getReserveById(id).then((response) => {
+      if (response) {
+        response.reserve.map((result) => {
+          getStationById(result.warehouse_id);
+          getTeamloadingByIdwh(result.warehouse_id);
+
+          if (result.contractor_id) {
+            getLaborLine(result.contractor_id);
+          }
+
+          if (result.team_id !== null) {
+            if (result.team_data === null || result.team_data.team_id === null) {
+              getTeamloadingByIds(result.team_id);
+            } else if (result.team_data.team_data && result.team_data.team_data.team_id === null) {
+              getTeamloadingByIds(result.team_id);
+            } else if (result.team_data.length > 0 || result.team_data) {
+              setTeamData(result.team_data);
+              const combinedData = [
+                ...result.team_data.team_managers,
+                ...result.team_data.team_checkers,
+                ...result.team_data.team_forklifts
+              ];
+              setTeamLoading(combinedData);
+            }
+          }
+
+          setWareHouseId(result.warehouse_id);
+          setStationsId(result.reserve_station_id);
+          setTeamId(result.team_id);
+          setcontractorId(result.contractor_id);
+          setLaborLineId(result.labor_line_id);
+        });
+      }
+    });
+  };
+
+  // =============== Get Order Product ===============//
+  const [orders, setOrders] = useState([]);
+  const getOrderOfReserve = async (id) => {
+    await reserveRequest.getOrderByReserveId(id).then((response) => {
+      if (response.length > 0) {
+        response.map((result) => {
+          if (result.product_company_id && result.product_brand_id) {
+            result.items.map((data) => {
+              stepRequest.getProductRegister(result.product_company_id, result.product_brand_id, data.product_id).then((productRegis) => {
+                data.productRegis = productRegis;
+              });
+            });
+          }
+        });
+        setOrders(response);
+      }
+    });
+  };
+
+  const [orderSelect, setOrderSelect] = useState([]);
+  const handleChangeProduct = (e, id) => {
+    // const { value } = e.target;
+    const selectedOption = { id: id, value: e.target.value };
+    setOrderSelect((prevState) => {
+      const updatedOptions = [...prevState];
+      const index = updatedOptions.findIndex((option) => option.id === id);
+      if (index !== -1) {
+        // Update the existing option
+        updatedOptions[index] = selectedOption;
+      } else {
+        // Add the new option
+        updatedOptions.push(selectedOption);
+      }
+
+      return updatedOptions;
+    });
+  };
+
+  const [typeSelect, setTypeSelect] = useState({});
+
+  const handleChangeSelect = (id, name) => (event) => {
+    const { value, checked } = event.target;
+    setTypeSelect((prevState) => ({
+      ...prevState,
+      [id]: { ...prevState[id], [name]: checked ? value || true : false }
+    }));
+  };
+
+  const [typeNumSelect, setTypeNumSelect] = useState({});
+  const handleChangeTypeNum = (e, id, maxNum) => {
+    if (e.target.value > maxNum) {
+      alert(`จำนวนสินค้าต้องไม่เกิน "${maxNum}" ตัน`);
+    } else {
+      setTypeNumSelect((prevState) => ({
+        ...prevState,
+        [id]: e.target.value
+      }));
+    }
   };
 
   const handleClickOpen = (step_id, fr, queues_id, station_id, queuesData) => {
@@ -551,6 +593,12 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     } else {
       if (fr === 'close') {
         setMessage('ขึ้นสินค้า–STEP2 ปิดคิว');
+        setTeamLoading([]);
+        setOrderSelect([]);
+        setTypeSelect([]);
+        setTypeNumSelect([]);
+        getOrderOfReserve(queuesData.reserve_id);
+        getReserveId(queuesData.reserve_id);
         setText('ปิดคิว');
       } else {
         setMessage('ขึ้นสินค้า–STEP2 ยกเลิกเรียกคิว');
@@ -559,11 +607,9 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     }
 
     //กดปุ่มมาจากไหน
-
     setFrom(fr);
     setUpdate(step_id);
     setStationId(station_id);
-    //get steps_id of step 3 from queues_id for next queues
     getStepId(3, queues_id);
     setQueues(queuesData);
     setOpen(true);
@@ -576,9 +622,9 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
       if (fr === 'call') {
         if (station_count < station_num) {
           setOpen(false);
-          if (staion_id) {
+          if (station_id) {
             setStationCount(station_count + 1);
-            await step1Update(id_update, 'processing', staion_id);
+            await step1Update(id_update, 'processing', station_id);
             await updateStartTime(id_update);
           } else {
             alert('กรุณาเลือกหัวจ่าย');
@@ -592,36 +638,101 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
         if (fr === 'close') {
           //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว 27 = Station ว่าง
           setLoading(false);
-          console.log('selectedLoadingTeam: ', selectedLoadingTeam);
-
-          if (selectedLoadingTeam === '') {
+          if (teamId === '' || teamId === null) {
             alert('กรุณาเลือกทีมขึ้นสินค้า');
-            setOpen(false);
-            setLoading(false);
             return;
           }
+
+          if (contractorId === '' || contractorId === null) {
+            alert('กรุณาเลือกสายรายงาน');
+            return;
+          }
+
+          if (labor_line_id === '' || labor_line_id === null) {
+            alert('กรุณาเลือกหมายเลขสาย');
+            return;
+          }
+
+          let countItem = 0;
+          orders.map((orderData) => {
+            countItem = countItem + orderData.items.length;
+          });
+
+          if (orderSelect.length != countItem) {
+            alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
+            return;
+          }
+
+          let checktypeNum = 0;
+          let checktypeSelect = 0;
+          orderSelect.map((dataOrder) => {
+            if (typeSelect[dataOrder.id]) {
+              if (typeSelect[dataOrder.id].checked1 == 'on' && !typeNumSelect[dataOrder.id]) {
+                checktypeNum = checktypeNum + 1;
+              }
+            } else {
+              checktypeSelect++;
+            }
+          });
+
+          if (checktypeNum !== 0) {
+            alert('กรุณาระบุจำนวนสินค้าทุบ');
+            return;
+          }
+
+          if (checktypeSelect !== 0) {
+            alert('กรุณาระบุประเภทสินค้า');
+            return;
+          }
+
+          // if (orderSelect.length == 0 || orderSelect === null) {
+          //   alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
+          //   return;
+          // }
+
           try {
             setOpen(false);
+            // การใช้งาน Line Notify
 
-            if (id_update === 99999) {
-              // การใช้งาน Line Notify
-              getStepToken(id_update)
-                .then(({ queue_id, token }) => {
-                  lineNotify(queue_id, token);
-                })
-                .catch((error) => {
-                  console.error('Error:', error);
-                  // ทำอะไรกับข้อผิดพลาด
-                });
+            orderSelect.map((dataOrder) => {
+              if (typeSelect[dataOrder.id]) {
+                if (typeSelect[dataOrder.id].checked1 == 'on') {
+                  const setData = {
+                    product_register_id: dataOrder.value,
+                    smash_quantity: typeNumSelect[dataOrder.id]
+                  };
+                  updateRegisterItems(dataOrder.id, setData);
+                } else {
+                  const setData = {
+                    product_register_id: dataOrder.value,
+                    smash_quantity: 0
+                  };
+                  updateRegisterItems(dataOrder.id, setData);
+                }
+              }
+            });
 
-              setStationCount(station_count - 1);
-              await updateLoadingTeam(id_update);
-              await updateLoadingTeam(id_update_next);
-              await step2Update(id_update_next, 'waiting', 27);
-              await updateEndTime(id_update);
-              await updateStartTime(id_update_next);
-              await step1Update(id_update, 'completed', staion_id);
-            }
+            // if (id_update == 9999) {
+            setLoading(true);
+            getStepToken(id_update)
+              .then(({ queue_id, token }) => {
+                lineNotify(queue_id, token);
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+                // ทำอะไรกับข้อผิดพลาด
+              });
+
+            setStationCount(station_count - 1);
+            await updateLoadingTeam(id_update);
+            await updateLoadingTeam(id_update_next);
+            await updateTeamLoading();
+            await updateTeamData();
+            await step2Update(id_update_next, 'waiting', 27);
+            await updateEndTime(id_update);
+            await updateStartTime(id_update_next);
+            await step1Update(id_update, 'completed', station_id);
+            // }
           } catch (error) {
             console.error(error);
             // จัดการข้อผิดพลาดตามที่ต้องการ
@@ -649,6 +760,24 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
       setLoading(false);
     }
     setOpen(false);
+  };
+
+  // =============== บันทึกข้อมูล ===============//
+  const updateTeamLoading = async () => {
+    const teamValue = {
+      team_id: teamId,
+      contractor_id: contractorId,
+      labor_line_id: labor_line_id
+    };
+    await adminRequest.putReserveTeam(queues.reserve_id, teamValue);
+  };
+
+  const updateTeamData = async () => {
+    await adminRequest.putReserveTeamData(queues.reserve_id, teamData);
+  };
+
+  const updateRegisterItems = async (id, data) => {
+    await stepRequest.putRegisterItem(id, data);
   };
 
   //Update lineNotify Message
@@ -707,47 +836,17 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     });
   };
 
-  // const handleLoadingTeamChange = (event) => {
-  //   setSelectedLoadingTeam(event.target.value);
-  // };
-  // const [selectedLoadingTeam, setSelectedLoadingTeam] = useState({});
-  // const [selectChecker, setSelectChecker] = useState({});
-  // const [selectContractors, setSelectContractors] = useState({});
-  // const [selectChecker, setSelectChecker] = useState({});
-
-  // const handleLoadingTeamChange = (event, row, id) => {
-  //   const { value } = event.target;
-  //   if (id == 'checker') {
-  //     setSelectChecker((prevState) => ({
-  //       ...prevState,
-  //       [row.step_id]: value
-  //     }));
-  //   }
-  //   if (id == 'loading') {
-  //     setSelectedLoadingTeam((prevState) => ({
-  //       ...prevState,
-  //       [row.step_id]: value
-  //     }));
-  //   }
-  //   console.log(event);
-  //   console.log(row);
-  // };
-
   const [selectedStations, setSelectedStations] = useState({}); // ใช้ state สำหรับการเก็บสถานีที่ถูกเลือกในแต่ละแถว
   const handleStationChange = (event, row) => {
-    console.log(event);
-    console.log(row);
     const { value } = event.target;
     setSelectedStations((prevState) => ({
       ...prevState,
       [row.step_id]: value // เก็บค่าสถานีที่ถูกเลือกในแต่ละแถวโดยใช้ step_id เป็น key
     }));
-
-    // sendStationIdToBackend(row.step_id, value);
   };
 
   // =============== Get Warehouses ===============//
-  // const [selectWarehouse, setSelectWareHouse] = useState('');
+  const [warehouseId, setWareHouseId] = useState('');
   const [warehousesList, setWarehousesList] = useState([]);
   const getWarehouses = () => {
     adminRequest
@@ -759,40 +858,124 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
   };
 
   const handleChangeWarehouse = (e) => {
-    console.log(e);
-    // setTeamLoading([]);
-    // setTeamLoadingList([]);
+    setStationsId('');
+    setWareHouseId(e.target.value);
     getStationById(e.target.value);
-    getTeamloadingById(e.target.value);
+    getTeamloadingByIdwh(e.target.value);
   };
 
   // =============== Get Stations ===============//
+  const [stationsId, setStationsId] = useState('');
   const [stationsList, setStationsList] = useState([]);
   const getStationById = (id) => {
     try {
       adminRequest.getStationsByWareHouse(id).then((response) => {
         setStationsList(response);
-        console.log(stationsList)
       });
     } catch (error) {
       console.log(error);
     }
   };
 
+  const handleChangeStation = (e) => {
+    setStationsId(e.target.value);
+  };
   // =============== Get TeamLoanding ===============//
-  // const [team_id, setTeamId] = useState([]);
+  const [teamId, setTeamId] = useState([]);
   const [teamloadingList, setTeamLoadingList] = useState([]);
-  const getTeamloadingById = (id) => {
+  const getTeamloadingByIdwh = (warehouse_id) => {
+    try {
+      adminRequest.getLoadingTeamByIdwh(warehouse_id).then((result) => {
+        setTeamLoadingList(result);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const [teamData, setTeamData] = useState([]);
+  const [teamLoading, setTeamLoading] = useState([]);
+  const getTeamloadingByIds = (id) => {
     try {
       adminRequest.getLoadingTeamById(id).then((result) => {
-        setTeamLoadingList(result);
-        console.log(teamloadingList)
+        setTeamData(result);
+        const combinedData = [...result.team_managers, ...result.team_checkers, ...result.team_forklifts];
+        setTeamLoading(combinedData);
       });
     } catch (error) {
       console.log(error);
     }
   };
 
+  const handleChangeTeam = (e) => {
+    setTeamLoading([]);
+    setTeamId(e);
+    getTeamloadingByIds(e);
+  };
+
+  // =============== Get Contractor ===============//
+  const [contractorId, setcontractorId] = useState([]);
+  const [contractorList, setContractorList] = useState([]);
+  const getAllContractor = () => {
+    try {
+      adminRequest.getAllContractors().then((result) => {
+        setContractorList(result);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleChangeContractor = (e) => {
+    getLaborLine(e.target.value);
+    setcontractorId(e.target.value);
+  };
+
+  // =============== Get Contractor and laybor Line ===============//
+  const [labor_line_id, setLaborLineId] = useState([]);
+  const [layborLineList, setLayborLineList] = useState([]);
+
+  const getLaborLine = (id) => {
+    try {
+      adminRequest.getContractorById(id).then((result) => {
+        setLayborLineList(result.labor_lines);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // =============== Get calculateAge จำนวนวัน  ===============//
+  const calculateAge = (registrationDate) => {
+    if (!registrationDate) return '-';
+
+    const currentDate = moment(new Date()).format('YYYY-MM-DD');
+    const regDate = moment(registrationDate).format('YYYY-MM-DD');
+    // const regDate = new Date(registrationDate);
+
+    const years = moment(currentDate).diff(regDate, 'years');
+    const months = moment(currentDate).diff(regDate, 'months') % 12;
+    const days = moment(currentDate).diff(regDate, 'days') % 30;
+
+    let result = '';
+
+    if (years !== 0) {
+      result = `${years} ปี ${months} เดือน ${days} วัน`;
+    } else {
+      if (months !== 0) {
+        result = `${months} เดือน ${days} วัน`;
+      } else {
+        result = `${days} วัน`;
+      }
+    }
+
+    return result;
+    //return `${years} ปี ${months} เดือน ${days} วัน`;
+  };
+
+  const handleChangeLaborLine = (e) => {
+    setLaborLineId(e.target.value);
+  };
   return (
     <>
       <Box>
@@ -864,7 +1047,8 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
 
                       <Grid item xs={12} md={6}>
                         <Typography variant="body">
-                          <strong>เลขที่บัตรประชาชน :</strong> {'-'}
+                          <strong>เลขที่บัตรประชาชน :</strong> {queues.id_card_no}
+                          {'-'}
                         </Typography>
                       </Grid>
 
@@ -880,7 +1064,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                           <Select
                             displayEmpty
                             variant="outlined"
-                            value={queues.warehouse_id}
+                            value={warehouseId}
                             onChange={(e) => {
                               handleChangeWarehouse(e);
                             }}
@@ -888,7 +1072,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                             fullWidth
                           >
                             <MenuItem disabled value="">
-                              โกดังสินค้า
+                              เลือกโกดังสินค้า
                             </MenuItem>
                             {warehousesList &&
                               warehousesList.map((warehouses) => (
@@ -906,20 +1090,20 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                           <Select
                             displayEmpty
                             variant="outlined"
-                            value={queues.warehouse_id}
+                            value={stationsId == null ? '' : stationsId}
                             onChange={(e) => {
-                              handleChangeWarehouse(e);
+                              handleChangeStation(e);
                             }}
-                            placeholder="เลือกโกดังสินค้า"
+                            placeholder="เลือกหัวจ่าย"
                             fullWidth
                           >
                             <MenuItem disabled value="">
-                              โกดังสินค้า
+                              เลือกหัวจ่าย
                             </MenuItem>
-                            {warehousesList &&
-                              warehousesList.map((warehouses) => (
-                                <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
-                                  {warehouses.description}
+                            {stationsList &&
+                              stationsList.map((station) => (
+                                <MenuItem key={station.station_id} value={station.station_id}>
+                                  {station.station_description}
                                 </MenuItem>
                               ))}
                           </Select>
@@ -927,23 +1111,25 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                       </Grid>
 
                       <Grid item xs={12} md={6}>
+                        <InputLabel>ทีมรับสินค้า</InputLabel>
                         <FormControl sx={{ width: '100%' }} size="small">
-                          <InputLabel id={'select-label-' + queues.queue_id} size="small">
-                            ทีมขึ้นสินค้า
-                          </InputLabel>
                           <Select
-                            size="small"
-                            label="ทีมขึ้นสินค้า"
-                            id={'select-label-' + queues.queue_id}
-                            // value={selectedLoadingTeam}
-                            // onChange={handleLoadingTeamChange}
-                            value={queues.step_id}
-                            onChange={(event) => handleLoadingTeamChange(event, queues, 'loading')}
+                            displayEmpty
+                            variant="outlined"
+                            value={teamId == null ? '' : teamId}
+                            onChange={(e) => {
+                              handleChangeTeam(e.target.value);
+                            }}
+                            placeholder="เลือกทีมรับสินค้า"
+                            fullWidth
                           >
-                            {loadingteams.length > 0 &&
-                              loadingteams.map((loadingteam) => (
-                                <MenuItem key={loadingteam.team_id} value={loadingteam.team_id}>
-                                  {loadingteam.team_name}
+                            <MenuItem disabled value="">
+                              เลือกทีมรับสินค้า
+                            </MenuItem>
+                            {teamloadingList &&
+                              teamloadingList.map((teamload) => (
+                                <MenuItem key={teamload.team_id} value={teamload.team_id}>
+                                  {teamload.team_name}
                                 </MenuItem>
                               ))}
                           </Select>
@@ -951,23 +1137,25 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                       </Grid>
 
                       <Grid item xs={12} md={6}>
+                        <InputLabel>สายแรงงาน</InputLabel>
                         <FormControl sx={{ width: '100%' }} size="small">
-                          <InputLabel id={'select-label-' + queues.queue_id} size="small">
-                            เช็กเกอร์
-                          </InputLabel>
                           <Select
-                            size="small"
-                            label="ทีมขึ้นสินค้า"
-                            id={'select-label-' + queues.queue_id}
-                            // value={selectedLoadingTeam}
-                            // onChange={handleLoadingTeamChange}
-                            value={queues.checker_id}
-                            onChange={(event) => handleLoadingTeamChange(event, queues, 'checker')}
+                            displayEmpty
+                            variant="outlined"
+                            value={contractorId == null ? '' : contractorId}
+                            onChange={(e) => {
+                              handleChangeContractor(e);
+                            }}
+                            placeholder="เลือกสายแรงงาน"
+                            fullWidth
                           >
-                            {Checkers.length > 0 &&
-                              Checkers.map((checker) => (
-                                <MenuItem key={checker.checker_id} value={checker.checker_id}>
-                                  {checker.checker_name}
+                            <MenuItem disabled value="">
+                              เลือกสายแรงงาน
+                            </MenuItem>
+                            {contractorList &&
+                              contractorList.map((contractorList) => (
+                                <MenuItem key={contractorList.contractor_id} value={contractorList.contractor_id}>
+                                  {contractorList.contractor_name}
                                 </MenuItem>
                               ))}
                           </Select>
@@ -975,28 +1163,188 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                       </Grid>
 
                       <Grid item xs={12} md={6}>
+                        <InputLabel>หมายเลขสาย</InputLabel>
                         <FormControl sx={{ width: '100%' }} size="small">
-                          <InputLabel id={'select-label-' + queues.queue_id} size="small">
-                            สายรายงาน
-                          </InputLabel>
                           <Select
-                            size="small"
-                            label="สายรายงาน"
-                            id={'select-label-' + queues.queue_id}
-                            // value={selectedLoadingTeam}
-                            // onChange={handleLoadingTeamChange}
-                            // value={selectChecker[queues.step_id]}
-                            onChange={(event) => handleLoadingTeamChange(event, queues, 'checker')}
+                            displayEmpty
+                            variant="outlined"
+                            value={labor_line_id == null ? '' : labor_line_id}
+                            onChange={(e) => {
+                              handleChangeLaborLine(e);
+                            }}
+                            placeholder="เลือกหมายเลขสาย"
+                            fullWidth
                           >
-                            {contractors.length > 0 &&
-                              contractors.map((contractor) => (
-                                <MenuItem key={contractor.contractor_id} value={contractor.contractor_id}>
-                                  {contractor.contractor_name}
+                            <MenuItem disabled value="">
+                              เลือกหมายเลขสาย
+                            </MenuItem>
+                            {layborLineList &&
+                              layborLineList.map((layborLine) => (
+                                <MenuItem key={layborLine.labor_line_id} value={layborLine.labor_line_id}>
+                                  {layborLine.labor_line_name}
                                 </MenuItem>
                               ))}
                           </Select>
                         </FormControl>
                       </Grid>
+                      {orders.length > 0 && (
+                        <Grid item xs={12}>
+                          <Grid item xs={12}>
+                            <Typography variant="h5">
+                              <strong>ข้อมูลกองสินค้า:</strong>
+                            </Typography>
+                          </Grid>
+                          {orders.map((ordersItems, orderId) => (
+                            <div key={orderId}>
+                              {ordersItems.product_brand_id !== null && ordersItems.product_company_id && (
+                                <Grid container spacing={2}>
+                                  {ordersItems.items.map((orderItem, orderItemId) => (
+                                    <>
+                                      <Grid item xs={12} md={12} key={orderItemId}>
+                                        <InputLabel sx={{ mt: 1, mb: 1 }}>กองสินค้า : {orderItem.name}</InputLabel>
+                                        <FormControl sx={{ width: '100%' }} size="small">
+                                          <Select
+                                            displayEmpty
+                                            variant="outlined"
+                                            value={orderSelect[orderItem.item_id]}
+                                            onChange={(e) => {
+                                              handleChangeProduct(e, orderItem.item_id);
+                                            }}
+                                            fullWidth
+                                          >
+                                            <MenuItem disabled value="">
+                                              เลือกกองสินค้า
+                                            </MenuItem>
+                                            {orderItem.productRegis &&
+                                              orderItem.productRegis.map((productRegis) => (
+                                                <MenuItem key={productRegis.product_register_id} value={productRegis.product_register_id}>
+                                                  {productRegis.product_register_name}{' '}
+                                                  {productRegis.product_register_date
+                                                    ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
+                                                    : '-'}
+                                                  {productRegis.product_register_date
+                                                    ? ` (${calculateAge(productRegis.product_register_date)}) `
+                                                    : '-'}
+                                                </MenuItem>
+                                              ))}
+                                          </Select>
+                                        </FormControl>
+                                      </Grid>
+                                      <Grid item xs={12} md={6}>
+                                        <InputLabel sx={{ mt: 1, mb: 1 }}>ประเภท</InputLabel>
+                                        <FormControlLabel
+                                          control={
+                                            <Checkbox
+                                              checked={typeSelect[orderItem.item_id]?.checked1 || false}
+                                              onChange={handleChangeSelect(orderItem.item_id, 'checked1')}
+                                              name="checked1"
+                                            />
+                                          }
+                                          label="สินค้าทุบ"
+                                        />
+                                        <FormControlLabel
+                                          control={
+                                            <Checkbox
+                                              checked={typeSelect[orderItem.item_id]?.checked2 || false}
+                                              onChange={handleChangeSelect(orderItem.item_id, 'checked2')}
+                                              name="checked2"
+                                            />
+                                          }
+                                          label="สินค้าไม่ทุบ"
+                                        />
+                                      </Grid>
+                                      {typeSelect[orderItem.item_id]?.checked1 && (
+                                        <>
+                                          <Grid item xs={12} md={6}>
+                                            <InputLabel sx={{ mt: 1, mb: 1.5 }}>
+                                              จำนวนสินค้าทุบ : (สูงสุด {parseFloat((orderItem.quantity * 1).toFixed(3)) + ' ตัน'})
+                                            </InputLabel>
+                                            <FormControl sx={{ width: '100%' }} size="small">
+                                              <OutlinedInput
+                                                size="small"
+                                                id={typeNumSelect[orderItem.item_id]}
+                                                type="number"
+                                                value={typeNumSelect[orderItem.item_id]}
+                                                onChange={(e) => {
+                                                  handleChangeTypeNum(
+                                                    e,
+                                                    orderItem.item_id,
+                                                    parseFloat((orderItem.quantity * 1).toFixed(3))
+                                                  );
+                                                }}
+                                                placeholder="จำนวน"
+                                                fullWidth
+                                              />
+                                            </FormControl>
+                                          </Grid>
+                                        </>
+                                      )}
+                                    </>
+                                  ))}
+                                </Grid>
+                              )}
+                            </div>
+                          ))}
+                        </Grid>
+                      )}
+
+                      {teamLoading.length > 0 && (
+                        <Grid item xs={12}>
+                          <Grid item xs={12}>
+                            <Typography variant="h5">
+                              <strong>ข้อมูลทีมขึ้นสินค้า:</strong>
+                            </Typography>
+                          </Grid>
+                          <TableContainer>
+                            <Table
+                              aria-labelledby="tableTitle"
+                              size="small"
+                              sx={{
+                                '& .MuiTableCell-root:first-of-type': {
+                                  pl: 2
+                                },
+                                '& .MuiTableCell-root:last-of-type': {
+                                  pr: 3
+                                }
+                              }}
+                            >
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell align="center">ลำดับ</TableCell>
+                                  <TableCell align="left">รายชื่อ</TableCell>
+                                  <TableCell align="left">ตำแหน่ง</TableCell>
+                                </TableRow>
+                              </TableHead>
+
+                              {teamLoading ? (
+                                <TableBody>
+                                  {teamLoading.map((item, index) => (
+                                    <TableRow key={index}>
+                                      <TableCell align="center">{index + 1}</TableCell>
+                                      <TableCell align="left">
+                                        {item.manager_name && item.manager_name}
+                                        {item.checker_name && item.checker_name}
+                                        {item.forklift_name && item.forklift_name}
+                                      </TableCell>
+                                      <TableCell align="left">
+                                        {item.manager_name && 'หัวหน้าโกดัง'}
+                                        {item.checker_name && 'พนักงานจ่ายสินค้า'}
+                                        {item.forklift_name && 'โฟล์คลิฟท์'}
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              ) : (
+                                <TableRow>
+                                  <TableCell colSpan={13} align="center">
+                                    ไม่พบข้อมูล
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </Table>
+                          </TableContainer>
+                        </Grid>
+                      )}
                     </Grid>
                   </MainCard>
                   <DialogContentText>{/* ต้องการ {textnotify} ID:{id_update} หรือไม่? */}</DialogContentText>
@@ -1049,116 +1397,117 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
                 </TableBody>
               ) : (
                 <TableBody>
-                  {items.map((row, index) => {
-                    return (
-                      <TableRow key={index}>
-                        <TableCell align="center">
-                          <Typography>
-                            <strong>{index + 1}</strong>
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
-                        <TableCell align="center">
-                          <Chip color="primary" label={row.token} />
-                        </TableCell>
-                        <TableCell align="center">
-                          <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />
-                        </TableCell>
-                        <TableCell align="left">
-                          <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>
-                        </TableCell>
-                        <TableCell align="left">
-                          <Typography sx={{ width: '240px' }}>{row.company_name}</Typography>
-                        </TableCell>
-                        <TableCell align="left">{row.driver_name}</TableCell>
-                        <TableCell align="left">{row.driver_mobile}</TableCell>
-                        <TableCell align="left">
-                          {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
-                          {row.start_datetime ? row.start_datetime.slice(11, 19) : row.start_time.slice(11, 19)}
-                        </TableCell>
-                        <TableCell align="center">
-                          {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอขึ้นสินค้า'} />}
-                          {status == 'processing' && <Chip color="success" sx={{ width: '95px' }} label={'ขึ้นสินค้า'} />}
-                        </TableCell>
+                  {items &&
+                    items.map((row, index) => {
+                      return (
+                        <TableRow key={index}>
+                          <TableCell align="center">
+                            <Typography>
+                              <strong>{index + 1}</strong>
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
+                          <TableCell align="center">
+                            <Chip color="primary" label={row.token} />
+                          </TableCell>
+                          <TableCell align="center">
+                            <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />
+                          </TableCell>
+                          <TableCell align="left">
+                            <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>
+                          </TableCell>
+                          <TableCell align="left">
+                            <Typography sx={{ width: '240px' }}>{row.company_name}</Typography>
+                          </TableCell>
+                          <TableCell align="left">{row.driver_name}</TableCell>
+                          <TableCell align="left">{row.driver_mobile}</TableCell>
+                          <TableCell align="left">
+                            {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
+                            {row.start_datetime ? row.start_datetime.slice(11, 19) : row.start_time.slice(11, 19)}
+                          </TableCell>
+                          <TableCell align="center">
+                            {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอขึ้นสินค้า'} />}
+                            {status == 'processing' && <Chip color="success" sx={{ width: '95px' }} label={'ขึ้นสินค้า'} />}
+                          </TableCell>
 
-                        <TableCell align="center">
-                          {status == 'waiting' && (
-                            <FormControl sx={{ minWidth: 140 }} size="small">
-                              <InputLabel id={`station-select-label-${row.step_id}`} size="small">
-                                หัวจ่าย
-                              </InputLabel>
-                              <Select
-                                size="small"
-                                labelId={`station-select-label-${row.step_id}`}
-                                label="หัวจ่าย"
-                                value={selectedStations[row.step_id] || row.reserve_station_id} // ใช้สถานีที่ถูกเลือกในแต่ละแถวหรือสถานีที่ถูกจองเริ่มต้น
-                                onChange={(event) => handleStationChange(event, row)}
-                              >
-                                {stations.map((station) => (
-                                  <MenuItem key={station.station_id} value={station.station_id}>
-                                    {station.station_description}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          )}
-                        </TableCell>
-
-                        <TableCell align="right" width="120" sx={{ width: 120, maxWidth: 120 }}>
-                          <ButtonGroup aria-label="button group" sx={{ alignItems: 'center' }}>
+                          <TableCell align="center">
                             {status == 'waiting' && (
-                              <Tooltip title="เรียกคิว">
-                                <Button
-                                  // sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                  variant="contained"
+                              <FormControl sx={{ minWidth: 140 }} size="small">
+                                <InputLabel id={`station-select-label-${row.step_id}`} size="small">
+                                  หัวจ่าย
+                                </InputLabel>
+                                <Select
                                   size="small"
-                                  color="info"
-                                  onClick={() =>
-                                    handleClickOpen(
-                                      row.step_id,
-                                      'call',
-                                      row.queue_id,
-                                      selectedStations[row.step_id] || row.reserve_station_id
-                                    )
-                                  }
-                                  endIcon={<RightSquareOutlined />}
+                                  labelId={`station-select-label-${row.step_id}`}
+                                  label="หัวจ่าย"
+                                  value={selectedStations[row.step_id] || row.reserve_station_id} // ใช้สถานีที่ถูกเลือกในแต่ละแถวหรือสถานีที่ถูกจองเริ่มต้น
+                                  onChange={(event) => handleStationChange(event, row)}
                                 >
-                                  เรียกคิว
-                                </Button>
-                              </Tooltip>
+                                  {stations.map((station) => (
+                                    <MenuItem key={station.station_id} value={station.station_id}>
+                                      {station.station_description}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
                             )}
+                          </TableCell>
 
-                            {status == 'processing' && (
-                              <div>
-                                <Tooltip title="ยกเลิก">
+                          <TableCell align="right" width="120" sx={{ width: 120, maxWidth: 120 }}>
+                            <ButtonGroup aria-label="button group" sx={{ alignItems: 'center' }}>
+                              {status == 'waiting' && (
+                                <Tooltip title="เรียกคิว">
                                   <Button
-                                    // startIcon={<ArrowBackIosIcon />}
+                                    // sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                     variant="contained"
                                     size="small"
-                                    onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.station_id, row)}
-                                    color="error"
+                                    color="info"
+                                    onClick={() =>
+                                      handleClickOpen(
+                                        row.step_id,
+                                        'call',
+                                        row.queue_id,
+                                        selectedStations[row.step_id] || row.reserve_station_id
+                                      )
+                                    }
+                                    endIcon={<RightSquareOutlined />}
                                   >
-                                    ยกเลิก
+                                    เรียกคิว
                                   </Button>
                                 </Tooltip>
-                                <Tooltip title="ปิดคิว">
-                                  <span>
+                              )}
+
+                              {status == 'processing' && (
+                                <div>
+                                  <Tooltip title="ยกเลิก">
                                     <Button
-                                      size="small"
+                                      // startIcon={<ArrowBackIosIcon />}
                                       variant="contained"
-                                      onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row.station_id, row)}
+                                      size="small"
+                                      onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.station_id, row)}
+                                      color="error"
                                     >
-                                      ปิดคิว
+                                      ยกเลิก
                                     </Button>
-                                  </span>
-                                </Tooltip>
-                              </div>
-                            )}
-                          </ButtonGroup>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                                  </Tooltip>
+                                  <Tooltip title="ปิดคิว">
+                                    <span>
+                                      <Button
+                                        size="small"
+                                        variant="contained"
+                                        onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row.station_id, row)}
+                                      >
+                                        ปิดคิว
+                                      </Button>
+                                    </span>
+                                  </Tooltip>
+                                </div>
+                              )}
+                            </ButtonGroup>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
 
                   {items.length == 0 && (
                     <TableRow>

@@ -77,7 +77,7 @@ function ManageTeamLoading() {
   const [teamloadingList, setTeamLoadingList] = useState([]);
   const getTeamloading = (id) => {
     try {
-      adminRequest.getLoadingTeamById(id).then((result) => {
+      adminRequest.getLoadingTeamByIdwh(id).then((result) => {
         setTeamLoadingList(result);
       });
     } catch (error) {
@@ -222,6 +222,7 @@ function ManageTeamLoading() {
     if (flag === 1) {
       if (fr === 'selected') {
         if (checker_team_name === null) {
+          setLoading(true);
           setOpen(false);
           await addTeamChecker(checker_id);
           await getTeamManagers(team_id);
@@ -232,6 +233,7 @@ function ManageTeamLoading() {
       }
       if (fr === 'selected_forklift') {
         if (checker_team_name === null) {
+          setLoading(true);
           setOpen(false);
           console.log(checker_id);
           await addTeamForklift(checker_id);
@@ -243,6 +245,7 @@ function ManageTeamLoading() {
       }
 
       if (fr === 'removed') {
+        setLoading(true);
         setOpen(false);
         //alert("removed")
         await deleteTeamChecker(checker_id);
@@ -251,6 +254,7 @@ function ManageTeamLoading() {
       }
 
       if (fr === 'removed_forklift') {
+        setLoading(true);
         setOpen(false);
         await deleteTeamForklift(checker_id);
         await getTeamManagers(team_id);
@@ -375,7 +379,7 @@ function ManageTeamLoading() {
             <Grid container spacing={1} sx={{ mt: 3 }}>
               <Grid item xs={4} md={4}>
                 <Grid item sx={{ mb: 1 }}>
-                  <Typography variant="h5">เลือกแล้ว: ผู้จัดการโกดัง</Typography>
+                  <Typography variant="h5">เลือกแล้ว: หัวหน้าโกดัง</Typography>
                 </Grid>
                 <MainCard>
                   <TableContainer
@@ -535,9 +539,9 @@ function ManageTeamLoading() {
                       <ForkliftTableHead />
                       {!loading ? (
                         <TableBody>
-                          {select_forklift_items.map((row,index) => (
+                          {select_forklift_items.map((row, index) => (
                             <TableRow key={row.index}>
-                              <TableCell align="center">{index+1}</TableCell>
+                              <TableCell align="center">{index + 1}</TableCell>
                               <TableCell align="left">{row.forklift_name}</TableCell>
                               <TableCell align="left">{row.team_name}</TableCell>
                               <TableCell align="right">
@@ -581,7 +585,7 @@ function ManageTeamLoading() {
             <Grid container spacing={1} sx={{ mt: 3 }}>
               <Grid item xs={4} md={4}>
                 <Grid item sx={{ mb: 1 }}>
-                  <Typography variant="h5">เลือก: ผู้จัดการโกดัง</Typography>
+                  <Typography variant="h5">เลือก: หัวหน้าโกดัง</Typography>
                 </Grid>
                 <MainCard>
                   <TableContainer
@@ -669,9 +673,9 @@ function ManageTeamLoading() {
                       <CheckerTableHead />
                       {!loading ? (
                         <TableBody>
-                          {checker_items.map((row,index) => (
+                          {checker_items.map((row, index) => (
                             <TableRow key={index}>
-                              <TableCell align="center">{index+1}</TableCell>
+                              <TableCell align="center">{index + 1}</TableCell>
                               <TableCell align="left">{row.checker_name}</TableCell>
                               <TableCell align="left">{row.team_name}</TableCell>
                               <TableCell align="right">
@@ -732,9 +736,9 @@ function ManageTeamLoading() {
                       <ForkliftTableHead />
                       {!loading ? (
                         <TableBody>
-                          {forklift_items.map((row,index) => (
+                          {forklift_items.map((row, index) => (
                             <TableRow key={index}>
-                              <TableCell align="center">{index+1}</TableCell>
+                              <TableCell align="center">{index + 1}</TableCell>
                               <TableCell align="left">{row.forklift_name}</TableCell>
                               <TableCell align="left">{row.team_name}</TableCell>
                               <TableCell align="right">

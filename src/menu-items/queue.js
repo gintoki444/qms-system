@@ -18,7 +18,7 @@ const queues = {
     },
     {
       id: 'step0',
-      title: 'Step0-จัดการทีมรับสินค้า',
+      title: 'Step0-ทีมรับสินค้า',
       type: 'item',
       url: '/admin/step0',
       icon: ContainerOutlined

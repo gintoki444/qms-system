@@ -8,6 +8,7 @@ import axios from '../../../../node_modules/axios/index';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
+import * as reserveRequest from '_api/reserveRequest';
 
 // material-ui
 import {
@@ -83,11 +84,43 @@ function AddOrder() {
       .catch((err) => console.log(err));
   };
 
+  // =============== Get Product Company ===============//
+  const [productCompany, setProductCompany] = useState([]);
+  const getProductCompany = () => {
+    try {
+      reserveRequest.getAllproductCompanys().then((response) => {
+        console.log(response);
+        setProductCompany(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleChangeProductCom = (e) => {
+    console.log(e.target.value);
+    getProductBrand(e.target.value);
+  };
+
+  // =============== Get Product Brand ===============//
+  const [productBrand, setProductBrand] = useState([]);
+  const getProductBrand = (id) => {
+    try {
+      reserveRequest.getProductBrandById(id).then((response) => {
+        setProductBrand(response);
+        console.log();
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   // =============== useEffect ===============//
   useEffect(() => {
     // getOrder();
     getReserve();
     getProduct();
+    getProductCompany();
   }, [id]);
 
   // =============== Validate Forms ===============//
@@ -101,12 +134,16 @@ function AddOrder() {
       ref_order_id: Yup.string().required('กรุณาระบุหมายเลขคำสั่งซื้อ'),
       description: Yup.string().required('กรุณาระบุรายละเอียด'),
       order_date: Yup.string().required('กรุณาระบุวันที่สั่งซื้อสินค้า'),
+      product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
+      product_brand_id: Yup.string().required('กรุณาระบุแบรนด์(สินค้า)'),
       items: Yup.array().of(generateItemSchema())
     })
   );
   const initialValue = {
     ref_order_id: '',
     company_id: reservationData.company_id,
+    product_company_id: '',
+    product_brand_id: '',
     description: '',
     order_date: moment(new Date()).format('YYYY-MM-DD'),
     items: items
@@ -139,6 +176,8 @@ function AddOrder() {
           description: data.description,
           order_date: data.order_date,
           total_amount: grandTotalQuantity,
+          product_company_id: data.product_company_id,
+          product_brand_id: data.product_brand_id,
           created_at: currentDate,
           updated_at: currentDate,
           items
@@ -201,19 +240,23 @@ function AddOrder() {
   // =============== เลือกสินค้า ===============//
   const handleInputChange = (e, index) => {
     const { name, value } = e.target;
+    const updatedItems = [...items];
+    updatedItems[index][name] = value;
 
+    setItems(updatedItems);
+    initialValue.items = items;
     // ตรวจสอบว่ามีสินค้าที่ถูกเลือกแล้วหรือไม่
-    const isDuplicate = items.some((item, i) => i !== index && item.product_id === value);
+    // const isDuplicate = items.some((item, i) => i !== index && item.product_id === value);
 
-    if (isDuplicate) {
-      window.alert('รายการนี้ถูกเลือกไปแล้ว!');
-    } else {
-      const updatedItems = [...items];
-      updatedItems[index][name] = value;
+    // if (isDuplicate) {
+    //   window.alert('รายการนี้ถูกเลือกไปแล้ว!');
+    // } else {
+    //   const updatedItems = [...items];
+    //   updatedItems[index][name] = value;
 
-      setItems(updatedItems);
-      initialValue.items = items;
-    }
+    //   setItems(updatedItems);
+    //   initialValue.items = items;
+    // }
   };
 
   // =============== เพิ่ม-ลบรา รายการสินค้า ===============//
@@ -268,7 +311,7 @@ function AddOrder() {
         <Grid item xs={12} lg={12}>
           <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
             <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits}>
-              {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors }) => (
+              {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors, setFieldValue }) => (
                 <form noValidate onSubmit={handleSubmit}>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
@@ -316,6 +359,69 @@ function AddOrder() {
                           </FormHelperText>
                         )}
                       </Stack>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <InputLabel>บริษัท (สินค้า)</InputLabel>
+                      <FormControl sx={{ width: '100%' }} size="small">
+                        <Select
+                          displayEmpty
+                          variant="outlined"
+                          name="product_company_id"
+                          value={values.product_company_id}
+                          onChange={(e) => {
+                            setFieldValue('product_company_id', e.target.value);
+                            handleChangeProductCom(e);
+                          }}
+                          placeholder="เลือกสายแรงงาน"
+                          fullWidth
+                          error={Boolean(touched.product_company_id && errors.product_company_id)}
+                        >
+                          <MenuItem disabled value="">
+                            เลือกบริษัท
+                          </MenuItem>
+                          {productCompany.map((companias) => (
+                            <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
+                              {companias.product_company_name_th}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      {touched.product_company_id && errors.product_company_id && (
+                        <FormHelperText error id="helper-text-product_company_id">
+                          {errors.product_company_id}
+                        </FormHelperText>
+                      )}
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <InputLabel>เบรนสินค้า</InputLabel>
+                      <FormControl sx={{ width: '100%' }} size="small">
+                        <Select
+                          displayEmpty
+                          variant="outlined"
+                          name="product_brand_id"
+                          value={values.product_brand_id}
+                          onChange={handleChange}
+                          placeholder="เลือกสายแรงงาน"
+                          fullWidth
+                          error={Boolean(touched.product_brand_id && errors.product_brand_id)}
+                        >
+                          <MenuItem disabled value="">
+                            เลือกเบรนสินค้า
+                          </MenuItem>
+                          {productBrand.map((brands) => (
+                            <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
+                              {brands.product_brand_name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      {touched.product_brand_id && errors.product_brand_id && (
+                        <FormHelperText error id="helper-text-product_brand_id">
+                          {errors.product_brand_id}
+                        </FormHelperText>
+                      )}
                     </Grid>
 
                     <Grid item xs={12} md={12}>
