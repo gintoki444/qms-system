@@ -70,6 +70,17 @@ export const getAllWareHouseManager = async () => {
   return result;
 };
 
+export const getAllManager = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/allmanagers/', requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
 export const getManagerWareHouse = async (id) => {
   const requestOptions = {
     method: 'GET',
@@ -81,9 +92,24 @@ export const getManagerWareHouse = async (id) => {
   return result.warehousemanager;
 };
 
-export const putManagerWareHouse = async (id, data) => {
-  console.log(data);
+export const putTeamManager = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
 
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/updateteammanager/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const putManagerWareHouse = async (id, data) => {
   const myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');
   const raw = JSON.stringify(data);
@@ -293,7 +319,7 @@ export const addForklifts = async (data) => {
   const myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');
   const raw = JSON.stringify(data);
-  console.log(data)
+  console.log(data);
   const requestOptions = {
     method: 'POST',
     headers: myHeaders,
@@ -396,6 +422,16 @@ export const getAllLoadingTeam = async () => {
     redirect: 'follow'
   };
   const response = await fetch(apiUrl + `/allloadingteams/`, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+export const getAllLoadingTeamByStation = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/loadingteamsbystation/`, requestOptions);
 
   const result = await response.json();
   return result;

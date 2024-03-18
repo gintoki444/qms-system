@@ -10,7 +10,7 @@ import Highlighter from './third-party/Highlighter';
 
 // header style
 const headerSX = {
-  p: 2.5,
+  // p: 2.5,
   '& .MuiCardHeader-action': { m: '0px auto', alignSelf: 'center' }
 };
 

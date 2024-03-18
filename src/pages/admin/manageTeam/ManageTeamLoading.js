@@ -38,12 +38,13 @@ function ManageTeamLoading() {
   // =============== useEffect ===============//
   useEffect(() => {
     setLoading(true);
-    getWarehouses();
+    getManagers();
     reloading();
   }, []);
 
   const reloading = async () => {
     setLoading(true);
+    getTeamloading();
     await getAllWareHouseManagers();
     await getAllCheckers();
     await getAllForklifts();
@@ -53,31 +54,37 @@ function ManageTeamLoading() {
   // =============== Get Warehouses ===============//
   const [warehouse, setWareHouse] = useState('');
   const [warehousesList, setWarehousesList] = useState([]);
-  const getWarehouses = async () => {
+  const getWarehouses = async (selectId) => {
     await adminRequest
       .getAllWareHouse()
       .then((result) => {
-        setWarehousesList(result);
+        console.log(
+          'result filter:',
+          result.filter((x) => x.warehouse_id == selectId)
+        );
+
+        setWarehousesList(result.filter((x) => x.warehouse_id == selectId));
       })
       .catch((error) => console.log('error', error));
   };
 
   const handleChangeWarehouse = (e) => {
-    setTeamLoadingList([]);
     setSelectManagerItems([]);
     setSelectCheckerItems([]);
     setSelectForkliftItems([]);
     getStation(e.target.value);
     setWareHouse(e.target.value);
-    getTeamloading(e.target.value);
+    // setTeamLoadingList([]);
+    // getTeamloading(e.target.value);
   };
 
   // =============== Get TeamLoanding ===============//
   const [team_id, setTeam_id] = useState('');
   const [teamloadingList, setTeamLoadingList] = useState([]);
-  const getTeamloading = (id) => {
+
+  const getTeamloading = () => {
     try {
-      adminRequest.getLoadingTeamByIdwh(id).then((result) => {
+      adminRequest.getAllLoadingTeamByStation().then((result) => {
         setTeamLoadingList(result);
       });
     } catch (error) {
@@ -94,23 +101,51 @@ function ManageTeamLoading() {
       setSelectManagerItems(teamManager);
       setSelectCheckerItems(teamChecker);
       setSelectForkliftItems(teamForklift);
+      // adminRequest.getLoadingTeamById(id).then((result) => {
+      //   setSelectManagerItems(result.team_managers);
+      //   setSelectCheckerItems(result.team_checkers);
+      //   setSelectForkliftItems(result.team_forklifts);
+      // });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const [managerList, setManagerList] = useState([]);
+  const getManagers = async () => {
+    try {
+      adminRequest.getAllManager().then((result) => {
+        setManagerList(result);
+      });
     } catch (error) {
       console.log(error);
     }
   };
 
   const handleChangeTeam = (e) => {
-    getTeamManagers(e);
-    setTeam_id(e);
+    const filterTeam = teamloadingList.filter((x) => x.team_id == e);
+    console.log('getWarehouses:', e);
+    console.log('filterTeam:', filterTeam);
+    if (filterTeam.length > 0) {
+      filterTeam.map((data) => {
+        getWarehouses(data.warehouse_id);
+        getTeamManagers(data.team_id);
+        getStation(data.warehouse_id, data.station_id);
+
+        setWareHouse(data.warehouse_id);
+        setTeam_id(e);
+        setSelectedStation(data.station_id);
+      });
+    }
   };
 
   // =============== Get Stations ===============//
   const [selectedStation, setSelectedStation] = useState('');
   const [stationsList, setStationsList] = useState([]);
-  const getStation = (id) => {
+  const getStation = (id, selectId) => {
     try {
       adminRequest.getStationsByWareHouse(id).then((response) => {
-        setStationsList(response);
+        setStationsList(response.filter((x) => x.station_id == selectId));
       });
     } catch (error) {
       console.log(error);
@@ -131,6 +166,28 @@ function ManageTeamLoading() {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const [selectManager, setSelectManager] = useState('');
+  const updateWareHouseManager = async () => {
+    try {
+      const data = {
+        manager_id: selectManager
+      };
+
+      await adminRequest.putTeamManager(team_id, data).then((response) => {
+        if (response.status == 'ok') {
+          getTeamManagers(team_id);
+          reloading();
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleChangeManager = (e) => {
+    setSelectManager(e);
   };
 
   // =============== Get Checker ===============//
@@ -210,6 +267,7 @@ function ManageTeamLoading() {
   const handleClickOpen = (checker_id, fr, team_name, testMassage) => {
     //alert("team_id: " + teamload + " checker_id: " + checker_id)
     if (team_id !== '') {
+      setSelectManager('');
       setCheckerId(checker_id);
       setCheckerTeamName(team_name);
       setTextNotify(testMassage);
@@ -220,6 +278,14 @@ function ManageTeamLoading() {
 
   const handleClose = async (flag) => {
     if (flag === 1) {
+      if (fr === 'change-manager') {
+        if (selectManager) {
+          updateWareHouseManager();
+        } else {
+          alert('กรุณาเลือกหัวหน้าโกดัง');
+          return;
+        }
+      }
       if (fr === 'selected') {
         if (checker_team_name === null) {
           setLoading(true);
@@ -268,21 +334,62 @@ function ManageTeamLoading() {
   return (
     <Grid alignItems="center" justifyContent="space-between">
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-        <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }}>
-          {'แจ้งเตือน'}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText style={{ fontFamily: 'kanit' }}>
-            ต้องการ {textnotify}
-            {/* ID:{id_update}  */}
-            หรือไม่?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={() => handleClose(0)} style={{ fontFamily: 'kanit' }}>
+        {fr !== 'change-manager' ? (
+          <>
+            <DialogTitle id="responsive-dialog-title">{'แจ้งเตือน'}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                ต้องการ {textnotify}
+                {/* ID:{id_update}  */}
+                หรือไม่?
+              </DialogContentText>
+            </DialogContent>
+          </>
+        ) : (
+          <>
+            <DialogTitle id="responsive-dialog-title" align="center">
+              <Typography variant="h5">{`เปลี่ยนหัวหน้าโกดัง "${textnotify}"`}</Typography>
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                <Grid container spacing={1}>
+                  <Grid item xs={12} md={12}>
+                    <Stack spacing={1} sx={{ minWidth: '300px' }}>
+                      <InputLabel>เปลี่ยนหัวหน้าโกดัง</InputLabel>
+                      <FormControl sx={{ width: '100%' }}>
+                        <Select
+                          id="manager_id"
+                          displayEmpty
+                          value={selectManager || ''}
+                          onChange={(e) => {
+                            handleChangeManager(e.target.value);
+                          }}
+                          input={<OutlinedInput />}
+                          inputProps={{ 'aria-label': 'Without label' }}
+                          fullWidth
+                        >
+                          <MenuItem disabled value="">
+                            เลือกหัวหน้าโกดัง
+                          </MenuItem>
+                          {managerList.map((manager, index) => (
+                            <MenuItem key={index} value={manager.manager_id}>
+                              {manager.manager_name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Stack>
+                  </Grid>
+                </Grid>
+              </DialogContentText>
+            </DialogContent>
+          </>
+        )}
+        <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
+          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
             ยกเลิก
           </Button>
-          <Button onClick={() => handleClose(1)} autoFocus style={{ fontFamily: 'kanit' }}>
+          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
             ยืนยัน
           </Button>
         </DialogActions>
@@ -291,6 +398,33 @@ function ManageTeamLoading() {
         <Grid item xs={12} lg={12}>
           <MainCard>
             <Grid container spacing={1}>
+              <Grid item xs={12} md={4}>
+                <Stack spacing={1}>
+                  <InputLabel>ทีมขึ้นสินค้า</InputLabel>
+                  <FormControl>
+                    <Select
+                      id="team_id"
+                      displayEmpty
+                      value={team_id || ''}
+                      onChange={(e) => {
+                        handleChangeTeam(e.target.value);
+                      }}
+                      input={<OutlinedInput />}
+                      inputProps={{ 'aria-label': 'Without label' }}
+                    >
+                      <MenuItem disabled value="">
+                        เลือกทีมขึ้นสินค้า
+                      </MenuItem>
+                      {teamloadingList.map((teamload) => (
+                        <MenuItem key={teamload.team_id} value={teamload.team_id}>
+                          {teamload.team_name} (โกดัง: {teamload.warehouse_name}) {teamload.station_description} ({teamload.manager_name})
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Stack>
+              </Grid>
+
               <Grid item xs={12} md={4}>
                 <Stack spacing={1}>
                   <InputLabel>โกดังสินค้า</InputLabel>
@@ -346,42 +480,21 @@ function ManageTeamLoading() {
                   </FormControl>
                 </Stack>
               </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Stack spacing={1}>
-                  <InputLabel>ทีมรับสินค้า</InputLabel>
-                  <FormControl>
-                    <Select
-                      id="team_id"
-                      displayEmpty
-                      value={team_id}
-                      onChange={(e) => {
-                        handleChangeTeam(e.target.value);
-                      }}
-                      input={<OutlinedInput />}
-                      inputProps={{ 'aria-label': 'Without label' }}
-                    >
-                      <MenuItem disabled value="">
-                        เลือกทีมรับสินค้า
-                      </MenuItem>
-                      {teamloadingList.map((teamload) => (
-                        <MenuItem key={teamload.team_id} value={teamload.team_id}>
-                          {teamload.team_name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Stack>
-              </Grid>
             </Grid>
+          </MainCard>
+        </Grid>
+      </Grid>
 
-            {/* ========== Row Selected Team ==========*/}
-            <Grid container spacing={1} sx={{ mt: 3 }}>
-              <Grid item xs={4} md={4}>
+      {/* ========== Row Selected Team ==========*/}
+      <Grid container rowSpacing={1} columnSpacing={1.75} sx={{ mt: 2 }}>
+        <Grid item xs={12} lg={12}>
+          <MainCard>
+            <Grid container spacing={1}>
+              <Grid item xs={12} md={4}>
                 <Grid item sx={{ mb: 1 }}>
                   <Typography variant="h5">เลือกแล้ว: หัวหน้าโกดัง</Typography>
                 </Grid>
-                <MainCard>
+                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
                   <TableContainer
                     sx={{
                       width: '100%',
@@ -404,7 +517,7 @@ function ManageTeamLoading() {
                         }
                       }}
                     >
-                      <WareHouseTableHead />
+                      <WareHouseTableHead status="selected" />
                       {!loading ? (
                         <TableBody>
                           {select_manager_items.map((row, index) => (
@@ -413,6 +526,16 @@ function ManageTeamLoading() {
                               <TableCell align="left">{row.manager_name}</TableCell>
                               <TableCell align="left">{row.team_name}</TableCell>
                               <TableCell align="left">{row.warehouse_name}</TableCell>
+                              <TableCell align="right">
+                                <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
+                                  <Button
+                                    endIcon={<SelectOutlined />}
+                                    onClick={() => handleClickOpen(team_id, 'change-manager', '', row.warehouse_name)}
+                                  >
+                                    เปลี่ยน
+                                  </Button>
+                                </ButtonGroup>
+                              </TableCell>
                             </TableRow>
                           ))}
                           {select_manager_items.length == 0 && (
@@ -438,11 +561,11 @@ function ManageTeamLoading() {
                 </MainCard>
               </Grid>
 
-              <Grid item xs={4} md={4}>
+              <Grid item xs={12} md={4}>
                 <Grid item sx={{ mb: 1 }}>
                   <Typography variant="h5">เลือกแล้ว: พนักงานจ่ายสินค้า</Typography>
                 </Grid>
-                <MainCard>
+                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
                   <TableContainer
                     sx={{
                       width: '100%',
@@ -465,7 +588,7 @@ function ManageTeamLoading() {
                         }
                       }}
                     >
-                      <CheckerTableHead />
+                      <CheckerTableHead status="selected" />
                       {!loading ? (
                         <TableBody>
                           {select_checker_items.map((row, index) => (
@@ -509,11 +632,11 @@ function ManageTeamLoading() {
                 </MainCard>
               </Grid>
 
-              <Grid item xs={4} md={4}>
+              <Grid item xs={12} md={4}>
                 <Grid item sx={{ mb: 1 }}>
                   <Typography variant="h5">เลือกแล้ว: พนักงานโฟล์คลิฟท์</Typography>
                 </Grid>
-                <MainCard>
+                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
                   <TableContainer
                     sx={{
                       width: '100%',
@@ -536,7 +659,7 @@ function ManageTeamLoading() {
                         }
                       }}
                     >
-                      <ForkliftTableHead />
+                      <ForkliftTableHead status="selected" />
                       {!loading ? (
                         <TableBody>
                           {select_forklift_items.map((row, index) => (
@@ -580,14 +703,20 @@ function ManageTeamLoading() {
                 </MainCard>
               </Grid>
             </Grid>
+          </MainCard>
+        </Grid>
+      </Grid>
 
-            {/* ========== Row Select Team ==========*/}
-            <Grid container spacing={1} sx={{ mt: 3 }}>
-              <Grid item xs={4} md={4}>
+      {/* ========== Row Select Team ==========*/}
+      <Grid container rowSpacing={1} columnSpacing={1.75} sx={{ mt: 2 }}>
+        <Grid item xs={12} lg={12}>
+          <MainCard>
+            <Grid container spacing={1}>
+              <Grid item xs={12} md={4}>
                 <Grid item sx={{ mb: 1 }}>
                   <Typography variant="h5">เลือก: หัวหน้าโกดัง</Typography>
                 </Grid>
-                <MainCard>
+                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
                   <TableContainer
                     sx={{
                       width: '100%',
@@ -610,21 +739,16 @@ function ManageTeamLoading() {
                         }
                       }}
                     >
-                      <WareHouseTableHead />
+                      <WareHouseTableHead status="select" />
 
                       {!loading ? (
                         <TableBody>
-                          {allManager.map((row) => (
-                            <TableRow key={row.manager_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                              <TableCell align="center">{row.manager_id}</TableCell>
+                          {allManager.map((row, index) => (
+                            <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                              <TableCell align="center">{index + 1}</TableCell>
                               <TableCell align="left">{row.manager_name}</TableCell>
                               <TableCell align="left">{row.team_name}</TableCell>
                               <TableCell align="left">{row.warehouse_name}</TableCell>
-                              {/* <TableCell align="right">
-                            <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
-                              <Button endIcon={<SelectOutlined />}>เลือก</Button>
-                            </ButtonGroup>
-                          </TableCell> */}
                             </TableRow>
                           ))}
                         </TableBody>
@@ -643,11 +767,11 @@ function ManageTeamLoading() {
                 </MainCard>
               </Grid>
 
-              <Grid item xs={4} md={4}>
+              <Grid item xs={12} md={4}>
                 <Grid item sx={{ mb: 1 }}>
                   <Typography variant="h5">เลือก: พนักงานจ่ายสินค้า</Typography>
                 </Grid>
-                <MainCard>
+                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
                   <TableContainer
                     sx={{
                       width: '100%',
@@ -706,11 +830,11 @@ function ManageTeamLoading() {
                 </MainCard>
               </Grid>
 
-              <Grid item xs={4} md={4}>
+              <Grid item xs={12} md={4}>
                 <Grid item sx={{ mb: 1 }}>
                   <Typography variant="h5">เลือก: พนักงานโฟล์คลิฟท์</Typography>
                 </Grid>
-                <MainCard>
+                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
                   <TableContainer
                     sx={{
                       width: '100%',
@@ -789,7 +913,7 @@ const warehouseHeadCells = [
     id: 'wareManagerName',
     align: 'left',
     disablePadding: true,
-    label: 'ชื่อผู้จัดการ'
+    label: 'ชื่อพนักงาน'
   },
   {
     id: 'wareTeamName',
@@ -803,25 +927,28 @@ const warehouseHeadCells = [
     width: '10%',
     disablePadding: false,
     label: 'โกดัง'
+  },
+  {
+    id: 'action',
+    align: 'right',
+    width: '10%',
+    disablePadding: false,
+    label: 'Actions'
   }
-  // {
-  //   id: 'action',
-  //   align: 'right',
-  //   width: '10%',
-  //   disablePadding: false,
-  //   label: 'Actions'
-  // }
 ];
 
-function WareHouseTableHead() {
+function WareHouseTableHead({ status }) {
   return (
-    <TableHead>
+    <TableHead style={{ backgroundColor: status == 'selected' ? 'rgb(79 167 249 / 62%)' : '#e5e5e5' }}>
       <TableRow>
-        {warehouseHeadCells.map((headCell) => (
-          <TableCell key={headCell.id} align={headCell.align} sx={{ p: 1 }} width={headCell.width}>
-            {headCell.label}
-          </TableCell>
-        ))}
+        {warehouseHeadCells.map(
+          (headCell) =>
+            (status !== 'selected' && headCell.id === 'action') || (
+              <TableCell key={headCell.id} align={headCell.align} sx={{ p: 1 }} width={headCell.width}>
+                {headCell.label}
+              </TableCell>
+            )
+        )}
       </TableRow>
     </TableHead>
   );
@@ -863,9 +990,9 @@ const checkerHeadCells = [
   }
 ];
 
-function CheckerTableHead() {
+function CheckerTableHead({ status }) {
   return (
-    <TableHead>
+    <TableHead style={{ backgroundColor: status == 'selected' ? 'rgb(79 167 249 / 62%)' : '#e5e5e5' }}>
       <TableRow>
         {checkerHeadCells.map((headCell) => (
           <TableCell key={headCell.id} align={headCell.align} sx={{ p: 1 }} width={headCell.width}>
@@ -890,7 +1017,7 @@ const forkliftHeadCells = [
     id: 'forkerName',
     align: 'left',
     disablePadding: true,
-    label: 'ชื่อพนักงานโฟล์คลิฟท์'
+    label: 'ชื่อพนักงาน'
   },
   {
     id: 'forkTeamName',
@@ -913,9 +1040,9 @@ const forkliftHeadCells = [
   }
 ];
 
-function ForkliftTableHead() {
+function ForkliftTableHead({ status }) {
   return (
-    <TableHead>
+    <TableHead style={{ backgroundColor: status == 'selected' ? 'rgb(79 167 249 / 62%)' : '#e5e5e5' }}>
       <TableRow>
         {forkliftHeadCells.map((headCell) => (
           <TableCell key={headCell.id} align={headCell.align} sx={{ p: 1 }} width={headCell.width}>
