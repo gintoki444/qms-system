@@ -23,7 +23,9 @@ import {
   Typography,
   Divider,
   Backdrop,
-  CircularProgress
+  CircularProgress,
+  FormControl,
+  Select
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import MenuItem from '@mui/material/MenuItem';
@@ -95,6 +97,37 @@ function AddReserve() {
       .catch((error) => console.log('error', error));
   };
 
+  // =============== Get Product Company ===============//
+  const [productCompany, setProductCompany] = useState([]);
+  const getProductCompany = () => {
+    try {
+      reserveRequest.getAllproductCompanys().then((response) => {
+        console.log(response);
+        setProductCompany(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleChangeProductCom = (e) => {
+    console.log(e.target.value);
+    getProductBrand(e.target.value);
+  };
+
+  // =============== Get Product Brand ===============//
+  const [productBrand, setProductBrand] = useState([]);
+  const getProductBrand = (id) => {
+    try {
+      reserveRequest.getProductBrandById(id).then((response) => {
+        setProductBrand(response);
+        console.log();
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   // =============== Get Warehouses ===============//
   const [warehousesList, setWarehousesList] = useState([]);
   const getWarehouses = () => {
@@ -133,6 +166,7 @@ function AddReserve() {
       getWarehouses();
       getBrandList();
       getStation();
+      getProductCompany();
     }
   }, [userRoles]);
 
@@ -140,6 +174,8 @@ function AddReserve() {
     company_id: '',
     car_id: '',
     brand_group_id: '',
+    product_company_id: '',
+    product_brand_id: '',
     driver_id: '',
     description: '',
     pickup_date: moment(new Date()).format('YYYY-MM-DD'),
@@ -153,6 +189,8 @@ function AddReserve() {
   const validationSchema = Yup.object().shape({
     company_id: Yup.string().required('กรุณาเลือกบริษัท/ร้านค้า'),
     brand_group_id: Yup.string().required('กรุณาเลือกกลุ่มสินค้า'),
+    product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
+    product_brand_id: Yup.string().required('กรุณาระบุแบรนด์(สินค้า)'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
     reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
     description: Yup.string().required('กรุณากรอกหัวข้อการจอง')
@@ -253,7 +291,7 @@ function AddReserve() {
       )}
       <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
         <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits}>
-          {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors }) => (
+          {({ handleBlur, handleChange, setFieldValue, handleSubmit, isSubmitting, values, touched, errors }) => (
             <form noValidate onSubmit={handleSubmit}>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
@@ -264,21 +302,27 @@ function AddReserve() {
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
                     <InputLabel>บริษัท/ร้านค้า*</InputLabel>
-                    <TextField
-                      select
-                      variant="outlined"
-                      name="company_id"
-                      value={values.company_id}
-                      onChange={handleChange}
-                      placeholder="เลือกบริษัท/ร้านค้า"
-                      fullWidth
-                    >
-                      {companyList.map((companias) => (
-                        <MenuItem key={companias.company_id} value={companias.company_id}>
-                          {companias.name}
+                    <FormControl fullWidth>
+                      <Select
+                        displayEmpty
+                        variant="outlined"
+                        name="company_id"
+                        value={values.company_id || ''}
+                        onChange={handleChange}
+                        placeholder="เลือกบริษัท/ร้านค้า"
+                        fullWidth
+                        error={Boolean(touched.company_id && errors.company_id)}
+                      >
+                        <MenuItem disabled value="">
+                          เลือกบริษัท/ร้านค้า
                         </MenuItem>
-                      ))}
-                    </TextField>
+                        {companyList.map((companias) => (
+                          <MenuItem key={companias.company_id} value={companias.company_id}>
+                            {companias.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
                     {touched.company_id && errors.company_id && (
                       <FormHelperText error id="helper-text-company-car">
                         {errors.company_id}
@@ -290,21 +334,27 @@ function AddReserve() {
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
                     <InputLabel>กลุ่มสินค้า*</InputLabel>
-                    <TextField
-                      select
-                      variant="outlined"
-                      name="brand_group_id"
-                      value={values.brand_group_id}
-                      onChange={handleChange}
-                      placeholder="เลือกกลุ่มสินค้า"
-                      fullWidth
-                    >
-                      {brandList.map((brand) => (
-                        <MenuItem key={brand.brand_group_id} value={brand.brand_group_id}>
-                          {brand.group_code} - {brand.description}
+                    <FormControl fullWidth>
+                      <Select
+                        displayEmpty
+                        variant="outlined"
+                        name="brand_group_id"
+                        value={values.brand_group_id}
+                        onChange={handleChange}
+                        placeholder="เลือกกลุ่มสินค้า"
+                        fullWidth
+                        error={Boolean(touched.brand_group_id && errors.brand_group_id)}
+                      >
+                        <MenuItem disabled value="">
+                          เลือกกลุ่มสินค้า
                         </MenuItem>
-                      ))}
-                    </TextField>
+                        {brandList.map((brand) => (
+                          <MenuItem key={brand.brand_group_id} value={brand.brand_group_id}>
+                            {brand.group_code} - {brand.description}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
                     {touched.brand_group_id && errors.brand_group_id && (
                       <FormHelperText error id="helper-text-company-car">
                         {errors.brand_group_id}
@@ -314,26 +364,92 @@ function AddReserve() {
                 </Grid>
 
                 <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>รถบรรทุก</InputLabel>
-                    <TextField
-                      select
+                  <InputLabel>บริษัท (สินค้า)</InputLabel>
+                  <FormControl fullWidth>
+                    <Select
+                      displayEmpty
                       variant="outlined"
-                      name="car_id"
-                      value={values.car_id}
-                      onChange={handleChange}
-                      placeholder="เลือกรถบรรทุก"
+                      name="product_company_id"
+                      value={values.product_company_id || ''}
+                      onChange={(e) => {
+                        setFieldValue('product_company_id', e.target.value);
+                        setFieldValue('product_brand_id', '');
+                        handleChangeProductCom(e);
+                      }}
                       fullWidth
+                      error={Boolean(touched.product_company_id && errors.product_company_id)}
                     >
-                      <MenuItem value="" disabled>
-                        <em>Placeholder</em>
+                      <MenuItem disabled value="">
+                        เลือกบริษัท
                       </MenuItem>
-                      {carList.map((cars) => (
-                        <MenuItem key={cars.car_id} value={cars.car_id}>
-                          {cars.brand} : {cars.registration_no}
+                      {productCompany.map((companias) => (
+                        <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
+                          {companias.product_company_name_th}
                         </MenuItem>
                       ))}
-                    </TextField>
+                    </Select>
+                  </FormControl>
+                  {touched.product_company_id && errors.product_company_id && (
+                    <FormHelperText error id="helper-text-product_company_id">
+                      {errors.product_company_id}
+                    </FormHelperText>
+                  )}
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <InputLabel>เบรนสินค้า</InputLabel>
+                  <FormControl fullWidth>
+                    <Select
+                      displayEmpty
+                      variant="outlined"
+                      name="product_brand_id"
+                      value={values.product_brand_id}
+                      onChange={handleChange}
+                      placeholder="เลือกสายแรงงาน"
+                      fullWidth
+                      error={Boolean(touched.product_brand_id && errors.product_brand_id)}
+                    >
+                      <MenuItem disabled value="">
+                        เลือกเบรนสินค้า
+                      </MenuItem>
+                      {productBrand.map((brands) => (
+                        <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
+                          {brands.product_brand_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  {touched.product_brand_id && errors.product_brand_id && (
+                    <FormHelperText error id="helper-text-product_brand_id">
+                      {errors.product_brand_id}
+                    </FormHelperText>
+                  )}
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Stack spacing={1}>
+                    <InputLabel>รถบรรทุก</InputLabel>
+                    <FormControl fullWidth>
+                      <Select
+                        displayEmpty
+                        select
+                        variant="outlined"
+                        name="car_id"
+                        value={values.car_id || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        error={Boolean(touched.car_id && errors.car_id)}
+                      >
+                        <MenuItem disabled value="">
+                          เลือกรถบรรทุก
+                        </MenuItem>
+                        {carList.map((cars) => (
+                          <MenuItem key={cars.car_id} value={cars.car_id}>
+                            {cars.brand} : {cars.registration_no}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
                     {touched.car_id && errors.car_id && (
                       <FormHelperText error id="helper-text-company-car">
                         {errors.car_id}
@@ -345,22 +461,28 @@ function AddReserve() {
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
                     <InputLabel>คนขับรถ</InputLabel>
-                    <TextField
-                      select
-                      variant="outlined"
-                      type="date"
-                      name="driver_id"
-                      value={values.driver_id}
-                      onChange={handleChange}
-                      placeholder="เลือกคนขับรถ"
-                      fullWidth
-                    >
-                      {driverList.map((driver) => (
-                        <MenuItem key={driver.driver_id} value={driver.driver_id}>
-                          {driver.firstname} {driver.lastname}
+                    <FormControl fullWidth>
+                      <Select
+                        displayEmpty
+                        variant="outlined"
+                        type="date"
+                        name="driver_id"
+                        value={values.driver_id || ''}
+                        onChange={handleChange}
+                        placeholder="เลือกคนขับรถ"
+                        fullWidth
+                        error={Boolean(touched.driver_id && errors.driver_id)}
+                      >
+                        <MenuItem disabled value="">
+                          เลือกคนขับรถ
                         </MenuItem>
-                      ))}
-                    </TextField>
+                        {driverList.map((driver) => (
+                          <MenuItem key={driver.driver_id} value={driver.driver_id}>
+                            {driver.firstname} {driver.lastname}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
                     {touched.company && errors.company && (
                       <FormHelperText error id="helper-text-company-car">
                         {errors.company}

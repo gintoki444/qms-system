@@ -9,7 +9,7 @@ import axios from '../../../../node_modules/axios/index';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
-import * as reseveRequest from '_api/reserveRequest';
+import * as reserveRequest from '_api/reserveRequest';
 import * as adminRequest from '_api/adminRequest';
 
 // const userId = localStorage.getItem('user_id');
@@ -75,6 +75,8 @@ function UpdateReserve() {
     status: 'waiting',
     total_quantity: '',
     pickup_date: '',
+    product_company_id: '',
+    product_brand_id: '',
     brand_group_id: '',
     warehouse_id: '',
     created_at: '',
@@ -114,7 +116,6 @@ function UpdateReserve() {
       .get(urlapi)
       .then((res) => {
         if (res) {
-          console.log(res.data);
           setCompanyList(res.data);
           getCarLsit();
         }
@@ -167,6 +168,34 @@ function UpdateReserve() {
       .catch((error) => console.log('error', error));
   };
 
+  // =============== Get Product Company ===============//
+  const [productCompany, setProductCompany] = useState([]);
+  const getProductCompany = () => {
+    try {
+      reserveRequest.getAllproductCompanys().then((response) => {
+        setProductCompany(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleChangeProductCom = (e) => {
+    getProductBrand(e.target.value);
+  };
+
+  // =============== Get Product Brand ===============//
+  const [productBrand, setProductBrand] = useState([]);
+  const getProductBrand = (id) => {
+    try {
+      reserveRequest.getProductBrandById(id).then((response) => {
+        setProductBrand(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   // =============== Get order ===============//
   const [orderList, setOrderList] = useState([]);
   const getOrders = async () => {
@@ -179,7 +208,7 @@ function UpdateReserve() {
       })
       .catch((err) => console.log(err));
   };
-  
+
   // // =============== Get Warehouses ===============//
   // const [selectWarehouse, setSelectWareHouse] = useState('');
   // const [warehousesList, setWarehousesList] = useState([]);
@@ -273,6 +302,7 @@ function UpdateReserve() {
   // =============== useEffect ===============//
   useEffect(() => {
     getReserve();
+    getProductCompany();
     if (user_Id) {
       getBrandList();
     }
@@ -296,6 +326,7 @@ function UpdateReserve() {
               setCheckDate(true);
             }
             setReservationData(result);
+            getProductBrand(result.product_company_id);
             getCompanyList();
 
             // if (userRoles === 9 || userRoles === 1) {
@@ -315,6 +346,8 @@ function UpdateReserve() {
     company_id: reservationData.company_id,
     car_id: reservationData.car_id,
     brand_group_id: reservationData.brand_group_id,
+    product_company_id: reservationData.product_company_id || '',
+    product_brand_id: reservationData.product_brand_id || '',
     driver_id: reservationData.driver_id,
     description: reservationData.reserve_description,
     pickup_date: moment(reservationData.pickup_date).format('YYYY-MM-DD'),
@@ -331,6 +364,8 @@ function UpdateReserve() {
   const validationSchema = Yup.object().shape({
     company_id: Yup.string().required('กรุณาเลือกบริษัท/ร้านค้า'),
     brand_group_id: Yup.string().required('กรุณาเลือกกลุ่มสินค้า'),
+    product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
+    product_brand_id: Yup.string().required('กรุณาระบุแบรนด์(สินค้า)'),
     reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
     description: Yup.string().required('กรุณากรอกiรายละเอียดการจอง')
@@ -355,10 +390,9 @@ function UpdateReserve() {
         contractor_id: values.contractor_id
       };
 
-      await reseveRequest
+      await reserveRequest
         .putReserById(id, values)
         .then((result) => {
-          console.log('result ', result);
           if (result.status === 'ok') {
             updateTeamLoading(teamValue);
           } else {
@@ -385,7 +419,7 @@ function UpdateReserve() {
     return num < 10 ? `0${num}` : num;
   };
 
-  const handleClickOpen = (id, total_quantity, brand_code) => { 
+  const handleClickOpen = (id, total_quantity, brand_code) => {
     try {
       if (total_quantity === '0') {
         alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
@@ -488,7 +522,7 @@ function UpdateReserve() {
       status: 'completed'
     };
     try {
-      reseveRequest.putReserveStatus(reserve_id, reserveStatus);
+      reserveRequest.putReserveStatus(reserve_id, reserveStatus);
     } catch (error) {
       setOpen(false);
       console.log(error);
@@ -742,10 +776,7 @@ function UpdateReserve() {
     };
 
     fetch(apiUrl + '/line-notify', requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        console.log(result);
-      })
+      .then((response) => response.text())
       .catch((error) => console.error(error));
   };
 
@@ -794,7 +825,7 @@ function UpdateReserve() {
       <Grid container spacing={3}>
         <Grid item xs={12} md={10}>
           <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
-            {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors }) => (
+            {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors, setFieldValue }) => (
               <form noValidate onSubmit={handleSubmit}>
                 <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
                   <Grid container spacing={3}>
@@ -871,6 +902,69 @@ function UpdateReserve() {
                           </FormHelperText>
                         )}
                       </Stack>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <InputLabel>บริษัท (สินค้า)</InputLabel>
+                      <FormControl fullWidth>
+                        <Select
+                          displayEmpty
+                          variant="outlined"
+                          name="product_company_id"
+                          value={values.product_company_id || ''}
+                          onChange={(e) => {
+                            setFieldValue('product_company_id', e.target.value);
+                            setFieldValue('product_brand_id', '');
+                            handleChangeProductCom(e);
+                          }}
+                          fullWidth
+                          error={Boolean(touched.product_company_id && errors.product_company_id)}
+                        >
+                          <MenuItem disabled value="">
+                            เลือกบริษัท
+                          </MenuItem>
+                          {productCompany.map((companias) => (
+                            <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
+                              {companias.product_company_name_th}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      {touched.product_company_id && errors.product_company_id && (
+                        <FormHelperText error id="helper-text-product_company_id">
+                          {errors.product_company_id}
+                        </FormHelperText>
+                      )}
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <InputLabel>เบรนสินค้า</InputLabel>
+                      <FormControl fullWidth>
+                        <Select
+                          displayEmpty
+                          variant="outlined"
+                          name="product_brand_id"
+                          value={values.product_brand_id}
+                          onChange={handleChange}
+                          placeholder="เลือกสายแรงงาน"
+                          fullWidth
+                          error={Boolean(touched.product_brand_id && errors.product_brand_id)}
+                        >
+                          <MenuItem disabled value="">
+                            เลือกเบรนสินค้า
+                          </MenuItem>
+                          {productBrand.map((brands) => (
+                            <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
+                              {brands.product_brand_name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      {touched.product_brand_id && errors.product_brand_id && (
+                        <FormHelperText error id="helper-text-product_brand_id">
+                          {errors.product_brand_id}
+                        </FormHelperText>
+                      )}
                     </Grid>
 
                     <Grid item xs={12} md={6}>

@@ -80,7 +80,7 @@ function ManageTeamLoading() {
 
   // =============== Get TeamLoanding ===============//
   const [team_id, setTeam_id] = useState('');
-  const [teamloadingList, setTeamLoadingList] = useState([]);
+  const [teamloadingList, setTeamLoadingList] = useState([]); 
 
   const getTeamloading = () => {
     try {

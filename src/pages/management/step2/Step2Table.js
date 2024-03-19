@@ -505,6 +505,8 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
               getTeamloadingByIds(result.team_id);
             } else if (result.team_data.length > 0 || result.team_data) {
               setTeamData(result.team_data);
+
+              console.log('combinedData :', result);
               const combinedData = [
                 ...result.team_data.team_managers,
                 ...result.team_data.team_checkers,

@@ -197,9 +197,19 @@ function AddQueue() {
   // =============== Get TeamLoanding ===============//
   // const [team_id, setTeamId] = useState([]);
   const [teamloadingList, setTeamLoadingList] = useState([]);
-  const getTeamloading = (id) => {
+  // const getTeamloading = (id) => {
+  //   try {
+  //     adminRequest.getLoadingTeamByIdwh(id).then((result) => {
+  //       setTeamLoadingList(result);
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  const getTeamloading = () => {
     try {
-      adminRequest.getLoadingTeamByIdwh(id).then((result) => {
+      adminRequest.getAllLoadingTeamByStation().then((result) => {
         setTeamLoadingList(result);
       });
     } catch (error) {
@@ -235,6 +245,7 @@ function AddQueue() {
     setTeamLoading([]);
     getTeamManagers(e);
     getTeamloadingByIds(e);
+    
   };
 
   // =============== Get Contractor ===============//
@@ -670,7 +681,37 @@ function AddQueue() {
                         <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <Typography variant="h5">ข้อมูลการเข้ารับสินค้า</Typography>
                         </Grid>
+                        
                         <Grid container spacing={3} sx={{ mt: 1 }}>
+                          <Grid item xs={12} md={6}>
+                            <Stack spacing={1}>
+                              <InputLabel>ทีมรับสินค้า</InputLabel>
+                              <FormControl>
+                                <Select
+                                  id="team_id"
+                                  name="team_id"
+                                  displayEmpty
+                                  value={values.team_id}
+                                  onChange={(e) => {
+                                    setFieldValue('team_id', e.target.value);
+                                    handleChangeTeam(e.target.value);
+                                  }}
+                                  input={<OutlinedInput />}
+                                  inputProps={{ 'aria-label': 'Without label' }}
+                                >
+                                  <MenuItem disabled value="">
+                                    ทีมรับสินค้า
+                                  </MenuItem>
+                                  {teamloadingList.map((teamload) => (
+                                    <MenuItem key={teamload.team_id} value={teamload.team_id}>
+                                      {teamload.team_name}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                            </Stack>
+                          </Grid>
+
                           <Grid item xs={12} md={6}>
                             <Stack spacing={1}>
                               <InputLabel>โกดังสินค้า</InputLabel>
@@ -729,36 +770,7 @@ function AddQueue() {
 
                           <Grid item xs={12} md={6}>
                             <Stack spacing={1}>
-                              <InputLabel>ทีมรับสินค้า</InputLabel>
-                              <FormControl>
-                                <Select
-                                  id="team_id"
-                                  name="team_id"
-                                  displayEmpty
-                                  value={values.team_id}
-                                  onChange={(e) => {
-                                    setFieldValue('team_id', e.target.value);
-                                    handleChangeTeam(e.target.value);
-                                  }}
-                                  input={<OutlinedInput />}
-                                  inputProps={{ 'aria-label': 'Without label' }}
-                                >
-                                  <MenuItem disabled value="">
-                                    ทีมรับสินค้า
-                                  </MenuItem>
-                                  {teamloadingList.map((teamload) => (
-                                    <MenuItem key={teamload.team_id} value={teamload.team_id}>
-                                      {teamload.team_name}
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                            </Stack>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <Stack spacing={1}>
-                              <InputLabel>สายแรงงาน {values.contractor_id}</InputLabel> 
+                              <InputLabel>สายแรงงาน {values.contractor_id}</InputLabel>
                               <TextField
                                 select
                                 variant="outlined"
@@ -802,7 +814,7 @@ function AddQueue() {
                           </Grid>
                         </Grid>
                         <Grid item xs={6}>
-                          <TableContainer sx={{m:'auto'}}>
+                          <TableContainer sx={{ m: 'auto' }}>
                             <Table
                               aria-labelledby="tableTitle"
                               size="small"
@@ -866,7 +878,7 @@ function AddQueue() {
                       color="primary"
                       startIcon={<SaveOutlined />}
                     >
-                      บันทึกข้อมูลการจอง
+                      บันทึกข้อมูล
                     </Button>
                     <Button
                       size="mediam"

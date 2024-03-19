@@ -89,7 +89,6 @@ function AddOrder() {
   const getProductCompany = () => {
     try {
       reserveRequest.getAllproductCompanys().then((response) => {
-        console.log(response);
         setProductCompany(response);
       });
     } catch (error) {
@@ -98,7 +97,6 @@ function AddOrder() {
   };
 
   const handleChangeProductCom = (e) => {
-    console.log(e.target.value);
     getProductBrand(e.target.value);
   };
 
@@ -108,7 +106,6 @@ function AddOrder() {
     try {
       reserveRequest.getProductBrandById(id).then((response) => {
         setProductBrand(response);
-        console.log();
       });
     } catch (error) {
       console.log(error);
@@ -217,8 +214,7 @@ function AddOrder() {
 
     fetch(apiUrl + '/updatereservetotal/' + id, requestOptions)
       .then((response) => response.json())
-      .then((result) => {
-        console.log(result);
+      .then(() => {
         editReserve();
       })
       .catch((error) => console.log('error', error));
@@ -371,6 +367,7 @@ function AddOrder() {
                           value={values.product_company_id}
                           onChange={(e) => {
                             setFieldValue('product_company_id', e.target.value);
+                            setFieldValue('product_brand_id', '');
                             handleChangeProductCom(e);
                           }}
                           placeholder="เลือกสายแรงงาน"
@@ -464,10 +461,13 @@ function AddOrder() {
                                     id={`items.${index}.product_id`}
                                     placeholder="สินค้า"
                                     size="small"
-                                    value={item.product_id}
+                                    value={item.product_id || ''}
                                     onChange={(e) => handleInputChange(e, index)}
                                     name={`product_id`}
                                   >
+                                    <MenuItem disabled value="">
+                                      เลือกสินค้า
+                                    </MenuItem>
                                     {productList.map((product) => (
                                       <MenuItem key={product.product_id} value={product.product_id}>
                                         {product.name}
