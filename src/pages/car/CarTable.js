@@ -15,6 +15,7 @@ import {
   CircularProgress
 } from '@mui/material';
 
+import * as carRequest from '_api/carRequest';
 import axios from '../../../node_modules/axios/index';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
@@ -35,6 +36,12 @@ const headCells = [
     align: 'left',
     disablePadding: true,
     label: 'ทะเบียนรถ'
+  },
+  {
+    id: 'typeCar',
+    align: 'left',
+    disablePadding: false,
+    label: 'ประเภทรถ'
   },
   {
     id: 'taxpayer',
@@ -83,24 +90,22 @@ function CarTable() {
 
   const userId = localStorage.getItem('user_id');
 
-  // const [permission, setPermisstion] = useState([]);
-  // const getPermission = () => {
-  //   const userId = localStorage.getItem('user_id');
-  //   const urlapi = apiUrl + `/user_permissions/` + userId;
+  const [carTypeList, setCarTypeList] = useState([]);
+  const getCarType = () => {
+    carRequest.getAllCarType().then((response) => {
+      setCarTypeList(response);
+    });
+  };
 
-  //   axios
-  //     .get(urlapi)
-  //     .then((res) => {
-  //       if (res.permissions) {
-  //         setPermisstion(res.permissions);
-  //       }
-  //     })
-  //     .catch((err) => console.log(err));
-  // };
+  const setCarTypeName = (id) => {
+    const carType = carTypeList.filter((x) => x.car_type_id == id);
+    if (carType.length > 0) return carType[0].car_type_name;
+  };
 
   useEffect(() => {
     // getPermission();
     getCar();
+    getCarType();
   }, []);
 
   const getCar = async () => {
@@ -183,6 +188,7 @@ function CarTable() {
                     <TableCell align="center">{row.car_id}</TableCell>
                     <TableCell align="left">{row.registration_no}</TableCell>
                     <TableCell align="left">{row.brand}</TableCell>
+                    <TableCell align="left">{row.car_type_id ? setCarTypeName(row.car_type_id) : '-'}</TableCell>
                     <TableCell align="left">{row.color}</TableCell>
                     {/* {permission.length > 0 &&  */}
                     <TableCell align="center">

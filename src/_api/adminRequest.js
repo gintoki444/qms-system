@@ -480,3 +480,15 @@ export const getContractorById = async (id) => {
   const result = await response.json();
   return result;
 };
+
+// ==============================|| Product Register: (สำหรับข้อมูล จัดการกองสินค้า) ||============================== //
+export const getAllProductRegister = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/allproductregister/', requestOptions);
+
+  const result = await response.json();
+  return result;
+};

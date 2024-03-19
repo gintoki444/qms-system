@@ -5,6 +5,7 @@ import moment from 'moment';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
+import * as reserveRequest from '_api/reserveRequest';
 
 // Get Role use
 import { useSelector } from 'react-redux';
@@ -222,67 +223,71 @@ export default function ReserveTable({ startDate, endDate }) {
       });
   };
 
+  // ==============================|| Update reserve ||============================== //
   const navigate = useNavigate();
   const updateDrivers = (id) => {
     navigate('/reserve/update/' + id);
   };
 
-  const deleteDrivers = (id) => {
-    let config = {
-      method: 'delete',
-      maxBodyLength: Infinity,
-      url: apiUrl + '/deletedriver/' + id,
-      headers: {}
-    };
-
-    axios
-      .request(config)
-      .then((result) => {
-        if (result.data.status === 'ok') {
-          alert(result.data.message);
-          getDrivers();
+  // ==============================|| delete reserve ||============================== //
+  const deleteReserve = (id) => {
+    try {
+      reserveRequest.deleteReserById(id).then((response) => {
+        if (response.status == 'ok') {
+          getReserve();
+          setSaveLoading(false);
         } else {
-          alert(result.data.message);
+          alert("ไม่สามารถลบข้อมูลได้ : "+response.message.sqlMessage);
+          setSaveLoading(false);
         }
-      })
-      .catch((error) => {
-        console.log(error);
       });
+    } catch (error) {
+      console.log(error);
+    }
   };
-
   // ==============================|| Create Queue ||============================== //
   const [open, setOpen] = useState(false);
   const [notifytext, setNotifyText] = useState('');
   const [reserve_id, setReserveId] = useState(0);
   const [total_quantity, setTotalQuantity] = useState(0);
   const [brand_code, setBrandCode] = useState('');
+  const [onclick, setOnClick] = useState('');
 
   // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
   const padZero = (num) => {
     return num < 10 ? `0${num}` : num;
   };
 
-  const handleClickOpen = (id, total_quantity, brand_code) => {
+  const handleClickOpen = (id, click, total_quantity, brand_code) => {
     if (total_quantity === '0') {
       alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
       return;
     } else {
-      setNotifyText('ต้องการสร้างคิวหรือไม่?');
+      if (click == 'delete') {
+        setNotifyText('ต้องการลบข้อมูลการจอง?');
+      } else {
+        setNotifyText('ต้องการสร้างคิวหรือไม่?');
+      }
+      setOnClick(click);
       //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
       setReserveId(id);
       setTotalQuantity(total_quantity);
       setBrandCode(brand_code);
       setOpen(true);
     }
-    //กำหนดข้อความแจ้งเตือน
-    // setNotifyText('ต้องการสร้างคิวหรือไม่?');
   };
 
   const handleClose = (flag) => {
     if (flag === 1) {
       //click มาจากการลบ
-      setSaveLoading(true);
-      addQueue(reserve_id, total_quantity);
+      if (onclick == 'add-queue') {
+        setSaveLoading(true);
+        addQueue(reserve_id, total_quantity);
+      }
+      if (onclick == 'delete') {
+        setSaveLoading(true);
+        deleteReserve(reserve_id);
+      }
     }
     setOpen(false);
   };
@@ -717,7 +722,7 @@ export default function ReserveTable({ startDate, endDate }) {
                               </Button>
                             </span>
                           </Tooltip>
-                          {userRoles === 10 && (
+                          {(userRoles === 10 || userRoles === 1) && (
                             <Tooltip title="สร้างคิว">
                               <span>
                                 <Button
@@ -731,28 +736,7 @@ export default function ReserveTable({ startDate, endDate }) {
                                     row.total_quantity == 0
                                   }
                                   color="info"
-                                  onClick={() => handleClickOpen(row.reserve_id, row.total_quantity, row.brand_code)}
-                                >
-                                  <DiffOutlined />
-                                </Button>
-                              </span>
-                            </Tooltip>
-                          )}
-                          {userRoles === 1 && (
-                            <Tooltip title="สร้างคิว">
-                              <span>
-                                <Button
-                                  // disabled
-                                  variant="contained"
-                                  sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                  size="medium"
-                                  disabled={
-                                    row.status === 'completed' ||
-                                    currentDate !== moment(row.pickup_date).format('YYYY-MM-DD') ||
-                                    row.total_quantity == 0
-                                  }
-                                  color="info"
-                                  onClick={() => handleClickOpen(row.reserve_id, row.total_quantity, row.brand_code)}
+                                  onClick={() => handleClickOpen(row.reserve_id, 'add-queue', row.total_quantity, row.brand_code)}
                                 >
                                   <DiffOutlined />
                                 </Button>
@@ -781,7 +765,8 @@ export default function ReserveTable({ startDate, endDate }) {
                                 size="medium"
                                 disabled={row.status === 'completed'}
                                 color="error"
-                                onClick={() => deleteDrivers(row.reserve_id)}
+                                // onClick={() => deleteDrivers(row.reserve_id)}
+                                onClick={() => handleClickOpen(row.reserve_id, 'delete', row.total_quantity, row.brand_code)}
                               >
                                 <DeleteOutlined />
                               </Button>

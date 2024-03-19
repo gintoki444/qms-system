@@ -34,7 +34,7 @@ export const getOrderByReserveId = async (id) => {
   return result;
 };
 
-// ==============================|| ข้อมูลการจองคิว By url ||============================== //
+// ==============================|| Update การจองคิว ||============================== //
 export const putReserById = async (id, data) => {
   const myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');
@@ -48,6 +48,17 @@ export const putReserById = async (id, data) => {
   };
 
   const response = await fetch(apiUrl + `/updatereserve/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// ==============================|| Update การจองคิว ||============================== //
+export const deleteReserById = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deletereserve/${id}`, requestOptions);
   const result = await response.json();
   return result;
 };

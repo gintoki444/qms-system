@@ -11,7 +11,7 @@ const UpdateUser = Loadable(lazy(() => import('pages/User/user-forms/UpdateUser'
 
 // render -  Manage Team Loading
 const ManageTeamLoading = Loadable(lazy(() => import('pages/admin/manageTeam/ManageTeamLoading')));
-const AddManageTeam= Loadable(lazy(() => import('pages/admin/manageTeam/manage-team-form/AddManageTeam')));
+const AddManageTeam = Loadable(lazy(() => import('pages/admin/manageTeam/manage-team-form/AddManageTeam')));
 
 // render -  WareHouse Manage Team Loading
 const WareHouse = Loadable(lazy(() => import('pages/admin/WareHouse/WareHouseManager')));
@@ -30,6 +30,11 @@ const UpdateForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklif
 
 const Step0 = Loadable(lazy(() => import('pages/management/step0/Step0')));
 const AddQueue = Loadable(lazy(() => import('pages/management/step0/step0-forms/AddQueue')));
+
+// render -  Forklifts
+const Products = Loadable(lazy(() => import('pages/admin/ProductsManagement/Product')));
+const AddProducts = Loadable(lazy(() => import('pages/admin/ProductsManagement/product-forms/AddProducts')));
+// const UpdateForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklift-forms/UpdateForklift')));
 
 const Step1 = Loadable(lazy(() => import('pages/management/step1/Step1')));
 const Step2 = Loadable(lazy(() => import('pages/management/step2/Step2')));
@@ -70,7 +75,7 @@ const AdminsRoutes = {
         {
           path: 'add',
           element: <AddManageTeam />
-        },
+        }
         // {
         //   path: 'update/:id',
         //   element: <UpdateUser />
@@ -126,6 +131,23 @@ const AdminsRoutes = {
           path: 'update/:id',
           element: <UpdateForklift />
         }
+      ]
+    },
+    {
+      path: 'product-register',
+      children: [
+        {
+          path: '',
+          element: <Products />
+        },
+        {
+          path: 'add',
+          element: <AddProducts />
+        },
+        // {
+        //   path: 'update/:id',
+        //   element: <UpdateForklift />
+        // }
       ]
     },
     {

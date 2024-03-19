@@ -7,6 +7,7 @@ import * as Yup from 'yup';
 import { Formik } from 'formik';
 import axios from '../../../../node_modules/axios/index';
 // Link api url
+import * as carRequest from '_api/carRequest';
 const apiUrl = process.env.REACT_APP_API_URL;
 import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 
@@ -21,7 +22,10 @@ import {
   Typography,
   Divider,
   Backdrop,
-  CircularProgress
+  CircularProgress,
+  FormControl,
+  Select,
+  MenuItem
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 
@@ -33,7 +37,8 @@ function UpdateCar() {
   let [initialValue, setInitialValue] = useState({
     registration_no: '',
     brand: '',
-    color: ''
+    color: '',
+    car_type_id: ''
   });
 
   const userId = localStorage.getItem('user_id');
@@ -42,7 +47,8 @@ function UpdateCar() {
   const validationSchema = Yup.object().shape({
     registration_no: Yup.string().max(255).required('กรุณาระบุทะเบียนรถ'),
     brand: Yup.string().max(255).required('กรุณาระบุยี่ห้อรถ'),
-    color: Yup.string().max(255).required('กรุณาระบุสีรถ')
+    color: Yup.string().max(255).required('กรุณาระบุสีรถ'),
+    car_type_id: Yup.string().required('กรุณาระบุประเภทรถ')
   });
 
   // =============== Get ข้อมูล Car ===============//
@@ -63,6 +69,7 @@ function UpdateCar() {
           if (result) {
             setInitialValue({
               registration_no: result.registration_no,
+              car_type_id: result.car_type_id,
               brand: result.brand,
               color: result.color
             });
@@ -76,8 +83,16 @@ function UpdateCar() {
       });
   };
 
+  // =============== Get ข้อมูล Type Car ===============//
+  const [carTypeList, setCarTypeList] = useState([]);
+  const getCarType = () => {
+    carRequest.getAllCarType().then((response) => {
+      setCarTypeList(response);
+    });
+  };
   useEffect(() => {
     getCar(id);
+    getCarType();
   }, [id]);
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
@@ -92,6 +107,7 @@ function UpdateCar() {
 
       formData.append('user_id', values.user_id);
       formData.append('registration_no', values.registration_no);
+      formData.append('car_type_id', values.car_type_id);
       formData.append('brand', values.brand);
       formData.append('color', values.color);
       formData.append('created_at', values.created_at);
@@ -152,7 +168,7 @@ function UpdateCar() {
             <form noValidate onSubmit={handleSubmit}>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
-                  <Typography variant="h5">เพิ่มข้อมูลรถ</Typography>
+                  <Typography variant="h5">แก้ไขข้อมูลรถ</Typography>
                   <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                 </Grid>
 
@@ -180,6 +196,39 @@ function UpdateCar() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
+                    <InputLabel>ประเภทรถ *</InputLabel>
+                    <FormControl>
+                      <Select
+                        displayEmpty
+                        variant="outlined"
+                        name="car_type_id"
+                        value={values.car_type_id}
+                        onChange={handleChange}
+                        placeholder="เลือกประเภทรถ"
+                        fullWidth
+                        error={Boolean(touched.car_type_id && errors.car_type_id)}
+                      >
+                        <MenuItem disabled value="">
+                          เลือกประเภทรถ
+                        </MenuItem>
+                        {carTypeList &&
+                          carTypeList.map((carType) => (
+                            <MenuItem key={carType.car_type_id} value={carType.car_type_id}>
+                              {carType.car_type_name}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                    {touched.car_type_id && errors.car_type_id && (
+                      <FormHelperText error id="helper-car_type_id">
+                        {errors.car_type_id}
+                      </FormHelperText>
+                    )}
+                  </Stack>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Stack spacing={1}>
                     <InputLabel htmlFor="brand-car">ยี้ห้อรถ*</InputLabel>
                     <OutlinedInput
                       id="brand-car"
@@ -200,7 +249,7 @@ function UpdateCar() {
                   </Stack>
                 </Grid>
 
-                <Grid item xs={12} md={12}>
+                <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
                     <InputLabel htmlFor="color-car">สีรถ*</InputLabel>
                     <OutlinedInput

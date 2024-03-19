@@ -1,4 +1,4 @@
-// import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // third party
 import * as Yup from 'yup';
@@ -6,9 +6,22 @@ import { Formik } from 'formik';
 import axios from '../../../../node_modules/axios/index';
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
+import * as carRequest from '_api/carRequest';
 
 // material-ui
-import { Button, FormHelperText, Grid, InputLabel, OutlinedInput, Stack, Typography, Divider } from '@mui/material';
+import {
+  Button,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Typography,
+  Divider,
+  FormControl,
+  Select,
+  MenuItem
+} from '@mui/material';
 import MainCard from 'components/MainCard';
 import { SaveOutlined } from '@ant-design/icons';
 
@@ -21,29 +34,30 @@ function AddCar() {
     window.location.href = '/login';
   }
 
-  // const [permission, setPermisstion] = useState([]);
-  // const getPermission = () => {
-  //   const userId = localStorage.getItem('user_id');
-  //   const urlapi = apiUrl + `/user_permissions/` + userId;
+  const [carTypeList, setCarTypeList] = useState([]);
+  const getCarType = () => {
+    carRequest.getAllCarType().then((response) => {
+      setCarTypeList(response);
+    });
+  };
 
-  //   axios
-  //     .get(urlapi)
-  //     .then((res) => {
-  //       if (res.permissions) {
-  //         setPermisstion(res.permissions);
-  //       }
-  //     })
-  //     .catch((err) => console.log(err));
-  // };
-  // useEffect(() => {
-  //   getPermission();
-  // }, []);
+  useEffect(() => {
+    getCarType();
+  }, []);
 
   const initialValue = {
     registration_no: '',
     brand: '',
-    color: ''
+    color: '',
+    car_type_id: ''
   };
+
+  const valiDationSchema = Yup.object().shape({
+    registration_no: Yup.string().max(255).required('กรุณาระบุทะเบียนรถ'),
+    brand: Yup.string().max(255).required('กรุณาระบุยี่ห้อรถ'),
+    color: Yup.string().max(255).required('กรุณาระบุสีรถ'),
+    car_type_id: Yup.string().required('กรุณาระบุประเภทรถ')
+  });
 
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
@@ -59,6 +73,7 @@ function AddCar() {
       formData.append('user_id', values.user_id);
       formData.append('registration_no', values.registration_no);
       formData.append('brand', values.brand);
+      formData.append('car_type_id', values.car_type_id);
       formData.append('color', values.color);
       formData.append('created_at', values.created_at);
       formData.append('updated_at', values.updated_at);
@@ -100,15 +115,7 @@ function AddCar() {
   return (
     <Grid container alignItems="center" justifyContent="space-between">
       <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-        <Formik
-          initialValues={initialValue}
-          validationSchema={Yup.object().shape({
-            registration_no: Yup.string().max(255).required('กรุณาระบุทะเบียนรถ'),
-            brand: Yup.string().max(255).required('กรุณาระบุยี่ห้อรถ'),
-            color: Yup.string().max(255).required('กรุณาระบุสีรถ')
-          })}
-          onSubmit={handleSubmits}
-        >
+        <Formik initialValues={initialValue} validationSchema={valiDationSchema} onSubmit={handleSubmits}>
           {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
             <form noValidate onSubmit={handleSubmit}>
               <Grid container spacing={3}>
@@ -141,6 +148,39 @@ function AddCar() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
+                    <InputLabel>ประเภทรถ *</InputLabel>
+                    <FormControl>
+                      <Select
+                        displayEmpty
+                        variant="outlined"
+                        name="car_type_id"
+                        value={values.car_type_id}
+                        onChange={handleChange}
+                        placeholder="เลือกประเภทรถ"
+                        fullWidth
+                        error={Boolean(touched.car_type_id && errors.car_type_id)}
+                      >
+                        <MenuItem disabled value="">
+                          เลือกประเภทรถ
+                        </MenuItem>
+                        {carTypeList &&
+                          carTypeList.map((carType) => (
+                            <MenuItem key={carType.car_type_id} value={carType.car_type_id}>
+                              {carType.car_type_name}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                    {touched.car_type_id && errors.car_type_id && (
+                      <FormHelperText error id="helper-car_type_id">
+                        {errors.car_type_id}
+                      </FormHelperText>
+                    )}
+                  </Stack>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Stack spacing={1}>
                     <InputLabel htmlFor="brand-car">ยี้ห้อรถ*</InputLabel>
                     <OutlinedInput
                       id="brand-car"
@@ -161,7 +201,7 @@ function AddCar() {
                   </Stack>
                 </Grid>
 
-                <Grid item xs={12} md={12}>
+                <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
                     <InputLabel htmlFor="color-car">สีรถ*</InputLabel>
                     <OutlinedInput

@@ -115,7 +115,7 @@ function ManageTeamLoading() {
   const getManagers = async () => {
     try {
       adminRequest.getAllManager().then((result) => {
-        setManagerList(result);
+        setManagerList(result); 
       });
     } catch (error) {
       console.log(error);
@@ -124,8 +124,6 @@ function ManageTeamLoading() {
 
   const handleChangeTeam = (e) => {
     const filterTeam = teamloadingList.filter((x) => x.team_id == e);
-    console.log('getWarehouses:', e);
-    console.log('filterTeam:', filterTeam);
     if (filterTeam.length > 0) {
       filterTeam.map((data) => {
         getWarehouses(data.warehouse_id);
