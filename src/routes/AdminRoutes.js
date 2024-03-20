@@ -40,7 +40,6 @@ const Step1 = Loadable(lazy(() => import('pages/management/step1/Step1')));
 const Step2 = Loadable(lazy(() => import('pages/management/step2/Step2')));
 const Step3 = Loadable(lazy(() => import('pages/management/step3/Step3')));
 const Step4 = Loadable(lazy(() => import('pages/management/step4/Step4')));
-const Step4Close = Loadable(lazy(() => import('pages/management/step4/Step4Close')));
 
 // ==============================|| AUTH ROUTING ||============================== //
 
@@ -181,10 +180,6 @@ const AdminsRoutes = {
         {
           path: '',
           element: <Step4 />
-        },
-        {
-          path: 'close',
-          element: <Step4Close />
         }
       ]
     }

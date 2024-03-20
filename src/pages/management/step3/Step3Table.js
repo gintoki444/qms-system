@@ -40,7 +40,7 @@ import moment from 'moment';
 // import { useDispatch, useSelector } from 'react-redux';
 // import { setStation } from 'store/reducers/station';
 
-export const Step3Table = ({ status, title, onStatusChange }) => {
+export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
   // const station_count = useSelector((state) => state.station.station_count);
   // const dispatch = useDispatch();
   // console.log(station_count);
@@ -175,11 +175,11 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
   const [team_id, setTeamId] = useState(0);
   const [message, setMessage] = useState('');
   //เพิ่ม function get จำนวนสถานีของ step 1
-  const station_num = 1;
+  const station_num = 2;
 
   useEffect(() => {
     fetchData();
-  }, [status, onStatusChange]);
+  }, [status, onStatusChange, onFilter]);
 
   const fetchData = async () => {
     try {
@@ -201,7 +201,11 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
   const waitingGet = async () => {
     try {
       await getQueues.getStep3Waitting().then((response) => {
-        setItems(response);
+        if (onFilter == 0) {
+          setItems(response);
+        } else {
+          setItems(response.filter((x) => x.product_company_id == onFilter) || []);
+        }
         setLoading(false);
       });
     } catch (e) {
@@ -638,18 +642,16 @@ export const Step3Table = ({ status, title, onStatusChange }) => {
             </Button>
           </DialogActions>
         </Dialog>
-
-        <Grid sx={{ p: 2 }}>
-          <Typography variant="h4">
-            {title}
-            {status === 'processing' && (
+        {status === 'processing' && (
+          <Grid sx={{ p: 2 }}>
+            <Typography variant="h4">
+              {title}
               <span>
-                {' '}
                 ( {station_count}/{station_num} สถานี )
               </span>
-            )}
-          </Typography>
-        </Grid>
+            </Typography>
+          </Grid>
+        )}
         <Grid>
           <TableContainer
             sx={{

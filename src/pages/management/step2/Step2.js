@@ -1,9 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+import * as stepRequest from '_api/StepRequest';
 
 import { Step2Table } from './Step2Table';
 
 import { Grid, Stack, Typography, Box } from '@mui/material';
 import MainCard from 'components/MainCard';
+
+import PropTypes from 'prop-types';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+function CustomTabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+CustomTabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired
+};
+
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`
+  };
+}
 
 function Step2() {
   const [commonStatus, setCommonStatus] = useState('');
@@ -18,6 +50,22 @@ function Step2() {
     } else {
       setCommonStatus(commonStatus);
     }
+  };
+
+  useEffect(() => {
+    getProductCompany();
+  }, []);
+
+  const [companyList, setCompanyList] = useState([]);
+  const getProductCompany = () => {
+    stepRequest.getAllProductCompany().then((response) => {
+      setCompanyList(response);
+    });
+  };
+
+  const [valueFilter, setValueFilter] = useState(0);
+  const handleChange = (event, newValue) => {
+    setValueFilter(newValue);
   };
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
@@ -36,11 +84,7 @@ function Step2() {
           <Grid item xs={12}>
             <MainCard content={false} sx={{ mt: 1.5 }}>
               <Box sx={{ pt: 1, pr: 2 }}>
-                <Step2Table
-                  onStatusChange={handleStatusChange}
-                  status={'processing'}
-                  title={'กำลังรับบริการ'}
-                />
+                <Step2Table onStatusChange={handleStatusChange} status={'processing'} title={'กำลังรับบริการ'} />
               </Box>
             </MainCard>
           </Grid>
@@ -49,12 +93,22 @@ function Step2() {
         <Grid container alignItems="center" justifyContent="flex-end" sx={{ mt: 3 }}>
           <Grid item xs={12}>
             <MainCard content={false} sx={{ mt: 1.5 }}>
-              <Box sx={{ pt: 1, pr: 2 }}>
-                <Step2Table
-                  onStatusChange={handleStatusChange}
-                  status={'waiting'}
-                  title={'รอเรียกคิว'}
-                />
+              <Box fullWidth>
+                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                  <Grid sx={{ p: 2 }}>
+                    <Typography variant="h4">
+                      <Typography variant="h4">รอเรียกคิว</Typography>
+                    </Typography>
+                  </Grid>
+                  <Tabs value={valueFilter} onChange={handleChange} aria-label="basic tabs example">
+                    <Tab label={'ทั้งหมด'} {...a11yProps(0)} />
+                    {companyList.length > 0 &&
+                      companyList.map((company, index) => (
+                        <Tab key={index} label={company.product_company_name_th} {...a11yProps(company.product_company_id)} />
+                      ))}
+                  </Tabs>
+                </Box>
+                <Step2Table status={'waiting'} title={'รอเรียกคิว'} onStatusChange={handleStatusChange} onFilter={valueFilter} />
               </Box>
             </MainCard>
           </Grid>

@@ -44,7 +44,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { RightSquareOutlined } from '@ant-design/icons';
 import moment from 'moment/min/moment-with-locales';
 
-export const Step2Table = ({ status, title, onStatusChange }) => {
+export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
   const headCells = [
     {
@@ -179,12 +179,10 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
     fetchData();
     getWarehouses();
     getAllContractor();
-  }, [status, onStatusChange]);
+  }, [status, onStatusChange, onFilter]);
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-
       // Use different API functions based on the status
       if (status === 'waiting') {
         await waitingGet();
@@ -193,6 +191,7 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
       }
       await getStation();
       await getStepCount(2, 'processing');
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -201,9 +200,12 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
   const waitingGet = async () => {
     try {
       await getQueues.getStep2Waitting().then((response) => {
-        setItems(response);
+        if (onFilter == 0) {
+          setItems(response);
+        } else {
+          setItems(response.filter((x) => x.product_company_id == onFilter) || []);
+        }
         cleckStations();
-        setLoading(false);
       });
     } catch (e) {
       console.log(e);
@@ -225,7 +227,6 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
       getQueues.getStep2Processing().then((response) => {
         setItems(response);
         setItems2(response);
-        setLoading(false);
       });
     } catch (e) {
       console.log(e);
@@ -989,17 +990,16 @@ export const Step2Table = ({ status, title, onStatusChange }) => {
             <CircularProgress color="primary" />
           </Backdrop>
         )}
-        <Grid sx={{ p: 2 }}>
-          <Typography variant="h4">
-            {title}
-            {status === 'processing' && (
+        {status === 'processing' && (
+          <Grid sx={{ p: 2 }}>
+            <Typography variant="h4">
+              {title}
               <span>
-                {' '}
                 ( {station_count}/{station_num} สถานี )
               </span>
-            )}
-          </Typography>
-        </Grid>
+            </Typography>
+          </Grid>
+        )}
 
         {status == 'waiting' && (
           <Dialog fullScreen={fullScreen} open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">

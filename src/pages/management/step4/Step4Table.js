@@ -39,7 +39,7 @@ import moment from 'moment';
 // import { useDispatch, useSelector } from 'react-redux';
 // import { setStation } from 'store/reducers/station';
 
-export const Step4Table = ({ status, title, onStatusChange }) => {
+export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
   // const station_count = useSelector((state) => state.station.station_count);
   // const dispatch = useDispatch();
   // console.log(station_count);
@@ -196,7 +196,7 @@ export const Step4Table = ({ status, title, onStatusChange }) => {
 
   useEffect(() => {
     fetchData();
-  }, [status, onStatusChange]);
+  }, [status, onStatusChange, onFilter]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -213,7 +213,11 @@ export const Step4Table = ({ status, title, onStatusChange }) => {
   const waitingGet = async () => {
     try {
       getQueues.getStep4Waitting().then((response) => {
-        setItems(response);
+        if (onFilter == 0) {
+          setItems(response);
+        } else {
+          setItems(response.filter((x) => x.product_company_id == onFilter) || []);
+        }
         setLoading(false);
       });
     } catch (e) {
@@ -616,18 +620,16 @@ export const Step4Table = ({ status, title, onStatusChange }) => {
             </Button>
           </DialogActions>
         </Dialog>
-
-        <Grid sx={{ p: 2 }}>
-          <Typography variant="h4">
-            {title}
-            {status === 'processing' && (
+        {status === 'processing' && (
+          <Grid sx={{ p: 2 }}>
+            <Typography variant="h4">
+              {title}
               <span>
-                {' '}
                 ( {station_count}/{station_num} สถานี )
               </span>
-            )}
-          </Typography>
-        </Grid>
+            </Typography>
+          </Grid>
+        )}
         <Grid>
           <TableContainer
             sx={{

@@ -41,7 +41,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setStation } from 'store/reducers/station';
 import { Grid } from '../../../../node_modules/@mui/material/index';
 
-export const StepTable = ({ status, title, onStatusChange }) => {
+export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
   const [loading, setLoading] = useState(true); // สร้าง state เพื่อติดตามสถานะการโหลด
 
   const station_count = useSelector((state) => state.station.station_count);
@@ -158,14 +158,14 @@ export const StepTable = ({ status, title, onStatusChange }) => {
   }
 
   useEffect(() => {
-    fetchData();
-  }, [status, station_count, onStatusChange]);
+    fetchData(onFilter);
+  }, [status, station_count, onStatusChange, onFilter]);
 
-  const fetchData = async () => {
+  const fetchData = async (filter) => {
     setLoading(true);
     //ข้อมูล รอเรียกคิว step1
     if (status === 'waiting') {
-      await waitingGet();
+      await waitingGet(filter);
     } else if (status === 'processing') {
       await processingGet();
     }
@@ -173,10 +173,14 @@ export const StepTable = ({ status, title, onStatusChange }) => {
 
   //ข้อมูล รอเรียกคิว step1
   const [items, setItems] = useState([]);
-  const waitingGet = async () => {
+  const waitingGet = async (filter) => {
     try {
       await getQueues.getStep1Waitting().then((response) => {
-        setItems(response);
+        if (filter == 0) {
+          setItems(response);
+        } else {
+          setItems(response.filter((x) => x.product_company_id == filter) || []);
+        }
         setLoading(false);
       });
     } catch (e) {
@@ -199,7 +203,7 @@ export const StepTable = ({ status, title, onStatusChange }) => {
 
   const initialData = 0;
   const [weight, setWeight] = useState(initialData);
-  const handleChange = ( value) => {
+  const handleChange = (value) => {
     setWeight(parseFloat(value));
   };
 
@@ -210,7 +214,7 @@ export const StepTable = ({ status, title, onStatusChange }) => {
   const [fr, setFrom] = useState('');
   const [message, setMessage] = useState('');
   const [id_update_next, setUpdateNext] = useState(0);
-  const station_num = 1;
+  const station_num = 2;
 
   const handleClickOpen = (id, fr, queues_id) => {
     if (fr === 'call') {
@@ -580,12 +584,15 @@ export const StepTable = ({ status, title, onStatusChange }) => {
             <CircularProgress color="primary" />
           </Backdrop>
         )} */}
-        <Grid sx={{ p: 2 }}>
-          <Typography variant="h4">
-            {title}
-            {status === 'processing' && <span> ( {station_count} / 1 สถานี )</span>}
-          </Typography>
-        </Grid>
+
+        {status === 'processing' && (
+          <Grid sx={{ p: 2 }}>
+            <Typography variant="h4">
+              {title}
+              <span> ( {station_count} / 2 สถานี )</span>
+            </Typography>
+          </Grid>
+        )}
 
         <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
           <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }}>

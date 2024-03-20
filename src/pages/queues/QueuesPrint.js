@@ -14,7 +14,7 @@ const padZero = (num) => {
   return num < 10 ? `0${num}` : num;
 };
 const printPageStyle = {
-  width: '82mm',
+  width: '80mm',
   minHeight: '80mm',
   padding: '24px 32px'
 };

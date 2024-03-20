@@ -427,7 +427,7 @@ function QueueDetail() {
 
   const navigate = useNavigate();
   const printQueues = () => {
-    navigate('/queues/prints', { state: { queuesId: id } });
+    navigate('/prints/queues', { state: { queuesId: id } });
   };
   const backToQueues = () => {
     navigate('/queues');
