@@ -99,14 +99,15 @@ const Profile = () => {
 
   const getUser = () => {
     userRequest.getAlluserId(userID).then((response) => {
-      response.map((result) => {
-        console.log(`${result.role_id} - ${userRoles}`);
-        if (result.role_id != userRoles) {
-          logout();
-        } else {
-          setUserData(result);
-        }
-      });
+      if (response) {
+        response.map((result) => {
+          if (result.role_id != userRoles) {
+            logout();
+          } else {
+            setUserData(result);
+          }
+        });
+      }
     });
   };
 

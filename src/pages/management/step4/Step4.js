@@ -87,7 +87,6 @@ function Step4() {
         </Grid>
 
         <Grid container alignItems="center" justifyContent="flex-end" sx={{ mt: 3 }}>
-
           <Grid item xs={12}>
             <MainCard content={false} sx={{ mt: 1.5 }}>
               <Box fullWidth>
@@ -99,7 +98,12 @@ function Step4() {
                     <Tab label={'ทั้งหมด'} {...a11yProps(0)} />
                     {companyList.length > 0 &&
                       companyList.map((company, index) => (
-                        <Tab key={index} label={company.product_company_name_th} {...a11yProps(company.product_company_id)} />
+                        <Tab
+                          key={index}
+                          label={company.product_company_name_th2}
+                          // sx={{ background: '#ff00007d',color:'#fff' }}
+                          {...a11yProps(company.product_company_id)}
+                        />
                       ))}
                   </Tabs>
                 </Box>

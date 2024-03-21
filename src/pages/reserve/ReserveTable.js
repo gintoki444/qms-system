@@ -237,7 +237,7 @@ export default function ReserveTable({ startDate, endDate }) {
           getReserve();
           setSaveLoading(false);
         } else {
-          alert("ไม่สามารถลบข้อมูลได้ : "+response.message.sqlMessage);
+          alert('ไม่สามารถลบข้อมูลได้ : ' + response.message.sqlMessage);
           setSaveLoading(false);
         }
       });
@@ -722,7 +722,7 @@ export default function ReserveTable({ startDate, endDate }) {
                               </Button>
                             </span>
                           </Tooltip>
-                          {(userRoles === 10 || userRoles === 1) && (
+                          {(userRoles === 9 || userRoles === 1) && (
                             <Tooltip title="สร้างคิว">
                               <span>
                                 <Button
@@ -749,7 +749,7 @@ export default function ReserveTable({ startDate, endDate }) {
                                 variant="contained"
                                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                 size="medium"
-                                disabled={row.status === 'completed'}
+                                disabled={userRoles !== 1 && row.status === 'completed'}
                                 color="primary"
                                 onClick={() => updateDrivers(row.reserve_id)}
                               >
@@ -763,7 +763,7 @@ export default function ReserveTable({ startDate, endDate }) {
                                 variant="contained"
                                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                 size="medium"
-                                disabled={row.status === 'completed'}
+                                disabled={row.status === 'completed' || row.total_quantity > 0}
                                 color="error"
                                 // onClick={() => deleteDrivers(row.reserve_id)}
                                 onClick={() => handleClickOpen(row.reserve_id, 'delete', row.total_quantity, row.brand_code)}

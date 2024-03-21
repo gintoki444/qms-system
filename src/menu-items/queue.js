@@ -1,5 +1,13 @@
 // assets
-import { SafetyOutlined, MenuUnfoldOutlined, MenuFoldOutlined, InboxOutlined,ContainerOutlined } from '@ant-design/icons';
+import {
+  SafetyOutlined,
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
+  InboxOutlined,
+  ContainerOutlined,
+  QrcodeOutlined,
+  PartitionOutlined
+} from '@ant-design/icons';
 
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
 
@@ -17,11 +25,18 @@ const queues = {
       icon: ContainerOutlined
     },
     {
+      id: 'searchCheck',
+      title: 'ตรวจสอบข้อมูลคิว',
+      type: 'item',
+      url: '/queues/search',
+      icon: QrcodeOutlined
+    },
+    {
       id: 'step0',
       title: 'Step0-ทีมรับสินค้า',
       type: 'item',
       url: '/admin/step0',
-      icon: ContainerOutlined
+      icon: PartitionOutlined
     },
     {
       id: 'weighEmpty',

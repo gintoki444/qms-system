@@ -492,3 +492,48 @@ export const getAllProductRegister = async () => {
   const result = await response.json();
   return result;
 };
+
+export const getAllProducts = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/allproducts/', requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const AddProductRegister = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/addproductregister/', requestOptions);
+
+  return await response.json();
+};
+
+export const AddProducts = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/addproduct/', requestOptions);
+
+  return await response.json();
+};

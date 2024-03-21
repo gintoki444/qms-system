@@ -130,3 +130,22 @@ export const putRegisterItem = async (id, data) => {
   const result = await response.json();
   return result;
 };
+
+// ==============================|| ข้อมูล Step 3  ||============================== //
+
+// เพิ่มข้อมูล Recall
+export const addRecallProcess = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/updaterecallprocess/', requestOptions);
+  return await response.json();
+};

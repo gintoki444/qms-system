@@ -100,7 +100,7 @@ function Step1() {
                     <Tab label={'ทั้งหมด'} {...a11yProps(0)} />
                     {companyList.length > 0 &&
                       companyList.map((company, index) => (
-                        <Tab key={index} label={company.product_company_name_th} {...a11yProps(company.product_company_id)} />
+                        <Tab key={index} label={company.product_company_name_th2} {...a11yProps(company.product_company_id)} />
                       ))}
                   </Tabs>
                 </Box>
@@ -112,7 +112,7 @@ function Step1() {
                 {/* {companyList.length > 0 &&
                   companyList.map((company, index) => (
                     <CustomTabPanel key={index} value={valueFilter} index={company.product_company_id}>
-                      {company.product_company_name_th}
+                      {company.product_company_name_th2}
                     </CustomTabPanel>
                   ))} */}
                 {/* <CustomTabPanel value={value} index={1}>

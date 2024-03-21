@@ -8,7 +8,7 @@ import { Formik } from 'formik';
 import axios from '../../../../../node_modules/axios/index';
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
-import * as reseveRequest from '_api/reserveRequest';
+import * as reserveRequest from '_api/reserveRequest';
 import * as adminRequest from '_api/adminRequest';
 
 // const userId = localStorage.getItem('user_id');
@@ -59,6 +59,8 @@ function AddQueue() {
     status: 'waiting',
     total_quantity: '',
     pickup_date: '',
+    product_company_id: '',
+    product_brand_id: '',
     brand_group_id: '',
     warehouse_id: '',
     created_at: '',
@@ -148,6 +150,34 @@ function AddQueue() {
         setBrandList(result);
       })
       .catch((error) => console.log('error', error));
+  };
+
+  // =============== Get Product Company ===============//
+  const [productCompany, setProductCompany] = useState([]);
+  const getProductCompany = () => {
+    try {
+      reserveRequest.getAllproductCompanys().then((response) => {
+        setProductCompany(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleChangeProductCom = (e) => {
+    getProductBrand(e.target.value);
+  };
+
+  // =============== Get Product Brand ===============//
+  const [productBrand, setProductBrand] = useState([]);
+  const getProductBrand = (id) => {
+    try {
+      reserveRequest.getProductBrandById(id).then((response) => {
+        setProductBrand(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // =============== Get Warehouses ===============//
@@ -299,6 +329,7 @@ function AddQueue() {
   // =============== useEffect ===============//
   useEffect(() => {
     getReserve();
+    getProductCompany();
     if (user_Id) {
       getBrandList();
     }
@@ -319,6 +350,7 @@ function AddQueue() {
             setUserId(result.user_id);
             setReservationData(result);
             getCompanyList();
+            getProductBrand(result.product_company_id);
 
             if (userRoles === 9 || userRoles === 1) {
               getTeamloading(result.warehouse_id);
@@ -334,8 +366,10 @@ function AddQueue() {
   // =============== InitialValue ===============//
   let initialValue = {
     company_id: reservationData.company_id,
-    car_id: reservationData.car_id,
+    car_id: reservationData.car_id, 
     brand_group_id: reservationData.brand_group_id,
+    product_company_id: reservationData.product_company_id || '',
+    product_brand_id: reservationData.product_brand_id || '',
     driver_id: reservationData.driver_id,
     description: reservationData.reserve_description,
     pickup_date: moment(reservationData.pickup_date).format('YYYY-MM-DD'),
@@ -355,7 +389,8 @@ function AddQueue() {
     reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
     description: Yup.string().required('กรุณากรอกรายละเอียดการจอง'),
-
+    product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
+    product_brand_id: Yup.string().required('กรุณาระบุแบรนด์(สินค้า)'),
     warehouse_id: Yup.string().required('กรุณาเลือกโกดังสินค้า'),
     contractor_id: Yup.string().required('กรุณาเลือกสายแรงงาน'),
     team_id: Yup.string().required('กรุณาเลือกทีมขึ้นสินค้า')
@@ -386,7 +421,7 @@ function AddQueue() {
         labor_line_id: values.labor_line_id
       };
 
-      await reseveRequest
+      await reserveRequest
         .putReserById(id, values)
         .then((result) => {
           console.log('result ', result);
@@ -491,6 +526,69 @@ function AddQueue() {
                           </FormHelperText>
                         )}
                       </Stack>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <InputLabel>บริษัท (สินค้า)</InputLabel>
+                      <FormControl fullWidth>
+                        <Select
+                          displayEmpty
+                          variant="outlined"
+                          name="product_company_id"
+                          value={values.product_company_id || ''}
+                          onChange={(e) => {
+                            setFieldValue('product_company_id', e.target.value);
+                            setFieldValue('product_brand_id', '');
+                            handleChangeProductCom(e);
+                          }}
+                          fullWidth
+                          error={Boolean(touched.product_company_id && errors.product_company_id)}
+                        >
+                          <MenuItem disabled value="">
+                            เลือกบริษัท
+                          </MenuItem>
+                          {productCompany.map((companias) => (
+                            <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
+                              {companias.product_company_name_th}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      {touched.product_company_id && errors.product_company_id && (
+                        <FormHelperText error id="helper-text-product_company_id">
+                          {errors.product_company_id}
+                        </FormHelperText>
+                      )}
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <InputLabel>เบรนสินค้า</InputLabel>
+                      <FormControl fullWidth>
+                        <Select
+                          displayEmpty
+                          variant="outlined"
+                          name="product_brand_id"
+                          value={values.product_brand_id}
+                          onChange={handleChange}
+                          placeholder="เลือกสายแรงงาน"
+                          fullWidth
+                          error={Boolean(touched.product_brand_id && errors.product_brand_id)}
+                        >
+                          <MenuItem disabled value="">
+                            เลือกเบรนสินค้า
+                          </MenuItem>
+                          {productBrand.map((brands) => (
+                            <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
+                              {brands.product_brand_name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      {touched.product_brand_id && errors.product_brand_id && (
+                        <FormHelperText error id="helper-text-product_brand_id">
+                          {errors.product_brand_id}
+                        </FormHelperText>
+                      )}
                     </Grid>
 
                     <Grid item xs={12} md={6}>
@@ -847,7 +945,7 @@ function AddQueue() {
                             </Stack>
                           </Grid>
 
-                          <Grid item xs={12} md={6}>
+                          <Grid item xs={12} md={6} sx={{ display: 'none' }}>
                             <Stack spacing={1}>
                               <InputLabel>หมายเลขสาย</InputLabel>
                               <FormControl>

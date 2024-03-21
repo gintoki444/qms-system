@@ -104,7 +104,7 @@ function Step2() {
                     <Tab label={'ทั้งหมด'} {...a11yProps(0)} />
                     {companyList.length > 0 &&
                       companyList.map((company, index) => (
-                        <Tab key={index} label={company.product_company_name_th} {...a11yProps(company.product_company_id)} />
+                        <Tab key={index} label={company.product_company_name_th2} {...a11yProps(company.product_company_id)} />
                       ))}
                   </Tabs>
                 </Box>

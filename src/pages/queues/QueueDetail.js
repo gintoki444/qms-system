@@ -578,30 +578,32 @@ function QueueDetail() {
                   )}
 
                   {(userRoles === 10 || userRoles === 1) && (
-                    <Button
-                      size="mediam"
-                      variant="contained"
-                      color="info"
-                      d
-                      onClick={() => {
-                        printQueues();
-                      }}
-                      startIcon={<PrinterOutlined />}
-                    >
-                      ตัวอย่างก่อนพิมพ์
-                    </Button>
+                    <>
+                      <Button
+                        size="mediam"
+                        variant="contained"
+                        color="info"
+                        d
+                        onClick={() => {
+                          printQueues();
+                        }}
+                        startIcon={<PrinterOutlined />}
+                      >
+                        ตัวอย่างก่อนพิมพ์
+                      </Button>
+                      <Button
+                        size="mediam"
+                        variant="contained"
+                        color="error"
+                        onClick={() => {
+                          backToQueues();
+                        }}
+                        startIcon={<RollbackOutlined />}
+                      >
+                        ย้อนกลับ
+                      </Button>
+                    </>
                   )}
-                  <Button
-                    size="mediam"
-                    variant="contained"
-                    color="error"
-                    onClick={() => {
-                      backToQueues();
-                    }}
-                    startIcon={<RollbackOutlined />}
-                  >
-                    ย้อนกลับ
-                  </Button>
                 </Grid>
               </Grid>
             </MainCard>

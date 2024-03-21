@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+import * as adminRequest from '_api/adminRequest';
+
 import {
   Table,
   TableHead,
@@ -12,25 +15,16 @@ import {
   Button,
   Tooltip,
   Typography,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle
+  CircularProgress
 } from '@mui/material';
 
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
-// Link api url
-import * as adminRequest from '_api/adminRequest';
-
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
-    id: 'wareHouseNo',
+    id: 'carNo',
     align: 'center',
-    width: '5%',
     disablePadding: false,
     label: 'ลำดับ'
   },
@@ -38,36 +32,17 @@ const headCells = [
     id: 'name',
     align: 'left',
     disablePadding: true,
-    label: 'ชื่อ-นามสกุล'
+    label: 'ชื่อสินค้า'
   },
   {
-    id: 'contact_info',
-    align: 'left',
+    id: 'total',
+    align: 'right',
     disablePadding: false,
-    label: 'ข้อมูลติดต่อ'
-  },
-  // {
-  //   id: 'warehouse_id',
-  //   align: 'left',
-  //   disablePadding: false,
-  //   label: 'โกดัง'
-  // },
-  {
-    id: 'department',
-    align: 'left',
-    disablePadding: false,
-    label: 'แผนก'
-  },
-  {
-    id: 'stetus',
-    align: 'center',
-    disablePadding: false,
-    label: 'สถานะ'
+    label: 'คงเหลือ'
   },
   {
     id: 'action',
     align: 'right',
-    width: '10%',
     disablePadding: false,
     label: 'Actions'
   }
@@ -87,51 +62,21 @@ function CompantTableHead() {
   );
 }
 
-function WareHouseTable() {
-  //   const [car, setCar] = useState([]);
+function ProductsTable() {
+  const [product, setProducts] = useState([]);
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [wareHouseList, setWareHouseList] = useState([]);
 
   useEffect(() => {
     // getPermission();
-    getManager();
+    getProducts();
   }, []);
 
-  const getManager = async () => {
-    setLoading(true);
+  const getProducts = async () => {
     try {
-      adminRequest.getAllManager().then((response) => {
-        setWareHouseList(response);
-        setLoading(false);
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // ลบข้อมูล Manager
-  const [manager_id, setManager_id] = useState(false);
-  const [textnotify, setText] = useState('');
-
-  const handleClickOpen = (manager_id) => {
-    setManager_id(manager_id);
-    setText('ลบข้อมูล');
-    setOpen(true);
-  };
-
-  const handleClose = (flag) => {
-    if (flag === 1) {
-      setLoading(true);
-      deteteManager(manager_id);
-    }
-    setOpen(false);
-  };
-
-  const deteteManager = (id) => {
-    try {
-      adminRequest.deleteManagerWareHouse(id).then(() => {
-        getWareHouseManager();
+      setOpen(true);
+      adminRequest.getAllProducts().then((response) => {
+        setProducts(response);
+        setOpen(false);
       });
     } catch (error) {
       console.log(error);
@@ -139,8 +84,8 @@ function WareHouseTable() {
   };
 
   const navigate = useNavigate();
-  const updateWareHouse = (id) => {
-    navigate('/admin/warehouse/update/' + id);
+  const updateProducts = (id) => {
+    navigate('/products/update/' + id);
   };
 
   //   const deleteCar = (id) => {
@@ -167,22 +112,6 @@ function WareHouseTable() {
   //   };
   return (
     <Box>
-      <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-        <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }}>
-          {'แจ้งเตือน'}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText style={{ fontFamily: 'kanit' }}>ต้องการ {textnotify} หรือไม่?</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={() => handleClose(0)} style={{ fontFamily: 'kanit' }}>
-            ยกเลิก
-          </Button>
-          <Button onClick={() => handleClose(1)} autoFocus style={{ fontFamily: 'kanit' }}>
-            ยืนยัน
-          </Button>
-        </DialogActions>
-      </Dialog>
       <TableContainer
         sx={{
           width: '100%',
@@ -206,29 +135,16 @@ function WareHouseTable() {
           }}
         >
           <CompantTableHead />
-          {!loading ? (
+          {!open ? (
             <TableBody>
-              {wareHouseList.map((row, index) => {
+              {product.map((row, index) => {
                 return (
                   <TableRow key={index}>
                     <TableCell align="center">{index + 1}</TableCell>
-                    <TableCell align="left">{row.manager_name}</TableCell>
-                    <TableCell align="left">{row.contact_info}</TableCell>
-                    {/* <TableCell align="left">{row.description}</TableCell> */}
-                    <TableCell align="left">{row.department}</TableCell>
-                    <TableCell align="center">
-                      {row.status == 'A' ? (
-                        <Typography color="success" variant="body1" sx={{ color: 'green' }}>
-                          <strong>ใช้งาน</strong>
-                        </Typography>
-                      ) : (
-                        <Typography variant="body1" color="error">
-                          <strong>ไม่ใช้งาน</strong>
-                        </Typography>
-                      )}
-                    </TableCell>
+                    <TableCell align="left">{row.name}</TableCell>
+                    <TableCell align="right">{row.stock_quantity}</TableCell>
                     {/* {permission.length > 0 &&  */}
-                    <TableCell align="center">
+                    <TableCell align="right">
                       <ButtonGroup variant="contained" aria-label="Basic button group">
                         <Tooltip title="แก้ไข">
                           <Button
@@ -236,7 +152,7 @@ function WareHouseTable() {
                             size="medium"
                             color="primary"
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => updateWareHouse(row.manager_id)}
+                            onClick={() => updateProducts(row.product_id)}
                           >
                             <EditOutlined />
                           </Button>
@@ -247,7 +163,7 @@ function WareHouseTable() {
                             size="medium"
                             color="error"
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => handleClickOpen(row.manager_id)}
+                            // onClick={() => deleteCar(row.car_id)}
                           >
                             <DeleteOutlined />
                           </Button>
@@ -258,9 +174,9 @@ function WareHouseTable() {
                   </TableRow>
                 );
               })}
-              {wareHouseList.length == 0 && (
+              {product.length == 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">
+                  <TableCell colSpan={5} align="center">
                     ไม่พบข้อมูล
                   </TableCell>
                 </TableRow>
@@ -269,7 +185,7 @@ function WareHouseTable() {
           ) : (
             <TableBody>
               <TableRow>
-                <TableCell colSpan={7} align="center">
+                <TableCell colSpan={4} align="center">
                   <CircularProgress />
                   <Typography variant="body1">Loading....</Typography>
                 </TableCell>
@@ -282,4 +198,4 @@ function WareHouseTable() {
   );
 }
 
-export default WareHouseTable;
+export default ProductsTable;

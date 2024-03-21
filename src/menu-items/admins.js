@@ -1,5 +1,5 @@
 // assets
-import { UserOutlined, TeamOutlined, FileDoneOutlined ,GoldOutlined} from '@ant-design/icons';
+import { UserOutlined, TeamOutlined, FileDoneOutlined, GoldOutlined } from '@ant-design/icons';
 import { ReactComponent as ForkliftIcon } from 'assets/icon/icon-forklift.svg';
 import { ReactComponent as WarehouseIcon } from 'assets/icon/icon-warehouse.svg';
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
@@ -56,10 +56,19 @@ const admins = {
       // breadcrumbs: false
     },
     {
-      id: 'products',
-      title: 'ข้อมูลจัดกองสินค้า',
+      id: 'productsManagement',
+      title: 'ข้อมูลกองสินค้า',
       type: 'item',
       url: '/admin/product-register',
+      icon: GoldOutlined,
+      target: false
+      // breadcrumbs: false
+    },
+    {
+      id: 'products',
+      title: 'ข้อมูลสินค้า (สูตร)',
+      type: 'item',
+      url: '/admin/products',
       icon: GoldOutlined,
       target: false
       // breadcrumbs: false

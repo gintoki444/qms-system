@@ -60,28 +60,17 @@ function AddOrder() {
       })
       .catch((err) => console.log(err));
   };
-  // =============== Get order ===============//
-  //   const [orderList, setOrderList] = useState([]);
-  //   const getOrder = async () => {
-  //     const urlapi = apiUrl + `/orders/` + id;
-  //     await axios
-  //       .get(urlapi)
-  //       .then((res) => {
-  //         setOrderList(res.data);
-  //       })
-  //       .catch((err) => console.log(err));
-  //   };
 
   // =============== Get Product ===============//
   const [productList, setProductList] = useState([]);
-  const getProduct = async () => {
-    const urlapi = apiUrl + `/allproducts`;
-    await axios
-      .get(urlapi)
-      .then((res) => {
-        setProductList(res.data);
-      })
-      .catch((err) => console.log(err));
+  const getProduct = async (idCom, idBrand) => {
+    try {
+      reserveRequest.getProductByIdComAndBrandId(idCom, idBrand).then((response) => {
+        setProductList(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // =============== Get Product Company ===============//
@@ -96,8 +85,12 @@ function AddOrder() {
     }
   };
 
+  const [selectIdCom, setSelectIdCom] = useState('');
   const handleChangeProductCom = (e) => {
+    setItems[{ product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }];
+    setProductList([]);
     getProductBrand(e.target.value);
+    setSelectIdCom(e.target.value);
   };
 
   // =============== Get Product Brand ===============//
@@ -112,11 +105,16 @@ function AddOrder() {
     }
   };
 
+  const handleChangeBrand = (e) => {
+    setProductList([]);
+    setItems[{ product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }];
+    getProduct(selectIdCom, e.target.value);
+  };
+
   // =============== useEffect ===============//
   useEffect(() => {
     // getOrder();
     getReserve();
-    getProduct();
     getProductCompany();
   }, [id]);
 
@@ -158,11 +156,6 @@ function AddOrder() {
 
         if (items.length === 0) {
           alert('กรุณาเพิ่มข้อมูล : items.length = 0');
-          return;
-        }
-
-        if (items[0].product_id === '') {
-          alert('กรุณาเพิ่มข้อมูล');
           return;
         }
 
@@ -224,8 +217,22 @@ function AddOrder() {
     navigate('/reserve/update/' + id);
   };
 
-  const handleSubmits = async (values) => {
+  const handleSubmits = async (values, { setErrors, setSubmitting }) => {
     try {
+      let coutItemId = 0;
+      items.map((x) => {
+        if (x.product_id) {
+          coutItemId = coutItemId + 1;
+        }
+      });
+
+      if (items.length !== coutItemId) {
+        setErrors(false);
+        setSubmitting(false);
+        alert('กรุณาเพิ่มข้อมูลสินค้าให้ครบถ้วน');
+        return;
+      }
+
       // values.items = items;
       await createOrder(values);
     } catch (err) {
@@ -241,18 +248,6 @@ function AddOrder() {
 
     setItems(updatedItems);
     initialValue.items = items;
-    // ตรวจสอบว่ามีสินค้าที่ถูกเลือกแล้วหรือไม่
-    // const isDuplicate = items.some((item, i) => i !== index && item.product_id === value);
-
-    // if (isDuplicate) {
-    //   window.alert('รายการนี้ถูกเลือกไปแล้ว!');
-    // } else {
-    //   const updatedItems = [...items];
-    //   updatedItems[index][name] = value;
-
-    //   setItems(updatedItems);
-    //   initialValue.items = items;
-    // }
   };
 
   // =============== เพิ่ม-ลบรา รายการสินค้า ===============//
@@ -359,7 +354,7 @@ function AddOrder() {
 
                     <Grid item xs={12} md={6}>
                       <InputLabel>บริษัท (สินค้า)</InputLabel>
-                      <FormControl sx={{ width: '100%' }} size="small">
+                      <FormControl fullWidth>
                         <Select
                           displayEmpty
                           variant="outlined"
@@ -393,13 +388,16 @@ function AddOrder() {
 
                     <Grid item xs={12} md={6}>
                       <InputLabel>เบรนสินค้า</InputLabel>
-                      <FormControl sx={{ width: '100%' }} size="small">
+                      <FormControl fullWidth>
                         <Select
                           displayEmpty
                           variant="outlined"
                           name="product_brand_id"
                           value={values.product_brand_id}
-                          onChange={handleChange}
+                          onChange={(e) => {
+                            handleChange(e);
+                            handleChangeBrand(e);
+                          }}
                           placeholder="เลือกสายแรงงาน"
                           fullWidth
                           error={Boolean(touched.product_brand_id && errors.product_brand_id)}
@@ -457,6 +455,7 @@ function AddOrder() {
                               <TableCell>
                                 <FormControl sx={{ m: 1, minWidth: 200 }} size="small">
                                   <Select
+                                    displayEmpty
                                     labelId="demo-simple-select-label"
                                     id={`items.${index}.product_id`}
                                     placeholder="สินค้า"
@@ -464,6 +463,7 @@ function AddOrder() {
                                     value={item.product_id || ''}
                                     onChange={(e) => handleInputChange(e, index)}
                                     name={`product_id`}
+                                    error={Boolean(touched.items && errors.items)}
                                   >
                                     <MenuItem disabled value="">
                                       เลือกสินค้า

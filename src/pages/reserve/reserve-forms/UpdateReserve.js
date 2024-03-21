@@ -36,7 +36,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  CircularProgress
+  CircularProgress,
+  Tooltip,
+  ButtonGroup
 } from '@mui/material';
 
 import MenuItem from '@mui/material/MenuItem';
@@ -51,8 +53,9 @@ import {
   PlusCircleOutlined,
   PrinterOutlined,
   SaveOutlined,
-  RollbackOutlined
-  // , CheckCircleOutlined
+  RollbackOutlined,
+  DeleteOutlined
+  // EditOutlined
 } from '@ant-design/icons';
 
 // DateTime
@@ -419,18 +422,28 @@ function UpdateReserve() {
     return num < 10 ? `0${num}` : num;
   };
 
-  const handleClickOpen = (id, total_quantity, brand_code) => {
+  const [orderId, setOrderId] = useState([]);
+  const [onClick, setOnClick] = useState([]);
+  const handleClickOpen = (id, onClick, total_quantity, brand_code) => {
     try {
-      if (total_quantity === '0') {
-        alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
-        return;
+      if (onClick == 'add-queue') {
+        if (total_quantity === '0') {
+          alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
+          return;
+        } else {
+          setOnClick(onClick);
+          setNotifyText('ต้องการอนุมัติการจองคิวหรือไม่?');
+          //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
+          setReserveId(id);
+          setTotalQuantity(total_quantity);
+          setBrandCode(brand_code);
+          setOpen(true);
+        }
       } else {
-        setNotifyText('ต้องการอนุมัติการจองคิวหรือไม่?');
-        //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
-        setReserveId(id);
-        setTotalQuantity(total_quantity);
-        setBrandCode(brand_code);
         setOpen(true);
+        setOrderId(id);
+        setOnClick(onClick);
+        setNotifyText('ต้องการลบข้อมูลการสั่งซื้อสินค้า');
       }
     } catch (e) {
       console.log(e);
@@ -440,12 +453,19 @@ function UpdateReserve() {
   };
 
   const handleClose = (flag) => {
-    if (flag === 1) {
-      //click มาจากการลบ
-      setLoading(true);
-      // if (flag === 99) {
-      addQueue(reserve_id, total_quantity);
-      // }
+    if (onClick == 'add-queue') {
+      if (flag === 1) {
+        //click มาจากการลบ
+        setLoading(true);
+        // if (flag === 99) {
+        addQueue(reserve_id, total_quantity);
+        // }
+      }
+    } else {
+      if (flag === 1) {
+        setLoading(true);
+        deleteOrder();
+      }
     }
     setOpen(false);
   };
@@ -786,6 +806,12 @@ function UpdateReserve() {
     navigate(`/order/add/${id}`);
   };
 
+  const deleteOrder = () => {
+    reserveRequest.deleteOrderId(orderId).then(() => {
+      getReserve();
+    });
+  };
+
   // =============== กลับหน้า Reserve ===============//
   const navigate = useNavigate();
   const backToReserce = () => {
@@ -796,6 +822,10 @@ function UpdateReserve() {
   const reservePrint = (id) => {
     navigate('/prints/reserve', { state: { reserveId: id, link: '/reserve/update/' + id } });
   };
+
+  // const updateOrder = (id) => {
+  //   console.log(id);
+  // };
 
   return (
     <Grid alignItems="center" justifyContent="space-between">
@@ -1154,6 +1184,28 @@ function UpdateReserve() {
                                 </Table>
                               </TableContainer>
                             </Grid>
+                            <Grid item xs={12} md={6} sx={{ mt: 2 }}>
+                              <Stack direction="row" alignItems="center" spacing={0}>
+                                <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
+                                  <Tooltip title="ลบคำสั่งซื้อ">
+                                    <span>
+                                      <Button
+                                        variant="contained"
+                                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                        size="medium"
+                                        disabled={reservationData.status == 'completed' && userRoles === 8}
+                                        color="error"
+                                        // onClick={() => deleteDrivers(row.reserve_id)}
+                                        onClick={() => handleClickOpen(order.order_id, 'delete-queue')}
+                                      >
+                                        <DeleteOutlined />
+                                      </Button>
+                                    </span>
+                                  </Tooltip>
+                                </ButtonGroup>
+                              </Stack>
+                            </Grid>
+
                             <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                           </Grid>
                         ))}
@@ -1170,222 +1222,10 @@ function UpdateReserve() {
                         </Stack>
                       </Grid>
                     </Grid>
-
-                    {/* ======= Operation ======= */}
-                    {/* {(userRoles == 9 || userRoles == 1) && (
-                      <Grid item xs={12}>
-                        <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography variant="h5">ข้อมูลการเข้ารับสินค้า</Typography>
-                        </Grid>
-                        <Grid container spacing={3} sx={{ mt: 1 }}>
-                          <Grid item xs={12} md={6}>
-                            <Stack spacing={1}>
-                              <InputLabel>โกดังสินค้า</InputLabel>
-                              <TextField
-                                select
-                                variant="outlined"
-                                name="warehouse_id"
-                                value={values.warehouse_id}
-                                onChange={(e) => {
-                                  setFieldValue('warehouse_id', e.target.value);
-                                  handleChangeWarehouse(e);
-                                }}
-                                placeholder="เลือกโกดังสินค้า"
-                                fullWidth
-                              >
-                                {warehousesList &&
-                                  warehousesList.map((warehouses) => (
-                                    <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
-                                      {warehouses.description}
-                                    </MenuItem>
-                                  ))}
-                              </TextField>
-                              {touched.company && errors.company && (
-                                <FormHelperText error id="helper-text-company-car">
-                                  {errors.company}
-                                </FormHelperText>
-                              )}
-                            </Stack>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <Stack spacing={1}>
-                              <InputLabel>หัวจ่าย</InputLabel>
-                              <TextField
-                                select
-                                variant="outlined"
-                                name="reserve_station_id"
-                                value={values.reserve_station_id}
-                                onChange={handleChange}
-                                placeholder="เลือกคลังสินค้า"
-                                fullWidth
-                              >
-                                {stationsList.map((station) => (
-                                  <MenuItem key={station.station_id} value={station.station_id}>
-                                    {station.station_description}
-                                  </MenuItem>
-                                ))}
-                              </TextField>
-                              {touched.reserve_station_id && errors.reserve_station_id && (
-                                <FormHelperText error id="helper-text-reserve_station_id">
-                                  {errors.reserve_station_id}
-                                </FormHelperText>
-                              )}
-                            </Stack>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <Stack spacing={1}>
-                              <InputLabel>ทีมรับสินค้า</InputLabel>
-                              <FormControl>
-                                <Select
-                                  id="team_id"
-                                  name="team_id"
-                                  displayEmpty
-                                  value={values.team_id}
-                                  onChange={(e) => {
-                                    setFieldValue('team_id', e.target.value);
-                                    handleChangeTeam(e.target.value);
-                                  }}
-                                  input={<OutlinedInput />}
-                                  inputProps={{ 'aria-label': 'Without label' }}
-                                >
-                                  <MenuItem disabled value="">
-                                    ทีมรับสินค้า
-                                  </MenuItem>
-                                  {teamloadingList.map((teamload) => (
-                                    <MenuItem key={teamload.team_id} value={teamload.team_id}>
-                                      {teamload.team_name}
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                            </Stack>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <Stack spacing={1}>
-                              <InputLabel>สายแรงงาน {values.contractor_id}</InputLabel>
-                              <TextField
-                                select
-                                variant="outlined"
-                                name="contractor_id"
-                                value={values.contractor_id}
-                                onChange={(e) => {
-                                  setFieldValue('contractor_id', e.target.value);
-                                  handleChangeContractor(e);
-                                }}
-                                placeholder="ทีมรับสินค้า"
-                                fullWidth
-                              >
-                                {contractorList.map((contractorList) => (
-                                  <MenuItem key={contractorList.contractor_id} value={contractorList.contractor_id}>
-                                    {contractorList.contractor_name}
-                                  </MenuItem>
-                                ))}
-                              </TextField>
-                            </Stack>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <Stack spacing={1}>
-                              <InputLabel>หมายเลขสาย</InputLabel>
-                              <TextField
-                                select
-                                variant="outlined"
-                                name="labor_line_id"
-                                value={values.labor_line_id}
-                                onChange={handleChange}
-                                placeholder="ทีมรับสินค้า"
-                                fullWidth
-                              >
-                                {layborLineList.map((layborLine) => (
-                                  <MenuItem key={layborLine.labor_line_id} value={layborLine.labor_line_id}>
-                                    {layborLine.labor_line_name}
-                                  </MenuItem>
-                                ))}
-                              </TextField>
-                            </Stack>
-                          </Grid>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <TableContainer>
-                            <Table
-                              aria-labelledby="tableTitle"
-                              size="small"
-                              sx={{
-                                '& .MuiTableCell-root:first-of-type': {
-                                  pl: 2
-                                },
-                                '& .MuiTableCell-root:last-of-type': {
-                                  pr: 3
-                                }
-                              }}
-                            >
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell align="center">ลำดับ</TableCell>
-                                  <TableCell align="center">รายชื่อ</TableCell>
-                                  <TableCell align="center">ตำแหน่ง</TableCell>
-                                </TableRow>
-                              </TableHead>
-                              {teamLoading ? (
-                                <TableBody>
-                                  {teamLoading.map((item, index) => (
-                                    <TableRow key={index}>
-                                      <TableCell align="center">{index + 1}</TableCell>
-                                      <TableCell align="center">
-                                        {item.manager_name && item.manager_name}
-                                        {item.checker_name && item.checker_name}
-                                        {item.forklift_name && item.forklift_name}
-                                      </TableCell>
-                                      <TableCell align="center">
-                                        {item.manager_name && 'หัวหน้าโกดัง'}
-                                        {item.checker_name && 'พนักงานจ่ายสินค้า'}
-                                        {item.forklift_name && 'โฟล์คลิฟท์'}
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              ) : (
-                                <TableRow>
-                                  <TableCell colSpan={13} align="center">
-                                    ไม่พบข้อมูล
-                                  </TableCell>
-                                </TableRow>
-                              )}
-                            </Table>
-                          </TableContainer>
-                        </Grid>
-                      </Grid>
-                    )} */}
                   </Grid>
 
                   <Grid item xs={12} sx={{ '& button': { m: 1 }, pl: '8px' }}>
                     <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-
-                    {/* {orderList.length > 0 &&
-                      reservationData.status !== 'completed' &&
-                      (userRoles === 10 || userRoles === 1) &&
-                      checkDate == true && (
-                        <Button
-                          size="mediam"
-                          variant="outlined"
-                          color="success"
-                          disabled={
-                            values.status === 'completed' ||
-                            dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
-                            values.total_quantity == 0 ||
-                            checkDate == false
-                          }
-                          onClick={() =>
-                            handleClickOpen(reservationData.reserve_id, reservationData.total_quantity, reservationData.group_code)
-                          }
-                          startIcon={<CheckCircleOutlined />}
-                        >
-                          อนุมัติการจอง
-                        </Button>
-                      )} */}
 
                     {orderList.length > 0 &&
                       reservationData.status !== 'completed' &&
@@ -1399,7 +1239,12 @@ function UpdateReserve() {
                             dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') || values.total_quantity == 0 || checkDate == false
                           }
                           onClick={() =>
-                            handleClickOpen(reservationData.reserve_id, reservationData.total_quantity, reservationData.group_code)
+                            handleClickOpen(
+                              reservationData.reserve_id,
+                              'add-queue',
+                              reservationData.total_quantity,
+                              reservationData.group_code
+                            )
                           }
                           startIcon={<DiffOutlined />}
                         >
@@ -1407,25 +1252,6 @@ function UpdateReserve() {
                         </Button>
                       )}
 
-                    {/* {orderList.length > 0 && reservationData.status !== 'completed' &&  && checkDate == true && (
-                      <Button
-                        size="mediam"
-                        variant="outlined"
-                        color="success"
-                        disabled={
-                          values.status === 'completed' ||
-                          dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
-                          values.total_quantity == 0 ||
-                          checkDate == false
-                        }
-                        onClick={() =>
-                          handleClickOpen(reservationData.reserve_id, reservationData.total_quantity, reservationData.group_code)
-                        }
-                        startIcon={<DiffOutlined />}
-                      >
-                        สร้างคิว
-                      </Button>
-                    )} */}
                     {orderList.length > 0 && (
                       <Button
                         size="mediam"

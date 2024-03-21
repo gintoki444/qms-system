@@ -34,6 +34,26 @@ export const getOrderByReserveId = async (id) => {
   return result;
 };
 
+export const getProductByIdComAndBrandId = async (idcom, idbrand) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/productscompany?product_company_id=${idcom}&product_brand_id=${idbrand}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+export const deleteOrderId = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deleteorderitem/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
 // ==============================|| Update การจองคิว ||============================== //
 export const putReserById = async (id, data) => {
   const myHeaders = new Headers();

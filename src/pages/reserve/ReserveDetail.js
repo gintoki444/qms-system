@@ -32,7 +32,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import MainCard from 'components/MainCard';
-import { DiffOutlined, PrinterOutlined, EditOutlined, RollbackOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { DiffOutlined, PrinterOutlined, EditOutlined, RollbackOutlined } from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
@@ -85,7 +85,6 @@ function ReserveDetail() {
   const [notifytext, setNotifyText] = useState('');
   const [reserve_id, setReserveId] = useState(0);
 
-
   //update การจองในการสร้าง queue
   const updateReserveStatus = (reserve_id) => {
     const reserveStatus = {
@@ -135,7 +134,6 @@ function ReserveDetail() {
     }
     setOpen(false);
   };
-
 
   const navigate = useNavigate();
   const backToReserce = () => {
@@ -355,23 +353,7 @@ function ReserveDetail() {
             </Grid>
           </MainCard>
           <Grid item xs={12} sx={{ '& button': { m: 1, mt: 2 } }} align="center">
-            {orderList.length > 0 && reserveData.status !== 'completed' && (userRoles === 10 || userRoles === 1) && (
-              <Button
-                size="mediam"
-                variant="outlined"
-                color="success"
-                disabled={
-                  reserveData.status === 'completed' ||
-                  reserveData.total_quantity == 0
-                }
-                onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity)}
-                startIcon={<CheckCircleOutlined />}
-              >
-                อนุมัติการจอง
-              </Button>
-            )}
-
-            {orderList.length > 0 && reserveData.status === 'completed' && (userRoles === 10 || userRoles === 1) && (
+            {orderList.length > 0 && reserveData.status !== 'completed' && (userRoles === 9 || userRoles === 1) && (
               <Button
                 size="mediam"
                 variant="outlined"

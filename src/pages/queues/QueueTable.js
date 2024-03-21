@@ -188,9 +188,9 @@ export default function QueueTable({ startDate, endDate }) {
     getQueue();
   }, [startDate, endDate]);
 
-  const getQueue = () => { 
+  const getQueue = () => {
     try {
-        setLoading(true);
+      setLoading(true);
       queueRequest.getAllqueueByDateV2(startDate, endDate).then((response) => {
         setItems(response);
         setLoading(false);
@@ -365,7 +365,7 @@ export default function QueueTable({ startDate, endDate }) {
                             </Tooltip>
                           )}
 
-                          {userRoles && userRoles === 1 && (
+                          {userRoles && (userRoles === 1 || userRoles === 9) && (
                             <Tooltip title="ลบ">
                               <span>
                                 <Button

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
 import {
-  useMediaQuery,
   Grid,
   Box,
   Table,
@@ -30,7 +29,6 @@ import {
   FormControlLabel,
   OutlinedInput
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import MainCard from 'components/MainCard';
 
 // Link api queues
@@ -111,6 +109,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
       label: 'เวลาเริ่ม'
     },
     {
+      id: 'reacallTitle',
+      align: 'center',
+      disablePadding: false,
+      label: 'ทวนสอบ'
+    },
+    {
       id: 'selectedStation',
       align: 'center',
       disablePadding: false,
@@ -153,15 +157,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
 
   const [items, setItems] = useState([]);
   const [items2, setItems2] = useState([]);
-  const [open, setOpen] = React.useState(false);
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const [open, setOpen] = useState(false);
   const [id_update, setUpdate] = useState(0);
   const [id_update_next, setUpdateNext] = useState(0);
   const [fr, setFrom] = useState('');
   const [textnotify, setText] = useState('');
   const [station_count, setStationCount] = useState(0);
-  const [loading, setLoading] = useState(true); // สร้าง state เพื่อติดตามสถานะการโหลด
+  const [loading, setLoading] = useState(true);
   // const [selectedStation, setSelectedStation] = useState('');
   const [stations, setStations] = useState([]);
   // const [loadingteams, setLoadingTeams] = useState([]);
@@ -541,6 +543,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             });
           }
         });
+        console.log('getOrderOfReserve :', response);
         setOrders(response);
       }
     });
@@ -593,6 +596,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     if (fr === 'call') {
       setText('เรียกคิว');
       setMessage('ขึ้นสินค้า–STEP2 เรียกคิว');
+      setOrderSelect([]);
+      getOrderOfReserve(queuesData.reserve_id);
+      getReserveId(queuesData.reserve_id);
     } else {
       if (fr === 'close') {
         setMessage('ขึ้นสินค้า–STEP2 ปิดคิว');
@@ -624,11 +630,39 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     if (flag === 1) {
       if (fr === 'call') {
         if (station_count < station_num) {
-          setOpen(false);
           if (station_id) {
-            setStationCount(station_count + 1);
-            await step1Update(id_update, 'processing', station_id);
-            await updateStartTime(id_update);
+            let countItem = 0;
+            orders.map((orderData) => {
+              countItem = countItem + orderData.items.length;
+            });
+
+            if (orderSelect.length != countItem) {
+              setLoading(false);
+              alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
+              return;
+            } else {
+              setOpen(false);
+              // if (id_update == 9999) {
+              orderSelect.map((dataOrder) => {
+                if (typeSelect[dataOrder.id]) {
+                  if (typeSelect[dataOrder.id].checked1 == 'on') {
+                    const setData = {
+                      product_register_id: dataOrder.value
+                    };
+                    updateRegisterItems(dataOrder.id, setData);
+                  } else {
+                    const setData = {
+                      product_register_id: dataOrder.value
+                    };
+                    updateRegisterItems(dataOrder.id, setData);
+                  }
+                }
+              });
+              setStationCount(station_count + 1);
+              await step1Update(id_update, 'processing', station_id);
+              await updateStartTime(id_update);
+            }
+            // }
           } else {
             alert('กรุณาเลือกหัวจ่าย');
             setLoading(false);
@@ -661,10 +695,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             countItem = countItem + orderData.items.length;
           });
 
-          if (orderSelect.length != countItem) {
-            alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
-            return;
-          }
+          // if (orderSelect.length != countItem) {
+          //   console.log(orderSelect.length)
+          //   console.log(countItem)
+          //   alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
+          //   return;
+          // }
 
           let checktypeNum = 0;
           let checktypeSelect = 0;
@@ -687,12 +723,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             alert('กรุณาระบุประเภทสินค้า');
             return;
           }
-
-          // if (orderSelect.length == 0 || orderSelect === null) {
-          //   alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
-          //   return;
-          // }
-
+          
           try {
             setOpen(false);
             // การใช้งาน Line Notify
@@ -701,13 +732,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
               if (typeSelect[dataOrder.id]) {
                 if (typeSelect[dataOrder.id].checked1 == 'on') {
                   const setData = {
-                    product_register_id: dataOrder.value,
                     smash_quantity: typeNumSelect[dataOrder.id]
                   };
                   updateRegisterItems(dataOrder.id, setData);
                 } else {
                   const setData = {
-                    product_register_id: dataOrder.value,
                     smash_quantity: 0
                   };
                   updateRegisterItems(dataOrder.id, setData);
@@ -1002,18 +1031,74 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
         )}
 
         {status == 'waiting' && (
-          <Dialog fullScreen={fullScreen} open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-            <DialogTitle id="responsive-dialog-title">{'แจ้งเตือน'}</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                ต้องการ {textnotify} ID:{id_update} หรือไม่?
-              </DialogContentText>
+          <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
+            <DialogTitle id="responsive-dialog-title" align="center">
+              <Typography variant="h5">
+                {textnotify} ID:{id_update}
+              </Typography>
+            </DialogTitle>
+            <DialogContent sx={{ width: 400 }}>
+              <MainCard>
+                <Grid container spacing={3}>
+                  {orders.length > 0 && (
+                    <Grid item xs={12}>
+                      <Grid item xs={12}>
+                        <Typography variant="h5">
+                          <strong>ข้อมูลกองสินค้า:</strong>
+                        </Typography>
+                      </Grid>
+                      {orders.map((ordersItems, orderId) => (
+                        <div key={orderId}>
+                          {ordersItems.product_brand_id !== null && ordersItems.product_company_id && (
+                            <Grid container spacing={2}>
+                              {ordersItems.items.map((orderItem, orderItemId) => (
+                                <>
+                                  <Grid item xs={12} md={12} key={orderItemId}>
+                                    <InputLabel sx={{ mt: 1, mb: 1 }}>กองสินค้า : {orderItem.name}</InputLabel>
+                                    <FormControl sx={{ width: '100%' }} size="small">
+                                      <Select
+                                        displayEmpty
+                                        variant="outlined"
+                                        value={orderSelect[orderItem.item_id]}
+                                        onChange={(e) => {
+                                          handleChangeProduct(e, orderItem.item_id);
+                                        }}
+                                        fullWidth
+                                      >
+                                        <MenuItem disabled value="">
+                                          เลือกกองสินค้า
+                                        </MenuItem>
+                                        {orderItem.productRegis &&
+                                          orderItem.productRegis.map((productRegis) => (
+                                            <MenuItem key={productRegis.product_register_id} value={productRegis.product_register_id}>
+                                              {productRegis.product_register_name}{' '}
+                                              {productRegis.product_register_date
+                                                ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
+                                                : '-'}
+                                              {productRegis.product_register_date
+                                                ? ` (${calculateAge(productRegis.product_register_date)}) `
+                                                : '-'}
+                                            </MenuItem>
+                                          ))}
+                                      </Select>
+                                    </FormControl>
+                                  </Grid>
+                                </>
+                              ))}
+                            </Grid>
+                          )}
+                        </div>
+                      ))}
+                    </Grid>
+                  )}
+                </Grid>
+              </MainCard>
             </DialogContent>
-            <DialogActions>
-              <Button autoFocus onClick={() => handleClose(0)}>
+            <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
+              <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
                 ยกเลิก
               </Button>
-              <Button onClick={() => handleClose(1)} autoFocus>
+              <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
                 ยืนยัน
               </Button>
             </DialogActions>
@@ -1021,7 +1106,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
         )}
 
         {status == 'processing' && (
-          <Dialog fullScreen={fullScreen} open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
+          <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
             {fr === 'close' ? (
               <>
                 <DialogTitle id="responsive-dialog-title" align="center">
@@ -1066,6 +1151,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                           <Select
                             displayEmpty
                             variant="outlined"
+                            disabled={warehouseId && 'disabled'}
                             value={warehouseId}
                             onChange={(e) => {
                               handleChangeWarehouse(e);
@@ -1092,6 +1178,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                           <Select
                             displayEmpty
                             variant="outlined"
+                            disabled={stationsId && 'disabled'}
                             value={stationsId == null ? '' : stationsId}
                             onChange={(e) => {
                               handleChangeStation(e);
@@ -1117,6 +1204,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                         <FormControl sx={{ width: '100%' }} size="small">
                           <Select
                             displayEmpty
+                            disabled={teamId !== null && teamId && 'disabled'}
                             variant="outlined"
                             value={teamId == null ? '' : teamId}
                             onChange={(e) => {
@@ -1164,7 +1252,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                         </FormControl>
                       </Grid>
 
-                      <Grid item xs={12} md={6}>
+                      <Grid item xs={12} md={6} sx={{ display: 'none' }}>
                         <InputLabel>หมายเลขสาย</InputLabel>
                         <FormControl sx={{ width: '100%' }} size="small">
                           <Select
@@ -1208,7 +1296,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                           <Select
                                             displayEmpty
                                             variant="outlined"
-                                            value={orderSelect[orderItem.item_id]}
+                                            value={
+                                              orderSelect[orderItem.item_id] ||
+                                              (orderItem.productRegis && orderItem.productRegis[orderItemId].product_register_id) ||
+                                              ''
+                                            }
                                             onChange={(e) => {
                                               handleChangeProduct(e, orderItem.item_id);
                                             }}
@@ -1244,10 +1336,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                           }
                                           label="สินค้าทุบ"
                                         />
+
                                         <FormControlLabel
+                                          sx={{ display: 'none' }}
                                           control={
                                             <Checkbox
-                                              checked={typeSelect[orderItem.item_id]?.checked2 || false}
+                                              checked
                                               onChange={handleChangeSelect(orderItem.item_id, 'checked2')}
                                               name="checked2"
                                             />
@@ -1424,8 +1518,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                           <TableCell align="left">{row.driver_name}</TableCell>
                           <TableCell align="left">{row.driver_mobile}</TableCell>
                           <TableCell align="left">
-                            {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
                             {row.start_datetime ? row.start_datetime.slice(11, 19) : row.start_time.slice(11, 19)}
+                          </TableCell>
+                          <TableCell align="center">
+                            {row.recall_status == 'Y' ? <Chip color="error" sx={{ width: '80px' }} label={'ทวนสอบ'} /> : '-'}
                           </TableCell>
                           <TableCell align="center">
                             {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอขึ้นสินค้า'} />}
@@ -1435,13 +1531,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                           <TableCell align="center">
                             {status == 'waiting' && (
                               <FormControl sx={{ minWidth: 140 }} size="small">
-                                <InputLabel id={`station-select-label-${row.step_id}`} size="small">
-                                  หัวจ่าย
-                                </InputLabel>
                                 <Select
                                   size="small"
                                   labelId={`station-select-label-${row.step_id}`}
-                                  label="หัวจ่าย"
+                                  disabled
                                   value={selectedStations[row.step_id] || row.reserve_station_id} // ใช้สถานีที่ถูกเลือกในแต่ละแถวหรือสถานีที่ถูกจองเริ่มต้น
                                   onChange={(event) => handleStationChange(event, row)}
                                 >
@@ -1469,7 +1562,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                         row.step_id,
                                         'call',
                                         row.queue_id,
-                                        selectedStations[row.step_id] || row.reserve_station_id
+                                        selectedStations[row.step_id] || row.reserve_station_id,
+                                        row
                                       )
                                     }
                                     endIcon={<RightSquareOutlined />}

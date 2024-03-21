@@ -106,7 +106,7 @@ function CompantTableHead() {
   );
 }
 
-function ProductTable() {
+function ProductManagementTable({ onFilter }) {
   //   const [car, setCar] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -114,14 +114,18 @@ function ProductTable() {
   useEffect(() => {
     // getPermission();
     getWareHouseManager();
-  }, []);
+  }, [onFilter]);
 
   const [productList, setProductList] = useState([]);
   const getWareHouseManager = async () => {
     setLoading(true);
     try {
       adminRequest.getAllProductRegister().then((response) => {
-        setProductList(response);
+        if (onFilter) {
+          setProductList(response.filter((x) => x.product_company_id == onFilter));
+        } else {
+          setProductList(response);
+        }
         setLoading(false);
       });
     } catch (error) {
@@ -189,29 +193,6 @@ function ProductTable() {
   const updateWareHouse = (id) => {
     navigate('/admin/warehouse/update/' + id);
   };
-
-  //   const deleteCar = (id) => {
-  //     let config = {
-  //       method: 'delete',
-  //       maxBodyLength: Infinity,
-  //       url: apiUrl + '/deletecar/' + id,
-  //       headers: {}
-  //     };
-
-  //     axios
-  //       .request(config)
-  //       .then((result) => {
-  //         if (result.data.status === 'ok') {
-  //           alert(result.data.message);
-  //           getCar();
-  //         } else {
-  //           alert(result.data['message']['sqlMessage']);
-  //         }
-  //       })
-  //       .catch((error) => {
-  //         console.log(error);
-  //       });
-  //   };
   return (
     <Box>
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
@@ -324,4 +305,4 @@ function ProductTable() {
   );
 }
 
-export default ProductTable;
+export default ProductManagementTable;
