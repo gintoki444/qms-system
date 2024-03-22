@@ -39,8 +39,12 @@ import * as reserveRequest from '_api/reserveRequest';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 import CircularProgress from '@mui/material/CircularProgress';
-import { RightSquareOutlined } from '@ant-design/icons';
+import { RightSquareOutlined, SoundOutlined } from '@ant-design/icons';
 import moment from 'moment/min/moment-with-locales';
+import QueueTag from 'components/@extended/QueueTag';
+
+// Sound Call
+import SoundCall from 'components/@extended/SoundCall';
 
 export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
@@ -125,7 +129,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
       id: 'statusTitle',
       align: 'center',
       disablePadding: false,
-      label: status === 'waiting' ? 'หัวจ่าย' : ''
+      label: 'หัวจ่าย'
+    },
+    {
+      id: 'soundCall',
+      align: 'center',
+      disablePadding: true,
+      label: 'เรียกคิว'
     },
     {
       id: 'action',
@@ -141,14 +151,18 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
       <TableHead>
         <TableRow>
           {headCells.map((headCell) => (
-            <TableCell
-              key={headCell.id}
-              align={headCell.align}
-              width={headCell.width}
-              padding={headCell.disablePadding ? 'none' : 'normal'}
-            >
-              {headCell.label}
-            </TableCell>
+            <>
+              {(status === 'waiting' && headCell.id === 'soundCall') || (status === 'processing' && headCell.id === 'statusTitle') || (
+                <TableCell
+                  key={headCell.id}
+                  align={headCell.align}
+                  width={headCell.width}
+                  padding={headCell.disablePadding ? 'none' : 'normal'}
+                >
+                  {headCell.label}
+                </TableCell>
+              )}
+            </>
           ))}
         </TableRow>
       </TableHead>
@@ -509,7 +523,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             } else if (result.team_data.length > 0 || result.team_data) {
               setTeamData(result.team_data);
 
-              console.log('combinedData :', result);
               const combinedData = [
                 ...result.team_data.team_managers,
                 ...result.team_data.team_checkers,
@@ -531,6 +544,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
 
   // =============== Get Order Product ===============//
   const [orders, setOrders] = useState([]);
+  // const [productRegister, setProductRegister] = useState([]);
   const getOrderOfReserve = async (id) => {
     await reserveRequest.getOrderByReserveId(id).then((response) => {
       if (response.length > 0) {
@@ -543,7 +557,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             });
           }
         });
-        console.log('getOrderOfReserve :', response);
         setOrders(response);
       }
     });
@@ -695,13 +708,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             countItem = countItem + orderData.items.length;
           });
 
-          // if (orderSelect.length != countItem) {
-          //   console.log(orderSelect.length)
-          //   console.log(countItem)
-          //   alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
-          //   return;
-          // }
-
           let checktypeNum = 0;
           let checktypeSelect = 0;
           orderSelect.map((dataOrder) => {
@@ -723,7 +729,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             alert('กรุณาระบุประเภทสินค้า');
             return;
           }
-          
+
           try {
             setOpen(false);
             // การใช้งาน Line Notify
@@ -791,6 +797,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     } else {
       setLoading(false);
     }
+    setOrders([]);
     setOpen(false);
   };
 
@@ -836,7 +843,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     };
 
     fetch(apiUrl + '/line-notify', requestOptions)
-      .then((response) => response.json())
+      .then((response) => response.text())
       .then((result) => {
         console.log(result);
       })
@@ -1008,6 +1015,17 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
   const handleChangeLaborLine = (e) => {
     setLaborLineId(e.target.value);
   };
+
+  const handleCallQueue = (queues) => {
+    const titleTxt = `คิวหมายเลขที่ ${queues.token}`;
+    const detialTxt = `เข้าสถานีชั่งเบา`;
+    // ==== แยกตัวอักษรป้ายทะเบียนรถ ====
+    const titleTxtCar = queues.registration_no;
+    const cleanedString = titleTxtCar.replace(/[^\u0E00-\u0E7F\d\s]/g, '');
+    const spacedString = cleanedString.split('').join(' ');
+
+    SoundCall(`${titleTxt} ทะเบียน ${spacedString} ${detialTxt}`);
+  };
   return (
     <>
       <Box>
@@ -1059,7 +1077,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                       <Select
                                         displayEmpty
                                         variant="outlined"
-                                        value={orderSelect[orderItem.item_id]}
+                                        value={orderSelect[orderItem.item_id] || ''}
                                         onChange={(e) => {
                                           handleChangeProduct(e, orderItem.item_id);
                                         }}
@@ -1101,6 +1119,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
               <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
                 ยืนยัน
               </Button>
+              {fr === 'call' && (
+                <Button color="info" variant="contained" onClick={() => handleCallQueue(queues)} autoFocus endIcon={<SoundOutlined />}>
+                  เรียกคิว
+                </Button>
+              )}
             </DialogActions>
           </Dialog>
         )}
@@ -1162,7 +1185,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                             <MenuItem disabled value="">
                               เลือกโกดังสินค้า
                             </MenuItem>
-                            {warehousesList &&
+                            {warehousesList.length > 0 &&
                               warehousesList.map((warehouses) => (
                                 <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
                                   {warehouses.description}
@@ -1189,7 +1212,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                             <MenuItem disabled value="">
                               เลือกหัวจ่าย
                             </MenuItem>
-                            {stationsList &&
+                            {stationsList.length > 0 &&
                               stationsList.map((station) => (
                                 <MenuItem key={station.station_id} value={station.station_id}>
                                   {station.station_description}
@@ -1216,7 +1239,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                             <MenuItem disabled value="">
                               เลือกทีมรับสินค้า
                             </MenuItem>
-                            {teamloadingList &&
+                            {teamloadingList.length > 0 &&
                               teamloadingList.map((teamload) => (
                                 <MenuItem key={teamload.team_id} value={teamload.team_id}>
                                   {teamload.team_name}
@@ -1242,7 +1265,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                             <MenuItem disabled value="">
                               เลือกสายแรงงาน
                             </MenuItem>
-                            {contractorList &&
+                            {contractorList.length > 0 &&
                               contractorList.map((contractorList) => (
                                 <MenuItem key={contractorList.contractor_id} value={contractorList.contractor_id}>
                                   {contractorList.contractor_name}
@@ -1268,7 +1291,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                             <MenuItem disabled value="">
                               เลือกหมายเลขสาย
                             </MenuItem>
-                            {layborLineList &&
+                            {layborLineList.length > 0 &&
                               layborLineList.map((layborLine) => (
                                 <MenuItem key={layborLine.labor_line_id} value={layborLine.labor_line_id}>
                                   {layborLine.labor_line_name}
@@ -1298,7 +1321,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                             variant="outlined"
                                             value={
                                               orderSelect[orderItem.item_id] ||
-                                              (orderItem.productRegis && orderItem.productRegis[orderItemId].product_register_id) ||
+                                              (orderItem.productRegis &&
+                                                orderItem.productRegis[0] &&
+                                                orderItem.productRegis[0].product_register_id) ||
                                               ''
                                             }
                                             onChange={(e) => {
@@ -1309,9 +1334,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                             <MenuItem disabled value="">
                                               เลือกกองสินค้า
                                             </MenuItem>
-                                            {orderItem.productRegis &&
-                                              orderItem.productRegis.map((productRegis) => (
-                                                <MenuItem key={productRegis.product_register_id} value={productRegis.product_register_id}>
+                                            {orderItem.productRegis !== undefined &&
+                                              orderItem.productRegis.map((productRegis, index) => (
+                                                <MenuItem key={index} value={productRegis.product_register_id}>
                                                   {productRegis.product_register_name}{' '}
                                                   {productRegis.product_register_date
                                                     ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
@@ -1493,7 +1518,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                 </TableBody>
               ) : (
                 <TableBody>
-                  {items &&
+                  {items.length > 0 &&
                     items.map((row, index) => {
                       return (
                         <TableRow key={index}>
@@ -1504,7 +1529,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                           </TableCell>
                           <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
                           <TableCell align="center">
-                            <Chip color="primary" label={row.token} />
+                            <QueueTag id={row.product_company_id || ''} token={row.token} />
+                            {/* <Chip color="primary" label={row.token} /> */}
                           </TableCell>
                           <TableCell align="center">
                             <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />
@@ -1527,9 +1553,27 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                             {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอขึ้นสินค้า'} />}
                             {status == 'processing' && <Chip color="success" sx={{ width: '95px' }} label={'ขึ้นสินค้า'} />}
                           </TableCell>
+                          {status == 'processing' && (
+                            <TableCell align="center">
+                              <Tooltip title="เรียกคิว">
+                                <span>
+                                  <Button
+                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                    variant="contained"
+                                    size="small"
+                                    align="center"
+                                    color="info"
+                                    onClick={() => handleCallQueue(row)}
+                                  >
+                                    <SoundOutlined />
+                                  </Button>
+                                </span>
+                              </Tooltip>
+                            </TableCell>
+                          )}
 
-                          <TableCell align="center">
-                            {status == 'waiting' && (
+                          {status == 'waiting' && (
+                            <TableCell align="center">
                               <FormControl sx={{ minWidth: 140 }} size="small">
                                 <Select
                                   size="small"
@@ -1545,8 +1589,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                   ))}
                                 </Select>
                               </FormControl>
-                            )}
-                          </TableCell>
+                            </TableCell>
+                          )}
 
                           <TableCell align="right" width="120" sx={{ width: 120, maxWidth: 120 }}>
                             <ButtonGroup aria-label="button group" sx={{ alignItems: 'center' }}>

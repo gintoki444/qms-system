@@ -23,8 +23,10 @@ import {
   FormControlLabel,
   Checkbox,
   Input,
-  OutlinedInput
-  // CircularProgress
+  OutlinedInput,
+  Tooltip,
+  Select,
+  MenuItem
   // ButtonGroup
 } from '@mui/material';
 
@@ -36,11 +38,16 @@ const apiUrl = process.env.REACT_APP_API_URL;
 // import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 // import DoneIcon from '@mui/icons-material/Done';
 import CircularProgress from '@mui/material/CircularProgress';
-import { RightSquareOutlined } from '@ant-design/icons';
+import { RightSquareOutlined, SoundOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 // import { useDispatch, useSelector } from 'react-redux';
 // import { setStation } from 'store/reducers/station';
+
+// Sound Call
+import SoundCall from 'components/@extended/SoundCall';
+
+import QueueTag from 'components/@extended/QueueTag';
 
 export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
   // const station_count = useSelector((state) => state.station.station_count);
@@ -127,6 +134,12 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
       label: 'สถานะ'
     },
     {
+      id: 'soundCall',
+      align: 'center',
+      disablePadding: true,
+      label: 'เรียกคิว'
+    },
+    {
       id: 'action',
       align: 'right',
       disablePadding: false,
@@ -140,14 +153,16 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
         <TableRow>
           {headCells.map((headCell) => (
             <>
-              <TableCell
-                key={headCell.id}
-                align={headCell.align}
-                width={headCell.width}
-                padding={headCell.disablePadding ? 'none' : 'normal'}
-              >
-                {headCell.label}
-              </TableCell>
+              {(status === 'waiting' && headCell.id === 'soundCall') || (
+                <TableCell
+                  key={headCell.id}
+                  align={headCell.align}
+                  width={headCell.width}
+                  padding={headCell.disablePadding ? 'none' : 'normal'}
+                >
+                  {headCell.label}
+                </TableCell>
+              )}
             </>
           ))}
         </TableRow>
@@ -169,13 +184,12 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
   const station_num = 2;
 
   useEffect(() => {
+    getStation();
     fetchData();
   }, [status, onStatusChange, onFilter]);
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-
       // Use different API functions based on the status
       if (status === 'waiting') {
         await waitingGet();
@@ -277,7 +291,6 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
       .then((result) => {
         if (result['status'] === 'ok') {
           //alert("Upadte next step was completed")
-          setLoading(false);
         }
       })
       .catch((error) => console.log('error', error));
@@ -382,7 +395,6 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
             // Reload
             onStatusChange(status === 'waiting' ? 'processing' : 'waiting');
             fetchData();
-            setLoading(false);
           } else {
             console.log('not update updateStartTime');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
@@ -536,6 +548,26 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
     console.log('recallData :', recallData);
   };
 
+  const checkStations = (id) => {
+    return new Promise((resolve, reject) => {
+      getQueues
+        .getStep3Processing()
+        .then((response) => {
+          if (response) {
+            const count = response.filter((x) => x.station_id == id).length;
+            console.log(count);
+            resolve(count);
+          } else {
+            resolve(0); // Return 0 if response is empty
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          reject(error); // Reject with error if there's an error
+        });
+    });
+  };
+
   const [queues, setQueues] = useState([]);
   const handleClickOpen = (step_id, fr, queue_id, team_id, queuesData) => {
     if (fr === 'call') {
@@ -557,16 +589,33 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
     setQueues(queuesData);
     setOpen(true);
   };
-  const handleClose = (flag) => {
-    setLoading(true);
+
+  // ตรวจสอบค่าว่าง
+  const isEmpty = (obj) => {
+    return Object.entries(obj).length === 0;
+  };
+
+  const handleClose = async (flag) => {
     // flag = 1 = ยืนยัน
     if (flag === 1) {
       //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
       if (fr === 'call') {
         // station_count = จำนวนคิวที่กำลังเข้ารับบรการ, station_num = จำนวนหัวจ่ายในสถานีทั้งหมด
+
+        const checkstation = await checkStations(selectedStations[id_update]);
+        if (checkstation > 0) {
+          alert('สถานีบริการนี้กำลังใช้งานอยู่');
+          return;
+        }
+        if (isEmpty(selectedStations)) {
+          console.log('selectedStations :', selectedStations);
+          alert('กรุณาเลือกสถานีชั่งเบา!');
+          return;
+        }
+
         setWeight(0);
         if (station_count < station_num) {
-          //เพิ่ม function get station id 3 = station id
+          setLoading(true);
 
           // การใช้งาน Line Notify
           getStepToken(id_update)
@@ -578,7 +627,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
               // ทำอะไรกับข้อผิดพลาด
             });
 
-          step1Update(id_update, 'processing', 23);
+          step1Update(id_update, 'processing', selectedStations[id_update]);
           updateStartTime(id_update);
         } else {
           alert('สถานีบริการเต็ม');
@@ -589,41 +638,34 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
           //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว
           if (weight === 0 || weight === '') {
             alert('กรุณาใสน้ำหนักจากการชั่งหนัก');
-            setLoading(false);
             return;
-          } else if (typeSelect.checked1 == true && txtDetail == '') {
+          } else if (typeSelect && typeSelect.checked1 == true && txtDetail == '') {
             alert('กรุณาใสรายละเอียดการทวนสอบ');
             return;
           } else {
-            if (typeSelect.checked1 == true) {
+            if (typeSelect && typeSelect.checked1 == true) {
               queues.weight2 = weight;
-              console.log('Recall ');
-              console.log('Queue Data ', queues);
-              console.log('id_update ', id_update);
               updateRecall(id_update, queues.queue_id, queues);
 
               setLoading(false);
             } else {
-              console.log('typeSelect: ', typeSelect);
-              if (id_update_next === 9999) {
-                // การใช้งาน Line Notify
-                getStepToken(id_update)
-                  .then(({ queue_id, token }) => {
-                    lineNotify(queue_id, token);
-                  })
-                  .catch((error) => {
-                    console.error('Error:', error);
-                    // ทำอะไรกับข้อผิดพลาด
-                  });
+              // การใช้งาน Line Notify
+              getStepToken(id_update)
+                .then(({ queue_id, token }) => {
+                  lineNotify(queue_id, token);
+                })
+                .catch((error) => {
+                  console.error('Error:', error);
+                  // ทำอะไรกับข้อผิดพลาด
+                });
 
-                updateLoadingTeam(id_update_next, team_id);
-                updateLoadingTeam(id_update, team_id);
-                step2Update(id_update_next, 'waiting', 27);
-                step1Update(id_update, 'completed', 23);
-                updateEndTime(id_update);
-                updateWeight2(id_update);
-                updateStartTime(id_update_next);
-              }
+              updateLoadingTeam(id_update_next, team_id);
+              updateLoadingTeam(id_update, team_id);
+              step2Update(id_update_next, 'waiting', 27);
+              step1Update(id_update, 'completed', queues.station_id);
+              updateEndTime(id_update);
+              updateWeight2(id_update);
+              updateStartTime(id_update_next);
             }
           }
         } else {
@@ -646,6 +688,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
     } else {
       setLoading(false);
     }
+    setSelectedStations({});
     setTxtDetail('');
     setWeight(0);
     setTypeSelect([]);
@@ -666,6 +709,38 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
     setTxtDetail(e.target.value);
   };
 
+  const handleCallQueue = (queues) => {
+    const titleTxt = `คิวหมายเลขที่ ${queues.token}`;
+    const detialTxt = `เข้าสถานีชั่งเบา`;
+    // ==== แยกตัวอักษรป้ายทะเบียนรถ ====
+    const titleTxtCar = queues.registration_no;
+    const cleanedString = titleTxtCar.replace(/[^\u0E00-\u0E7F\d\s]/g, '');
+    const spacedString = cleanedString.split('').join(' ');
+
+    SoundCall(`${titleTxt} ทะเบียน ${spacedString} ${detialTxt}`);
+  };
+
+  const [stations, setStations] = useState([]); // ใช้ state สำหรับการเก็บสถานีที่ถูกเลือกในแต่ละแถว
+  const getStation = () => {
+    try {
+      stepRequest.getAllStations().then((response) => {
+        if (response) {
+          setStations(response.filter((x) => x.station_group_id == 4));
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const [selectedStations, setSelectedStations] = useState({}); // ใช้ state สำหรับการเก็บสถานีที่ถูกเลือกในแต่ละแถว
+  const handleStationChange = (event, row) => {
+    const { value } = event.target;
+    setSelectedStations((prevState) => ({
+      ...prevState,
+      [row.step_id]: value // เก็บค่าสถานีที่ถูกเลือกในแต่ละแถวโดยใช้ step_id เป็น key
+    }));
+  };
   return (
     <>
       <Box>
@@ -674,7 +749,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
             <>
               <DialogTitle id="responsive-dialog-title" align="center">
                 <Typography variant="h5">
-                  ต้องการ {textnotify} ID:{id_update} หรือไม่?
+                  ต้องการ {textnotify} เลขที่ {queues && queues.token} หรือไม่?
                 </Typography>
               </DialogTitle>
               <DialogContent sx={{ width: 350 }}>
@@ -730,9 +805,36 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
             <>
               <DialogTitle id="responsive-dialog-title" align="center">
                 <Typography variant="h5">
-                  ต้องการ {textnotify} ID:{id_update} หรือไม่?
+                  ต้องการ {textnotify} เลขที่ {queues && queues.token} หรือไม่?
                 </Typography>
               </DialogTitle>
+
+              {fr === 'call' && (
+                <DialogContent sx={{ width: 350 }}>
+                  <Grid container justifyContent="flex-end" spacing={2}>
+                    <Grid item xs={12}>
+                      <InputLabel>เครื่องชั่งเบา</InputLabel>
+                      <FormControl sx={{ width: '100%' }} size="small">
+                        <Select
+                          displayEmpty
+                          size="small"
+                          value={selectedStations[queues.step_id] || ''}
+                          onChange={(event) => handleStationChange(event, queues)}
+                        >
+                          <MenuItem disabled value="">
+                            เลือกเครื่องชั่งเบา
+                          </MenuItem>
+                          {stations.map((station) => (
+                            <MenuItem key={station.station_id} value={station.station_id}>
+                              {station.station_description}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  </Grid>
+                </DialogContent>
+              )}
             </>
           )}
 
@@ -743,6 +845,11 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
             <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
               ยืนยัน
             </Button>
+            {fr === 'call' && (
+              <Button color="info" variant="contained" onClick={() => handleCallQueue(queues)} autoFocus endIcon={<SoundOutlined />}>
+                เรียกคิว
+              </Button>
+            )}
           </DialogActions>
         </Dialog>
         {status === 'processing' && (
@@ -801,7 +908,8 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                         <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
 
                         <TableCell align="center">
-                          <Chip color="primary" label={row.token} />
+                          {/* <Chip color="primary" label={row.token} /> */}
+                          <QueueTag id={row.product_company_id || ''} token={row.token} />
                         </TableCell>
 
                         <TableCell align="center">
@@ -831,6 +939,24 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                           {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอคิวชั่งหนัก'} />}
                           {status == 'processing' && <Chip color="success" sx={{ width: '95px' }} label={'กำลังชั่งหนัก'} />}
                         </TableCell>
+                        {status == 'processing' && (
+                          <TableCell align="center">
+                            <Tooltip title="เรียกคิว">
+                              <span>
+                                <Button
+                                  sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                  variant="contained"
+                                  size="small"
+                                  align="center"
+                                  color="info"
+                                  onClick={() => handleCallQueue(row)}
+                                >
+                                  <SoundOutlined />
+                                </Button>
+                              </span>
+                            </Tooltip>
+                          </TableCell>
+                        )}
 
                         <TableCell align="right" width="120" sx={{ width: 120, maxWidth: 120 }}>
                           <ButtonGroup aria-label="button group" sx={{ alignItems: 'center' }}>
@@ -840,7 +966,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                                 variant="contained"
                                 size="small"
                                 color="info"
-                                onClick={() => handleClickOpen(row.step_id, 'call', row.queue_id, row.team_id)}
+                                onClick={() => handleClickOpen(row.step_id, 'call', row.queue_id, row.team_id, row)}
                                 endIcon={<RightSquareOutlined />}
                               >
                                 เรียกคิว
@@ -852,7 +978,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                                   // startIcon={<ArrowBackIosIcon />}
                                   variant="contained"
                                   size="small"
-                                  onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.team_id)}
+                                  onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.team_id, row)}
                                   color="error"
                                 >
                                   ยกเลิก

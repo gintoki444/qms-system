@@ -66,6 +66,18 @@ const headCells = [
     label: 'เบอร์โทร'
   },
   {
+    id: 'starttime',
+    align: 'center',
+    disablePadding: false,
+    label: 'เวลาเริ่ม'
+  },
+  {
+    id: 'endtime',
+    align: 'center',
+    disablePadding: false,
+    label: 'เวลา'
+  },
+  {
     id: 'status',
     align: 'center',
     disablePadding: false,
@@ -163,29 +175,25 @@ export default function Step1Processing() {
             {items.length > 0 &&
               items.map((row, index) => (
                 <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                  <TableCell align="center" >
+                  <TableCell align="center">
                     <Chip color="primary" sx={{ width: '95px' }} label={row.token} />
                   </TableCell>
                   <TableCell align="left">{row.station_description}</TableCell>
-                  <TableCell align="left" >
+                  <TableCell align="left">
                     <Chip color="primary" sx={{ width: '95px' }} label={row.registration_no} />
                   </TableCell>
-                  <TableCell align="left" >
-                    {row.company_name}
-                  </TableCell>
-                  <TableCell align="left" >
-                    {row.driver_name}
-                  </TableCell>
-                  <TableCell align="left" >
-                    {row.driver_mobile}
-                  </TableCell>
-                  <TableCell align="center" >
+                  <TableCell align="left">{row.company_name}</TableCell>
+                  <TableCell align="left">{row.driver_name}</TableCell>
+                  <TableCell align="left">{row.driver_mobile}</TableCell>
+                  <TableCell align="center">{row.start_time ? row.start_time.slice(11, 19) : '-'}</TableCell>
+                  <TableCell align="left">{row.elapsed_time ? row.elapsed_time : '-'}</TableCell>
+                  <TableCell align="center">
                     <Chip color="success" sx={{ width: '110px' }} label={'กำลังชั่งเบา'} />
                   </TableCell>
                 </TableRow>
               ))}
             <TableRow>
-              <TableCell colSpan={7}>
+              <TableCell colSpan={11}>
                 <Link color="primary" href="/step2" onClick={preventDefault} sx={{ mt: 3 }}>
                   รายการทั้งหมด
                 </Link>
@@ -194,7 +202,7 @@ export default function Step1Processing() {
 
             {items.length == 0 && (
               <TableRow>
-                <TableCell colSpan={9} align="center">
+                <TableCell colSpan={11} align="center">
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>

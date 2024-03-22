@@ -13,7 +13,7 @@ const adminManagement = {
   id: 'management',
   title: 'การจัดการข้อมูล',
   type: 'group',
-  roles: [8],
+  roles: [8,9,10],
   children: [
     {
       id: 'admincompany',

@@ -2,6 +2,17 @@
 const apiUrl = process.env.REACT_APP_API_URL;
 
 // ==============================|| ข้อมูล All Product Company   ||============================== //
+export const getAllStations = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/allstations`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// ==============================|| ข้อมูล All Product Company   ||============================== //
 export const getAllProductCompany = async () => {
   const requestOptions = {
     method: 'GET',

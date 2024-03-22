@@ -13,7 +13,7 @@ const adminSale = {
   id: 'management',
   title: 'ข้อมูลคิวรับสินค้า',
   type: 'group',
-  roles: [10],
+  roles: [99],
   children: [
     {
       id: 'userReserves',

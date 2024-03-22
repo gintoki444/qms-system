@@ -366,7 +366,7 @@ function AddQueue() {
   // =============== InitialValue ===============//
   let initialValue = {
     company_id: reservationData.company_id,
-    car_id: reservationData.car_id, 
+    car_id: reservationData.car_id,
     brand_group_id: reservationData.brand_group_id,
     product_company_id: reservationData.product_company_id || '',
     product_brand_id: reservationData.product_brand_id || '',
@@ -379,7 +379,7 @@ function AddQueue() {
     warehouse_id: '',
     contractor_id: '',
     team_id: '',
-    labor_line_id: ''
+    labor_line_id: 0
   };
 
   // =============== Validate Forms ===============//
@@ -398,12 +398,18 @@ function AddQueue() {
 
   // =============== บันทึกข้อมูล ===============//
   const updateTeamLoading = (values) => {
-    adminRequest.putReserveTeam(id, values).then(() => {});
+    try {
+      adminRequest.putReserveTeam(id, values);
+    } catch (error) {
+      console.log(error);
+    }
   };
   const updateTeamData = (values) => {
-    adminRequest.putReserveTeamData(id, values).then(() => {
-      window.location.href = '/admin/step0';
-    });
+    try {
+      adminRequest.putReserveTeamData(id, values);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleSubmits = async (values) => {
@@ -424,10 +430,10 @@ function AddQueue() {
       await reserveRequest
         .putReserById(id, values)
         .then((result) => {
-          console.log('result ', result);
           if (result.status === 'ok') {
             updateTeamLoading(teamValue);
             updateTeamData(values.team_data);
+            backToReserce();
           } else {
             alert(result['message']['sqlMessage']);
           }
@@ -440,6 +446,7 @@ function AddQueue() {
     }
   };
 
+  const navigate = useNavigate();
   // =============== เพิ่มรายการสินค้า ===============//
   const addOrder = () => {
     // window.location = `/order/add/${id}`;
@@ -447,7 +454,6 @@ function AddQueue() {
   };
 
   // =============== กลับหน้า Reserve ===============//
-  const navigate = useNavigate();
   const backToReserce = () => {
     navigate('/admin/step0');
   };
@@ -826,12 +832,13 @@ function AddQueue() {
                                   <MenuItem disabled value="">
                                     เลือกทีมรับสินค้า
                                   </MenuItem>
-                                  {teamloadingList.map((teamload) => (
-                                    <MenuItem key={teamload.team_id} value={teamload.team_id}>
-                                      {teamload.team_name} (โกดัง: {teamload.warehouse_name}) {teamload.station_description} (
-                                      {teamload.manager_name})
-                                    </MenuItem>
-                                  ))}
+                                  {teamloadingList.length > 0 &&
+                                    teamloadingList.map((teamload) => (
+                                      <MenuItem key={teamload.team_id} value={teamload.team_id}>
+                                        {teamload.team_name} (โกดัง: {teamload.warehouse_name}) {teamload.station_description} (
+                                        {teamload.manager_name})
+                                      </MenuItem>
+                                    ))}
                                 </Select>
                               </FormControl>
                               {touched.team_id && errors.team_id && (

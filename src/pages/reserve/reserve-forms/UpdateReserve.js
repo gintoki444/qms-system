@@ -770,7 +770,7 @@ function UpdateReserve() {
         fetch(apiUrl + '/transactions', requestOptions)
           .then((response) => response.json())
           .then(() => {
-            window.location.href = '/queues/detail/' + queue_id;
+            window.location.href = '/admin/step0/add-queues/' + id;
           })
           .catch((error) => console.log('error', error));
 
@@ -877,11 +877,12 @@ function UpdateReserve() {
                             onBlur={handleBlur}
                             placeholder="เลือกบริษัท/ร้านค้า"
                           >
-                            {companyList.map((companias) => (
-                              <MenuItem key={companias.company_id} value={companias.company_id}>
-                                {companias.name}
-                              </MenuItem>
-                            ))}
+                            {companyList.length > 0 &&
+                              companyList.map((companias) => (
+                                <MenuItem key={companias.company_id} value={companias.company_id}>
+                                  {companias.name}
+                                </MenuItem>
+                              ))}
                           </Select>
                         </FormControl>
                         {/* <TextField
@@ -920,11 +921,12 @@ function UpdateReserve() {
                           placeholder="เลือกกลุ่มสินค้า"
                           fullWidth
                         >
-                          {brandList.map((brand) => (
-                            <MenuItem key={brand.brand_group_id} value={brand.brand_group_id}>
-                              {brand.group_code} - {brand.description}
-                            </MenuItem>
-                          ))}
+                          {brandList.length > 0 &&
+                            brandList.map((brand) => (
+                              <MenuItem key={brand.brand_group_id} value={brand.brand_group_id}>
+                                {brand.group_code} - {brand.description}
+                              </MenuItem>
+                            ))}
                         </TextField>
                         {touched.brand_group_id && errors.brand_group_id && (
                           <FormHelperText error id="helper-text-company-car">
@@ -953,11 +955,12 @@ function UpdateReserve() {
                           <MenuItem disabled value="">
                             เลือกบริษัท
                           </MenuItem>
-                          {productCompany.map((companias) => (
-                            <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
-                              {companias.product_company_name_th}
-                            </MenuItem>
-                          ))}
+                          {productCompany.length > 0 &&
+                            productCompany.map((companias) => (
+                              <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
+                                {companias.product_company_name_th}
+                              </MenuItem>
+                            ))}
                         </Select>
                       </FormControl>
                       {touched.product_company_id && errors.product_company_id && (
@@ -983,11 +986,12 @@ function UpdateReserve() {
                           <MenuItem disabled value="">
                             เลือกเบรนสินค้า
                           </MenuItem>
-                          {productBrand.map((brands) => (
-                            <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
-                              {brands.product_brand_name}
-                            </MenuItem>
-                          ))}
+                          {productBrand.length > 0 &&
+                            productBrand.map((brands) => (
+                              <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
+                                {brands.product_brand_name}
+                              </MenuItem>
+                            ))}
                         </Select>
                       </FormControl>
                       {touched.product_brand_id && errors.product_brand_id && (
@@ -1012,11 +1016,12 @@ function UpdateReserve() {
                           <MenuItem value="" disabled>
                             <em>Placeholder</em>
                           </MenuItem>
-                          {carList.map((cars) => (
-                            <MenuItem key={cars.car_id} value={cars.car_id}>
-                              {cars.registration_no} : {cars.brand}
-                            </MenuItem>
-                          ))}
+                          {carList.length > 0 &&
+                            carList.map((cars) => (
+                              <MenuItem key={cars.car_id} value={cars.car_id}>
+                                {cars.registration_no} : {cars.brand}
+                              </MenuItem>
+                            ))}
                         </TextField>
                         {touched.company && errors.company && (
                           <FormHelperText error id="helper-text-company-car">
@@ -1039,11 +1044,12 @@ function UpdateReserve() {
                           placeholder="เลือกคนขับรถ"
                           fullWidth
                         >
-                          {driverList.map((driver) => (
-                            <MenuItem key={driver.driver_id} value={driver.driver_id}>
-                              {driver.firstname} {driver.lastname}
-                            </MenuItem>
-                          ))}
+                          {driverList.length > 0 &&
+                            driverList.map((driver) => (
+                              <MenuItem key={driver.driver_id} value={driver.driver_id}>
+                                {driver.firstname} {driver.lastname}
+                              </MenuItem>
+                            ))}
                         </TextField>
                         {touched.company && errors.company && (
                           <FormHelperText error id="helper-text-company-car">
@@ -1136,79 +1142,80 @@ function UpdateReserve() {
                       )}
 
                       <Grid item xs={12} sx={{ p: 2 }}>
-                        {orderList.map((order, index) => (
-                          <Grid item xs={12} key={index} sx={{ mb: 2 }}>
-                            <Grid container spacing={2} sx={{ mb: '15px' }}>
-                              <Grid item xs={12} md={12}>
-                                <Typography variant="body1">
-                                  <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
-                                </Typography>
+                        {orderList.length > 0 &&
+                          orderList.map((order, index) => (
+                            <Grid item xs={12} key={index} sx={{ mb: 2 }}>
+                              <Grid container spacing={2} sx={{ mb: '15px' }}>
+                                <Grid item xs={12} md={12}>
+                                  <Typography variant="body1">
+                                    <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
+                                  </Typography>
+                                </Grid>
+                                <Grid item xs={12} md={12}>
+                                  <Typography variant="body1">
+                                    <strong>รายละเอียด : </strong> {order.description}
+                                  </Typography>
+                                </Grid>
                               </Grid>
-                              <Grid item xs={12} md={12}>
-                                <Typography variant="body1">
-                                  <strong>รายละเอียด : </strong> {order.description}
-                                </Typography>
-                              </Grid>
-                            </Grid>
-                            <Grid item xs={12} md={12}></Grid>
-                            <Grid item xs={12} md={6}>
-                              <TableContainer>
-                                <Table
-                                  aria-labelledby="tableTitle"
-                                  size="small"
-                                  sx={{
-                                    '& .MuiTableCell-root:first-of-type': {
-                                      pl: 2
-                                    },
-                                    '& .MuiTableCell-root:last-of-type': {
-                                      pr: 3
-                                    }
-                                  }}
-                                >
-                                  <TableHead>
-                                    <TableRow>
-                                      <TableCell sx={{ p: '12px' }}>สินค้า</TableCell>
-                                      <TableCell align="right" sx={{ p: '12px' }}>
-                                        จำนวน (ตัน)
-                                      </TableCell>
-                                    </TableRow>
-                                  </TableHead>
-                                  <TableBody>
-                                    {order.items.map((item, index) => (
-                                      <TableRow key={index}>
-                                        <TableCell width={'50%'}>{item.name}</TableCell>
-                                        <TableCell align="right">{item.quantity} ตัน</TableCell>
+                              <Grid item xs={12} md={12}></Grid>
+                              <Grid item xs={12} md={6}>
+                                <TableContainer>
+                                  <Table
+                                    aria-labelledby="tableTitle"
+                                    size="small"
+                                    sx={{
+                                      '& .MuiTableCell-root:first-of-type': {
+                                        pl: 2
+                                      },
+                                      '& .MuiTableCell-root:last-of-type': {
+                                        pr: 3
+                                      }
+                                    }}
+                                  >
+                                    <TableHead>
+                                      <TableRow>
+                                        <TableCell sx={{ p: '12px' }}>สินค้า</TableCell>
+                                        <TableCell align="right" sx={{ p: '12px' }}>
+                                          จำนวน (ตัน)
+                                        </TableCell>
                                       </TableRow>
-                                    ))}
-                                  </TableBody>
-                                </Table>
-                              </TableContainer>
-                            </Grid>
-                            <Grid item xs={12} md={6} sx={{ mt: 2 }}>
-                              <Stack direction="row" alignItems="center" spacing={0}>
-                                <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
-                                  <Tooltip title="ลบคำสั่งซื้อ">
-                                    <span>
-                                      <Button
-                                        variant="contained"
-                                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                        size="medium"
-                                        disabled={reservationData.status == 'completed' && userRoles === 8}
-                                        color="error"
-                                        // onClick={() => deleteDrivers(row.reserve_id)}
-                                        onClick={() => handleClickOpen(order.order_id, 'delete-queue')}
-                                      >
-                                        <DeleteOutlined />
-                                      </Button>
-                                    </span>
-                                  </Tooltip>
-                                </ButtonGroup>
-                              </Stack>
-                            </Grid>
+                                    </TableHead>
+                                    <TableBody>
+                                      {order.items.map((item, index) => (
+                                        <TableRow key={index}>
+                                          <TableCell width={'50%'}>{item.name}</TableCell>
+                                          <TableCell align="right">{item.quantity} ตัน</TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                </TableContainer>
+                              </Grid>
+                              <Grid item xs={12} md={6} sx={{ mt: 2 }}>
+                                <Stack direction="row" alignItems="center" spacing={0}>
+                                  <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
+                                    <Tooltip title="ลบคำสั่งซื้อ">
+                                      <span>
+                                        <Button
+                                          variant="contained"
+                                          sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                          size="medium"
+                                          disabled={reservationData.status == 'completed' && userRoles === 8}
+                                          color="error"
+                                          // onClick={() => deleteDrivers(row.reserve_id)}
+                                          onClick={() => handleClickOpen(order.order_id, 'delete-queue')}
+                                        >
+                                          <DeleteOutlined />
+                                        </Button>
+                                      </span>
+                                    </Tooltip>
+                                  </ButtonGroup>
+                                </Stack>
+                              </Grid>
 
-                            <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                          </Grid>
-                        ))}
+                              <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                            </Grid>
+                          ))}
                         <Stack direction="row" alignItems="center" spacing={0}>
                           <Button
                             size="mediam"

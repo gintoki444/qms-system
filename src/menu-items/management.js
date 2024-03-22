@@ -13,7 +13,7 @@ const management = {
   id: 'management',
   title: 'ข้อมูลลูกค้า',
   type: 'group',
-  roles: [1, 5, 8],
+  roles: [1, 5, 8, 9, 10],
   children: [
     {
       id: 'company',
@@ -48,7 +48,7 @@ const management = {
       type: 'item',
       url: '/reserve',
       icon: icons.BookOutlined
-    },
+    }
   ]
 };
 

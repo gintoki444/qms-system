@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
 import * as stepRequest from '_api/StepRequest';
+import * as getQueues from '_api/queueReques';
 
 import { StepTable } from 'pages/management/step1/Step1Table';
 
-import { Grid, Stack, Box, Typography } from '@mui/material';
+import { Grid, Stack, Box, Typography, Badge } from '@mui/material';
 import MainCard from 'components/MainCard';
 
 import PropTypes from 'prop-types';
@@ -42,10 +43,8 @@ function Step1() {
   const handleStatusChange = (newStatus) => {
     // Change the common status and trigger a data reload in the other instance
     if (newStatus !== commonStatus) {
-      console.log(newStatus + '+' + commonStatus);
       setCommonStatus(newStatus);
     } else if (newStatus === commonStatus) {
-      console.log(commonStatus + '+' + newStatus);
       setCommonStatus('');
     } else {
       setCommonStatus('commonStatus');
@@ -59,8 +58,34 @@ function Step1() {
   const [companyList, setCompanyList] = useState([]);
   const getProductCompany = () => {
     stepRequest.getAllProductCompany().then((response) => {
-      setCompanyList(response);
+      if (response) {
+        setCompanyList(response);
+        waitingGet(response);
+      }
     });
+  };
+
+  const [items, setItems] = useState([]);
+  const [countAllQueue, setCountAllQueue] = useState(0);
+  const waitingGet = async (company) => {
+    try {
+      await getQueues.getStep1Waitting().then((response) => {
+        if (company.length > 0) {
+          company.map((x) => {
+            let countCompany = response.filter((i) => i.product_company_id == x.product_company_id).length;
+
+            setItems((prevState) => ({
+              ...prevState,
+              [x.product_company_id]: countCompany
+            }));
+          });
+        }
+
+        setCountAllQueue(response.length);
+      });
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const [valueFilter, setValueFilter] = useState(0);
@@ -97,10 +122,25 @@ function Step1() {
                     </Typography>
                   </Grid>
                   <Tabs value={valueFilter} onChange={handleChange} aria-label="basic tabs example">
-                    <Tab label={'ทั้งหมด'} {...a11yProps(0)} />
+                    <Tab
+                      label={
+                        <Badge badgeContent={countAllQueue} color="error">
+                          ทั้งหมด
+                        </Badge>
+                      }
+                      {...a11yProps(0)}
+                    />
                     {companyList.length > 0 &&
                       companyList.map((company, index) => (
-                        <Tab key={index} label={company.product_company_name_th2} {...a11yProps(company.product_company_id)} />
+                        <Tab
+                          key={index}
+                          label={
+                            <Badge badgeContent={items[company.product_company_id]} color="error">
+                              {company.product_company_name_th2}
+                            </Badge>
+                          }
+                          {...a11yProps(company.product_company_id)}
+                        />
                       ))}
                   </Tabs>
                 </Box>

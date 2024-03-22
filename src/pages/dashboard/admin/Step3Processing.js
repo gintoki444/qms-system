@@ -66,6 +66,18 @@ const headCells = [
     label: 'เบอร์โทร'
   },
   {
+    id: 'starttime',
+    align: 'center',
+    disablePadding: false,
+    label: 'เวลาเริ่ม'
+  },
+  {
+    id: 'endtime',
+    align: 'center',
+    disablePadding: false,
+    label: 'เวลา'
+  },
+  {
     id: 'status',
     align: 'center',
     disablePadding: false,
@@ -179,6 +191,8 @@ export default function Step2Processing() {
                   <TableCell align="left" >
                     {row.driver_mobile}
                   </TableCell>
+                  <TableCell align="center">{row.start_time ? row.start_time.slice(11, 19) : '-'}</TableCell>
+                  <TableCell align="left">{row.elapsed_time ? row.elapsed_time : '-'}</TableCell>
                   <TableCell align="center" >
                     <Chip color="success" sx={{ width: '110px' }} label={'กำลังชั่งหนัก'} />
                   </TableCell>
