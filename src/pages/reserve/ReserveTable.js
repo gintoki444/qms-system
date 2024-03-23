@@ -693,7 +693,7 @@ export default function ReserveTable({ startDate, endDate }) {
                         <Chip color={'primary'} label={moment(row.pickup_date).format('DD/MM/YYYY')} sx={{ minWidth: 95 }} />
                       </TableCell>
                       <TableCell align="center">
-                        <Chip color={'primary'} label={row.registration_no} sx={{ width: 95, border: 1 }} />
+                        <Chip color={'primary'} label={row.registration_no} sx={{ width: 122, border: 1 }} />
                       </TableCell>
                       <TableCell align="center"> {row.brand_code}</TableCell>
                       <TableCell align="left">

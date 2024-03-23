@@ -544,8 +544,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
 
   // =============== Get Order Product ===============//
   const [orders, setOrders] = useState([]);
-  // const [productRegister, setProductRegister] = useState([]);
+  const [loadOrders, setLoadOrder] = useState(false);
+  // const [productRegister, setProductRegister] = useState({});
   const getOrderOfReserve = async (id) => {
+    setLoadOrder(true);
     await reserveRequest.getOrderByReserveId(id).then((response) => {
       if (response.length > 0) {
         response.map((result) => {
@@ -553,11 +555,17 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             result.items.map((data) => {
               stepRequest.getProductRegister(result.product_company_id, result.product_brand_id, data.product_id).then((productRegis) => {
                 data.productRegis = productRegis;
+
+                // setProductRegister((press) => ({
+                //   ...press,
+                //   productRegis
+                // }));
               });
             });
           }
         });
         setOrders(response);
+        setLoadOrder(false);
       }
     });
   };
@@ -566,6 +574,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
   const handleChangeProduct = (e, id) => {
     // const { value } = e.target;
     const selectedOption = { id: id, value: e.target.value };
+
     setOrderSelect((prevState) => {
       const updatedOptions = [...prevState];
       const index = updatedOptions.findIndex((option) => option.id === id);
@@ -577,6 +586,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
         updatedOptions.push(selectedOption);
       }
 
+      console.log('updatedOptions', updatedOptions);
       return updatedOptions;
     });
   };
@@ -671,6 +681,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                   }
                 }
               });
+
+              handleCallQueue(queues);
               setStationCount(station_count + 1);
               await step1Update(id_update, 'processing', station_id);
               await updateStartTime(id_update);
@@ -1016,15 +1028,25 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     setLaborLineId(e.target.value);
   };
 
-  const handleCallQueue = (queues) => {
+  const handleCallQueue = async (queues) => {
     const titleTxt = `คิวหมายเลขที่ ${queues.token}`;
-    const detialTxt = `เข้าสถานีชั่งเบา`;
+    const detialTxt = `เข้าโกดัง`;
     // ==== แยกตัวอักษรป้ายทะเบียนรถ ====
     const titleTxtCar = queues.registration_no;
+    let titleTxtStation = '';
+
+    if (queues.station_id == 27) {
+      const getStationData = stationsList.filter((x) => x.station_id == queues.reserve_station_id);
+      titleTxtStation = getStationData[0].station_description;
+    } else {
+      titleTxtStation = queues.station_description;
+    }
+
     const cleanedString = titleTxtCar.replace(/[^\u0E00-\u0E7F\d\s]/g, '');
+    const cleanedStringStation = titleTxtStation.replace(/[^\u0E00-\u0E7F\d\s]/g, '');
     const spacedString = cleanedString.split('').join(' ');
 
-    SoundCall(`${titleTxt} ทะเบียน ${spacedString} ${detialTxt}`);
+    SoundCall(`${titleTxt} ทะเบียน ${spacedString} ${detialTxt} ${cleanedStringStation}`);
   };
   return (
     <>
@@ -1055,60 +1077,63 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                 {textnotify} ID:{id_update}
               </Typography>
             </DialogTitle>
-            <DialogContent sx={{ width: 400 }}>
+            <DialogContent sx={{ minWidth: 400 }}>
               <MainCard>
                 <Grid container spacing={3}>
-                  {orders.length > 0 && (
+                  <Grid item xs={12}>
                     <Grid item xs={12}>
-                      <Grid item xs={12}>
-                        <Typography variant="h5">
-                          <strong>ข้อมูลกองสินค้า:</strong>
-                        </Typography>
-                      </Grid>
-                      {orders.map((ordersItems, orderId) => (
-                        <div key={orderId}>
-                          {ordersItems.product_brand_id !== null && ordersItems.product_company_id && (
-                            <Grid container spacing={2}>
-                              {ordersItems.items.map((orderItem, orderItemId) => (
-                                <>
-                                  <Grid item xs={12} md={12} key={orderItemId}>
-                                    <InputLabel sx={{ mt: 1, mb: 1 }}>กองสินค้า : {orderItem.name}</InputLabel>
-                                    <FormControl sx={{ width: '100%' }} size="small">
-                                      <Select
-                                        displayEmpty
-                                        variant="outlined"
-                                        value={orderSelect[orderItem.item_id] || ''}
-                                        onChange={(e) => {
-                                          handleChangeProduct(e, orderItem.item_id);
-                                        }}
-                                        fullWidth
-                                      >
-                                        <MenuItem disabled value="">
-                                          เลือกกองสินค้า
-                                        </MenuItem>
-                                        {orderItem.productRegis &&
-                                          orderItem.productRegis.map((productRegis) => (
-                                            <MenuItem key={productRegis.product_register_id} value={productRegis.product_register_id}>
-                                              {productRegis.product_register_name}{' '}
-                                              {productRegis.product_register_date
-                                                ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
-                                                : '-'}
-                                              {productRegis.product_register_date
-                                                ? ` (${calculateAge(productRegis.product_register_date)}) `
-                                                : '-'}
-                                            </MenuItem>
-                                          ))}
-                                      </Select>
-                                    </FormControl>
-                                  </Grid>
-                                </>
-                              ))}
-                            </Grid>
-                          )}
-                        </div>
-                      ))}
+                      <Typography variant="h5">
+                        <strong>ข้อมูลกองสินค้า:</strong>
+                      </Typography>
                     </Grid>
-                  )}
+
+                    {orders.map((ordersItems, orderId) => (
+                      <div key={orderId}>
+                        {ordersItems.product_brand_id !== null && ordersItems.product_company_id && (
+                          <Grid container spacing={2}>
+                            {ordersItems.items.map((orderItem, orderItemId) => (
+                              <Grid item xs={12} md={12} key={orderItemId}>
+                                <InputLabel sx={{ mt: 1, mb: 1 }}>กองสินค้า : {orderItem.name}</InputLabel>
+
+                                {!loadOrders ? (
+                                  <FormControl sx={{ width: '100%' }} size="small">
+                                    <Select
+                                      displayEmpty
+                                      variant="outlined"
+                                      value={orderSelect[orderItem.item_id]}
+                                      onChange={(e) => {
+                                        handleChangeProduct(e, orderItem.item_id);
+                                      }}
+                                      fullWidth
+                                    >
+                                      <MenuItem disabled value="">
+                                        เลือกกองสินค้า
+                                      </MenuItem>
+                                      {orderItem.productRegis &&
+                                        // orderItem.productRegis.length > 0 &&
+                                        orderItem.productRegis.map((productRegis) => (
+                                          <MenuItem key={productRegis.product_register_id} value={productRegis.product_register_id}>
+                                            {productRegis.product_register_name}{' '}
+                                            {productRegis.product_register_date
+                                              ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
+                                              : '-'}
+                                            {productRegis.product_register_date
+                                              ? ` (${calculateAge(productRegis.product_register_date)}) `
+                                              : '-'}
+                                          </MenuItem>
+                                        ))}
+                                    </Select>
+                                  </FormControl>
+                                ) : (
+                                  <CircularProgress />
+                                )}
+                              </Grid>
+                            ))}
+                          </Grid>
+                        )}
+                      </div>
+                    ))}
+                  </Grid>
                 </Grid>
               </MainCard>
             </DialogContent>
@@ -1300,6 +1325,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                           </Select>
                         </FormControl>
                       </Grid>
+
                       {orders.length > 0 && (
                         <Grid item xs={12}>
                           <Grid item xs={12}>
@@ -1328,6 +1354,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                             }
                                             onChange={(e) => {
                                               handleChangeProduct(e, orderItem.item_id);
+                                              orderItem.productRegis[0].product_register_id = e.target.value;
                                             }}
                                             fullWidth
                                           >
@@ -1408,7 +1435,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                           ))}
                         </Grid>
                       )}
-
                       {teamLoading.length > 0 && (
                         <Grid item xs={12}>
                           <Grid item xs={12}>
@@ -1533,7 +1559,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                             {/* <Chip color="primary" label={row.token} /> */}
                           </TableCell>
                           <TableCell align="center">
-                            <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />
+                            <Chip color="primary" sx={{ width: '122px' }} label={row.registration_no} />
                           </TableCell>
                           <TableCell align="left">
                             <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>

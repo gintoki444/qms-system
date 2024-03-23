@@ -6,6 +6,7 @@ const SoundCall = (textCall) => {
   console.log(textCall);
   const utterance = new SpeechSynthesisUtterance(textCall);
   utterance.lang = 'th-TH';
+  utterance.rate = 0.7;
   return window.speechSynthesis.speak(utterance);
 };
 

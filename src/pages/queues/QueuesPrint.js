@@ -15,8 +15,8 @@ const padZero = (num) => {
 };
 const printPageStyle = {
   width: '80mm',
-  minHeight: '80mm',
-  padding: '24px 32px'
+  // minHeight: '80mm',
+  padding: '18px 24'
 };
 
 function QueuesPrint() {
@@ -74,7 +74,7 @@ function QueuesPrint() {
   };
   return (
     <>
-      <Paper style={{ ...printPageStyle }} elevation={2} sx={{ m: { xs: 'auto', md: 1 } }}>
+      <Paper style={{ ...printPageStyle }} elevation={2} sx={{ m: { xs: 'auto', md: '10px auto' } }}>
         {loading && (
           <Backdrop
             sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
@@ -84,23 +84,21 @@ function QueuesPrint() {
           </Backdrop>
         )}
         <Grid alignItems="center" justifyContent="space-between">
-          <Grid container rowSpacing={1} columnSpacing={2.75} sx={{ pt: 2 }}>
+          <Grid container rowSpacing={1} columnSpacing={2.75} >
             <Grid item xs={12} align="center">
               {/* <img src={logo} alt="Company Logo" className="logo" style={{ width: '80px', textAlign: 'center' }} /> */}
-              <Typography variant="h5" gutterBottom sx={{ mt: 3 }}>
-                บริษัท ไอซีพี เฟอทิไลเซอร์ จำกัก
+              <Typography variant="h5" gutterBottom>
+                บริษัท ไอซีพี เฟอทิไลเซอร์ จำกัด
               </Typography>
-              <Typography gutterBottom sx={{ mt: 2, fontSize: 18 }}>
+              <Typography gutterBottom sx={{  fontSize: 18 }}>
                 ยินดีต้อนรับ
-                <br />
-                Welcome
               </Typography>
-              <Divider light sx={{ mb: 2 }} />
+              <Divider light sx={{ mb: 0 }} />
             </Grid>
             <Grid item xs={12} align="center">
               <QRCode value={prurl} className="qr-code" size={128} />
 
-              <Typography variant="h5" gutterBottom sx={{ mt: 3, mb: 0 }}>
+              <Typography variant="h5" gutterBottom sx={{ mt: 2, mb: 0 }}>
                 หมายเลขคิว : {queues.token}
               </Typography>
 
@@ -119,7 +117,7 @@ function QueuesPrint() {
         </Grid>
       </Paper>
 
-      <Grid item xs={12} sx={{ '& button': { m: 1 }, mt: 3, width: { xs: '100%', lg: '82mm' } }} align="center">
+      <Grid item xs={12} sx={{ '& button': { m: 1 }, mt: 3, width: { xs: '100%', lg: '100%' } }} align="center">
         <Button variant="contained" color="primary" onClick={handlePrint} style={{ display: isPrinting ? 'none' : 'inline-flex' }}>
           พิมพ์
         </Button>

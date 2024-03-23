@@ -31,7 +31,7 @@ import {
 } from '@mui/material';
 
 // Link api queues
-import * as getQueues from '_api/queueReques';
+import * as queueReques from '_api/queueReques';
 import * as stepRequest from '_api/StepRequest';
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -206,7 +206,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
 
   const waitingGet = async () => {
     try {
-      await getQueues.getStep3Waitting().then((response) => {
+      await queueReques.getStep3Waitting().then((response) => {
         if (onFilter == 0) {
           setItems(response);
         } else {
@@ -221,7 +221,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
   //ข้อมูล รอเรียกคิว step
   const processingGet = async () => {
     try {
-      await getQueues.getStep3Processing().then((response) => {
+      await queueReques.getStep3Processing().then((response) => {
         setItems(response);
       });
     } catch (e) {
@@ -234,6 +234,19 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
 
   const handleChange = (value) => {
     setWeight(parseFloat(value));
+  };
+
+  const [queuesDetial, setQueuesDetial] = useState([]);
+  const getQueuesDetial = (id) => {
+    try {
+      queueReques.getAllStepById(id).then((response) => {
+        setQueuesDetial(response);
+        console.log('queuesDetial :', queuesDetial);
+        console.log('queuesDetial :', response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const step1Update = (step_id, statusupdate, station_id) => {
@@ -550,7 +563,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
 
   const checkStations = (id) => {
     return new Promise((resolve, reject) => {
-      getQueues
+      queueReques
         .getStep3Processing()
         .then((response) => {
           if (response) {
@@ -568,6 +581,18 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
     });
   };
 
+  // =============== Get Reserve ===============//
+  const [reserves, setreserves] = useState([]);
+  const getReserveId = async (id) => {
+    stepRequest.getReserveById(id).then((response) => {
+      if (response) {
+        setreserves(response.reserve);
+        console.log(reserves);
+        console.log(response.reserve);
+      }
+    });
+  };
+
   const [queues, setQueues] = useState([]);
   const handleClickOpen = (step_id, fr, queue_id, team_id, queuesData) => {
     if (fr === 'call') {
@@ -577,11 +602,14 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
       if (fr === 'close') {
         setMessage('ชั่งหนัก–STEP3 ปิดคิว');
         setText('ปิดคิว');
+        getQueuesDetial(queue_id);
+        getReserveId(queuesData.reserve_id);
       } else {
         setMessage('ชั่งหนัก–STEP3 ยกเลิกเรียกคิว');
         setText('ยกเลิก');
       }
     }
+
     setFrom(fr);
     setUpdate(step_id);
     setTeamId(team_id);
@@ -609,7 +637,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
         }
         if (isEmpty(selectedStations)) {
           console.log('selectedStations :', selectedStations);
-          alert('กรุณาเลือกสถานีชั่งเบา!');
+          alert('กรุณาเลือกสถานีชั่งหนัก!');
           return;
         }
 
@@ -627,6 +655,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
               // ทำอะไรกับข้อผิดพลาด
             });
 
+          handleCallQueue(queues);
           step1Update(id_update, 'processing', selectedStations[id_update]);
           updateStartTime(id_update);
         } else {
@@ -688,6 +717,8 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
     } else {
       setLoading(false);
     }
+    setQueuesDetial([]);
+    setreserves([]);
     setSelectedStations({});
     setTxtDetail('');
     setWeight(0);
@@ -711,7 +742,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
 
   const handleCallQueue = (queues) => {
     const titleTxt = `คิวหมายเลขที่ ${queues.token}`;
-    const detialTxt = `เข้าสถานีชั่งเบา`;
+    const detialTxt = `เข้าสถานีชั่งหนัก`;
     // ==== แยกตัวอักษรป้ายทะเบียนรถ ====
     const titleTxtCar = queues.registration_no;
     const cleanedString = titleTxtCar.replace(/[^\u0E00-\u0E7F\d\s]/g, '');
@@ -752,8 +783,20 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                   ต้องการ {textnotify} เลขที่ {queues && queues.token} หรือไม่?
                 </Typography>
               </DialogTitle>
-              <DialogContent sx={{ width: 350 }}>
+              <DialogContent sx={{ width: 350, mt: 2 }}>
                 <Grid container alignItems="center" justifyContent="flex-end" spacing={2}>
+                  <Grid item xs={12}>
+                    <Typography variant="body1" sx={{ fontSize: 16 }}>
+                      น้ำหนักชั่งเบา : <strong>{queuesDetial.length > 0 ? parseFloat(queuesDetial[0].weight1) : '-'}</strong> ตัน
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Typography variant="body1" sx={{ fontSize: 16 }}>
+                      น้ำหนักสินค้า : <strong>{reserves.length > 0 ? parseFloat(reserves[0].total_quantity) : '-'}</strong> ตัน
+                    </Typography>
+                  </Grid>
+
                   <Grid item xs={12}>
                     <InputLabel sx={{ fontSize: 16 }}>น้ำหนักชั่งหนัก</InputLabel>
                     <FormControl variant="standard" sx={{ width: '100%', fontFamily: 'kanit' }}>
@@ -813,7 +856,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                 <DialogContent sx={{ width: 350 }}>
                   <Grid container justifyContent="flex-end" spacing={2}>
                     <Grid item xs={12}>
-                      <InputLabel>เครื่องชั่งเบา</InputLabel>
+                      <InputLabel>เครื่องชั่งหนัก</InputLabel>
                       <FormControl sx={{ width: '100%' }} size="small">
                         <Select
                           displayEmpty
@@ -822,7 +865,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                           onChange={(event) => handleStationChange(event, queues)}
                         >
                           <MenuItem disabled value="">
-                            เลือกเครื่องชั่งเบา
+                            เลือกเครื่องชั่งหนัก
                           </MenuItem>
                           {stations.map((station) => (
                             <MenuItem key={station.station_id} value={station.station_id}>
@@ -913,7 +956,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                         </TableCell>
 
                         <TableCell align="center">
-                          <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />
+                          <Chip color="primary" sx={{ width: '122px' }} label={row.registration_no} />
                         </TableCell>
 
                         <TableCell align="left">

@@ -53,7 +53,7 @@ function Step3() {
 
   useEffect(() => {
     getProductCompany();
-  }, []);
+  }, [commonStatus]);
 
   const [companyList, setCompanyList] = useState([]);
   const getProductCompany = () => {

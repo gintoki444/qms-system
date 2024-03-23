@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import './style/PrintStyles.css';
-import logo from '../../assets/images/ICON-02.png';
+import logo from '../../assets/images/logo.png';
 
 import QRCode from 'react-qr-code';
 

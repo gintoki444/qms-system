@@ -1,13 +1,25 @@
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 
-// ==============================|| ข้อมูล รอเรียกคิว step1 ||============================== //
+// ==============================|| ข้อมูลคิว แสดงข้อมูลคิวด้วย ID ||============================== //
 export const getQueueDetailID = async (id) => {
   const requestOptions = {
     method: 'GET',
     redirect: 'follow'
   };
   const response = await fetch(apiUrl + `/queue/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+
+// ==============================|| ข้อมูลทุกสเตป ด้วย ID คิว ||============================== //
+export const getAllStepById = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/stepbyqueueidonly/${id}`, requestOptions);
   const result = await response.json();
   return result;
 };

@@ -66,7 +66,7 @@ const headCells = [
   },
   {
     id: 'registration_no',
-    align: 'left',
+    align: 'center',
     disablePadding: true,
     label: 'ทะเบียนรถ'
   },
@@ -325,7 +325,9 @@ export default function QueueTable({ startDate, endDate }) {
                         <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
                       </TableCell>
                       <TableCell align="left">{row.company_name}</TableCell>
-                      <TableCell align="left">{row.registration_no}</TableCell>
+                      <TableCell align="center">
+                        <Chip color={'primary'} label={row.registration_no} sx={{ width: 122, border: 1 }} />
+                      </TableCell>
                       <TableCell align="left">{row.driver_name}</TableCell>
                       <TableCell align="left">{row.driver_mobile}</TableCell>
                       <TableCell align="center">{row.step1_status !== 'none' ? <QueueStatus status={row.step1_status} /> : '-'}</TableCell>

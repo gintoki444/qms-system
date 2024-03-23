@@ -304,6 +304,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
               // ทำอะไรกับข้อผิดพลาด
             });
 
+          handleCallQueue(queues);
           step1Update(id_update, 'processing', selectedStations[id_update]);
           updateStartTime(id_update);
         } else {
@@ -320,6 +321,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
           try {
             setLoading(true);
             setOpen(false);
+            console.log('weight :', weight);
             // การใช้งาน Line Notify
             getStepToken(id_update)
               .then(({ queue_id, reserve_id, token }) => {
@@ -372,7 +374,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
       myHeaders.append('Content-Type', 'application/json');
 
       const raw = JSON.stringify({
-        weight1: weight[0]
+        weight1: weight
       });
 
       const requestOptions = {
@@ -784,7 +786,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
                                 {/* <Chip color="primary" label={row.token} /> */}
                               </TableCell>
                               <TableCell align="center">
-                                <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />
+                                <Chip color="primary" sx={{ width: '122px' }} label={row.registration_no} />
                               </TableCell>
 
                               {status == 'waiting' && <TableCell align="left">-</TableCell>}

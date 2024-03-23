@@ -898,7 +898,7 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
                     </TableBody>
                   </Table>
                 </Grid>
-                <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                {order.length > 1 && <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />}
               </Grid>
               {/* // <Grid container rowSpacing={0} columnSpacing={2.75} key={item.item_id}>
                 //   <Grid item xs={6}>
@@ -918,6 +918,30 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
             </Grid>
           </Grid>
         ))}
+      </Grid>
+
+      <Grid item xs={12}>
+        <Grid item xs={12}>
+          <Divider sx={{ mb: { xs: 1, sm: 2 } }} />
+          <Typography variant="h5">
+            <strong>ข้อมูลการรับสินค้า:</strong>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} sx={{ mt: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="body">
+                <strong>โกดัง :</strong> {queues.warehouse_name || '-'}
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Typography variant="body" sx={{ pl: { xs: 1, lg: '20%' } }}>
+                <strong>หัวจ่าย :</strong> {queues.station_description || '-'}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Grid>
       </Grid>
     </Grid>
   );

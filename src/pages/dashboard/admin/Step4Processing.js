@@ -37,7 +37,7 @@ const headCells = [
     id: 'station',
     align: 'left',
     disablePadding: true,
-    label: 'สถานี (หัวจ่าย)'
+    label: 'สถานี (สำเร็จ)'
   },
   {
     id: 'setup_pile_date',
