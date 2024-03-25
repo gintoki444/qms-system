@@ -54,10 +54,25 @@ export default function ThemeCustomization({ children }) {
   const token = localStorage.getItem('token');
   const pathname = window.location.pathname;
 
-  if (!token && pathname !== '/login') {
+  const link = window.location.href;
+  const parts = link.split('/');
+
+  let text = parts.slice(3, 5).join('/');
+  let queueLink = parts.slice(3, 4).join('/');
+  if (!token && text == 'queues/detail') {
+    const textRetun = parts.slice(5, 6).join('/');
+    text = 'queues-detail';
+    window.location = `/${text}/${textRetun}`;
+  } else if (!token && pathname !== '/login' && queueLink !== 'queues-detail') {
+    // console.log('queues-detail', text);
     localStorage.setItem('backToPage', window.location.href);
     window.location = '/login';
   }
+
+  // if (!token && pathname !== '/login') {
+  //   localStorage.setItem('backToPage', window.location.href);
+  //   window.location = '/login';
+  // }
 
   return (
     <StyledEngineProvider injectFirst>

@@ -304,7 +304,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
               // ทำอะไรกับข้อผิดพลาด
             });
 
-          handleCallQueue(queues);
+          // handleCallQueue(queues);
           step1Update(id_update, 'processing', selectedStations[id_update]);
           updateStartTime(id_update);
         } else {

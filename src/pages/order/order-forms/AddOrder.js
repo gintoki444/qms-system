@@ -523,7 +523,7 @@ function AddOrder() {
                                   <Button
                                     size="mediam"
                                     color="info"
-                                    sx={{ p: '6px 0', minWidth: '33px!important', fontSize: '24px' }}
+                                    sx={{ p: '6px 0', minWidth: '33px!important', fontSize: '24px', m: '0!important' }}
                                     onClick={() => {
                                       // items.push({ product_id: '', quantity: 0 });
                                       addItem();
@@ -532,10 +532,9 @@ function AddOrder() {
                                     <PlusSquareOutlined />
                                   </Button>
                                 )}
-
-                                {coutRowsProduct > index + 1 && (
+                                {index !== 0 && (
                                   <Button
-                                    sx={{ p: '6px 0', minWidth: '33px!important', fontSize: '24px' }}
+                                    sx={{ p: '6px 0', minWidth: '33px!important', fontSize: '24px', m: '0!important' }}
                                     onClick={() => removeItem(index)}
                                     size="mediam"
                                     color="error"

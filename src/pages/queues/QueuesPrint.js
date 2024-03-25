@@ -84,13 +84,13 @@ function QueuesPrint() {
           </Backdrop>
         )}
         <Grid alignItems="center" justifyContent="space-between">
-          <Grid container rowSpacing={1} columnSpacing={2.75} >
-            <Grid item xs={12} align="center">
+          <Grid container rowSpacing={1} columnSpacing={2.75}>
+            <Grid item xs={12} align="center" sx={{ mt: 3 }}>
               {/* <img src={logo} alt="Company Logo" className="logo" style={{ width: '80px', textAlign: 'center' }} /> */}
               <Typography variant="h5" gutterBottom>
-                บริษัท ไอซีพี เฟอทิไลเซอร์ จำกัด
+                บริษัท ไอ ซี พี เฟอทิไลเซอร์ จำกัด
               </Typography>
-              <Typography gutterBottom sx={{  fontSize: 18 }}>
+              <Typography gutterBottom sx={{ fontSize: 18 }}>
                 ยินดีต้อนรับ
               </Typography>
               <Divider light sx={{ mb: 0 }} />
@@ -110,7 +110,7 @@ function QueuesPrint() {
                 ทะเบียนรถ : <strong>{queues.registration_no}</strong>
               </Typography>
             </Grid>
-            <Grid item xs={12} align="center">
+            <Grid item xs={12} align="center" sx={{ pt: 2, pb: 2 }}>
               {moment(new Date()).format('DD/MM/YY HH:mm:ss')}
             </Grid>
           </Grid>

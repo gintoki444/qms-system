@@ -129,7 +129,12 @@ function UpdateReserve() {
   // =============== Get Car ===============//
   const [carList, setCarList] = useState([]);
   const getCarLsit = () => {
-    const urlapi = apiUrl + `/allcars/` + user_Id;
+    let urlapi = '';
+    if ((userRoles && userRoles == 1) || userRoles == 9 || userRoles == 10) {
+      urlapi = apiUrl + `/allcars/`;
+    } else {
+      urlapi = apiUrl + `/allcars/` + user_Id;
+    }
     axios
       .get(urlapi)
       .then((res) => {
@@ -144,7 +149,12 @@ function UpdateReserve() {
   // =============== Get Driver ===============//
   const [driverList, setDriverList] = useState([]);
   const getDriverLsit = () => {
-    const urlapi = apiUrl + `/alldrivers/` + user_Id;
+    let urlapi = '';
+    if ((userRoles && userRoles == 1) || userRoles == 9 || userRoles == 10) {
+      urlapi = apiUrl + `/alldrivers/`;
+    } else {
+      urlapi = apiUrl + `/alldrivers/` + user_Id;
+    }
     axios
       .get(urlapi)
       .then((res) => {

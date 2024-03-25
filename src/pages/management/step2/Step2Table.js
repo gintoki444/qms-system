@@ -195,6 +195,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     fetchData();
     getWarehouses();
     getAllContractor();
+    getWareHouseManager();
   }, [status, onStatusChange, onFilter]);
 
   const fetchData = async () => {
@@ -205,9 +206,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
       } else if (status === 'processing') {
         await processingGet();
       }
+      setLoading(false);
       await getStation();
       await getStepCount(2, 'processing');
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -553,21 +554,33 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
         response.map((result) => {
           if (result.product_company_id && result.product_brand_id) {
             result.items.map((data) => {
-              stepRequest.getProductRegister(result.product_company_id, result.product_brand_id, data.product_id).then((productRegis) => {
-                data.productRegis = productRegis;
-
-                // setProductRegister((press) => ({
-                //   ...press,
-                //   productRegis
-                // }));
-              });
+              const getProductRegis = productList.filter((x) => x.product_id == data.product_id);
+              data.productRegis = getProductRegis;
             });
           }
         });
+        console.log('response :', response);
         setOrders(response);
         setLoadOrder(false);
       }
     });
+  };
+
+  const [productList, setProductList] = useState([]);
+  const getWareHouseManager = async () => {
+    setLoading(true);
+    try {
+      adminRequest.getAllProductRegister().then((response) => {
+        if (onFilter) {
+          setProductList(response.filter((x) => x.product_company_id == onFilter));
+        } else {
+          setProductList(response);
+        }
+        setLoading(false);
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const [orderSelect, setOrderSelect] = useState([]);
@@ -585,8 +598,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
         // Add the new option
         updatedOptions.push(selectedOption);
       }
-
-      console.log('updatedOptions', updatedOptions);
       return updatedOptions;
     });
   };
@@ -665,29 +676,18 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
               return;
             } else {
               setOpen(false);
-              // if (id_update == 9999) {
               orderSelect.map((dataOrder) => {
-                if (typeSelect[dataOrder.id]) {
-                  if (typeSelect[dataOrder.id].checked1 == 'on') {
-                    const setData = {
-                      product_register_id: dataOrder.value
-                    };
-                    updateRegisterItems(dataOrder.id, setData);
-                  } else {
-                    const setData = {
-                      product_register_id: dataOrder.value
-                    };
-                    updateRegisterItems(dataOrder.id, setData);
-                  }
-                }
+                const setData = {
+                  product_register_id: dataOrder.value,
+                  smash_quantity: 0
+                };
+                updateRegisterItems(dataOrder.id, setData);
               });
-
-              handleCallQueue(queues);
               setStationCount(station_count + 1);
               await step1Update(id_update, 'processing', station_id);
               await updateStartTime(id_update);
+              // }
             }
-            // }
           } else {
             alert('กรุณาเลือกหัวจ่าย');
             setLoading(false);
@@ -720,47 +720,52 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             countItem = countItem + orderData.items.length;
           });
 
-          let checktypeNum = 0;
-          let checktypeSelect = 0;
-          orderSelect.map((dataOrder) => {
-            if (typeSelect[dataOrder.id]) {
-              if (typeSelect[dataOrder.id].checked1 == 'on' && !typeNumSelect[dataOrder.id]) {
-                checktypeNum = checktypeNum + 1;
+          if (typeSelect) {
+            for (let key in typeSelect) {
+              if (typeSelect[key].checked1 == 'on' && !typeNumSelect[key]) {
+                alert('กรุณาระบุจำนวนสินค้าทุบ');
+                return;
               }
-            } else {
-              checktypeSelect++;
             }
-          });
-
-          if (checktypeNum !== 0) {
-            alert('กรุณาระบุจำนวนสินค้าทุบ');
-            return;
-          }
-
-          if (checktypeSelect !== 0) {
-            alert('กรุณาระบุประเภทสินค้า');
-            return;
           }
 
           try {
             setOpen(false);
             // การใช้งาน Line Notify
+            if (orderSelect.length > 0 || typeSelect.length !== 0) {
+              orders.map((order) => {
+                order.items.map((items) => {
+                  const checkOrderSelect = orderSelect.filter((x) => x.id == items.item_id);
+                  if (checkOrderSelect.length > 0) {
+                    checkOrderSelect.map((dataOrder) => {
+                      if (typeNumSelect[items.item_id]) {
+                        const setData = {
+                          product_register_id: dataOrder.value,
+                          smash_quantity: typeNumSelect[items.item_id]
+                        };
 
-            orderSelect.map((dataOrder) => {
-              if (typeSelect[dataOrder.id]) {
-                if (typeSelect[dataOrder.id].checked1 == 'on') {
-                  const setData = {
-                    smash_quantity: typeNumSelect[dataOrder.id]
-                  };
-                  updateRegisterItems(dataOrder.id, setData);
-                } else {
-                  const setData = {
-                    smash_quantity: 0
-                  };
-                  updateRegisterItems(dataOrder.id, setData);
-                }
-              }
-            });
+                        updateRegisterItems(items.item_id, setData);
+                      } else {
+                        const setData = {
+                          product_register_id: dataOrder.value,
+                          smash_quantity: 0
+                        };
+
+                        updateRegisterItems(items.item_id, setData);
+                      }
+                    });
+                  } else {
+                    if (typeNumSelect[items.item_id]) {
+                      const setData = {
+                        product_register_id: items.product_register_id,
+                        smash_quantity: typeNumSelect[items.item_id]
+                      };
+                      updateRegisterItems(items.item_id, setData);
+                    }
+                  }
+                });
+              });
+            }
 
             // if (id_update == 9999) {
             setLoading(true);
@@ -1104,7 +1109,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                       onChange={(e) => {
                                         handleChangeProduct(e, orderItem.item_id);
                                       }}
-                                      fullWidth
                                     >
                                       <MenuItem disabled value="">
                                         เลือกกองสินค้า
@@ -1205,7 +1209,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                               handleChangeWarehouse(e);
                             }}
                             placeholder="เลือกโกดังสินค้า"
-                            fullWidth
                           >
                             <MenuItem disabled value="">
                               เลือกโกดังสินค้า
@@ -1232,7 +1235,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                               handleChangeStation(e);
                             }}
                             placeholder="เลือกหัวจ่าย"
-                            fullWidth
                           >
                             <MenuItem disabled value="">
                               เลือกหัวจ่าย
@@ -1259,7 +1261,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                               handleChangeTeam(e.target.value);
                             }}
                             placeholder="เลือกทีมรับสินค้า"
-                            fullWidth
                           >
                             <MenuItem disabled value="">
                               เลือกทีมรับสินค้า
@@ -1285,7 +1286,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                               handleChangeContractor(e);
                             }}
                             placeholder="เลือกสายแรงงาน"
-                            fullWidth
                           >
                             <MenuItem disabled value="">
                               เลือกสายแรงงาน
@@ -1311,7 +1311,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                               handleChangeLaborLine(e);
                             }}
                             placeholder="เลือกหมายเลขสาย"
-                            fullWidth
                           >
                             <MenuItem disabled value="">
                               เลือกหมายเลขสาย
@@ -1345,18 +1344,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                           <Select
                                             displayEmpty
                                             variant="outlined"
-                                            value={
-                                              orderSelect[orderItem.item_id] ||
-                                              (orderItem.productRegis &&
-                                                orderItem.productRegis[0] &&
-                                                orderItem.productRegis[0].product_register_id) ||
-                                              ''
-                                            }
+                                            value={orderSelect[orderItem.item_id] || orderItem.product_register_id || ''}
                                             onChange={(e) => {
                                               handleChangeProduct(e, orderItem.item_id);
-                                              orderItem.productRegis[0].product_register_id = e.target.value;
+                                              orderItem.product_register_id = e.target.value;
                                             }}
-                                            fullWidth
                                           >
                                             <MenuItem disabled value="">
                                               เลือกกองสินค้า
@@ -1389,7 +1381,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                           label="สินค้าทุบ"
                                         />
 
-                                        <FormControlLabel
+                                        {/* <FormControlLabel
                                           sx={{ display: 'none' }}
                                           control={
                                             <Checkbox
@@ -1399,7 +1391,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                             />
                                           }
                                           label="สินค้าไม่ทุบ"
-                                        />
+                                        /> */}
                                       </Grid>
                                       {typeSelect[orderItem.item_id]?.checked1 && (
                                         <>
@@ -1421,7 +1413,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                                   );
                                                 }}
                                                 placeholder="จำนวน"
-                                                fullWidth
                                               />
                                             </FormControl>
                                           </Grid>

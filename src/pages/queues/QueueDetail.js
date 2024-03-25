@@ -38,6 +38,7 @@ import { PrinterOutlined, RollbackOutlined } from '@ant-design/icons';
 import * as queueRequest from '_api/queueReques';
 const apiUrl = process.env.REACT_APP_API_URL;
 const steps = ['ชั่งเบา', 'ขึ้นสินค้า', 'ชั่งหนัก', 'เสร็จสิ้น'];
+const userId = localStorage.getItem('user_id');
 
 // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
 const padZero = (num) => {
@@ -848,59 +849,61 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
         </Typography>
       </Grid>
 
-      <Grid item xs={12} sx={{ mt: 1 }}>
-        <Divider sx={{ mb: { xs: 1, sm: 2 } }} />
-        <Typography variant="h5">
-          <strong>ข้อมูลรายการสั่งซื้อ:</strong>
-        </Typography>
-      </Grid>
+      {userId && (
+        <>
+          <Grid item xs={12} sx={{ mt: 1 }}>
+            <Divider sx={{ mb: { xs: 1, sm: 2 } }} />
+            <Typography variant="h5">
+              <strong>ข้อมูลรายการสั่งซื้อ:</strong>
+            </Typography>
+          </Grid>
 
-      <Grid item xs={12}>
-        {orders.map((order, item) => (
-          <Grid container spacing={2} key={order.order_id}>
-            <Grid item xs={12} sx={{ ml: 2, mr: 2 }}>
-              {/* {order.items.map((item) => ( */}
-              <Grid item xs={12} key={item} sx={{ mb: 2 }}>
-                <Grid container spacing={2} sx={{ mb: '15px' }}>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body1">
-                      <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
-                    </Typography>
+          <Grid item xs={12}>
+            {orders.map((order, item) => (
+              <Grid container spacing={2} key={order.order_id}>
+                <Grid item xs={12} sx={{ ml: 2, mr: 2 }}>
+                  {/* {order.items.map((item) => ( */}
+                  <Grid item xs={12} key={item} sx={{ mb: 2 }}>
+                    <Grid container spacing={2} sx={{ mb: '15px' }}>
+                      <Grid item xs={12} md={6}>
+                        <Typography variant="body1">
+                          <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Typography variant="body1" sx={{ pl: { xs: 1, lg: '20%' } }}>
+                          <strong>ยอดจ่าย : </strong> {parseFloat(order.total_amount)} ตัน
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                    <Grid item xs={12} md={12}>
+                      <Typography variant="body1">
+                        <strong>รายละเอียด : </strong> {order.description}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={9}>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell sx={{ p: '12px' }}>สินค้า</TableCell>
+                            <TableCell align="right" sx={{ p: '12px' }}>
+                              จำนวน (ตัน)
+                            </TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {order.items.map((item, index) => (
+                            <TableRow key={index}>
+                              <TableCell width={'50%'}>{item.name}</TableCell>
+                              <TableCell align="right">{parseFloat(item.quantity)} ตัน</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </Grid>
+                    {order.length > 1 && <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />}
                   </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body1" sx={{ pl: { xs: 1, lg: '20%' } }}>
-                      <strong>ยอดจ่าย : </strong> {parseFloat(order.total_amount)} ตัน
-                    </Typography>
-                  </Grid>
-                </Grid>
-                <Grid item xs={12} md={12}>
-                  <Typography variant="body1">
-                    <strong>รายละเอียด : </strong> {order.description}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} md={9}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ p: '12px' }}>สินค้า</TableCell>
-                        <TableCell align="right" sx={{ p: '12px' }}>
-                          จำนวน (ตัน)
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {order.items.map((item, index) => (
-                        <TableRow key={index}>
-                          <TableCell width={'50%'}>{item.name}</TableCell>
-                          <TableCell align="right">{parseFloat(item.quantity)} ตัน</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </Grid>
-                {order.length > 1 && <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />}
-              </Grid>
-              {/* // <Grid container rowSpacing={0} columnSpacing={2.75} key={item.item_id}>
+                  {/* // <Grid container rowSpacing={0} columnSpacing={2.75} key={item.item_id}>
                 //   <Grid item xs={6}>
                 //     <Typography variant="body1" gutterBottom>
                 //       <strong>สินค้า :</strong> {item.name}
@@ -914,12 +917,13 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
                 //     </Typography>
                 //   </Grid>
                 // </Grid> */}
-              {/* ))} */}
-            </Grid>
+                  {/* ))} */}
+                </Grid>
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
-
+        </>
+      )}
       <Grid item xs={12}>
         <Grid item xs={12}>
           <Divider sx={{ mb: { xs: 1, sm: 2 } }} />
@@ -930,7 +934,7 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
         <Grid item xs={12} sx={{ mt: 2 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
-              <Typography variant="body">
+              <Typography variant="body" sx={{ pl: 1 }}>
                 <strong>โกดัง :</strong> {queues.warehouse_name || '-'}
               </Typography>
             </Grid>

@@ -63,7 +63,7 @@ const MainLayout = () => {
       } else {
         localStorage.removeItem('token');
         localStorage.removeItem('user_id');
-        naviage('/login');
+        if (result.status == 9999) naviage('/login');
       }
     });
   };
