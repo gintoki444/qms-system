@@ -380,8 +380,8 @@ function UpdateReserve() {
     product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
     product_brand_id: Yup.string().required('กรุณาระบุแบรนด์(สินค้า)'),
     reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
-    pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
-    description: Yup.string().required('กรุณากรอกiรายละเอียดการจอง')
+    pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า')
+    // description: Yup.string().required('กรุณากรอกiรายละเอียดการจอง')
   });
 
   // =============== บันทึกข้อมูล ===============//
@@ -1095,7 +1095,7 @@ function UpdateReserve() {
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel>หัวข้อการจอง*</InputLabel>
+                        <InputLabel>หัวข้อการจอง</InputLabel>
                         <OutlinedInput
                           id="description"
                           type="description"

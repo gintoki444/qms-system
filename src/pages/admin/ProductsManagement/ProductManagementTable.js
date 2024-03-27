@@ -20,11 +20,13 @@ import {
   DialogTitle
 } from '@mui/material';
 
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { FileAddOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 // Link api url
 import * as adminRequest from '_api/adminRequest';
 import moment from 'moment/min/moment-with-locales';
+
+import QueueTag from 'components/@extended/QueueTag';
 
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
@@ -82,6 +84,30 @@ const headCells = [
     align: 'right',
     disablePadding: false,
     label: 'ยอดยกมา'
+  },
+  {
+    id: 'total_receive',
+    align: 'right',
+    disablePadding: false,
+    label: 'รวมรับ'
+  },
+  {
+    id: 'total_sold',
+    align: 'right',
+    disablePadding: false,
+    label: 'รวมจ่าย'
+  },
+  {
+    id: 'total_remain',
+    align: 'right',
+    disablePadding: false,
+    label: 'ยอดคงเหลือ'
+  },
+  {
+    id: 'note',
+    align: 'left',
+    disablePadding: false,
+    label: 'หมายเหตุ'
   },
   {
     id: 'action',
@@ -162,11 +188,11 @@ function ProductManagementTable({ onFilter }) {
   };
 
   // ลบข้อมูล Manager
-  const [manager_id, setManager_id] = useState(false);
+  const [product_id, setProductId] = useState(false);
   const [textnotify, setText] = useState('');
 
   const handleClickOpen = (manager_id) => {
-    setManager_id(manager_id);
+    setProductId(manager_id);
     setText('ลบข้อมูล');
     setOpen(true);
   };
@@ -174,12 +200,12 @@ function ProductManagementTable({ onFilter }) {
   const handleClose = (flag) => {
     if (flag === 1) {
       setLoading(true);
-      deteteManager(manager_id);
+      deteteProductManagement(product_id);
     }
     setOpen(false);
   };
 
-  const deteteManager = (id) => {
+  const deteteProductManagement = (id) => {
     try {
       adminRequest.deleteManagerWareHouse(id).then(() => {
         getWareHouseManager();
@@ -190,23 +216,28 @@ function ProductManagementTable({ onFilter }) {
   };
 
   const navigate = useNavigate();
-  const updateWareHouse = (id) => {
-    navigate('/admin/warehouse/update/' + id);
+  const updateProductManagement = (id) => {
+    navigate('/admin/product-register/update/' + id);
   };
+
+  const addProductReceives = (id) => {
+    navigate('/admin/product-register/add-receive/' + id);
+  };
+
   return (
     <Box>
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-        <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }}>
-          {'แจ้งเตือน'}
+        <DialogTitle id="responsive-dialog-title" align="center">
+          <Typography variant="h5">{'แจ้งเตือน'}</Typography>
         </DialogTitle>
         <DialogContent>
-          <DialogContentText style={{ fontFamily: 'kanit' }}>ต้องการ {textnotify} หรือไม่?</DialogContentText>
+          <DialogContentText>ต้องการ {textnotify} หรือไม่?</DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={() => handleClose(0)} style={{ fontFamily: 'kanit' }}>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
+          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
             ยกเลิก
           </Button>
-          <Button onClick={() => handleClose(1)} autoFocus style={{ fontFamily: 'kanit' }}>
+          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
             ยืนยัน
           </Button>
         </DialogActions>
@@ -240,9 +271,17 @@ function ProductManagementTable({ onFilter }) {
                 return (
                   <TableRow key={index}>
                     <TableCell align="center">{index + 1}</TableCell>
-                    <TableCell align="left">{row.product_company_name_th}</TableCell>
+                    <TableCell align="left">
+                      <QueueTag id={row.product_company_id} token={row.product_company_name_th2} />
+                    </TableCell>
                     <TableCell align="left">{row.name}</TableCell>
-                    <TableCell align="left">{row.product_register_name}</TableCell>
+                    <TableCell align="left">
+                      <Tooltip title={row.product_register_name}>
+                        {row.product_register_name.length > 30
+                          ? `${row.product_register_name.substring(0, 30)}...`
+                          : row.product_register_name}
+                      </Tooltip>
+                    </TableCell>
                     <TableCell align="left">
                       {row.product_register_date ? moment(row.product_register_date).format('DD/MM/YYYY') : '-'}
                     </TableCell>
@@ -250,16 +289,31 @@ function ProductManagementTable({ onFilter }) {
                     <TableCell align="left">{row.product_brand_name}</TableCell>
                     <TableCell align="left">{row.warehouse_name}</TableCell>
                     <TableCell align="right">{row.register_beginning_balance}</TableCell>
+                    <TableCell align="right">{row.total_receive ? row.total_receive : '-'}</TableCell>
+                    <TableCell align="right">{row.total_sold ? row.total_sold : '-'}</TableCell>
+                    <TableCell align="right">{row.total_remain ? row.total_remain : '-'}</TableCell>
+                    <TableCell align="left">{row.product_register_remark ? row.product_register_remark : '-'}</TableCell>
                     {/* {permission.length > 0 &&  */}
-                    <TableCell align="center">
+                    <TableCell align="right">
                       <ButtonGroup variant="contained" aria-label="Basic button group">
+                        <Tooltip title="รับสินค้า">
+                          <Button
+                            variant="contained"
+                            size="medium"
+                            color="info"
+                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                            onClick={() => addProductReceives(row.product_register_id)}
+                          >
+                            <FileAddOutlined />
+                          </Button>
+                        </Tooltip>
                         <Tooltip title="แก้ไข">
                           <Button
                             variant="contained"
                             size="medium"
                             color="primary"
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => updateWareHouse(row.manager_id)}
+                            onClick={() => updateProductManagement(row.product_register_id)}
                           >
                             <EditOutlined />
                           </Button>
@@ -270,7 +324,7 @@ function ProductManagementTable({ onFilter }) {
                             size="medium"
                             color="error"
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => handleClickOpen(row.manager_id)}
+                            onClick={() => handleClickOpen(row.product_register_id)}
                           >
                             <DeleteOutlined />
                           </Button>
@@ -283,7 +337,7 @@ function ProductManagementTable({ onFilter }) {
               })}
               {productList.length == 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">
+                  <TableCell colSpan={14} align="center">
                     ไม่พบข้อมูล
                   </TableCell>
                 </TableRow>
@@ -292,7 +346,7 @@ function ProductManagementTable({ onFilter }) {
           ) : (
             <TableBody>
               <TableRow>
-                <TableCell colSpan={7} align="center">
+                <TableCell colSpan={14} align="center">
                   <CircularProgress />
                   <Typography variant="body1">Loading....</Typography>
                 </TableCell>

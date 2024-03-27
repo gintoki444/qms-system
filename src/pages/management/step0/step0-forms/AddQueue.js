@@ -388,7 +388,6 @@ function AddQueue() {
     brand_group_id: Yup.string().required('กรุณาเลือกกลุ่มสินค้า'),
     reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
-    description: Yup.string().required('กรุณากรอกรายละเอียดการจอง'),
     product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
     product_brand_id: Yup.string().required('กรุณาระบุแบรนด์(สินค้า)'),
     warehouse_id: Yup.string().required('กรุณาเลือกโกดังสินค้า'),

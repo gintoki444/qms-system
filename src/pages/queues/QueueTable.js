@@ -176,6 +176,7 @@ QueueStatus.propTypes = {
 export default function QueueTable({ startDate, endDate }) {
   const [open, setOpen] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
+  const userID = useSelector((state) => state.auth.user_id);
 
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
@@ -185,16 +186,24 @@ export default function QueueTable({ startDate, endDate }) {
   // const userId = localStorage.getItem('user_id');
 
   useEffect(() => {
-    getQueue();
-  }, [startDate, endDate]);
+    setLoading(true);
+    if (userRoles) getQueue();
+  }, [startDate, endDate, userRoles]);
 
   const getQueue = () => {
     try {
-      setLoading(true);
-      queueRequest.getAllqueueByDateV2(startDate, endDate).then((response) => {
-        setItems(response);
-        setLoading(false);
-      });
+      console.log('userID :', userID);
+      if (userRoles == 8) {
+        queueRequest.getAllqueueUserByDate(userID, startDate, endDate).then((response) => {
+          setItems(response);
+          setLoading(false);
+        });
+      } else {
+        queueRequest.getAllqueueByDateV2(startDate, endDate).then((response) => {
+          setItems(response);
+          setLoading(false);
+        });
+      }
     } catch (e) {
       console.log(e);
     }

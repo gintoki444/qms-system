@@ -8,35 +8,37 @@ import { Step3Table } from './Step3Table';
 import { Grid, Stack, Box, Typography, Badge } from '@mui/material';
 import MainCard from 'components/MainCard';
 
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-function CustomTabPanel(props) {
-  const { children, value, index, ...other } = props;
+import QueueTab from 'components/@extended/QueueTab';
 
-  return (
-    <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
+// function CustomTabPanel(props) {
+//   const { children, value, index, ...other } = props;
 
-CustomTabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.number.isRequired,
-  value: PropTypes.number.isRequired
-};
+//   return (
+//     <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
+//       {value === index && (
+//         <Box sx={{ p: 3 }}>
+//           <Typography>{children}</Typography>
+//         </Box>
+//       )}
+//     </div>
+//   );
+// }
 
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`
-  };
-}
+// CustomTabPanel.propTypes = {
+//   children: PropTypes.node,
+//   index: PropTypes.number.isRequired,
+//   value: PropTypes.number.isRequired
+// };
+
+// function a11yProps(index) {
+//   return {
+//     id: `simple-tab-${index}`,
+//     'aria-controls': `simple-tabpanel-${index}`
+//   };
+// }
 
 function Step3() {
   const [commonStatus, setCommonStatus] = useState('');
@@ -59,7 +61,7 @@ function Step3() {
   const getProductCompany = () => {
     stepRequest.getAllProductCompany().then((response) => {
       setCompanyList(response);
-      waitingGet(response)
+      waitingGet(response);
     });
   };
 
@@ -124,25 +126,24 @@ function Step3() {
                   <Grid sx={{ p: 2 }}>
                     <Typography variant="h4">รอเรียกคิว</Typography>
                   </Grid>
-                  <Tabs value={valueFilter} onChange={handleChange} aria-label="basic tabs example">
+                  <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
                     <Tab
                       label={
                         <Badge badgeContent={countAllQueue} color="error">
                           ทั้งหมด
                         </Badge>
                       }
-                      {...a11yProps(0)}
+                      onClick={() => handleChange(0)}
                     />
                     {companyList.length > 0 &&
                       companyList.map((company, index) => (
-                        <Tab
+                        <QueueTab
                           key={index}
-                          label={
-                            <Badge badgeContent={items[company.product_company_id]} color="error">
-                              {company.product_company_name_th2}
-                            </Badge>
-                          }
-                          {...a11yProps(company.product_company_id)}
+                          id={company.product_company_id}
+                          numQueue={items[company.product_company_id]}
+                          txtLabel={company.product_company_name_th2}
+                          onSelect={() => handleChange(company.product_company_id)}
+                          // {...a11yProps(company.product_company_id)}
                         />
                       ))}
                   </Tabs>

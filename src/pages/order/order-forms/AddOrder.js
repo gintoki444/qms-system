@@ -127,7 +127,7 @@ function AddOrder() {
   const [validationSchema, setValidationSchema] = useState(
     Yup.object().shape({
       ref_order_id: Yup.string().required('กรุณาระบุหมายเลขคำสั่งซื้อ'),
-      description: Yup.string().required('กรุณาระบุรายละเอียด'),
+      // description: Yup.string().required('กรุณาระบุรายละเอียด'),
       order_date: Yup.string().required('กรุณาระบุวันที่สั่งซื้อสินค้า'),
       product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
       product_brand_id: Yup.string().required('กรุณาระบุแบรนด์(สินค้า)'),
@@ -333,7 +333,7 @@ function AddOrder() {
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel>วันที่สั่งซื้อสินค้า*</InputLabel>
+                        <InputLabel>วันที่สั่งซื้อสินค้า *</InputLabel>
                         <TextField
                           required
                           fullWidth
@@ -353,7 +353,7 @@ function AddOrder() {
                     </Grid>
 
                     <Grid item xs={12} md={6}>
-                      <InputLabel>บริษัท (สินค้า)</InputLabel>
+                      <InputLabel>บริษัท (สินค้า) *</InputLabel>
                       <FormControl fullWidth>
                         <Select
                           displayEmpty
@@ -387,7 +387,7 @@ function AddOrder() {
                     </Grid>
 
                     <Grid item xs={12} md={6}>
-                      <InputLabel>เบรนสินค้า</InputLabel>
+                      <InputLabel>เบรนสินค้า *</InputLabel>
                       <FormControl fullWidth>
                         <Select
                           displayEmpty
@@ -421,7 +421,7 @@ function AddOrder() {
 
                     <Grid item xs={12} md={12}>
                       <Stack spacing={1}>
-                        <InputLabel>รายละเอียดวันสั่งซื้อสินค้า *</InputLabel>
+                        <InputLabel>รายละเอียดการสั่งซื้อสินค้า *</InputLabel>
                         <OutlinedInput
                           id="description"
                           type="description"

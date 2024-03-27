@@ -7,6 +7,7 @@ import queues from './queue';
 import adminSale from './adminSale';
 // import adminManagement from './adminManagement';
 import report from './report';
+import queuesUser from './queueUser';
 
 // ==============================|| MENU ITEMS ||============================== //
 
@@ -17,8 +18,9 @@ const menuItems = {
     // dashboardUser,
     management,
     queues,
+    queuesUser,
     admins,
-     adminSale, 
+    adminSale,
     // adminManagement,
     report
   ]

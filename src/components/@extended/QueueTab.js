@@ -2,9 +2,9 @@
 
 // material-ui
 // import { useTheme } from '@mui/material/styles';
-import { Chip } from '@mui/material';
+import { Tab, Badge } from '@mui/material';
 
-const QueueTag = ({ id, token }) => {
+const QueueTab = ({ id, numQueue, txtLabel, onSelect }) => {
   //   const theme = useTheme();
   let main;
   switch (id) {
@@ -34,8 +34,19 @@ const QueueTag = ({ id, token }) => {
       main = 'primary';
   }
 
+  //   const handleClick = (id) => {
+  //     console.log(id);
+  //   };
   return (
-    <Chip color="primary" style={{ backgroundColor: main }} label={token} />
+    <Tab
+      sx={{ background: main, color: '#fff', opacity: '1!important', ml: '5px!important' }}
+      label={
+        <Badge badgeContent={numQueue} color="error">
+          {txtLabel}
+        </Badge>
+      }
+      onClick={() => onSelect(id)} // Call onSelect with the ID when clicked
+    />
   );
 };
 
@@ -44,4 +55,4 @@ const QueueTag = ({ id, token }) => {
 //   token: PropTypes.string
 // };
 
-export default QueueTag;
+export default QueueTab;

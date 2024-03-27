@@ -1,13 +1,13 @@
-// import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // third party
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 
-// import * as stepRequest from '_api/StepRequest';
+import * as stepRequest from '_api/StepRequest';
 import * as adminRequest from '_api/adminRequest';
-// import * as reserveRequest from '_api/reserveRequest';
+import * as reserveRequest from '_api/reserveRequest';
 
 // material-ui
 import {
@@ -18,105 +18,146 @@ import {
   OutlinedInput,
   Stack,
   Typography,
-  Divider
-  //   FormControl,
-  //   Select,
-  //   MenuItem,
-  //   TextField
+  Divider,
+  FormControl,
+  Select,
+  MenuItem,
+  TextField,
+  Backdrop,
+  CircularProgress
 } from '@mui/material';
 import MainCard from 'components/MainCard';
-import { SaveOutlined } from '@ant-design/icons';
+import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
 
-function AddProducts() {
+function UpdateProductManagement() {
   const userId = localStorage.getItem('user_id');
+  const [open, setOpen] = useState(false);
+  const { id } = useParams();
+
   if (!userId) {
     window.location.href = '/login';
   }
 
-  //   useEffect(() => {
-  //     getProductCompany();
-  //     getProducts();
-  //     getWarehouses();
-  //   }, []);
+  useEffect(() => {
+    setOpen(true);
+    getProductRegister();
+    getProductCompany();
+    getProducts();
+    getWarehouses();
+  }, [id]);
+
+  // =============== Get Product Register ===============//
+  const [productRegis, setProductRegis] = useState({
+    product_company_id: '',
+    product_id: '',
+    product_brand_id: '',
+    warehouse_id: '',
+    product_register_name: '',
+    product_register_date: '',
+    register_beginning_balance: '',
+    product_register_remark: ''
+  });
+  const getProductRegister = () => {
+    try {
+      adminRequest.getProductRegisterById(id).then((response) => {
+        if (response) {
+          response.map((data) => {
+            setProductRegis(data);
+            getProductBrand(data.product_company_id);
+          });
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   // =============== Get Product Company ===============//
-  //   const [companyList, setCompanyList] = useState([]);
-  //   const getProductCompany = () => {
-  //     stepRequest.getAllProductCompany().then((response) => {
-  //       setCompanyList(response);
-  //     });
-  //   };
+  const [companyList, setCompanyList] = useState([]);
+  const getProductCompany = () => {
+    stepRequest.getAllProductCompany().then((response) => {
+      setCompanyList(response);
+    });
+  };
 
-  //   const handleChangeProductCom = (e) => {
-  //     getProductBrand(e);
-  //   };
+  const handleChangeProductCom = (e) => {
+    getProductBrand(e);
+  };
 
-  //   // =============== Get Product Brand ===============//
-  //   const [productBrand, setProductBrand] = useState([]);
-  //   const getProductBrand = (id) => {
-  //     try {
-  //       console.log(id);
-  //       reserveRequest.getProductBrandById(id).then((response) => {
-  //         setProductBrand(response);
-  //       });
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
+  // =============== Get Product Brand ===============//
+  const [productBrand, setProductBrand] = useState([]);
+  const getProductBrand = (id) => {
+    try {
+      reserveRequest.getProductBrandById(id).then((response) => {
+        if (response) {
+          setProductBrand(response);
 
-  //   // =============== Get Product ===============//
-  //   const [productList, setProductList] = useState([]);
-  //   const getProducts = () => {
-  //     try {
-  //       adminRequest.getAllProducts().then((response) => {
-  //         console.log('getProducts :', response);
-  //         setProductList(response);
-  //       });
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
+          setOpen(false);
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  //   // =============== Get Product ===============//
-  //   const [warehouseList, setWarehouseList] = useState([]);
-  //   const getWarehouses = () => {
-  //     try {
-  //       adminRequest.getAllWareHouse().then((response) => {
-  //         setWarehouseList(response);
-  //       });
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
-  const currentDate = moment(new Date()).format('YYYY-MM-DD');
+  // =============== Get Product ===============//
+  const [productList, setProductList] = useState([]);
+  const getProducts = () => {
+    try {
+      adminRequest.getAllProducts().then((response) => {
+        setProductList(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // =============== Get Product ===============//
+  const [warehouseList, setWarehouseList] = useState([]);
+  const getWarehouses = () => {
+    try {
+      adminRequest.getAllWareHouse().then((response) => {
+        setWarehouseList(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const initialValue = {
-    name: '',
-    product_category_id: 1,
-    unit_price: 100,
-    stock_quantity: '',
-    register: '',
-    setup_pile_date: currentDate,
-    product_status: 'A',
-    created_at: currentDate,
-    updated_at: currentDate
+    product_company_id: productRegis.product_company_id,
+    product_id: productRegis.product_id,
+    product_brand_id: productRegis.product_brand_id,
+    warehouse_id: productRegis.warehouse_id,
+    product_register_name: productRegis.product_register_name,
+    product_register_date: moment(productRegis.product_register_date).format('YYYY-MM-DD'),
+    register_beginning_balance: productRegis.register_beginning_balance,
+    product_register_remark: productRegis.product_register_remark
   };
 
   const valiDationSchema = Yup.object().shape({
-    name: Yup.string().required('กรุณาระบุชื่อสินค้า'),
-    stock_quantity: Yup.string().max(255).required('กรุณาจำนวนสินค้า')
+    product_company_id: Yup.string().required('กรุณาเลือกบริษัท(สินค้า)'),
+    product_id: Yup.string().max(255).required('กรุณาเลือกเบรนสินค้า'),
+    product_brand_id: Yup.string().max(255).required('กรุณาเลือกสินค้า'),
+    warehouse_id: Yup.string().max(255).required('กรุณาเลือกคลังสินค้า'),
+    product_register_name: Yup.string().max(255).required('กรุณาระบุทำเบียน'),
+    product_register_date: Yup.string().max(255).required('กรุณาระบุวันที่ตั้งกอง'),
+    register_beginning_balance: Yup.string().required('กรุณาระบุยอดที่ยกมา')
   });
 
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
+    setOpen(true);
     try {
-      adminRequest.AddProducts(values).then((response) => {
-        if (response.status == 'ok') {
+      adminRequest.putProductRegisterById(id, values).then((response) => {
+        if (response.status === 'ok') {
           backToPage();
+          setOpen(false);
         } else {
-          alert('ไม่สามารถสร้าง "ชื่อ" สินค้าซ้ำกันได้');
+          alert(result['message']['sqlMessage']);
         }
       });
     } catch (err) {
@@ -129,23 +170,31 @@ function AddProducts() {
 
   const navigate = useNavigate();
   const backToPage = () => {
-    navigate('/admin/products/');
+    navigate('/admin/product-register/');
   };
   return (
     <Grid alignItems="center" justifyContent="space-between">
+      {open && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={open}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
           <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-            <Formik initialValues={initialValue} validationSchema={valiDationSchema} onSubmit={handleSubmits}>
-              {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
+            <Formik initialValues={initialValue} validationSchema={valiDationSchema} enableReinitialize={true} onSubmit={handleSubmits}>
+              {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
                 <form noValidate onSubmit={handleSubmit}>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
-                      <Typography variant="h5">เพิ่มข้อมูลสินค้า (สูตร)</Typography>
+                      <Typography variant="h5">แก้ไขข้อมูลกองสินค้า</Typography>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                     </Grid>
 
-                    {/* <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>บริษัท (สินค้า) *</InputLabel>
                         <FormControl>
@@ -180,9 +229,9 @@ function AddProducts() {
                           </FormHelperText>
                         )}
                       </Stack>
-                    </Grid> */}
+                    </Grid>
 
-                    {/* <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>เบรนสินค้า (ตรา) *</InputLabel>
                         <FormControl>
@@ -212,9 +261,9 @@ function AddProducts() {
                           </FormHelperText>
                         )}
                       </Stack>
-                    </Grid> */}
+                    </Grid>
 
-                    {/* <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>สินค้า *</InputLabel>
                         <FormControl>
@@ -245,9 +294,9 @@ function AddProducts() {
                           </FormHelperText>
                         )}
                       </Stack>
-                    </Grid> */}
+                    </Grid>
 
-                    {/* <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>คลังสินค้า *</InputLabel>
                         <FormControl>
@@ -278,33 +327,33 @@ function AddProducts() {
                           </FormHelperText>
                         )}
                       </Stack>
-                    </Grid> */}
+                    </Grid>
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel htmlFor="name">ชื่อสินค้า *</InputLabel>
+                        <InputLabel htmlFor="product_register_name">ทะเบียน *</InputLabel>
                         <OutlinedInput
-                          id="name"
-                          type="name"
-                          value={values.name}
-                          name="name"
+                          id="product_register_name"
+                          type="product_register_name"
+                          value={values.product_register_name}
+                          name="product_register_name"
                           onBlur={handleBlur}
                           onChange={handleChange}
                           placeholder="ทะเบียน"
                           fullWidth
-                          error={Boolean(touched.name && errors.name)}
+                          error={Boolean(touched.product_register_name && errors.product_register_name)}
                         />
-                        {touched.name && errors.name && (
-                          <FormHelperText error id="helper-text-name">
-                            {errors.name}
+                        {touched.product_register_name && errors.product_register_name && (
+                          <FormHelperText error id="helper-text-product_register_name">
+                            {errors.product_register_name}
                           </FormHelperText>
                         )}
                       </Stack>
                     </Grid>
 
-                    {/* <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel>วันที่เข้ารับสินค้า *</InputLabel>
+                        <InputLabel>วันที่ตั้งกอง *</InputLabel>
                         <TextField
                           required
                           fullWidth
@@ -321,32 +370,54 @@ function AddProducts() {
                           </FormHelperText>
                         )}
                       </Stack>
-                    </Grid> */}
+                    </Grid>
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel htmlFor="stock_quantity">สินค้างเหลือ *</InputLabel>
+                        <InputLabel htmlFor="register_beginning_balance">ยอดยกมา *</InputLabel>
                         <OutlinedInput
-                          id="stock_quantity"
+                          id="register_beginning_balance"
                           type="number"
-                          value={values.stock_quantity}
-                          name="stock_quantity"
+                          value={values.register_beginning_balance}
+                          name="register_beginning_balance"
                           onBlur={handleBlur}
                           onChange={handleChange}
                           placeholder="ยอดยกมา"
                           fullWidth
-                          error={Boolean(touched.stock_quantity && errors.stock_quantity)}
+                          error={Boolean(touched.register_beginning_balance && errors.register_beginning_balance)}
                         />
-                        {touched.stock_quantity && errors.stock_quantity && (
-                          <FormHelperText error id="helper-text-stock_quantity">
-                            {errors.stock_quantity}
+                        {touched.register_beginning_balance && errors.register_beginning_balance && (
+                          <FormHelperText error id="helper-text-register_beginning_balance">
+                            {errors.register_beginning_balance}
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
+                        <InputLabel htmlFor="product_register_remark">หมายเหตุ</InputLabel>
+                        <OutlinedInput
+                          id="product_register_remark"
+                          type="text"
+                          value={values.product_register_remark}
+                          name="product_register_remark"
+                          onBlur={handleBlur}
+                          onChange={handleChange}
+                          placeholder="เช่น *ทุบก่อนจ่าย, *ระงับจ่าย"
+                          fullWidth
+                          error={Boolean(touched.product_register_remark && errors.product_register_remark)}
+                        />
+                        {touched.product_register_remark && errors.product_register_remark && (
+                          <FormHelperText error id="helper-text-product_register_remark">
+                            {errors.product_register_remark}
                           </FormHelperText>
                         )}
                       </Stack>
                     </Grid>
 
                     {/* {permission.length > 0 && permission.add_data && ( */}
-                    <Grid item xs={12}>
+                    <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
                       <Button
                         disableElevation
                         disabled={isSubmitting}
@@ -356,7 +427,19 @@ function AddProducts() {
                         color="success"
                         startIcon={<SaveOutlined />}
                       >
-                        เพิ่มข้อมูลสินค้า
+                        บันทึกข้อมูล
+                      </Button>
+
+                      <Button
+                        size="mediam"
+                        variant="contained"
+                        color="error"
+                        onClick={() => {
+                          backToPage();
+                        }}
+                        startIcon={<RollbackOutlined />}
+                      >
+                        ยกเลิก
                       </Button>
                     </Grid>
                     {/* )} */}
@@ -371,4 +454,4 @@ function AddProducts() {
   );
 }
 
-export default AddProducts;
+export default UpdateProductManagement;

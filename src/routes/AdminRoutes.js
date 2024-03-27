@@ -34,10 +34,13 @@ const AddQueue = Loadable(lazy(() => import('pages/management/step0/step0-forms/
 // render -  Product management
 const ProductsManagement = Loadable(lazy(() => import('pages/admin/ProductsManagement/ProductManagement')));
 const AddProductManagement = Loadable(lazy(() => import('pages/admin/ProductsManagement/product-forms/AddProductManagement')));
+const UpdateProductManagement = Loadable(lazy(() => import('pages/admin/ProductsManagement/product-forms/UpdateProductManagement')));
+const AddProductReceive = Loadable(lazy(() => import('pages/admin/ProductsManagement/product-forms/AddProductReceive')));
 
 // render -  Product management
 const Products = Loadable(lazy(() => import('pages/admin/Products/Products')));
 const AddProducts = Loadable(lazy(() => import('pages/admin/Products/product-forms/AddProducts')));
+const UpdateProducts = Loadable(lazy(() => import('pages/admin/Products/product-forms/UpdateProducts')));
 
 const Step1 = Loadable(lazy(() => import('pages/management/step1/Step1')));
 const Step2 = Loadable(lazy(() => import('pages/management/step2/Step2')));
@@ -145,6 +148,14 @@ const AdminsRoutes = {
         {
           path: 'add',
           element: <AddProductManagement />
+        },
+        {
+          path: 'update/:id',
+          element: <UpdateProductManagement />
+        },
+        {
+          path: 'add-receive/:id',
+          element: <AddProductReceive />
         }
       ]
     },
@@ -158,6 +169,10 @@ const AdminsRoutes = {
         {
           path: 'add',
           element: <AddProducts />
+        },
+        {
+          path: 'update/:id',
+          element: <UpdateProducts />
         }
       ]
     },

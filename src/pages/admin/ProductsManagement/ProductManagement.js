@@ -2,8 +2,13 @@ import React, { useState, useEffect } from 'react';
 import * as stepRequest from '_api/StepRequest';
 import { useNavigate } from 'react-router-dom';
 
-import { Grid, Button, Box, FormControl, Select, Stack, MenuItem, InputLabel } from '@mui/material';
+import { Grid, Button, Box } from '@mui/material';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+
 import MainCard from 'components/MainCard';
+import QueueTab from 'components/@extended/QueueTab';
+
 import { PlusCircleOutlined } from '@ant-design/icons';
 
 import ProductManagementTable from './ProductManagementTable';
@@ -35,34 +40,23 @@ function Product() {
       <Grid container rowSpacing={1} columnSpacing={1.75}>
         <Grid item xs={12}>
           <Grid container>
-            <Grid item xs={12} md={4}>
-              <Grid item xs={12} md={12}>
-                <Stack spacing={1}>
-                  <InputLabel>บริษัท (สินค้า)</InputLabel>
-                  <FormControl>
-                    <Select
-                      displayEmpty
-                      value={valueFilter || ''}
-                      onChange={(e) => handleChange(e.target.value)}
-                      placeholder="เลือกประเภทรถ"
-                      fullWidth
-                    >
-                      <MenuItem disabled value="">
-                        เลือกบริษัท (สินค้า)
-                      </MenuItem>
-                      {companyList &&
-                        companyList.map((company, index) => (
-                          <MenuItem key={index} value={company.product_company_id}>
-                            {company.product_company_name_th}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                </Stack>
-              </Grid>
+            <Grid item xs={12} md={10}>
+              <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
+                <Tab label={'ทั้งหมด'} onClick={() => handleChange(0)} />
+                {companyList.length > 0 &&
+                  companyList.map((company, index) => (
+                    <QueueTab
+                      key={index}
+                      id={company.product_company_id}
+                      // numQueue={items[company.product_company_id]}
+                      txtLabel={company.product_company_name_th2}
+                      onSelect={() => handleChange(company.product_company_id)}
+                      // {...a11yProps(company.product_company_id)}
+                    />
+                  ))}
+              </Tabs>
             </Grid>
-            <Grid item xs={12} md={4} align="right"></Grid>
-            <Grid item xs={12} md={4} align="right">
+            <Grid item xs={12} md={2} align="right">
               <Button size="mediam" color="success" variant="outlined" onClick={() => addWareHouse()} startIcon={<PlusCircleOutlined />}>
                 เพิ่มข้อมูล
               </Button>

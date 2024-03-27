@@ -15,7 +15,12 @@ import {
   Button,
   Tooltip,
   Typography,
-  CircularProgress
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
 } from '@mui/material';
 
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -65,6 +70,7 @@ function CompantTableHead() {
 function ProductsTable() {
   const [product, setProducts] = useState([]);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // getPermission();
@@ -73,10 +79,10 @@ function ProductsTable() {
 
   const getProducts = async () => {
     try {
-      setOpen(true);
+      setLoading(true);
       adminRequest.getAllProducts().then((response) => {
         setProducts(response);
-        setOpen(false);
+        setLoading(false);
       });
     } catch (error) {
       console.log(error);
@@ -85,33 +91,54 @@ function ProductsTable() {
 
   const navigate = useNavigate();
   const updateProducts = (id) => {
-    navigate('/products/update/' + id);
+    navigate('/admin/products/update/' + id);
   };
 
-  //   const deleteCar = (id) => {
-  //     let config = {
-  //       method: 'delete',
-  //       maxBodyLength: Infinity,
-  //       url: apiUrl + '/deletecar/' + id,
-  //       headers: {}
-  //     };
+  // ลบข้อมูล Manager
+  const [product_id, setProductId] = useState(false);
+  const [textnotify, setText] = useState('');
 
-  //     axios
-  //       .request(config)
-  //       .then((result) => {
-  //         if (result.data.status === 'ok') {
-  //           alert(result.data.message);
-  //           getCar();
-  //         } else {
-  //           alert(result.data['message']['sqlMessage']);
-  //         }
-  //       })
-  //       .catch((error) => {
-  //         console.log(error);
-  //       });
-  //   };
+  const handleClickOpen = (id) => {
+    setProductId(id);
+    setText('ลบข้อมูลสินค้า (สูตร)');
+    setOpen(true);
+  };
+
+  const handleClose = (flag) => {
+    if (flag === 1) {
+      setLoading(true);
+      deteteProducts(product_id);
+    }
+    setOpen(false);
+  };
+
+  const deteteProducts = (id) => {
+    try {
+      adminRequest.deleteProducts(id).then(() => {
+        getProducts();
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <Box>
+      <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
+        <DialogTitle id="responsive-dialog-title" align="center">
+          <Typography variant="h5">{'แจ้งเตือน'}</Typography>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>ต้องการ {textnotify} หรือไม่?</DialogContentText>
+        </DialogContent>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
+          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+            ยกเลิก
+          </Button>
+          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
+            ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
       <TableContainer
         sx={{
           width: '100%',
@@ -135,7 +162,7 @@ function ProductsTable() {
           }}
         >
           <CompantTableHead />
-          {!open ? (
+          {!loading ? (
             <TableBody>
               {product.map((row, index) => {
                 return (
@@ -163,7 +190,7 @@ function ProductsTable() {
                             size="medium"
                             color="error"
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            // onClick={() => deleteCar(row.car_id)}
+                            onClick={() => handleClickOpen(row.product_id)}
                           >
                             <DeleteOutlined />
                           </Button>

@@ -504,6 +504,39 @@ export const getAllProducts = async () => {
   return result;
 };
 
+export const getProductRegisterById = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/productregisterbyid/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const getProductsById = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/product/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const getProductReceiveById = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/productreceivebyid/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
 export const AddProductRegister = async (data) => {
   const myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');
@@ -536,4 +569,77 @@ export const AddProducts = async (data) => {
   const response = await fetch(apiUrl + '/addproduct/', requestOptions);
 
   return await response.json();
+};
+
+export const putProductRegisterById = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/updateproductregister/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const putProductById = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/updateproduct/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const AddProductsReceive = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/addreceiveproduct/', requestOptions);
+
+  return await response.json();
+};
+
+export const deleteProductReceive = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deletereceiveproduct/${id}`, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const deleteProducts = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deleteproduct/${id}`, requestOptions);
+
+  const result = await response.json();
+  return result;
 };

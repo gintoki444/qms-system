@@ -12,7 +12,6 @@ export const getQueueDetailID = async (id) => {
   return result;
 };
 
-
 // ==============================|| ข้อมูลทุกสเตป ด้วย ID คิว ||============================== //
 export const getAllStepById = async (id) => {
   const requestOptions = {
@@ -35,13 +34,23 @@ export const getAllqueueByDate = async (date) => {
   return result;
 };
 
-// ==============================|| ข้อมูล รายการคิว ตามวันที่ ||============================== //
+// ==============================|| ข้อมูล รายการคิว ทั้งหมด ||============================== //
 export const getAllqueueByDateV2 = async (startDate, endDate) => {
   const requestOptions = {
     method: 'GET',
     redirect: 'follow'
   };
   const response = await fetch(apiUrl + `/allqueuesbyqueuedate2?queue_date1=${startDate}&queue_date2=${endDate}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+export const getAllqueueUserByDate = async (id, startDate, endDate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/allqueuesbyuserid?user_id=${id}&queue_date1=${startDate}&queue_date2=${endDate}`, requestOptions);
   const result = await response.json();
   return result;
 };

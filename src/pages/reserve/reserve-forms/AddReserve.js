@@ -193,7 +193,7 @@ function AddReserve() {
     product_brand_id: Yup.string().required('กรุณาระบุแบรนด์(สินค้า)'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
     reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
-    description: Yup.string().required('กรุณากรอกหัวข้อการจอง')
+    // description: Yup.string().required('กรุณากรอกหัวข้อการจอง')
   });
 
   // =============== บันทึกข้อมูล ===============//
@@ -517,7 +517,7 @@ function AddReserve() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
-                    <InputLabel>เหตุผลการจอง*</InputLabel>
+                    <InputLabel>เหตุผลการจอง</InputLabel>
                     <OutlinedInput
                       id="description"
                       type="description"

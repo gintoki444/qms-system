@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // third party
 import * as Yup from 'yup';
@@ -22,25 +22,90 @@ import {
   FormControl,
   Select,
   MenuItem,
-  TextField
+  TextField,
+  Backdrop,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Tooltip
 } from '@mui/material';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 import MainCard from 'components/MainCard';
-import { SaveOutlined } from '@ant-design/icons';
+import { SaveOutlined, RollbackOutlined, DeleteOutlined } from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
 
-function AddProducts() {
+function AddProductReceive() {
   const userId = localStorage.getItem('user_id');
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { id } = useParams();
+
   if (!userId) {
     window.location.href = '/login';
   }
 
   useEffect(() => {
+    setLoading(true);
+    getProductRegister();
     getProductCompany();
     getProducts();
     getWarehouses();
-  }, []);
+    getProductReceives();
+  }, [id]);
+
+  // =============== Get Product Register ===============//
+  const [productRegis, setProductRegis] = useState({
+    product_company_id: '',
+    product_id: '',
+    product_brand_id: '',
+    warehouse_id: '',
+    product_register_name: '',
+    product_register_date: '',
+    register_beginning_balance: '',
+    product_register_remark: ''
+  });
+
+  const getProductRegister = () => {
+    try {
+      adminRequest.getProductRegisterById(id).then((response) => {
+        if (response.length > 0) {
+          response.map((data) => {
+            setProductRegis(data);
+            getProductBrand(data.product_company_id);
+          });
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const [productReceiveList, setProductReceiveList] = useState([]);
+  const getProductReceives = () => {
+    try {
+      adminRequest.getProductReceiveById(id).then((response) => {
+        if (response.length > 0) {
+          setProductReceiveList(response);
+          setLoading(false);
+        } else {
+          setProductReceiveList([]);
+          setLoading(false);
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   // =============== Get Product Company ===============//
   const [companyList, setCompanyList] = useState([]);
@@ -58,9 +123,12 @@ function AddProducts() {
   const [productBrand, setProductBrand] = useState([]);
   const getProductBrand = (id) => {
     try {
-      console.log(id);
       reserveRequest.getProductBrandById(id).then((response) => {
-        setProductBrand(response);
+        if (response) {
+          setProductBrand(response);
+
+          setLoading(false);
+        }
       });
     } catch (error) {
       console.log(error);
@@ -72,7 +140,6 @@ function AddProducts() {
   const getProducts = () => {
     try {
       adminRequest.getAllProducts().then((response) => {
-        console.log('getProducts :', response);
         setProductList(response);
       });
     } catch (error) {
@@ -93,14 +160,18 @@ function AddProducts() {
   };
 
   const initialValue = {
-    product_company_id: '',
-    product_id: '',
-    product_brand_id: '',
-    warehouse_id: '',
-    product_register_name: '',
-    product_register_date: moment(new Date()).format('YYYY-MM-DD'),
-    register_beginning_balance: '',
-    product_register_remark: ''
+    product_company_id: productRegis.product_company_id,
+    product_id: productRegis.product_id,
+    product_brand_id: productRegis.product_brand_id,
+    warehouse_id: productRegis.warehouse_id,
+    product_register_name: productRegis.product_register_name,
+    product_register_date: moment(productRegis.product_register_date).format('YYYY-MM-DD'),
+    register_beginning_balance: productRegis.register_beginning_balance,
+    product_register_remark: productRegis.product_register_remark,
+    product_register_id: id,
+    receive_date: moment(new Date()).format('YYYY-MM-DD'),
+    receive_amount: '',
+    receive_remark: ''
   };
 
   const valiDationSchema = Yup.object().shape({
@@ -110,15 +181,22 @@ function AddProducts() {
     warehouse_id: Yup.string().max(255).required('กรุณาเลือกคลังสินค้า'),
     product_register_name: Yup.string().max(255).required('กรุณาระบุทำเบียน'),
     product_register_date: Yup.string().max(255).required('กรุณาระบุวันที่ตั้งกอง'),
-    register_beginning_balance: Yup.string().required('กรุณาระบุยอดที่ยกมา')
+    register_beginning_balance: Yup.string().required('กรุณาระบุยอดที่ยกมา'),
+    receive_date: Yup.string().required('กรุณาระบุวันที่รับสินค้า'),
+    receive_amount: Yup.string().required('กรุณาระบุจำนวนยอดรับสินค้า'),
+    receive_remark: Yup.string().required('กรุณาระบุหมายเหตุ')
   });
 
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
+    setLoading(true);
     try {
-      adminRequest.AddProductRegister(values).then((response) => {
+      adminRequest.AddProductsReceive(values).then((response) => {
         if (response.status === 'ok') {
-          backToPage();
+          values.receive_date = moment(new Date()).format('YYYY-MM-DD');
+          values.receive_amount = '';
+          values.receive_remark = '';
+          getProductReceives();
         } else {
           alert(result['message']['sqlMessage']);
         }
@@ -131,24 +209,85 @@ function AddProducts() {
     }
   };
 
+  const [receive_id, setReceiveId] = useState(0);
+  const [notifytext, setNotifyText] = useState('');
+  const handleClickOpen = (id) => {
+    try {
+      setOpen(true);
+      setReceiveId(id);
+      setNotifyText('ต้องการลบข้อมูลการสั่งซื้อสินค้า');
+    } catch (e) {
+      console.log(e);
+    }
+    //กำหนดข้อความแจ้งเตือน
+    // setNotifyText('ต้องการสร้างคิวหรือไม่?');
+  };
+
+  const handleClose = (flag) => {
+    if (flag === 1) {
+      setLoading(true);
+      deleteProductReceive(receive_id);
+      console.log('receive_id :', receive_id);
+    }
+
+    setOpen(false);
+  };
+
+  const deleteProductReceive = (id) => {
+    try {
+      adminRequest.deleteProductReceive(id).then((response) => {
+        if (response.status == 'ok') {
+          getProductReceives();
+        } else {
+          alert(response.message);
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const navigate = useNavigate();
   const backToPage = () => {
     navigate('/admin/product-register/');
   };
   return (
     <Grid alignItems="center" justifyContent="space-between">
+      {loading && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={loading}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <Grid container spacing={3}>
+        <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
+          <DialogTitle id="responsive-dialog-title" align="center">
+            <Typography variant="h5">{'แจ้งเตือน'}</Typography>
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>{notifytext}</DialogContentText>
+          </DialogContent>
+          <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
+            <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+              ยกเลิก
+            </Button>
+            <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
+              ยืนยัน
+            </Button>
+          </DialogActions>
+        </Dialog>
         <Grid item xs={12} md={8}>
           <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-            <Formik initialValues={initialValue} validationSchema={valiDationSchema} onSubmit={handleSubmits}>
+            <Formik initialValues={initialValue} validationSchema={valiDationSchema} enableReinitialize={true} onSubmit={handleSubmits}>
               {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
                 <form noValidate onSubmit={handleSubmit}>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
-                      <Typography variant="h5">เพิ่มข้อมูลกองสินค้า</Typography>
+                      <Typography variant="h5">เพิ่มข้อมูลรับสินค้า</Typography>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                     </Grid>
-
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>บริษัท (สินค้า) *</InputLabel>
@@ -163,6 +302,7 @@ function AddProducts() {
                               setFieldValue('product_brand_id', '');
                               handleChangeProductCom(e.target.value);
                             }}
+                            disabled
                             placeholder="เลือกประเภทรถ"
                             fullWidth
                             error={Boolean(touched.product_company_id && errors.product_company_id)}
@@ -185,7 +325,6 @@ function AddProducts() {
                         )}
                       </Stack>
                     </Grid>
-
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>เบรนสินค้า (ตรา) *</InputLabel>
@@ -198,16 +337,18 @@ function AddProducts() {
                             onChange={handleChange}
                             placeholder="เลือกเบรนสินค้า (ตรา)"
                             fullWidth
+                            disabled
                             error={Boolean(touched.product_brand_id && errors.product_brand_id)}
                           >
                             <MenuItem disabled value="">
                               เลือกเบรนสินค้า (ตรา)
                             </MenuItem>
-                            {productBrand.map((brands) => (
-                              <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
-                                {brands.product_brand_name}
-                              </MenuItem>
-                            ))}
+                            {productBrand.length > 0 &&
+                              productBrand.map((brands) => (
+                                <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
+                                  {brands.product_brand_name}
+                                </MenuItem>
+                              ))}
                           </Select>
                         </FormControl>
                         {touched.product_brand_id && errors.product_brand_id && (
@@ -217,7 +358,6 @@ function AddProducts() {
                         )}
                       </Stack>
                     </Grid>
-
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>สินค้า *</InputLabel>
@@ -230,6 +370,7 @@ function AddProducts() {
                             onChange={handleChange}
                             placeholder="เลือกสินค้า"
                             fullWidth
+                            disabled
                             error={Boolean(touched.product_id && errors.product_id)}
                           >
                             <MenuItem disabled value="">
@@ -250,7 +391,6 @@ function AddProducts() {
                         )}
                       </Stack>
                     </Grid>
-
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>คลังสินค้า *</InputLabel>
@@ -263,6 +403,7 @@ function AddProducts() {
                             onChange={handleChange}
                             placeholder="เลือกคลังสินค้า"
                             fullWidth
+                            disabled
                             error={Boolean(touched.warehouse_id && errors.warehouse_id)}
                           >
                             <MenuItem disabled value="">
@@ -283,7 +424,6 @@ function AddProducts() {
                         )}
                       </Stack>
                     </Grid>
-
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel htmlFor="product_register_name">ทะเบียน *</InputLabel>
@@ -296,6 +436,7 @@ function AddProducts() {
                           onChange={handleChange}
                           placeholder="ทะเบียน"
                           fullWidth
+                          disabled
                           error={Boolean(touched.product_register_name && errors.product_register_name)}
                         />
                         {touched.product_register_name && errors.product_register_name && (
@@ -305,7 +446,6 @@ function AddProducts() {
                         )}
                       </Stack>
                     </Grid>
-
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>วันที่ตั้งกอง *</InputLabel>
@@ -317,6 +457,7 @@ function AddProducts() {
                           name="product_register_date"
                           onBlur={handleBlur}
                           value={values.product_register_date}
+                          disabled
                           onChange={handleChange}
                         />
                         {touched.product_register_date && errors.product_register_date && (
@@ -326,7 +467,6 @@ function AddProducts() {
                         )}
                       </Stack>
                     </Grid>
-
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel htmlFor="register_beginning_balance">ยอดยกมา *</InputLabel>
@@ -339,6 +479,7 @@ function AddProducts() {
                           onChange={handleChange}
                           placeholder="ยอดยกมา"
                           fullWidth
+                          disabled
                           error={Boolean(touched.register_beginning_balance && errors.register_beginning_balance)}
                         />
                         {touched.register_beginning_balance && errors.register_beginning_balance && (
@@ -348,19 +489,19 @@ function AddProducts() {
                         )}
                       </Stack>
                     </Grid>
-
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel htmlFor="product_register_remark">หมายเหตุ</InputLabel>
                         <OutlinedInput
                           id="product_register_remark"
-                          type="number"
+                          type="text"
                           value={values.product_register_remark}
                           name="product_register_remark"
                           onBlur={handleBlur}
                           onChange={handleChange}
                           placeholder="เช่น *ทุบก่อนจ่าย, *ระงับจ่าย"
                           fullWidth
+                          disabled
                           error={Boolean(touched.product_register_remark && errors.product_register_remark)}
                         />
                         {touched.product_register_remark && errors.product_register_remark && (
@@ -370,9 +511,142 @@ function AddProducts() {
                         )}
                       </Stack>
                     </Grid>
-
-                    {/* {permission.length > 0 && permission.add_data && ( */}
                     <Grid item xs={12}>
+                      <Typography variant="h5">ข้อมูลรับสินค้า</Typography>
+                      <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
+                        <InputLabel>วันที่รับ *</InputLabel>
+                        <TextField
+                          required
+                          fullWidth
+                          type="date"
+                          id="receive_date"
+                          name="receive_date"
+                          onBlur={handleBlur}
+                          value={values.receive_date}
+                          onChange={handleChange}
+                        />
+                        {touched.receive_date && errors.receive_date && (
+                          <FormHelperText error id="helper-text-receive_date">
+                            {errors.receive_date}receive_date
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
+                        <InputLabel htmlFor="receive_amount">ยอดรับสินค้า *</InputLabel>
+                        <OutlinedInput
+                          id="receive_amount"
+                          type="number"
+                          value={values.receive_amount}
+                          name="receive_amount"
+                          onBlur={handleBlur}
+                          onChange={handleChange}
+                          placeholder="ยอดยกมา"
+                          fullWidth
+                          error={Boolean(touched.receive_amount && errors.receive_amount)}
+                        />
+                        {touched.receive_amount && errors.receive_amount && (
+                          <FormHelperText error id="helper-text-receive_amount">
+                            {errors.receive_amount}
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
+                        <InputLabel htmlFor="receive_remark">หมายเหตุ*</InputLabel>
+                        <OutlinedInput
+                          id="receive_remark"
+                          type="text"
+                          value={values.receive_remark}
+                          name="receive_remark"
+                          onBlur={handleBlur}
+                          onChange={handleChange}
+                          placeholder="หมายเหตุ"
+                          fullWidth
+                          error={Boolean(touched.receive_remark && errors.receive_remark)}
+                        />
+                        {touched.receive_remark && errors.receive_remark && (
+                          <FormHelperText error id="helper-text-receive_remark">
+                            {errors.receive_remark}
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                    </Grid>
+
+                    {productReceiveList.length > 0 && (
+                      <Grid item xs={12} md={12}>
+                        <TableContainer>
+                          <Table
+                            aria-labelledby="tableTitle"
+                            size="small"
+                            sx={{
+                              '& .MuiTableCell-root:first-of-type': {
+                                pl: 2
+                              },
+                              '& .MuiTableCell-root:last-of-type': {
+                                pr: 3
+                              }
+                            }}
+                          >
+                            <TableHead>
+                              <TableRow>
+                                <TableCell sx={{ p: '12px' }} align="center">
+                                  ลำดับ
+                                </TableCell>
+                                <TableCell sx={{ p: '12px' }}>วันที่รับ</TableCell>
+                                <TableCell sx={{ p: '12px' }} align="right">
+                                  จำนวนรับ
+                                </TableCell>
+                                <TableCell sx={{ p: '12px' }}>หมายเหตุ</TableCell>
+                                <TableCell sx={{ p: '12px' }} align="right">
+                                  Action
+                                </TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {productReceiveList.length > 0 &&
+                                productReceiveList.map((productReceive, index) => (
+                                  <TableRow key={index}>
+                                    <TableCell align="center">{index + 1}</TableCell>
+                                    <TableCell align="left">{moment(productReceive.receive_date).format('DD/MM/YYYY')}</TableCell>
+                                    <TableCell align="right">{productReceive.receive_amount}</TableCell>
+                                    <TableCell align="left">{productReceive.receive_remark}</TableCell>
+                                    <TableCell align="right">
+                                      <Tooltip title="ลบข้อมูลรับ">
+                                        <span>
+                                          <Button
+                                            variant="contained"
+                                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                            size="medium"
+                                            color="error"
+                                            // onClick={() => deleteDrivers(row.reserve_id)}
+                                            onClick={() => handleClickOpen(productReceive.product_receive_id)}
+                                          >
+                                            <DeleteOutlined />
+                                          </Button>
+                                        </span>
+                                      </Tooltip>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              {/* {order.items.map((item, index) => (
+                                <TableRow key={index}>
+                                  <TableCell width={'50%'}>{item.name}</TableCell>
+                                  <TableCell align="right">{item.quantity} ตัน</TableCell>
+                                </TableRow>
+                              ))} */}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </Grid>
+                    )}
+                    {/* {permission.length > 0 && permission.add_data && ( */}
+                    <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
                       <Button
                         disableElevation
                         disabled={isSubmitting}
@@ -382,7 +656,19 @@ function AddProducts() {
                         color="success"
                         startIcon={<SaveOutlined />}
                       >
-                        เพิ่มข้อมูลกองสินค้า
+                        เพิ่มข้อมูลรับสินค้า
+                      </Button>
+
+                      <Button
+                        size="mediam"
+                        variant="contained"
+                        color="error"
+                        onClick={() => {
+                          backToPage();
+                        }}
+                        startIcon={<RollbackOutlined />}
+                      >
+                        ยกเลิก
                       </Button>
                     </Grid>
                     {/* )} */}
@@ -397,4 +683,4 @@ function AddProducts() {
   );
 }
 
-export default AddProducts;
+export default AddProductReceive;

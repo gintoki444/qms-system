@@ -4,38 +4,39 @@ import * as stepRequest from '_api/StepRequest';
 
 import { Step4Table } from './Step4Table';
 
-import { Grid, Stack, Box, Typography } from '@mui/material';
+import { Grid, Stack, Box, Typography, Badge } from '@mui/material';
 import MainCard from 'components/MainCard';
 
-import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-function CustomTabPanel(props) {
-  const { children, value, index, ...other } = props;
+import QueueTab from 'components/@extended/QueueTab';
 
-  return (
-    <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
+// function CustomTabPanel(props) {
+//   const { children, value, index, ...other } = props;
 
-CustomTabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.number.isRequired,
-  value: PropTypes.number.isRequired
-};
+//   return (
+//     <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
+//       {value === index && (
+//         <Box sx={{ p: 3 }}>
+//           <Typography>{children}</Typography>
+//         </Box>
+//       )}
+//     </div>
+//   );
+// }
 
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`
-  };
-}
+// CustomTabPanel.propTypes = {
+//   children: PropTypes.node,
+//   index: PropTypes.number.isRequired,
+//   value: PropTypes.number.isRequired
+// };
+
+// function a11yProps(index) {
+//   return {
+//     id: `simple-tab-${index}`,
+//     'aria-controls': `simple-tabpanel-${index}`
+//   };
+// }
 
 function Step4() {
   const [commonStatus, setCommonStatus] = useState('');
@@ -60,11 +61,34 @@ function Step4() {
   const getProductCompany = () => {
     stepRequest.getAllProductCompany().then((response) => {
       setCompanyList(response);
+      waitingGet(response);
     });
   };
 
+  const [items, setItems] = useState({});
+  const [countAllQueue, setCountAllQueue] = useState(0);
+  const waitingGet = async (company) => {
+    try {
+      await getQueues.getStep3Waitting().then((response) => {
+        if (company.length > 0) {
+          company.map((x) => {
+            let countCompany = response.filter((i) => i.product_company_id == x.product_company_id).length;
+            setItems((prevState) => ({
+              ...prevState,
+              [x.product_company_id]: countCompany
+            }));
+          });
+        }
+
+        setCountAllQueue(response.length);
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const [valueFilter, setValueFilter] = useState(0);
-  const handleChange = (event, newValue) => {
+  const handleChange = (newValue) => {
     setValueFilter(newValue);
   };
   return (
@@ -94,15 +118,24 @@ function Step4() {
                   <Grid sx={{ p: 2 }}>
                     <Typography variant="h4">รอเรียกคิว</Typography>
                   </Grid>
-                  <Tabs value={valueFilter} onChange={handleChange} aria-label="basic tabs example">
-                    <Tab label={'ทั้งหมด'} {...a11yProps(0)} />
+                  <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
+                    <Tab
+                      label={
+                        <Badge badgeContent={countAllQueue} color="error">
+                          ทั้งหมด
+                        </Badge>
+                      }
+                      onClick={() => handleChange(0)}
+                    />
                     {companyList.length > 0 &&
                       companyList.map((company, index) => (
-                        <Tab
+                        <QueueTab
                           key={index}
-                          label={company.product_company_name_th2}
-                          // sx={{ background: '#ff00007d',color:'#fff' }}
-                          {...a11yProps(company.product_company_id)}
+                          id={company.product_company_id}
+                          numQueue={items[company.product_company_id]}
+                          txtLabel={company.product_company_name_th2}
+                          onSelect={() => handleChange(company.product_company_id)}
+                          // {...a11yProps(company.product_company_id)}
                         />
                       ))}
                   </Tabs>
