@@ -10,7 +10,8 @@ import axios from '../../../../node_modules/axios/index';
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 import * as reserveRequest from '_api/reserveRequest';
-import * as adminRequest from '_api/adminRequest';
+import * as queuesRequest from '_api/queueReques';
+// import * as adminRequest from '_api/adminRequest';
 
 // const userId = localStorage.getItem('user_id');
 
@@ -167,19 +168,19 @@ function UpdateReserve() {
   };
 
   // =============== Get Brand ===============//
-  const [brandList, setBrandList] = useState([]);
-  const getBrandList = () => {
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-    fetch(apiUrl + '/allproductbrandgroup', requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        setBrandList(result);
-      })
-      .catch((error) => console.log('error', error));
-  };
+  // const [brandList, setBrandList] = useState([]);
+  // const getBrandList = () => {
+  //   var requestOptions = {
+  //     method: 'GET',
+  //     redirect: 'follow'
+  //   };
+  //   fetch(apiUrl + '/allproductbrandgroup', requestOptions)
+  //     .then((response) => response.json())
+  //     .then((result) => {
+  //       setBrandList(result);
+  //     })
+  //     .catch((error) => console.log('error', error));
+  // };
 
   // =============== Get Product Company ===============//
   const [productCompany, setProductCompany] = useState([]);
@@ -316,9 +317,9 @@ function UpdateReserve() {
   useEffect(() => {
     getReserve();
     getProductCompany();
-    if (user_Id) {
-      getBrandList();
-    }
+    // if (user_Id) {
+    //   getBrandList();
+    // }
 
     // if (userRoles === 9 || userRoles === 1) {
     //   getWarehouses();
@@ -339,6 +340,8 @@ function UpdateReserve() {
               setCheckDate(true);
             }
             setReservationData(result);
+            setCompanyId(result.product_company_id);
+            checkQueueCompanyCount(result.product_company_id);
             getProductBrand(result.product_company_id);
             getCompanyList();
 
@@ -385,11 +388,11 @@ function UpdateReserve() {
   });
 
   // =============== บันทึกข้อมูล ===============//
-  const updateTeamLoading = (values) => {
-    adminRequest.putReserveTeam(id, values).then(() => {
-      window.location.href = '/reserve';
-    });
-  };
+  // const updateTeamLoading = (values) => {
+  //   adminRequest.putReserveTeam(id, values).then(() => {
+  //     window.location.href = '/reserve';
+  //   });
+  // };
   const handleSubmits = async (values) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     try {
@@ -397,17 +400,17 @@ function UpdateReserve() {
       values.pickup_date = moment(values.pickup_date).format('YYYY-MM-DD HH:mm:ss');
       values.created_at = currentDate;
       values.updated_at = currentDate;
-
-      const teamValue = {
-        team_id: values.team_id,
-        contractor_id: values.contractor_id
-      };
+      values.brand_group_id = values.product_company_id;
+      // const teamValue = {
+      //   team_id: values.team_id,
+      //   contractor_id: values.contractor_id
+      // };
 
       await reserveRequest
         .putReserById(id, values)
         .then((result) => {
           if (result.status === 'ok') {
-            updateTeamLoading(teamValue);
+            window.location.href = '/reserve';
           } else {
             alert(result['message']['sqlMessage']);
           }
@@ -426,6 +429,7 @@ function UpdateReserve() {
   const [notifytext, setNotifyText] = useState('');
   const [total_quantity, setTotalQuantity] = useState(0);
   const [brand_code, setBrandCode] = useState('');
+  const [conpany_id, setCompanyId] = useState('');
 
   // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
   const padZero = (num) => {
@@ -434,7 +438,7 @@ function UpdateReserve() {
 
   const [orderId, setOrderId] = useState([]);
   const [onClick, setOnClick] = useState([]);
-  const handleClickOpen = (id, onClick, total_quantity, brand_code) => {
+  const handleClickOpen = (id, onClick, total_quantity) => {
     try {
       if (onClick == 'add-queue') {
         if (total_quantity === '0') {
@@ -446,7 +450,6 @@ function UpdateReserve() {
           //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
           setReserveId(id);
           setTotalQuantity(total_quantity);
-          setBrandCode(brand_code);
           setOpen(true);
         }
       } else {
@@ -496,6 +499,19 @@ function UpdateReserve() {
           });
         } else {
           alert(result['message']);
+        }
+      });
+    });
+  }
+
+  async function checkQueueCompanyCount(id) {
+    return await new Promise((resolve) => {
+      queuesRequest.getQueueTokenByIdCom(id, currentDate, currentDate).then((response) => {
+        if (response) {
+          setBrandCode(response.product_company_code);
+          resolve(response.queue_count_company_code);
+          console.log('getQueueTokenByIdCom:', response.queue_count_company_code);
+          console.log('setBrandCode:', response.product_company_code);
         }
       });
     });
@@ -568,7 +584,7 @@ function UpdateReserve() {
       if (queuecountf === 0) {
         if (total_quantity > 0) {
           //สร้างข้อมูลคิว
-          const queue_number = (await getQueuesCount()) + 1;
+          const queue_number = (await checkQueueCompanyCount(conpany_id)) + 1;
 
           const queue_id_createf = await createQueuef(id, brand_code, queue_number);
 
@@ -593,25 +609,25 @@ function UpdateReserve() {
   };
 
   //สร้าง get Queues Counts
-  const getQueuesCount = () => {
-    return new Promise((resolve, reject) => {
-      const currentDate = moment(new Date()).format('YYYY-MM-DD');
+  // const getQueuesCount = () => {
+  //   return new Promise((resolve, reject) => {
+  //     const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
-      const requestOptions = {
-        method: 'GET',
-        redirect: 'follow'
-      };
+  //     const requestOptions = {
+  //       method: 'GET',
+  //       redirect: 'follow'
+  //     };
 
-      fetch(apiUrl + '/queues/count?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
-        .then((response) => response.json())
-        .then((result) => {
-          resolve(result['queue_count']);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  };
+  //     fetch(apiUrl + '/queues/count?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
+  //       .then((response) => response.json())
+  //       .then((result) => {
+  //         resolve(result['queue_count']);
+  //       })
+  //       .catch((error) => {
+  //         reject(error);
+  //       });
+  //   });
+  // };
 
   //สร้าง ข้อความ Line notification
   const getMessageCreateQueue = async (queue_id, reserve_id) => {
@@ -780,7 +796,7 @@ function UpdateReserve() {
         fetch(apiUrl + '/transactions', requestOptions)
           .then((response) => response.json())
           .then(() => {
-            window.location.href = '/admin/step0/add-queues/' + id;
+            window.location.href = '/queues/detail/' + queue_id;
           })
           .catch((error) => console.log('error', error));
 
@@ -918,7 +934,7 @@ function UpdateReserve() {
                         )}
                       </Stack>
                     </Grid>
-
+                    {/* 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>กลุ่มสินค้า*</InputLabel>
@@ -944,7 +960,7 @@ function UpdateReserve() {
                           </FormHelperText>
                         )}
                       </Stack>
-                    </Grid>
+                    </Grid> */}
 
                     <Grid item xs={12} md={6}>
                       <InputLabel>บริษัท (สินค้า)</InputLabel>
@@ -1095,7 +1111,7 @@ function UpdateReserve() {
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel>หัวข้อการจอง</InputLabel>
+                        <InputLabel>เหตุผลการจอง</InputLabel>
                         <OutlinedInput
                           id="description"
                           type="description"
@@ -1103,7 +1119,7 @@ function UpdateReserve() {
                           name="description"
                           onBlur={handleBlur}
                           onChange={handleChange}
-                          placeholder="หัวข้อการจอง"
+                          placeholder="เหตุผลการจอง"
                           error={Boolean(touched.description && errors.description)}
                         />
                         {touched.description && errors.description && (
@@ -1255,14 +1271,7 @@ function UpdateReserve() {
                           disabled={
                             dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') || values.total_quantity == 0 || checkDate == false
                           }
-                          onClick={() =>
-                            handleClickOpen(
-                              reservationData.reserve_id,
-                              'add-queue',
-                              reservationData.total_quantity,
-                              reservationData.group_code
-                            )
-                          }
+                          onClick={() => handleClickOpen(reservationData.reserve_id, 'add-queue', reservationData.total_quantity)}
                           startIcon={<DiffOutlined />}
                         >
                           สร้างคิว

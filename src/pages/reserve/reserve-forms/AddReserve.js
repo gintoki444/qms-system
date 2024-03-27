@@ -83,19 +83,19 @@ function AddReserve() {
   };
 
   // =============== Get Brand ===============//
-  const [brandList, setBrandList] = useState([]);
-  const getBrandList = () => {
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-    fetch(apiUrl + '/allproductbrandgroup', requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        setBrandList(result);
-      })
-      .catch((error) => console.log('error', error));
-  };
+  // const [brandList, setBrandList] = useState([]);
+  // const getBrandList = () => {
+  //   var requestOptions = {
+  //     method: 'GET',
+  //     redirect: 'follow'
+  //   };
+  //   fetch(apiUrl + '/allproductbrandgroup', requestOptions)
+  //     .then((response) => response.json())
+  //     .then((result) => {
+  //       setBrandList(result);
+  //     })
+  //     .catch((error) => console.log('error', error));
+  // };
 
   // =============== Get Product Company ===============//
   const [productCompany, setProductCompany] = useState([]);
@@ -164,7 +164,7 @@ function AddReserve() {
       getCarLsit();
       getDriverLsit();
       getWarehouses();
-      getBrandList();
+      // getBrandList();
       getStation();
       getProductCompany();
     }
@@ -188,11 +188,11 @@ function AddReserve() {
   // =============== Validate Forms ===============//
   const validationSchema = Yup.object().shape({
     company_id: Yup.string().required('กรุณาเลือกบริษัท/ร้านค้า'),
-    brand_group_id: Yup.string().required('กรุณาเลือกกลุ่มสินค้า'),
+    // brand_group_id: Yup.string().required('กรุณาเลือกกลุ่มสินค้า'),
     product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
     product_brand_id: Yup.string().required('กรุณาระบุแบรนด์(สินค้า)'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
-    reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
+    reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย')
     // description: Yup.string().required('กรุณากรอกหัวข้อการจอง')
   });
 
@@ -204,6 +204,7 @@ function AddReserve() {
     try {
       values.user_id = userId;
       values.pickup_date = moment(values.pickup_date).format('YYYY-MM-DD HH:mm:ss');
+      values.brand_group_id = values.product_company_id;
       values.created_at = currentDate;
       values.updated_at = currentDate;
 
@@ -228,16 +229,19 @@ function AddReserve() {
           }
 
           setStatus({ success: false });
+          setLoading(false);
           setSubmitting(false);
         })
         .catch((error) => {
-          console.log(error);
+          setLoading(false);
+          alert(error);
         });
       // }
     } catch (err) {
       console.error(err);
       setStatus({ success: false });
       setErrors({ submit: err.message });
+      setLoading(false);
       setSubmitting(false);
     }
   };
@@ -326,38 +330,6 @@ function AddReserve() {
                     {touched.company_id && errors.company_id && (
                       <FormHelperText error id="helper-text-company-car">
                         {errors.company_id}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>กลุ่มสินค้า*</InputLabel>
-                    <FormControl fullWidth>
-                      <Select
-                        displayEmpty
-                        variant="outlined"
-                        name="brand_group_id"
-                        value={values.brand_group_id}
-                        onChange={handleChange}
-                        placeholder="เลือกกลุ่มสินค้า"
-                        fullWidth
-                        error={Boolean(touched.brand_group_id && errors.brand_group_id)}
-                      >
-                        <MenuItem disabled value="">
-                          เลือกกลุ่มสินค้า
-                        </MenuItem>
-                        {brandList.map((brand) => (
-                          <MenuItem key={brand.brand_group_id} value={brand.brand_group_id}>
-                            {brand.group_code} - {brand.description}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    {touched.brand_group_id && errors.brand_group_id && (
-                      <FormHelperText error id="helper-text-company-car">
-                        {errors.brand_group_id}
                       </FormHelperText>
                     )}
                   </Stack>

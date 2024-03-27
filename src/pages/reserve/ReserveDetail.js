@@ -8,6 +8,7 @@ import axios from '../../../node_modules/axios/index';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
+import * as queuesRequest from '_api/queueReques';
 // import * as reseveRequest from '_api/reserveRequest';
 
 // import QRCode from 'react-qr-code';
@@ -40,6 +41,7 @@ import moment from 'moment';
 function ReserveDetail() {
   const [loading, setLoading] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
+  const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
   // =============== Get Reserve ID ===============//
   const [reserveData, setReservData] = useState({});
@@ -54,6 +56,8 @@ function ReserveDetail() {
         if (res) {
           res.data.reserve.map((result) => {
             setReservData(result);
+            setCompanyId(result.product_company_id);
+            checkQueueCompanyCount(result.product_company_id);
             setLoading(false);
           });
         }
@@ -86,6 +90,7 @@ function ReserveDetail() {
   const [reserve_id, setReserveId] = useState(0);
   const [total_quantity, setTotalQuantity] = useState(0);
   const [brand_code, setBrandCode] = useState('');
+  const [conpany_id, setCompanyId] = useState('');
 
   // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
   const padZero = (num) => {
@@ -111,6 +116,7 @@ function ReserveDetail() {
   //     console.log(error);
   //   }
   // };
+  // const handleClickOpen = (id, click, total_quantity, brand_code, conpany_id) => {
 
   const handleClickOpen = (id, total_quantity) => {
     try {
@@ -122,7 +128,6 @@ function ReserveDetail() {
         //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
         setReserveId(id);
         setTotalQuantity(total_quantity);
-        setBrandCode(brand_code);
         setOpen(true);
       }
     } catch (e) {
@@ -162,6 +167,18 @@ function ReserveDetail() {
     });
   }
 
+  async function checkQueueCompanyCount(id) {
+    return await new Promise((resolve) => {
+      queuesRequest.getQueueTokenByIdCom(id, currentDate, currentDate).then((response) => {
+        if (response) {
+          setBrandCode(response.product_company_code);
+          resolve(response.queue_count_company_code);
+          console.log('getQueueTokenByIdCom:', response.queue_count_company_code);
+          console.log('setBrandCode:', response.product_company_code);
+        }
+      });
+    });
+  }
   //สร้าง Queue รับค่า reserve_id
   function createQueuef(reserve_id, brand_code, queue_number) {
     return new Promise((resolve) => {
@@ -229,25 +246,25 @@ function ReserveDetail() {
       .catch((error) => console.log('error', error));
   };
 
-  const getQueuesCount = () => {
-    return new Promise((resolve, reject) => {
-      const currentDate = moment(new Date()).format('YYYY-MM-DD');
+  // const getQueuesCount = () => {
+  //   return new Promise((resolve, reject) => {
+  //     const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
-      const requestOptions = {
-        method: 'GET',
-        redirect: 'follow'
-      };
+  //     const requestOptions = {
+  //       method: 'GET',
+  //       redirect: 'follow'
+  //     };
 
-      fetch(apiUrl + '/queues/count?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
-        .then((response) => response.json())
-        .then((result) => {
-          resolve(result['queue_count']);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  };
+  //     fetch(apiUrl + '/queues/count?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
+  //       .then((response) => response.json())
+  //       .then((result) => {
+  //         resolve(result['queue_count']);
+  //       })
+  //       .catch((error) => {
+  //         reject(error);
+  //       });
+  //   });
+  // };
 
   //สร้าง addQueue รับค่า reserve_id ,total_quantity
   const addQueue = async (id, total_quantity) => {
@@ -258,7 +275,7 @@ function ReserveDetail() {
       if (queuecountf === 0) {
         if (total_quantity > 0) {
           //สร้างข้อมูลคิว
-          const queue_number = (await getQueuesCount()) + 1;
+          const queue_number = (await checkQueueCompanyCount(conpany_id)) + 1;
 
           const queue_id_createf = await createQueuef(id, brand_code, queue_number);
 
@@ -677,7 +694,7 @@ function ReserveDetail() {
                 size="mediam"
                 variant="outlined"
                 color="success"
-                onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity, reserveData.group_code)}
+                onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity)}
                 startIcon={<DiffOutlined />}
               >
                 สร้างคิว

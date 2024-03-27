@@ -1,6 +1,20 @@
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 
+// ==============================|| แสดงข้อมูล Token และ ID ของคิว ||============================== //
+export const getQueueTokenByIdCom = async (id, startDate, endDate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(
+    apiUrl + `/queues/countcompanycode?start_date=${startDate}&end_date=${endDate}&company_id=${id}`,
+    requestOptions
+  );
+  const result = await response.json();
+  return result;
+};
+
 // ==============================|| ข้อมูลคิว แสดงข้อมูลคิวด้วย ID ||============================== //
 export const getQueueDetailID = async (id) => {
   const requestOptions = {

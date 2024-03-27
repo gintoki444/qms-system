@@ -6,6 +6,7 @@ import moment from 'moment';
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 import * as reserveRequest from '_api/reserveRequest';
+import * as queuesRequest from '_api/queueReques';
 
 // Get Role use
 import { useSelector } from 'react-redux';
@@ -191,36 +192,42 @@ export default function ReserveTable({ startDate, endDate }) {
   const userId = localStorage.getItem('user_id');
 
   useEffect(() => {
+    getCompanys();
     if (userRoles) {
       getReserve();
     }
   }, [userRoles, startDate, endDate]);
 
   const getReserve = () => {
+    setLoading(true);
     let urlGet = '';
     if (userRoles == 1 || userRoles == 10) {
-      urlGet = apiUrl + '/allreservesrange?pickup_date1=' + startDate + '&pickup_date2=' + endDate;
+      urlGet = '/allreservesrange?pickup_date1=' + startDate + '&pickup_date2=' + endDate;
     } else {
-      urlGet = apiUrl + '/allreservespickup2?user_id=' + userId + '&pickup_date1=' + startDate + '&pickup_date2=' + endDate;
+      urlGet = '/allreservespickup2?user_id=' + userId + '&pickup_date1=' + startDate + '&pickup_date2=' + endDate;
     }
-    setLoading(true);
 
-    let config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: urlGet,
-      headers: {}
-    };
+    reserveRequest.getAllReserveByUrl(urlGet).then((response) => {
+      setItems(response);
+      setLoading(false);
+    });
+  };
 
-    axios
-      .request(config)
-      .then((response) => {
-        setItems(response.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error);
+  const [companys, setCompanys] = useState([]);
+  const getCompanys = () => {
+    try {
+      reserveRequest.getAllproductCompanys().then((response) => {
+        setCompanys(response);
       });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getTokenCompany = (company_id) => {
+    const token = companys.filter((x) => x.product_company_id == company_id);
+
+    return token[0]?.product_company_code;
   };
 
   // ==============================|| Update reserve ||============================== //
@@ -251,6 +258,7 @@ export default function ReserveTable({ startDate, endDate }) {
   const [reserve_id, setReserveId] = useState(0);
   const [total_quantity, setTotalQuantity] = useState(0);
   const [brand_code, setBrandCode] = useState('');
+  const [conpany_id, setCompanyId] = useState('');
   const [onclick, setOnClick] = useState('');
 
   // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
@@ -258,7 +266,7 @@ export default function ReserveTable({ startDate, endDate }) {
     return num < 10 ? `0${num}` : num;
   };
 
-  const handleClickOpen = (id, click, total_quantity, brand_code) => {
+  const handleClickOpen = (id, click, total_quantity, brand_code, conpany_id) => {
     if (total_quantity === '0') {
       alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
       return;
@@ -268,11 +276,13 @@ export default function ReserveTable({ startDate, endDate }) {
       } else {
         setNotifyText('ต้องการสร้างคิวหรือไม่?');
       }
+      console.log('brand_code :', brand_code);
+
       setOnClick(click);
-      //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
       setReserveId(id);
       setTotalQuantity(total_quantity);
       setBrandCode(brand_code);
+      setCompanyId(conpany_id);
       setOpen(true);
     }
   };
@@ -292,7 +302,7 @@ export default function ReserveTable({ startDate, endDate }) {
     setOpen(false);
   };
 
-  //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
+  //=========================================== ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง //===========================================
   async function checkQueueDataf(reserve_id) {
     let config = {
       method: 'get',
@@ -308,6 +318,17 @@ export default function ReserveTable({ startDate, endDate }) {
           });
         } else {
           alert(result['message']);
+        }
+      });
+    });
+  }
+
+  async function checkQueueCompanyCount(id) {
+    return await new Promise((resolve) => {
+      queuesRequest.getQueueTokenByIdCom(id, currentDate, currentDate).then((response) => {
+        if (response) {
+          resolve(response.queue_count_company_code);
+          console.log('getQueueTokenByIdCom:', response.queue_count_company_code);
         }
       });
     });
@@ -380,36 +401,37 @@ export default function ReserveTable({ startDate, endDate }) {
       .catch((error) => console.log('error', error));
   };
 
-  const getQueuesCount = () => {
-    return new Promise((resolve, reject) => {
-      const currentDate = moment(new Date()).format('YYYY-MM-DD');
+  // const getQueuesCount = () => {
+  //   return new Promise((resolve, reject) => {
+  //     const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
-      const requestOptions = {
-        method: 'GET',
-        redirect: 'follow'
-      };
+  //     const requestOptions = {
+  //       method: 'GET',
+  //       redirect: 'follow'
+  //     };
 
-      fetch(apiUrl + '/queues/count?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
-        .then((response) => response.json())
-        .then((result) => {
-          resolve(result['queue_count']);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  };
+  //     fetch(apiUrl + '/queues/count?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
+  //       .then((response) => response.json())
+  //       .then((result) => {
+  //         resolve(result['queue_count']);
+  //       })
+  //       .catch((error) => {
+  //         reject(error);
+  //       });
+  //   });
+  // };
 
   //สร้าง addQueue รับค่า reserve_id ,total_quantity
   const addQueue = async (id, total_quantity) => {
     try {
       //ตรวจสอบข้อมูลคิว มีการสร้างจาก reserve id นี้แล้วหรือยัง
+
       const queuecountf = await checkQueueDataf(id);
 
       if (queuecountf === 0) {
         if (total_quantity > 0) {
           //สร้างข้อมูลคิว
-          const queue_number = (await getQueuesCount()) + 1;
+          const queue_number = (await checkQueueCompanyCount(conpany_id)) + 1;
 
           const queue_id_createf = await createQueuef(id, brand_code, queue_number);
 
@@ -695,9 +717,15 @@ export default function ReserveTable({ startDate, endDate }) {
                       <TableCell align="center">
                         <Chip color={'primary'} label={row.registration_no} sx={{ width: 122, border: 1 }} />
                       </TableCell>
-                      <TableCell align="center"> {row.brand_code}</TableCell>
+                      <TableCell align="center">{getTokenCompany(row.product_company_id)}</TableCell>
                       <TableCell align="left">
-                        {row.r_description.substring(0, 30)} {row.r_description.length >= 20 && '...'}
+                        {row.r_description ? (
+                          <Tooltip title={row.r_description}>
+                            {row.r_description.substring(0, 30)} {row.r_description.length >= 20 && '...'}
+                          </Tooltip>
+                        ) : (
+                          <>-</>
+                        )}
                       </TableCell>
                       <TableCell align="left">{row.company}</TableCell>
                       <TableCell align="left">{row.contact_person}</TableCell>
@@ -736,7 +764,15 @@ export default function ReserveTable({ startDate, endDate }) {
                                     row.total_quantity == 0
                                   }
                                   color="info"
-                                  onClick={() => handleClickOpen(row.reserve_id, 'add-queue', row.total_quantity, row.brand_code)}
+                                  onClick={() =>
+                                    handleClickOpen(
+                                      row.reserve_id,
+                                      'add-queue',
+                                      row.total_quantity,
+                                      getTokenCompany(row.product_company_id),
+                                      row.product_company_id
+                                    )
+                                  }
                                 >
                                   <DiffOutlined />
                                 </Button>

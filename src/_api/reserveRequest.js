@@ -1,6 +1,17 @@
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 
+// ==============================|| ข้อมูล Reserve ทั้งหมด ||============================== //
+export const getAllReserveByUrl = async (url) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + url, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
 // ==============================|| ข้อมูล Product Company ||============================== //
 export const getAllproductCompanys = async () => {
   const requestOptions = {
@@ -12,7 +23,7 @@ export const getAllproductCompanys = async () => {
   return result;
 };
 
-// ==============================|| ข้อมูล Product Company ||============================== //
+// ==============================|| ข้อมูล Product Brand ด้วย id ||============================== //
 export const getProductBrandById = async (id) => {
   const requestOptions = {
     method: 'GET',
