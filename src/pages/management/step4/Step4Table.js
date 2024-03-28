@@ -679,7 +679,10 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
                             <strong>{index + 1}</strong>
                           </Typography>
                         </TableCell>
-                        <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
+                        <TableCell align="left">
+                          {moment(row.queue_date).format('DD/MM/YYYY')}
+                          {row.queue_time ? ' - ' + row.queue_time : ''}
+                        </TableCell>
                         <TableCell align="left">
                           <Chip color="primary" label={row.token} />
                         </TableCell>

@@ -619,12 +619,36 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
   };
 
   const handleCallQueue = (queues) => {
-    const titleTxt = `คิวหมายเลขที่ ${queues.token}`;
-    const detialTxt = `เข้าสถานีชั่งเบา`;
+    let detialTxt = '';
+
+    if (queues.station_description == 'รอเรียกคิว' && isEmpty(selectedStations)) {
+      if (isEmpty(selectedStations)) {
+        detialTxt = `เข้าสถานีชั่งเบา`;
+      } else {
+        const getStations = stations.filter((x) => x.station_id === selectedStations[queues.step_id]);
+        const textStation = getStations[0].station_description;
+        const updatedText = textStation.replace(/ชั่งเบาที่ /g, '');
+        detialTxt = `เข้าสถานีชั่งเบา ช่องที่ ${updatedText}`;
+      }
+    } else {
+      if (isEmpty(selectedStations)) {
+        const updatedText = queues.station_description.replace(/ชั่งเบาที่ /g, '');
+        detialTxt = `เข้าสถานีชั่งเบา ช่องที่ ${updatedText}`;
+      } else {
+        const getStations = stations.filter((x) => x.station_id === selectedStations[queues.step_id]);
+        const textStation = getStations[0].station_description;
+        const updatedText = textStation.replace(/ชั่งเบาที่ /g, '');
+        detialTxt = `เข้าสถานีชั่งเบา ช่องที่ ${updatedText}`;
+      }
+    }
+
+    const cleanedToken = queues.token.split('').join(' ');
+    const titleTxt = `ขอเชิญคิวหมายเลขที่ ${cleanedToken}`;
     // ==== แยกตัวอักษรป้ายทะเบียนรถ ====
     const titleTxtCar = queues.registration_no;
-    const cleanedString = titleTxtCar.replace(/[^\u0E00-\u0E7F\d\s]/g, '');
-    const spacedString = cleanedString.split('').join(' ');
+    // const cleanedString = titleTxtCar.replace(/[^\u0E00-\u0E7F\d\s]/g, '');
+    const cleanedString = titleTxtCar;
+    const spacedString = cleanedString.split('').join(' ').replace(/-/g, 'ขีด').replace(/\//g, 'ทับ').replace(/,/g, 'พ่วง');
 
     SoundCall(`${titleTxt} ทะเบียน ${spacedString} ${detialTxt}`);
   };
@@ -780,7 +804,10 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
                                   <strong>{index + 1}</strong>
                                 </Typography>
                               </TableCell>
-                              <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
+                              <TableCell align="left">
+                                {moment(row.queue_date).format('DD/MM/YYYY')}
+                                {row.queue_time ? ' - ' + row.queue_time : ''}
+                              </TableCell>
                               <TableCell align="left">
                                 <QueueTag id={row.product_company_id} token={row.token} />
                                 {/* <Chip color="primary" label={row.token} /> */}

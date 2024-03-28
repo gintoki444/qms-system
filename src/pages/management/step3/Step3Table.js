@@ -741,14 +741,48 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
   };
 
   const handleCallQueue = (queues) => {
-    const titleTxt = `คิวหมายเลขที่ ${queues.token}`;
-    const detialTxt = `เข้าสถานีชั่งหนัก`;
+    
+    let detialTxt = '';
+
+    if (queues.station_description == 'รอเรียกคิว' && isEmpty(selectedStations)) {
+      if (isEmpty(selectedStations)) {
+        detialTxt = `เข้าสถานีชั่งหนัก`;
+      } else {
+        const getStations = stations.filter((x) => x.station_id === selectedStations[queues.step_id]);
+        const textStation = getStations[0].station_description;
+        const updatedText = textStation.replace(/ชั่งหนักที่ /g, '');
+        detialTxt = `เข้าสถานีชั่งหนัก ช่องที่ ${updatedText}`;
+      }
+    } else {
+      if (isEmpty(selectedStations)) {
+        const updatedText = queues.station_description.replace(/ชั่งหนักที่ /g, '');
+        detialTxt = `เข้าสถานีชั่งหนัก ช่องที่ ${updatedText}`;
+      } else {
+        const getStations = stations.filter((x) => x.station_id === selectedStations[queues.step_id]);
+        const textStation = getStations[0].station_description;
+        const updatedText = textStation.replace(/ชั่งหนักที่ /g, '');
+        detialTxt = `เข้าสถานีชั่งหนัก ช่องที่ ${updatedText}`;
+      }
+    }
+
+    const cleanedToken = queues.token.split('').join(' ');
+    const titleTxt = `ขอเชิญคิวหมายเลขที่ ${cleanedToken}`;
     // ==== แยกตัวอักษรป้ายทะเบียนรถ ====
     const titleTxtCar = queues.registration_no;
-    const cleanedString = titleTxtCar.replace(/[^\u0E00-\u0E7F\d\s]/g, '');
-    const spacedString = cleanedString.split('').join(' ');
+    // const cleanedString = titleTxtCar.replace(/[^\u0E00-\u0E7F\d\s]/g, '');
+    const cleanedString = titleTxtCar;
+    const spacedString = cleanedString.split('').join(' ').replace(/-/g, 'ขีด').replace(/\//g, 'ทับ').replace(/,/g, 'พ่วง');
 
     SoundCall(`${titleTxt} ทะเบียน ${spacedString} ${detialTxt}`);
+
+    // const titleTxt = `คิวหมายเลขที่ ${queues.token}`;
+    // const detialTxt = `เข้าสถานีชั่งหนัก`;
+    // // ==== แยกตัวอักษรป้ายทะเบียนรถ ====
+    // const titleTxtCar = queues.registration_no;
+    // const cleanedString = titleTxtCar.replace(/[^\u0E00-\u0E7F\d\s]/g, '');
+    // const spacedString = cleanedString.split('').join(' ');
+
+    // SoundCall(`${titleTxt} ทะเบียน ${spacedString} ${detialTxt}`);
   };
 
   const [stations, setStations] = useState([]); // ใช้ state สำหรับการเก็บสถานีที่ถูกเลือกในแต่ละแถว
@@ -948,7 +982,10 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                           </Typography>
                         </TableCell>
 
-                        <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
+                        <TableCell align="left">
+                          {moment(row.queue_date).format('DD/MM/YYYY')}
+                          {row.queue_time ? ' - ' + row.queue_time : ''}
+                        </TableCell>
 
                         <TableCell align="center">
                           {/* <Chip color="primary" label={row.token} /> */}

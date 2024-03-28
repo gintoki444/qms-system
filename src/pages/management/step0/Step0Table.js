@@ -33,9 +33,11 @@ import {
 // project import
 // import Dot from 'components/@extended/Dot';
 
-import { 
-  // ProfileOutlined, 
-  EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import {
+  // ProfileOutlined,
+  EditOutlined,
+  DeleteOutlined
+} from '@ant-design/icons';
 
 // import axios from 'axios';
 
@@ -188,6 +190,7 @@ function Step0Table({ startDate, endDate }) {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
+    setLoading(true);
     if (userRoles && userId) {
       getQueue();
     }
@@ -195,12 +198,6 @@ function Step0Table({ startDate, endDate }) {
 
   const getQueue = () => {
     try {
-      console.log('startDate :', startDate);
-      console.log('endDate :', endDate);
-      // queueRequest.getAllqueueByDateV2(startDate, endDate).then((response) => {
-      //   setItems(response.filter((x) => x.step1_status === 'none'));
-      //   setLoading(false);
-      // });
       stepRequest.getAllStep0().then((response) => {
         setItems(response);
         setLoading(false);

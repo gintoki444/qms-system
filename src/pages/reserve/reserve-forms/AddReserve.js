@@ -336,31 +336,33 @@ function AddReserve() {
                 </Grid>
 
                 <Grid item xs={12} md={6}>
-                  <InputLabel>บริษัท (สินค้า)</InputLabel>
-                  <FormControl fullWidth>
-                    <Select
-                      displayEmpty
-                      variant="outlined"
-                      name="product_company_id"
-                      value={values.product_company_id || ''}
-                      onChange={(e) => {
-                        setFieldValue('product_company_id', e.target.value);
-                        setFieldValue('product_brand_id', '');
-                        handleChangeProductCom(e);
-                      }}
-                      fullWidth
-                      error={Boolean(touched.product_company_id && errors.product_company_id)}
-                    >
-                      <MenuItem disabled value="">
-                        เลือกบริษัท
-                      </MenuItem>
-                      {productCompany.map((companias) => (
-                        <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
-                          {companias.product_company_name_th}
+                  <Stack spacing={1}>
+                    <InputLabel>บริษัท (สินค้า) *</InputLabel>
+                    <FormControl fullWidth>
+                      <Select
+                        displayEmpty
+                        variant="outlined"
+                        name="product_company_id"
+                        value={values.product_company_id || ''}
+                        onChange={(e) => {
+                          setFieldValue('product_company_id', e.target.value);
+                          setFieldValue('product_brand_id', '');
+                          handleChangeProductCom(e);
+                        }}
+                        fullWidth
+                        error={Boolean(touched.product_company_id && errors.product_company_id)}
+                      >
+                        <MenuItem disabled value="">
+                          เลือกบริษัท
                         </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                        {productCompany.map((companias) => (
+                          <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
+                            {companias.product_company_name_th}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Stack>
                   {touched.product_company_id && errors.product_company_id && (
                     <FormHelperText error id="helper-text-product_company_id">
                       {errors.product_company_id}
@@ -369,28 +371,30 @@ function AddReserve() {
                 </Grid>
 
                 <Grid item xs={12} md={6}>
-                  <InputLabel>เบรนสินค้า</InputLabel>
-                  <FormControl fullWidth>
-                    <Select
-                      displayEmpty
-                      variant="outlined"
-                      name="product_brand_id"
-                      value={values.product_brand_id}
-                      onChange={handleChange}
-                      placeholder="เลือกสายแรงงาน"
-                      fullWidth
-                      error={Boolean(touched.product_brand_id && errors.product_brand_id)}
-                    >
-                      <MenuItem disabled value="">
-                        เลือกเบรนสินค้า
-                      </MenuItem>
-                      {productBrand.map((brands) => (
-                        <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
-                          {brands.product_brand_name}
+                  <Stack spacing={1}>
+                    <InputLabel>เบรนสินค้า *</InputLabel>
+                    <FormControl fullWidth>
+                      <Select
+                        displayEmpty
+                        variant="outlined"
+                        name="product_brand_id"
+                        value={values.product_brand_id}
+                        onChange={handleChange}
+                        placeholder="เลือกสายแรงงาน"
+                        fullWidth
+                        error={Boolean(touched.product_brand_id && errors.product_brand_id)}
+                      >
+                        <MenuItem disabled value="">
+                          เลือกเบรนสินค้า
                         </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                        {productBrand.map((brands) => (
+                          <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
+                            {brands.product_brand_name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Stack>
                   {touched.product_brand_id && errors.product_brand_id && (
                     <FormHelperText error id="helper-text-product_brand_id">
                       {errors.product_brand_id}

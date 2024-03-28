@@ -1034,24 +1034,35 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
   };
 
   const handleCallQueue = async (queues) => {
-    const titleTxt = `คิวหมายเลขที่ ${queues.token}`;
+    const cleanedToken = queues.token.split('').join(' ');
+    const titleTxt = `ขอเชิญคิวหมายเลขที่ ${cleanedToken}`;
+
     const detialTxt = `เข้าโกดัง`;
-    // ==== แยกตัวอักษรป้ายทะเบียนรถ ====
-    const titleTxtCar = queues.registration_no;
     let titleTxtStation = '';
+    let getWarehouseData = '';
+
+    console.log('queues.station_id :', queues.station_id);
 
     if (queues.station_id == 27) {
       const getStationData = stationsList.filter((x) => x.station_id == queues.reserve_station_id);
+
+      getWarehouseData = warehousesList.filter((x) => x.warehouse_id == getStationData[0].warehouse_id);
       titleTxtStation = getStationData[0].station_description;
     } else {
       titleTxtStation = queues.station_description;
     }
 
-    const cleanedString = titleTxtCar.replace(/[^\u0E00-\u0E7F\d\s]/g, '');
-    const cleanedStringStation = titleTxtStation.replace(/[^\u0E00-\u0E7F\d\s]/g, '');
-    const spacedString = cleanedString.split('').join(' ');
+    console.log('getWarehouseData :', getWarehouseData);
 
-    SoundCall(`${titleTxt} ทะเบียน ${spacedString} ${detialTxt} ${cleanedStringStation}`);
+    const cleanedStringStation = titleTxtStation.replace(/^A\d\/\d\s*/g, '');
+
+
+    // ==== แยกตัวอักษรป้ายทะเบียนรถ ====
+    const titleTxtCar = queues.registration_no;
+    const cleanedString = titleTxtCar;
+    const spacedString = cleanedString.split('').join(' ').replace(/-/g, 'ขีด').replace(/\//g, 'ทับ').replace(/,/g, 'พ่วง');
+
+    SoundCall(`${titleTxt} ทะเบียน ${spacedString} ${detialTxt} ${getWarehouseData[0].warehouse_name} ${cleanedStringStation}`);
   };
   return (
     <>
@@ -1544,7 +1555,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                               <strong>{index + 1}</strong>
                             </Typography>
                           </TableCell>
-                          <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
+                          <TableCell align="left">
+                            {moment(row.queue_date).format('DD/MM/YYYY')}
+                            {row.queue_time ? ' - ' + row.queue_time : ''}
+                          </TableCell>
                           <TableCell align="center">
                             <QueueTag id={row.product_company_id || ''} token={row.token} />
                             {/* <Chip color="primary" label={row.token} /> */}
