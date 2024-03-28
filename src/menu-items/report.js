@@ -1,5 +1,5 @@
 // assets
-import { FundViewOutlined} from '@ant-design/icons';
+import { FundViewOutlined } from '@ant-design/icons';
 
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
 
@@ -36,7 +36,42 @@ const report = {
       target: false
       // breadcrumbs: false
     },
-    
+    {
+      id: 'step1',
+      title: 'รายงาน Step1-ชั่งเบา',
+      type: 'item',
+      url: '/report/step1-completed',
+      icon: FundViewOutlined,
+      target: false
+      // breadcrumbs: false
+    },
+    {
+      id: 'step2',
+      title: 'รายงาน Step2-ขึ้นสินค้า',
+      type: 'item',
+      url: '/report/step2-completed',
+      icon: FundViewOutlined,
+      target: false
+      // breadcrumbs: false
+    },
+    {
+      id: 'step3',
+      title: 'รายงาน Step3-ชั่งหนัก',
+      type: 'item',
+      url: '/report/step3-completed',
+      icon: FundViewOutlined,
+      target: false
+      // breadcrumbs: false
+    },
+    {
+      id: 'step4',
+      title: 'รายงาน Step4-เสร็จสิ้น',
+      type: 'item',
+      url: '/report/step4-completed',
+      icon: FundViewOutlined,
+      target: false
+      // breadcrumbs: false
+    }
   ]
 };
 

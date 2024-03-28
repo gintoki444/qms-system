@@ -64,6 +64,26 @@ export const getOrdersProducts = async (date) => {
   };
   const response = await fetch(apiUrl + `/ordersproducts?start_date=${date}&end_date=${date}`, requestOptions);
   const result = await response.json();
-  console.log(result);
+  return result;
+};
+
+// ==============================|| Report Step Completed ||============================== //
+export const getStepCompleted = async (id, startdate, enddate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/stepcompleted/${id}?s_end_time=${startdate}&e_end_time=${enddate}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+export const getAvgStepCompleted = async (id, startdate, enddate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/stepcompletedavg/${id}?s_end_time=${startdate}&e_end_time=${enddate}`, requestOptions);
+  const result = await response.json();
   return result;
 };
