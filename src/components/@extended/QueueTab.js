@@ -1,7 +1,7 @@
 // import PropTypes from 'prop-types';
 
 // material-ui
-// import { useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { Tab, Badge } from '@mui/material';
 
 const QueueTab = ({ id, numQueue, txtLabel, onSelect }) => {
@@ -29,23 +29,31 @@ const QueueTab = ({ id, numQueue, txtLabel, onSelect }) => {
     case 7:
       main = '#f9acc0';
       break;
+    case 8:
+      main = '#fec4a2';
+      break;
     case 'primary':
     default:
       main = 'primary';
   }
 
-  //   const handleClick = (id) => {
-  //     console.log(id);
-  //   };
+  const StyledBadge = styled(Badge)(() => ({
+    '& .MuiBadge-badge': {
+      right: -3,
+      top: -5,
+      border: `0px solid ${main}`,
+      backgroundColor: main,
+      color: '#fff',
+      padding: '0 4px'
+    }
+  }));
+
   return (
     <Tab
-      sx={{ background: main, color: '#fff', opacity: '1!important', ml: '5px!important' }}
-      label={
-        <Badge badgeContent={numQueue} color="error">
-          {txtLabel}
-        </Badge>
-      }
-      onClick={() => onSelect(id)} // Call onSelect with the ID when clicked
+      sx={{ opacity: '1!important', ml: '5px!important' }}
+      label={<StyledBadge badgeContent={numQueue}>{txtLabel}</StyledBadge>}
+      onClick={() => onSelect(id)}
+      color="primary"
     />
   );
 };

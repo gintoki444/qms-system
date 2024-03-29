@@ -22,7 +22,9 @@ import {
   FormControl,
   Select,
   MenuItem,
-  TextField
+  TextField,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import { SaveOutlined } from '@ant-design/icons';
@@ -58,7 +60,6 @@ function AddProducts() {
   const [productBrand, setProductBrand] = useState([]);
   const getProductBrand = (id) => {
     try {
-      console.log(id);
       reserveRequest.getProductBrandById(id).then((response) => {
         setProductBrand(response);
       });
@@ -72,7 +73,6 @@ function AddProducts() {
   const getProducts = () => {
     try {
       adminRequest.getAllProducts().then((response) => {
-        console.log('getProducts :', response);
         setProductList(response);
       });
     } catch (error) {
@@ -100,7 +100,10 @@ function AddProducts() {
     product_register_name: '',
     product_register_date: moment(new Date()).format('YYYY-MM-DD'),
     register_beginning_balance: '',
-    product_register_remark: ''
+    product_register_remark: '',
+    checkbox1: '',
+    checkbox2: '',
+    other: ''
   };
 
   const valiDationSchema = Yup.object().shape({
@@ -115,6 +118,14 @@ function AddProducts() {
 
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
+    let setRemarkTxt = '';
+
+    if (values.checkbox1.length > 0) setRemarkTxt = values.checkbox1[0];
+    if (values.checkbox2.length > 0) setRemarkTxt = (setRemarkTxt ? setRemarkTxt + ',' : setRemarkTxt) + values.checkbox2[0];
+    if (values.other) setRemarkTxt = (setRemarkTxt ? setRemarkTxt + ',' : setRemarkTxt) + values.other;
+
+    values.product_register_remark = setRemarkTxt;
+
     try {
       adminRequest.AddProductRegister(values).then((response) => {
         if (response.status === 'ok') {
@@ -352,22 +363,59 @@ function AddProducts() {
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel htmlFor="product_register_remark">หมายเหตุ</InputLabel>
+                      </Stack>
+
+                      <Stack spacing={1} direction="flex-direction">
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              onChange={handleChange}
+                              // onChange={() => {
+                              //   if (values.checkbox1) {
+                              //     setFieldValue('checkbox1', '');
+                              //   } else {
+                              //     setFieldValue('checkbox1', 'ทุบก่อนจ่าย');
+                              //   }
+                              // }}
+                              name="checkbox1"
+                              value="*ทุบก่อนจ่าย"
+                            />
+                          }
+                          label="ทุบก่อนจ่าย"
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              // checked={typeSelect[orderItem.item_id]?.checked1 || false}
+                              // onChange={() => {
+                              //   if (values.checked2) {
+                              //     setFieldValue('checked2', '');
+                              //   } else {
+                              //     setFieldValue('checked2', 'ระงับจ่าย');
+                              //   }
+                              // }}
+                              onChange={handleChange}
+                              value="*ระงับจ่าย"
+                              name="checkbox2"
+                            />
+                          }
+                          label="ระงับจ่าย"
+                        />
+
                         <OutlinedInput
-                          id="product_register_remark"
-                          type="number"
-                          value={values.product_register_remark}
-                          name="product_register_remark"
+                          id="other"
+                          type="text"
+                          value={values.other}
+                          name="other"
                           onBlur={handleBlur}
                           onChange={handleChange}
-                          placeholder="เช่น *ทุบก่อนจ่าย, *ระงับจ่าย"
-                          fullWidth
-                          error={Boolean(touched.product_register_remark && errors.product_register_remark)}
+                          // onChange={(e) => {
+                          //   setFieldValue('other', e.target.value);
+                          // }}
+                          placeholder="อื่นๆ"
+                          sx={{ width: { xs: '100%', md: '33.333%' }, ml: '12px!important' }}
+                          error={Boolean(touched.other && errors.other)}
                         />
-                        {touched.product_register_remark && errors.product_register_remark && (
-                          <FormHelperText error id="helper-text-product_register_remark">
-                            {errors.product_register_remark}
-                          </FormHelperText>
-                        )}
                       </Stack>
                     </Grid>
 

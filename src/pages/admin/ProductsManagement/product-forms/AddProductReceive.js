@@ -30,7 +30,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Tooltip
+  Tooltip,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -171,9 +173,43 @@ function AddProductReceive() {
     product_register_id: id,
     receive_date: moment(new Date()).format('YYYY-MM-DD'),
     receive_amount: '',
-    receive_remark: ''
+    receive_remark: '',
+    checkbox1: '',
+    checkbox2: '',
+    other: ''
   };
 
+  const text = productRegis.product_register_remark;
+  if (text) {
+    const partsText1 = text.split(',');
+    const partsText2 = text.split('/');
+    let remarkTxtList = [];
+    if (partsText1.length > 1) {
+      remarkTxtList = partsText1;
+    }
+
+    if (partsText2.length > 1) {
+      remarkTxtList = partsText2;
+    }
+    if (remarkTxtList.length > 0) {
+      remarkTxtList.map((x) => {
+        if (x == '*ทุบก่อนจ่าย') {
+          initialValue.checkbox1 = x;
+        } else if (x == '*ระงับจ่าย') {
+          initialValue.checkbox2 = x;
+        } else {
+          if (!initialValue.checkbox1 && !initialValue.checkbox2) {
+            initialValue.other = initialValue.product_register_remark;
+          } else {
+            const removedText = text.replace(/[*]ทุบก่อนจ่า|ย,|[*]ระงับจ่า|ย,/g, '');
+            initialValue.other = removedText;
+          }
+        }
+      });
+    } else {
+      initialValue.other = text;
+    }
+  }
   const valiDationSchema = Yup.object().shape({
     product_company_id: Yup.string().required('กรุณาเลือกบริษัท(สินค้า)'),
     product_id: Yup.string().max(255).required('กรุณาเลือกเบรนสินค้า'),
@@ -489,28 +525,71 @@ function AddProductReceive() {
                         )}
                       </Stack>
                     </Grid>
+
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel htmlFor="product_register_remark">หมายเหตุ</InputLabel>
+                      </Stack>
+
+                      <Stack spacing={1} direction="flex-direction">
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              disabled
+                              checked={values.checkbox1}
+                              // onChange={handleChange}
+                              onChange={(e) => {
+                                if (values.checkbox1) {
+                                  setFieldValue('checkbox1', '');
+                                } else {
+                                  setFieldValue('checkbox1', e.target.value);
+                                }
+                              }}
+                              name="checkbox1"
+                              value="*ทุบก่อนจ่าย"
+                            />
+                          }
+                          label="ทุบก่อนจ่าย"
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              disabled
+                              checked={values.checkbox2}
+                              // checked={typeSelect[orderItem.item_id]?.checked1 || false}
+                              onChange={(e) => {
+                                if (values.checkbox2) {
+                                  setFieldValue('checkbox2', '');
+                                } else {
+                                  setFieldValue('checkbox2', e.target.value);
+                                }
+                              }}
+                              // onChange={handleChange}
+                              value="*ระงับจ่าย"
+                              name="checkbox2"
+                            />
+                          }
+                          label="ระงับจ่าย"
+                        />
+
                         <OutlinedInput
-                          id="product_register_remark"
+                          id="other"
                           type="text"
-                          value={values.product_register_remark}
-                          name="product_register_remark"
+                          value={values.other}
+                          name="other"
                           onBlur={handleBlur}
                           onChange={handleChange}
-                          placeholder="เช่น *ทุบก่อนจ่าย, *ระงับจ่าย"
-                          fullWidth
                           disabled
-                          error={Boolean(touched.product_register_remark && errors.product_register_remark)}
+                          // onChange={(e) => {
+                          //   setFieldValue('other', e.target.value);
+                          // }}
+                          placeholder="อื่นๆ"
+                          sx={{ width: { xs: '100%', md: '33.333%' }, ml: '12px!important' }}
+                          error={Boolean(touched.other && errors.other)}
                         />
-                        {touched.product_register_remark && errors.product_register_remark && (
-                          <FormHelperText error id="helper-text-product_register_remark">
-                            {errors.product_register_remark}
-                          </FormHelperText>
-                        )}
                       </Stack>
                     </Grid>
+
                     <Grid item xs={12}>
                       <Typography variant="h5">ข้อมูลรับสินค้า</Typography>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />

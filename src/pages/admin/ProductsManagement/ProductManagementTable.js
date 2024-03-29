@@ -68,19 +68,19 @@ const headCells = [
     label: 'อายุกอง'
   },
   {
-    id: 'stetus',
+    id: 'product_brand_name',
     align: 'left',
     disablePadding: false,
     label: 'ตรา'
   },
   {
-    id: 'stetus',
+    id: 'warehouse_name',
     align: 'left',
     disablePadding: false,
     label: 'โกดัง'
   },
   {
-    id: 'stetus',
+    id: 'register_beginning_balance',
     align: 'right',
     disablePadding: false,
     label: 'ยอดยกมา'

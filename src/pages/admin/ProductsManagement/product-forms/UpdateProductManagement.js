@@ -24,7 +24,9 @@ import {
   MenuItem,
   TextField,
   Backdrop,
-  CircularProgress
+  CircularProgress,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
@@ -135,8 +137,41 @@ function UpdateProductManagement() {
     product_register_name: productRegis.product_register_name,
     product_register_date: moment(productRegis.product_register_date).format('YYYY-MM-DD'),
     register_beginning_balance: productRegis.register_beginning_balance,
-    product_register_remark: productRegis.product_register_remark
+    product_register_remark: productRegis.product_register_remark,
+    checkbox1: '',
+    checkbox2: '',
+    other: ''
   };
+
+  const text = productRegis.product_register_remark;
+  const partsText1 = text.split(',');
+  const partsText2 = text.split('/');
+  let remarkTxtList = [];
+  if (partsText1.length > 1) {
+    remarkTxtList = partsText1;
+  }
+
+  if (partsText2.length > 1) {
+    remarkTxtList = partsText2;
+  }
+  if (remarkTxtList.length > 0) {
+    remarkTxtList.map((x) => {
+      if (x == '*ทุบก่อนจ่าย') {
+        initialValue.checkbox1 = x;
+      } else if (x == '*ระงับจ่าย') {
+        initialValue.checkbox2 = x;
+      } else {
+        if (!initialValue.checkbox1 && !initialValue.checkbox2) {
+          initialValue.other = initialValue.product_register_remark;
+        } else {
+          const removedText = text.replace(/[*]ทุบก่อนจ่า|ย,|[*]ระงับจ่า|ย,/g, '');
+          initialValue.other = removedText;
+        }
+      }
+    });
+  } else {
+    initialValue.other = text;
+  }
 
   const valiDationSchema = Yup.object().shape({
     product_company_id: Yup.string().required('กรุณาเลือกบริษัท(สินค้า)'),
@@ -151,6 +186,13 @@ function UpdateProductManagement() {
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
     setOpen(true);
+    let setRemarkTxt = '';
+
+    if (values.checkbox1.length > 0) setRemarkTxt = values.checkbox1;
+    if (values.checkbox2.length > 0) setRemarkTxt = (setRemarkTxt ? setRemarkTxt + ',' : setRemarkTxt) + values.checkbox2;
+    if (values.other) setRemarkTxt = (setRemarkTxt ? setRemarkTxt + ',' : setRemarkTxt) + values.other;
+
+    values.product_register_remark = setRemarkTxt;
     try {
       adminRequest.putProductRegisterById(id, values).then((response) => {
         if (response.status === 'ok') {
@@ -394,7 +436,7 @@ function UpdateProductManagement() {
                       </Stack>
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    {/* <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel htmlFor="product_register_remark">หมายเหตุ</InputLabel>
                         <OutlinedInput
@@ -414,8 +456,68 @@ function UpdateProductManagement() {
                           </FormHelperText>
                         )}
                       </Stack>
-                    </Grid>
+                    </Grid> */}
 
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
+                        <InputLabel htmlFor="product_register_remark">หมายเหตุ</InputLabel>
+                      </Stack>
+
+                      <Stack spacing={1} direction="flex-direction">
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={values.checkbox1}
+                              // onChange={handleChange}
+                              onChange={(e) => {
+                                if (values.checkbox1) {
+                                  setFieldValue('checkbox1', '');
+                                } else {
+                                  setFieldValue('checkbox1', e.target.value);
+                                }
+                              }}
+                              name="checkbox1"
+                              value="*ทุบก่อนจ่าย"
+                            />
+                          }
+                          label="ทุบก่อนจ่าย"
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={values.checkbox2}
+                              // checked={typeSelect[orderItem.item_id]?.checked1 || false}
+                              onChange={(e) => {
+                                if (values.checkbox2) {
+                                  setFieldValue('checkbox2', '');
+                                } else {
+                                  setFieldValue('checkbox2', e.target.value);
+                                }
+                              }}
+                              // onChange={handleChange}
+                              value="*ระงับจ่าย"
+                              name="checkbox2"
+                            />
+                          }
+                          label="ระงับจ่าย"
+                        />
+
+                        <OutlinedInput
+                          id="other"
+                          type="text"
+                          value={values.other}
+                          name="other"
+                          onBlur={handleBlur}
+                          onChange={handleChange}
+                          // onChange={(e) => {
+                          //   setFieldValue('other', e.target.value);
+                          // }}
+                          placeholder="อื่นๆ"
+                          sx={{ width: { xs: '100%', md: '33.333%' }, ml: '12px!important' }}
+                          error={Boolean(touched.other && errors.other)}
+                        />
+                      </Stack>
+                    </Grid>
                     {/* {permission.length > 0 && permission.add_data && ( */}
                     <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
                       <Button

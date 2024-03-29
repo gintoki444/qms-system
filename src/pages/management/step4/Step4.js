@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import * as stepRequest from '_api/StepRequest';
+import * as getQueues from '_api/queueReques';
 
 import { Step4Table } from './Step4Table';
 
@@ -11,42 +12,13 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import QueueTab from 'components/@extended/QueueTab';
 
-// function CustomTabPanel(props) {
-//   const { children, value, index, ...other } = props;
-
-//   return (
-//     <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
-//       {value === index && (
-//         <Box sx={{ p: 3 }}>
-//           <Typography>{children}</Typography>
-//         </Box>
-//       )}
-//     </div>
-//   );
-// }
-
-// CustomTabPanel.propTypes = {
-//   children: PropTypes.node,
-//   index: PropTypes.number.isRequired,
-//   value: PropTypes.number.isRequired
-// };
-
-// function a11yProps(index) {
-//   return {
-//     id: `simple-tab-${index}`,
-//     'aria-controls': `simple-tabpanel-${index}`
-//   };
-// }
-
 function Step4() {
   const [commonStatus, setCommonStatus] = useState('');
   const handleStatusChange = (newStatus) => {
     // Change the common status and trigger a data reload in the other instance
     if (newStatus !== commonStatus) {
-      console.log(newStatus + '+' + commonStatus);
       setCommonStatus(newStatus);
     } else if (newStatus === commonStatus) {
-      console.log(commonStatus + '+' + newStatus);
       setCommonStatus('');
     } else {
       setCommonStatus('commonStatus');
@@ -60,7 +32,6 @@ function Step4() {
   const [companyList, setCompanyList] = useState([]);
   const getProductCompany = () => {
     stepRequest.getAllProductCompany().then((response) => {
-      setCompanyList(response);
       waitingGet(response);
     });
   };
@@ -69,10 +40,11 @@ function Step4() {
   const [countAllQueue, setCountAllQueue] = useState(0);
   const waitingGet = async (company) => {
     try {
-      await getQueues.getStep3Waitting().then((response) => {
+      await getQueues.getStep4Waitting().then((response) => {
         if (company.length > 0) {
           company.map((x) => {
             let countCompany = response.filter((i) => i.product_company_id == x.product_company_id).length;
+            console;
             setItems((prevState) => ({
               ...prevState,
               [x.product_company_id]: countCompany
@@ -80,6 +52,7 @@ function Step4() {
           });
         }
 
+        setCompanyList(company);
         setCountAllQueue(response.length);
       });
     } catch (e) {
@@ -91,6 +64,7 @@ function Step4() {
   const handleChange = (newValue) => {
     setValueFilter(newValue);
   };
+
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
       <Grid item xs={12} md={7} lg={8}>
@@ -119,20 +93,23 @@ function Step4() {
                     <Typography variant="h4">รอเรียกคิว</Typography>
                   </Grid>
                   <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
-                    <Tab
-                      label={
-                        <Badge badgeContent={countAllQueue} color="error">
-                          ทั้งหมด
-                        </Badge>
-                      }
-                      onClick={() => handleChange(0)}
-                    />
+                    {companyList.length > 0 && (
+                      <Tab
+                        label={
+                          <Badge badgeContent={countAllQueue > 0 ? countAllQueue : '0'} color="error">
+                            ทั้งหมด
+                          </Badge>
+                        }
+                        color="primary"
+                        onClick={() => handleChange(0)}
+                      />
+                    )}
                     {companyList.length > 0 &&
                       companyList.map((company, index) => (
                         <QueueTab
                           key={index}
                           id={company.product_company_id}
-                          numQueue={items[company.product_company_id]}
+                          numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                           txtLabel={company.product_company_name_th2}
                           onSelect={() => handleChange(company.product_company_id)}
                           // {...a11yProps(company.product_company_id)}

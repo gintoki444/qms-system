@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import * as stepRequest from '_api/StepRequest';
 import { useNavigate } from 'react-router-dom';
 
-import { Grid, Button, Box } from '@mui/material';
+// Link api url
+import * as stepRequest from '_api/StepRequest';
+import * as adminRequest from '_api/adminRequest';
+
+import { Grid, Button, Box, Badge } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 
@@ -28,7 +31,31 @@ function Product() {
   const getProductCompany = () => {
     stepRequest.getAllProductCompany().then((response) => {
       setCompanyList(response);
+      waitingGet(response);
     });
+  };
+
+  const [items, setItems] = useState([]);
+  const [countAllQueue, setCountAllQueue] = useState(0);
+  const waitingGet = async (company) => {
+    try {
+      await adminRequest.getAllProductRegister().then((response) => {
+        if (company.length > 0) {
+          company.map((x) => {
+            let countCompany = response.filter((i) => i.product_company_id == x.product_company_id).length;
+
+            setItems((prevState) => ({
+              ...prevState,
+              [x.product_company_id]: countCompany
+            }));
+          });
+        }
+
+        setCountAllQueue(response.length);
+      });
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const [valueFilter, setValueFilter] = useState('');
@@ -42,13 +69,21 @@ function Product() {
           <Grid container>
             <Grid item xs={12} md={10}>
               <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
-                <Tab label={'ทั้งหมด'} onClick={() => handleChange(0)} />
+                <Tab
+                  label={
+                    <Badge badgeContent={countAllQueue} color="error">
+                      {'ทั้งหมด'}
+                    </Badge>
+                  }
+                  onClick={() => handleChange('')}
+                  value=""
+                />
                 {companyList.length > 0 &&
                   companyList.map((company, index) => (
                     <QueueTab
                       key={index}
                       id={company.product_company_id}
-                      // numQueue={items[company.product_company_id]}
+                      numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                       txtLabel={company.product_company_name_th2}
                       onSelect={() => handleChange(company.product_company_id)}
                       // {...a11yProps(company.product_company_id)}

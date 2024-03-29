@@ -42,7 +42,7 @@ const OrderSumQty = () => {
       <Grid container rowSpacing={1} columnSpacing={1.75}>
         <Grid item xs={12} md={10} lg={10}>
           <Grid container rowSpacing={1} columnSpacing={1.75}>
-            <Grid item xs={3}>
+            <Grid item xs={12} md={3}>
               <Stack spacing={1}>
                 <TextField
                   required
@@ -58,7 +58,7 @@ const OrderSumQty = () => {
                 />
               </Stack>
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={12} md={3}>
               <Stack spacing={1}>
                 <TextField
                   required
@@ -74,7 +74,7 @@ const OrderSumQty = () => {
                 />
               </Stack>
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={12} md={3}>
               <Button size="mediam" color="primary" variant="contained" onClick={() => handleSearch()} startIcon={<SearchOutlined />}>
                 ค้นหา
               </Button>

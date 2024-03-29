@@ -13,32 +13,6 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 
 import QueueTab from 'components/@extended/QueueTab';
-// function CustomTabPanel(props) {
-//   const { children, value, index, ...other } = props;
-
-//   return (
-//     <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
-//       {value === index && (
-//         <Box sx={{ p: 3 }}>
-//           <Typography>{children}</Typography>
-//         </Box>
-//       )}
-//     </div>
-//   );
-// }
-
-// CustomTabPanel.propTypes = {
-//   children: PropTypes.node,
-//   index: PropTypes.number.isRequired,
-//   value: PropTypes.number.isRequired
-// };
-
-// function a11yProps(index) {
-//   return {
-//     id: `simple-tab-${index}`,
-//     'aria-controls': `simple-tabpanel-${index}`
-//   };
-// }
 
 function Step1() {
   const [commonStatus, setCommonStatus] = useState('');
@@ -61,7 +35,6 @@ function Step1() {
   const getProductCompany = () => {
     stepRequest.getAllProductCompany().then((response) => {
       if (response) {
-        setCompanyList(response);
         waitingGet(response);
       }
     });
@@ -83,6 +56,7 @@ function Step1() {
           });
         }
 
+        setCompanyList(company);
         setCountAllQueue(response.length);
       });
     } catch (e) {
@@ -92,7 +66,6 @@ function Step1() {
 
   const [valueFilter, setValueFilter] = useState(0);
   const handleChange = (newValue) => {
-    console.log('newValue :', newValue);
     setValueFilter(newValue);
   };
   return (
@@ -125,34 +98,24 @@ function Step1() {
                     </Typography>
                   </Grid>
                   <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
-                    <Tab
-                      label={
-                        <Badge badgeContent={countAllQueue} color="error">
-                          ทั้งหมด
-                        </Badge>
-                      }
-                      color="primary"
-                      onClick={() => handleChange(0)}
-                    />
-                    {/* {companyList.length > 0 &&
-                      companyList.map((company, index) => (
-                        <Tab
-                          key={index}
-                          label={
-                            <Badge badgeContent={items[company.product_company_id]} color="error">
-                              {company.product_company_name_th2}
-                            </Badge>
-                          }
-                          {...a11yProps(company.product_company_id)}
-                        />
-                      ))} */}
+                    {companyList.length > 0 && (
+                      <Tab
+                        label={
+                          <Badge badgeContent={countAllQueue > 0 ? countAllQueue : '0'} color="error">
+                            ทั้งหมด
+                          </Badge>
+                        }
+                        color="primary"
+                        onClick={() => handleChange(0)}
+                      />
+                    )}
 
                     {companyList.length > 0 &&
                       companyList.map((company, index) => (
                         <QueueTab
                           key={index}
                           id={company.product_company_id}
-                          numQueue={items[company.product_company_id]}
+                          numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                           txtLabel={company.product_company_name_th2}
                           onSelect={() => handleChange(company.product_company_id)}
                           // {...a11yProps(company.product_company_id)}
