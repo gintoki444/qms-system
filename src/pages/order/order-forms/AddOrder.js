@@ -44,6 +44,16 @@ function AddOrder() {
     { product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }
   ]);
 
+  let [initialValue, setInitialValue] = useState({
+    ref_order_id: '',
+    company_id: '',
+    product_company_id: '',
+    product_brand_id: '',
+    description: '',
+    order_date: moment(new Date()).format('YYYY-MM-DD'),
+    items: items
+  });
+
   // =============== Get Reserve ID ===============//
   const [reservationData, setReservationData] = useState({});
   const { id } = useParams();
@@ -55,6 +65,13 @@ function AddOrder() {
         if (res) {
           res.data.reserve.map((result) => {
             setReservationData(result);
+            setInitialValue({
+              company_id: result.company_id,
+              product_company_id: result.product_company_id,
+              product_brand_id: result.product_brand_id
+            });
+            getProductBrand(result.product_company_id);
+            getProduct(result.product_company_id, result.product_brand_id);
           });
         }
       })
@@ -130,19 +147,10 @@ function AddOrder() {
       // description: Yup.string().required('กรุณาระบุรายละเอียด'),
       order_date: Yup.string().required('กรุณาระบุวันที่สั่งซื้อสินค้า'),
       product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
-      product_brand_id: Yup.string().required('กรุณาระบุแบรนด์(สินค้า)'),
+      product_brand_id: Yup.string().required('กรุณาระบุตรา(สินค้า)'),
       items: Yup.array().of(generateItemSchema())
     })
   );
-  const initialValue = {
-    ref_order_id: '',
-    company_id: reservationData.company_id,
-    product_company_id: '',
-    product_brand_id: '',
-    description: '',
-    order_date: moment(new Date()).format('YYYY-MM-DD'),
-    items: items
-  };
 
   // =============== บันทึกข้อมูล ===============//
   //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
@@ -301,7 +309,7 @@ function AddOrder() {
         </Grid>
         <Grid item xs={12} lg={12}>
           <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-            <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits}>
+            <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
               {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors, setFieldValue }) => (
                 <form noValidate onSubmit={handleSubmit}>
                   <Grid container spacing={3}>
@@ -387,7 +395,7 @@ function AddOrder() {
                     </Grid>
 
                     <Grid item xs={12} md={6}>
-                      <InputLabel>เบรนสินค้า *</InputLabel>
+                      <InputLabel>ตรา (สินค้า) *</InputLabel>
                       <FormControl fullWidth>
                         <Select
                           displayEmpty
@@ -403,7 +411,7 @@ function AddOrder() {
                           error={Boolean(touched.product_brand_id && errors.product_brand_id)}
                         >
                           <MenuItem disabled value="">
-                            เลือกเบรนสินค้า
+                            เลือกตรา (สินค้า)
                           </MenuItem>
                           {productBrand.map((brands) => (
                             <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>

@@ -1,6 +1,28 @@
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 
+// ==============================|| รายงาน ordersproductssum ||============================== //
+export const getOrdersProductSummary = async (startDate, endDate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/ordersproducts2?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// ==============================|| รายงาน OrderTable ||============================== //
+export const getOrdersProduct = async (startDate, endDate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/ordersproducts?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
 // ==============================|| รายงานจำนวน QTY ||============================== //
 export const getDataChart = async (date) => {
   const requestOptions = {

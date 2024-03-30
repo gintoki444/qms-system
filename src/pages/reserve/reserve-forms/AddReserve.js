@@ -190,7 +190,7 @@ function AddReserve() {
     company_id: Yup.string().required('กรุณาเลือกบริษัท/ร้านค้า'),
     // brand_group_id: Yup.string().required('กรุณาเลือกกลุ่มสินค้า'),
     product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
-    product_brand_id: Yup.string().required('กรุณาระบุแบรนด์(สินค้า)'),
+    product_brand_id: Yup.string().required('กรุณาระบุตรา(สินค้า)'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
     reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย')
     // description: Yup.string().required('กรุณากรอกหัวข้อการจอง')
@@ -372,7 +372,7 @@ function AddReserve() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
-                    <InputLabel>เบรนสินค้า *</InputLabel>
+                    <InputLabel>ตรา (สินค้า) *</InputLabel>
                     <FormControl fullWidth>
                       <Select
                         displayEmpty
@@ -385,7 +385,7 @@ function AddReserve() {
                         error={Boolean(touched.product_brand_id && errors.product_brand_id)}
                       >
                         <MenuItem disabled value="">
-                          เลือกเบรนสินค้า
+                          เลือกตรา (สินค้า)
                         </MenuItem>
                         {productBrand.map((brands) => (
                           <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>

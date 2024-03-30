@@ -381,7 +381,7 @@ function UpdateReserve() {
     company_id: Yup.string().required('กรุณาเลือกบริษัท/ร้านค้า'),
     brand_group_id: Yup.string().required('กรุณาเลือกกลุ่มสินค้า'),
     product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
-    product_brand_id: Yup.string().required('กรุณาระบุแบรนด์(สินค้า)'),
+    product_brand_id: Yup.string().required('กรุณาระบุตรา(สินค้า)'),
     reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า')
     // description: Yup.string().required('กรุณากรอกiรายละเอียดการจอง')
@@ -1000,7 +1000,7 @@ function UpdateReserve() {
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel>เบรนสินค้า *</InputLabel>
+                        <InputLabel>ตรา (สินค้า) *</InputLabel>
                         <FormControl fullWidth>
                           <Select
                             displayEmpty
@@ -1013,7 +1013,7 @@ function UpdateReserve() {
                             error={Boolean(touched.product_brand_id && errors.product_brand_id)}
                           >
                             <MenuItem disabled value="">
-                              เลือกเบรนสินค้า
+                              เลือกตรา (สินค้า)
                             </MenuItem>
                             {productBrand.length > 0 &&
                               productBrand.map((brands) => (

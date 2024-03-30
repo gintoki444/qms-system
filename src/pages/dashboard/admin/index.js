@@ -1,23 +1,7 @@
 import { useState, useEffect } from 'react';
-// import { useSelector } from 'react-redux';
 
 // material-ui
-import {
-  // Avatar,
-  // AvatarGroup,
-  Box,
-  // Button,
-  Grid,
-  // List,
-  // ListItemAvatar,
-  // ListItemButton,
-  // ListItemSecondaryAction,
-  // ListItemText,
-  // MenuItem,
-  // Stack,
-  // TextField,
-  Typography
-} from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 
 // project import
 import MainCard from 'components/MainCard';
@@ -215,7 +199,7 @@ const AdminDashboard = () => {
               </Grid>
               <MainCard sx={{ mt: 2 }} content={false}>
                 {/* <OrdersTable /> */}
-                <OrderTable />
+                <OrderTable startDate={getNowDate} endDate={getNowDate} />
               </MainCard>
             </Grid>
           </Grid>

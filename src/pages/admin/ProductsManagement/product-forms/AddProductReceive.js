@@ -191,6 +191,7 @@ function AddProductReceive() {
     if (partsText2.length > 1) {
       remarkTxtList = partsText2;
     }
+
     if (remarkTxtList.length > 0) {
       remarkTxtList.map((x) => {
         if (x == '*ทุบก่อนจ่าย') {
@@ -207,7 +208,13 @@ function AddProductReceive() {
         }
       });
     } else {
-      initialValue.other = text;
+      if (text == '*ทุบก่อนจ่าย') {
+        initialValue.checkbox1 = text;
+      } else if (text == '*ระงับจ่าย') {
+        initialValue.checkbox2 = text;
+      } else {
+        initialValue.other = text;
+      }
     }
   }
   const valiDationSchema = Yup.object().shape({

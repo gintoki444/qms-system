@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 // import { styled } from '@mui/material/styles';
 
 // import { Link as RouterLink } from 'react-router-dom';
-const apiUrl = process.env.REACT_APP_API_URL;
+import * as reportRequest from '_api/reportRequest';
 
 // material-ui
 import {
@@ -101,7 +101,7 @@ OrderTableHead.propTypes = {
   orderBy: PropTypes.string
 };
 
-export default function OrderSumQtyTable({ startDate, endDate }) {
+export default function OrderSumQtyTable({ startDate, endDate, clickDownload, onFilter }) {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [loading, setLoading] = useState(true);
@@ -113,10 +113,10 @@ export default function OrderSumQtyTable({ startDate, endDate }) {
   useEffect(() => {
     fetchData();
 
-    const intervalId = setInterval(fetchData, 6000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิลลิวินาที)
+    // const intervalId = setInterval(fetchData, 6000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิลลิวินาที)
 
-    return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
-  }, [startDate, endDate]);
+    // return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
+  }, [startDate, endDate, onFilter]);
 
   const [items, setItems] = useState([]);
   const fetchData = async () => {
@@ -124,15 +124,17 @@ export default function OrderSumQtyTable({ startDate, endDate }) {
   };
 
   const getOrderSumQty = () => {
-    const requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
+    setLoading(true);
 
-    fetch(apiUrl + '/ordersproducts2?start_date=' + startDate + '&end_date=' + endDate, requestOptions)
-      .then((response) => response.json())
+    reportRequest
+      .getOrdersProductSummary(startDate, endDate)
       .then((result) => {
-        setItems(result);
+        console.log(result);
+        if (onFilter) {
+          setItems(result.filter((x) => x.product_company_id == onFilter));
+        } else {
+          setItems(result);
+        }
         setLoading(false);
       })
       .catch((error) => console.error(error));
@@ -164,6 +166,7 @@ export default function OrderSumQtyTable({ startDate, endDate }) {
               pr: 3
             }
           }}
+          ref={clickDownload}
         >
           <OrderTableHead order={order} orderBy={orderBy} />
           {!loading ? (
@@ -171,32 +174,18 @@ export default function OrderSumQtyTable({ startDate, endDate }) {
               {items.length > 0 &&
                 items.map((row, index) => (
                   <TableRow key={row.step_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {index + 1}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.name}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.product_register ? row.product_register : '-'}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.brand_group}
-                    </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {parseFloat((row.total_sold * 20).toFixed(0))}
-                    </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'Noto Sans Thai' }}>
+                    <TableCell align="center">{index + 1}</TableCell>
+                    <TableCell align="left">{row.name}</TableCell>
+                    <TableCell align="left">{row.product_register ? row.product_register : '-'}</TableCell>
+                    <TableCell align="left">{row.brand_group}</TableCell>
+                    <TableCell align="right">{parseFloat((row.total_sold * 20).toFixed(0))}</TableCell>
+                    <TableCell align="right">
                       {parseFloat((row.total_sold * 1).toFixed(3))
                         .toFixed(3)
                         .padStart(5, '0')}
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.warehouse_name}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.setup_pile_date ? moment(new Date()).format('DD-MM-YYYY') : '-'}
-                    </TableCell>
+                    <TableCell align="left">{row.warehouse_name}</TableCell>
+                    <TableCell align="left">{row.setup_pile_date ? moment(new Date()).format('DD-MM-YYYY') : '-'}</TableCell>
                   </TableRow>
                 ))}
               <TableRow>

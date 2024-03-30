@@ -1,7 +1,11 @@
 import PropTypes from 'prop-types';
-import React, { useState, useEffect } from 'react';
-// import { Link as RouterLink } from 'react-router-dom';
-const apiUrl = process.env.REACT_APP_API_URL;
+import React, {
+  useState,
+  useEffect
+  // , useRef
+} from 'react';
+
+import * as reportRequest from '_api/reportRequest';
 
 // material-ui
 import {
@@ -14,10 +18,11 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
-  // tableCellClasses
   Typography
-  // , Chip
+  // Button
 } from '@mui/material';
+
+// import { useDownloadExcel } from 'react-export-table-to-excel';
 
 import moment from 'moment';
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
@@ -109,45 +114,48 @@ OrderTableHead.propTypes = {
   orderBy: PropTypes.string
 };
 
-export default function OrderTable() {
+export default function OrderTable({ startDate, endDate, clickDownload, onFilter }) {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [loading, setLoading] = useState(true);
-  // const [selected] = useState([]);
-  const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
-  // const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
+  // const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [startDate, endDate, onFilter]);
 
   const [items, setItems] = useState([]);
   const fetchData = async () => {
     getOrderSumQty();
-    //setLoading(false);
   };
 
   const getOrderSumQty = () => {
-    const requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
+    setLoading(true);
 
-    fetch(apiUrl + '/ordersproducts?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
-      .then((response) => response.json())
+    reportRequest
+      .getOrdersProduct(startDate, endDate)
       .then((result) => {
-        setItems(result);
+        if (onFilter) {
+          setItems(result.filter((x) => x.product_company_id == onFilter));
+        } else {
+          setItems(result);
+        }
         setLoading(false);
       })
       .catch((error) => console.error(error));
   };
+
   // รวม grand total ของ quantity ของทุกรายการ items
   const grandTotalQuantity = items.reduce((acc, item) => {
     return acc + parseFloat(item.total_sold);
   }, 0);
+
   return (
     <Box>
+      {/* <Button color="primary" onClick={onDownload}>
+        Click
+      </Button> */}
       <TableContainer
         sx={{
           width: '100%',
@@ -168,6 +176,7 @@ export default function OrderTable() {
               pr: 3
             }
           }}
+          ref={clickDownload}
         >
           <OrderTableHead order={order} orderBy={orderBy} />
           {!loading ? (
@@ -175,49 +184,39 @@ export default function OrderTable() {
               {items.length > 0 &&
                 items.map((row, index) => (
                   <TableRow key={row.step_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {index + 1}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.name}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.product_register ? row.product_register : '-'}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.setup_pile_date ? moment(row.setup_pile_date).format('DD/MM/yyyy') : '-'}
-                    </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {parseFloat((row.stock_quantity * 1).toFixed(3)).toLocaleString('en-US')}
-                    </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'Noto Sans Thai' }}>
+                    <TableCell align="center">{index + 1}</TableCell>
+                    <TableCell align="left">{row.name}</TableCell>
+                    <TableCell align="left">{row.product_register ? row.product_register : '-'}</TableCell>
+                    <TableCell align="left">{row.setup_pile_date ? moment(row.setup_pile_date).format('DD/MM/yyyy') : '-'}</TableCell>
+                    <TableCell align="right">{parseFloat((row.stock_quantity * 1).toFixed(3)).toLocaleString('en-US')}</TableCell>
+                    <TableCell align="right">
                       {parseFloat((row.begin_day_stock * 1).toFixed(3)).toLocaleString('en-US')}
                       {/* 
                  {(parseFloat(row.total_sold) + parseFloat(row.remaining_quantity)).toLocaleString()}
                  */}
                     </TableCell>
-                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
+                    <TableCell align="center">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px' }}>
                         <div>
                           <table border={'0'}>
                             <thead></thead>
                             <tbody>
                               <tr>
-                                <td align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
+                                <td align="center">
                                   <strong>คิว</strong>
                                 </td>
                                 {row.items.map((item, index) => (
-                                  <td key={index} align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
+                                  <td key={index} align="center">
                                     {item.token}
                                   </td>
                                 ))}
                               </tr>
                               <tr>
-                                <td align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
+                                <td align="center">
                                   <strong>ตัน</strong>
                                 </td>
                                 {row.items.map((item, index) => (
-                                  <td key={index} align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
+                                  <td key={index} align="center">
                                     {parseFloat((item.total_products * 1).toFixed(3))}
                                   </td>
                                 ))}
@@ -227,15 +226,9 @@ export default function OrderTable() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {parseFloat((row.total_sold * 20).toFixed(0)).toLocaleString('en-US')}
-                    </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {parseFloat((row.total_sold * 1).toFixed(3)).toLocaleString('en-US')}
-                    </TableCell>
-                    <TableCell align="right" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {parseFloat((row.remaining_quantity * 1).toFixed(3)).toLocaleString('en-US')}
-                    </TableCell>
+                    <TableCell align="right">{parseFloat((row.total_sold * 20).toFixed(0)).toLocaleString('en-US')}</TableCell>
+                    <TableCell align="right">{parseFloat((row.total_sold * 1).toFixed(3)).toLocaleString('en-US')}</TableCell>
+                    <TableCell align="right">{parseFloat((row.remaining_quantity * 1).toFixed(3)).toLocaleString('en-US')}</TableCell>
                   </TableRow>
                 ))}
               <TableRow>

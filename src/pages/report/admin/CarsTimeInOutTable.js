@@ -126,7 +126,7 @@ OrderTableHead.propTypes = {
   orderBy: PropTypes.string
 };
 
-export default function CarsTimeInOutTable({ startDate, endDate }) {
+export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }) {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [loading, setLoading] = useState(true);
@@ -193,6 +193,7 @@ export default function CarsTimeInOutTable({ startDate, endDate }) {
               pr: 3
             }
           }}
+          ref={clickDownload}
         >
           <OrderTableHead order={order} orderBy={orderBy} />
           {!loading ? (
@@ -200,59 +201,51 @@ export default function CarsTimeInOutTable({ startDate, endDate }) {
               {items.length > 0 &&
                 items.map((row, index) => (
                   <TableRow key={row.step_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {index + 1}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.queue_date ? moment(new Date()).format('DD-MM-YYYY') : '-'}
-                    </TableCell>
-                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {padZero(row.queue_number)}
-                    </TableCell>
-                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.token}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
+                    <TableCell align="center">{index + 1}</TableCell>
+                    <TableCell align="left">{row.queue_date ? moment(new Date()).format('DD-MM-YYYY') : '-'}</TableCell>
+                    <TableCell align="center">{padZero(row.queue_number)}</TableCell>
+                    <TableCell align="center">{row.token}</TableCell>
+                    <TableCell align="left">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
                         {row.start_time ? row.start_time.slice(11, 19) : '-'}
                       </div>
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
+                    <TableCell align="left">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
                         {row.end_time ? row.end_time.slice(11, 19) : '-'}
                       </div>
                     </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.company_name}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.registration_no}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.driver_mobile}
-                    </TableCell>
-                    <TableCell align="left" style={{ fontFamily: 'Noto Sans Thai' }}>
-                      {row.driver_name}
-                    </TableCell>
-                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
+                    <TableCell align="left">{row.company_name}</TableCell>
+                    <TableCell align="left">{row.registration_no}</TableCell>
+                    <TableCell align="left">{row.driver_mobile}</TableCell>
+                    <TableCell align="left">{row.driver_name}</TableCell>
+                    <TableCell align="center">
                       {row.parent_has_cover == 'Y' ? (
                         <Typography sx={{ fontSize: 24, color: 'green' }}>
                           <CheckCircleOutlined color="success" />
+                          <span style={{ fontSize: 16, color: 'green', display: 'none', textAlign: 'center' }}>
+                            {row.trailer_has_cover}
+                          </span>
                         </Typography>
                       ) : (
                         <Typography sx={{ fontSize: 24, color: 'red' }}>
                           <CloseCircleOutlined />
+                          <span style={{ fontSize: 16, color: 'red', display: 'none', textAlign: 'center' }}>N</span>
                         </Typography>
                       )}
                     </TableCell>
-                    <TableCell align="center" style={{ fontFamily: 'Noto Sans Thai' }}>
+                    <TableCell align="center">
                       {row.trailer_has_cover == 'Y' ? (
                         <Typography sx={{ fontSize: 24, color: 'green' }}>
                           <CheckCircleOutlined color="success" />
+                          <span style={{ fontSize: 16, color: 'green', display: 'none', textAlign: 'center' }}>
+                            {row.trailer_has_cover}
+                          </span>
                         </Typography>
                       ) : (
                         <Typography sx={{ fontSize: 24, color: 'red' }}>
                           <CloseCircleOutlined />
+                          <span style={{ fontSize: 16, color: 'red', display: 'none', textAlign: 'center' }}>N</span>
                         </Typography>
                       )}
                     </TableCell>

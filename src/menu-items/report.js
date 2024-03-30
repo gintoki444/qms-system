@@ -20,7 +20,7 @@ const report = {
     },
     {
       id: 'ordersproductssum',
-      title: 'สรุปยอดจ่ายประจำวันที่',
+      title: 'สรุปยอดจ่ายประจำวัน',
       type: 'item',
       url: '/report/ordersproductssum',
       icon: FundViewOutlined,
