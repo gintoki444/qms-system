@@ -145,6 +145,10 @@ const QueueStatus = ({ status }) => {
   let title;
 
   switch (status) {
+    case 'pending':
+      color = 'error';
+      title = 'รอคำสั่งซื้อ';
+      break;
     case 'processing':
       color = 'warning';
       title = 'ดำเนินการ';
@@ -237,6 +241,7 @@ export default function QueueTable({ startDate, endDate }) {
   };
 
   const deteteQueue = (queueId) => {
+    setLoading(true);
     //ลบคิว
     var requestOptions = {
       method: 'DELETE',
@@ -270,9 +275,6 @@ export default function QueueTable({ startDate, endDate }) {
 
     fetch(apiUrl + '/updatereservestatus/' + reserve_id, requestOptions)
       .then((response) => response.json())
-      .then(() => {
-        setLoading(false);
-      })
       .catch((error) => console.log('error', error));
   };
 
@@ -339,7 +341,20 @@ export default function QueueTable({ startDate, endDate }) {
                       </TableCell>
                       <TableCell align="left">{row.driver_name}</TableCell>
                       <TableCell align="left">{row.driver_mobile}</TableCell>
-                      <TableCell align="center">{row.step1_status !== 'none' ? <QueueStatus status={row.step1_status} /> : '-'}</TableCell>
+                      <TableCell align="center">
+                        {row.step1_status !== 'none' ? (
+                          <>
+                            {parseFloat(row.total_quantity) <= 0 ? (
+                              <QueueStatus status={'pending'} />
+                            ) : (
+                              <QueueStatus status={row.step1_status} />
+                            )}
+                          </>
+                        ) : (
+                          '-'
+                        )}
+                      </TableCell>
+
                       <TableCell align="center">{row.step2_status !== 'none' ? <QueueStatus status={row.step2_status} /> : '-'}</TableCell>
                       <TableCell align="center">{row.step3_status !== 'none' ? <QueueStatus status={row.step3_status} /> : '-'}</TableCell>
                       <TableCell align="center">{row.step4_status !== 'none' ? <QueueStatus status={row.step4_status} /> : '-'}</TableCell>

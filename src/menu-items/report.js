@@ -37,6 +37,15 @@ const report = {
       // breadcrumbs: false
     },
     {
+      id: 'stepsrecall',
+      title: 'รายงานทวนสอบ',
+      type: 'item',
+      url: '/report/steps-recall',
+      icon: FundViewOutlined,
+      target: false
+      // breadcrumbs: false
+    },
+    {
       id: 'step1',
       title: 'รายงาน Step1-ชั่งเบา',
       type: 'item',

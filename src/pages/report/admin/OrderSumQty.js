@@ -7,7 +7,8 @@ import {
   Button,
   Stack,
   Divider,
-  Badge
+  Badge,
+  Tooltip
   // Typography
 } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
@@ -145,7 +146,7 @@ const OrderSumQty = () => {
             </Grid>
           </Grid>
 
-          <Grid item xs={12} md={12} sx={{ mt: 2}}>
+          <Grid item xs={12} md={12} sx={{ mt: 2 }}>
             <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
               <Tab
                 label={
@@ -175,9 +176,11 @@ const OrderSumQty = () => {
               content={false}
               sx={{ mt: 1.5 }}
               secondary={
-                <Button color="success" variant="outlined" onClick={onDownload}>
-                  <FileExcelOutlined />
-                </Button>
+                <Tooltip title="Export Excel">
+                  <Button color="success" variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={onDownload}>
+                    <FileExcelOutlined />
+                  </Button>
+                </Tooltip>
               }
             >
               <Divider></Divider>

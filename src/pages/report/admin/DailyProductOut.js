@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDownloadExcel } from 'react-export-table-to-excel';
 
-import { Grid, Box, Divider, TextField, Stack, Button, Badge } from '@mui/material';
+import { Grid, Box, Divider, TextField, Stack, Button, Badge, Tooltip } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import MainCard from 'components/MainCard';
@@ -132,7 +132,7 @@ const DailyProductOut = () => {
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={12} md={12} sx={{ mt: 2}}>
+        <Grid item xs={12} md={12} sx={{ mt: 2 }}>
           <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
             <Tab
               label={
@@ -162,9 +162,11 @@ const DailyProductOut = () => {
             content={false}
             sx={{ mt: 1.5 }}
             secondary={
-              <Button color="success" variant="outlined" onClick={onDownload}>
-                <FileExcelOutlined />
-              </Button>
+              <Tooltip title="Export Excel">
+                <Button color="success" variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={onDownload}>
+                  <FileExcelOutlined />
+                </Button>
+              </Tooltip>
             }
           >
             <Divider></Divider>

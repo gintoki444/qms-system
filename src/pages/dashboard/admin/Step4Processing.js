@@ -75,7 +75,7 @@ const headCells = [
     id: 'endtime',
     align: 'center',
     disablePadding: false,
-    label: 'เวลา'
+    label: 'เวลาที่ใช้'
   },
   {
     id: 'status',
@@ -194,7 +194,7 @@ export default function Step2Processing() {
                   <TableCell align="center">{row.start_time ? row.start_time.slice(11, 19) : '-'}</TableCell>
                   <TableCell align="left">{row.elapsed_time ? row.elapsed_time : '-'}</TableCell>
                   <TableCell align="center" style={{ fontFamily: 'kanit' }}>
-                    <Chip color="success" sx={{ width: '110px' }} label={'กำลังชั้งหนัก'} />
+                    <Chip color="success" sx={{ width: '110px' }} label={'กำลังออกโรงงาน'} />
                   </TableCell>
                 </TableRow>
               ))}

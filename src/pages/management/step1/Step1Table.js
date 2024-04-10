@@ -23,6 +23,7 @@ import {
   InputAdornment,
   CircularProgress,
   Select,
+  Grid,
   MenuItem
 } from '@mui/material';
 
@@ -39,7 +40,6 @@ import moment from 'moment/min/moment-with-locales';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { setStation } from 'store/reducers/station';
-import { Grid } from '../../../../node_modules/@mui/material/index';
 
 // Sound Call
 import SoundCall from 'components/@extended/SoundCall';
@@ -72,7 +72,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
       id: 'queueID',
       align: 'center',
       disablePadding: false,
-      width: '5%',
+      // width: '5%',
       label: 'หมายเลขคิว'
     },
     {
@@ -173,6 +173,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
     } else if (status === 'processing') {
       await processingGet();
     }
+
     setLoading(false);
   };
 
@@ -182,9 +183,9 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
     try {
       await getQueues.getStep1Waitting().then((response) => {
         if (onFilter == 0) {
-          setItems(response);
+          setItems(response.filter((x) => parseFloat(x.total_quantity) > 0));
         } else {
-          setItems(response.filter((x) => x.product_company_id == onFilter) || []);
+          setItems(response.filter((x) => x.product_company_id == onFilter && parseFloat(x.total_quantity) > 0) || []);
         }
       });
     } catch (e) {
@@ -211,7 +212,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
         .then((response) => {
           if (response) {
             const count = response.filter((x) => x.station_id == id).length;
-            console.log(count);
             resolve(count);
           } else {
             resolve(0); // Return 0 if response is empty
@@ -286,7 +286,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
           return;
         }
         if (isEmpty(selectedStations)) {
-          console.log('selectedStations :', selectedStations);
           alert('กรุณาเลือกสถานีชั่งเบา!');
           return;
         }
@@ -321,7 +320,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
           try {
             setLoading(true);
             setOpen(false);
-            console.log('weight :', weight);
             // การใช้งาน Line Notify
             getStepToken(id_update)
               .then(({ queue_id, reserve_id, token }) => {
@@ -347,6 +345,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
       }
 
       if (fr === 'cancel') {
+        setLoading(true);
         setOpen(false);
         //ยกเลิก
         // การใช้งาน Line Notify
@@ -363,7 +362,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
       }
     }
     setSelectedStations({});
-    setLoading(false);
     setOpen(false);
   };
 
@@ -387,7 +385,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
       fetch(apiUrl + '/updateweight1/' + step_id, requestOptions)
         .then((response) => response.json())
         .then((result) => {
-          //console.log(result)
           if (result['status'] === 'ok') {
             setWeight(0);
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
@@ -424,9 +421,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
 
     fetch(apiUrl + '/line-notify', requestOptions)
       .then((response) => response.text())
-      .then((result) => {
-        console.log(result);
-      })
       .catch((error) => console.error(error));
   };
 
@@ -566,7 +560,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
       fetch(apiUrl + '/updatestarttime/' + step_id, requestOptions)
         .then((response) => response.json())
         .then((result) => {
-          //console.log(result)
           if (result['status'] === 'ok') {
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
 
@@ -605,7 +598,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
       fetch(apiUrl + '/updateendtime/' + step_id, requestOptions)
         .then((response) => response.json())
         .then((result) => {
-          //console.log(result)
           if (result['status'] === 'ok') {
             console.log('updateEndTime is ok');
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
@@ -796,120 +788,121 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
                   {items.length > 0 &&
                     items.map((row, index) => {
                       return (
-                        <>
-                          {row.status == status && (
-                            <TableRow key={index}>
-                              <TableCell align="center">
-                                <Typography>
-                                  <strong>{index + 1}</strong>
-                                </Typography>
-                              </TableCell>
-                              <TableCell align="left">
-                                {moment(row.queue_date).format('DD/MM/YYYY')}
-                                {row.queue_time ? ' - ' + row.queue_time : ''}
-                              </TableCell>
-                              <TableCell align="left">
-                                <QueueTag id={row.product_company_id} token={row.token} />
-                                {/* <Chip color="primary" label={row.token} /> */}
-                              </TableCell>
-                              <TableCell align="center">
-                                <Chip color="primary" sx={{ width: '122px' }} label={row.registration_no} />
-                              </TableCell>
+                        <TableRow key={index}>
+                          <TableCell align="center">
+                            <Typography>
+                              <strong>{index + 1}</strong>
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="left">
+                            {moment(row.queue_date).format('DD/MM/YYYY')}
+                            {row.queue_time ? ' - ' + row.queue_time : ''}
+                          </TableCell>
+                          <TableCell align="left">
+                            <QueueTag id={row.product_company_id} token={row.token} />
+                            {moment(row.queue_date).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
+                              <span style={{ color: 'red' }}> (คิวค้าง)</span>
+                            )}
+                            {/* <Chip color="primary" label={row.token} /> */}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Chip color="primary" sx={{ width: '122px' }} label={row.registration_no} />
+                          </TableCell>
 
-                              {status == 'waiting' && <TableCell align="left">-</TableCell>}
-                              {status == 'processing' && (
-                                <TableCell align="left">
-                                  <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>
-                                </TableCell>
-                              )}
+                          {status == 'waiting' && <TableCell align="left">-</TableCell>}
+                          {status == 'processing' && (
+                            <TableCell align="left">
+                              <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>
+                            </TableCell>
+                          )}
 
-                              <TableCell align="left">
-                                <Typography sx={{ width: '240px' }}>{row.company_name}</Typography>
-                              </TableCell>
-                              <TableCell align="left">{row.driver_name}</TableCell>
-                              <TableCell align="left">{row.driver_mobile}</TableCell>
-                              <TableCell align="left">
-                                {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
-                                {row.start_datetime ? row.start_datetime.slice(11, 19) : row.start_time.slice(11, 19)}
-                              </TableCell>
-                              <TableCell align="center">
-                                {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอคิวชั่งเบา'} />}
-                                {status == 'processing' && <Chip color="success" sx={{ width: '95px' }} label={'กำลังชั่งเบา'} />}
-                              </TableCell>
+                          <TableCell align="left">
+                            <Typography sx={{ width: '240px' }}>
+                              {row.company_name} ({row.count_car_id} คิว)
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="left">{row.driver_name}</TableCell>
+                          <TableCell align="left">{row.driver_mobile}</TableCell>
+                          <TableCell align="left">
+                            {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
+                            {row.start_datetime ? row.start_datetime.slice(11, 19) : row.start_time.slice(11, 19)}
+                          </TableCell>
+                          <TableCell align="center">
+                            {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอคิวชั่งเบา'} />}
+                            {status == 'processing' && <Chip color="success" sx={{ width: '95px' }} label={'กำลังชั่งเบา'} />}
+                          </TableCell>
+                          {status == 'processing' && (
+                            <TableCell align="center">
+                              <Tooltip title="เรียกคิว">
+                                <span>
+                                  <Button
+                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                    variant="contained"
+                                    size="small"
+                                    align="center"
+                                    color="info"
+                                    onClick={() => handleCallQueue(row)}
+                                  >
+                                    <SoundOutlined />
+                                  </Button>
+                                </span>
+                              </Tooltip>
+                            </TableCell>
+                          )}
+                          <TableCell align="right" width="120" sx={{ width: 120, maxWidth: 120 }}>
+                            <ButtonGroup aria-label="button group" sx={{ alignItems: 'center' }}>
+                              <Tooltip title="เรียกคิว">
+                                <span>
+                                  {status == 'waiting' && (
+                                    <Button
+                                      // sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                      variant="contained"
+                                      size="small"
+                                      color="info"
+                                      onClick={() => handleClickOpen(row.step_id, 'call', row.queue_id, row)}
+                                      endIcon={<RightSquareOutlined />}
+                                    >
+                                      เรียกคิว
+                                    </Button>
+                                  )}
+                                </span>
+                              </Tooltip>
+
                               {status == 'processing' && (
-                                <TableCell align="center">
+                                <div>
                                   <Tooltip title="เรียกคิว">
                                     <span>
                                       <Button
-                                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                        // sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                         variant="contained"
                                         size="small"
-                                        align="center"
-                                        color="info"
-                                        onClick={() => handleCallQueue(row)}
+                                        color="error"
+                                        onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row)}
                                       >
-                                        <SoundOutlined />
+                                        ยกเลิก
                                       </Button>
                                     </span>
                                   </Tooltip>
-                                </TableCell>
-                              )}
-                              <TableCell align="right" width="120" sx={{ width: 120, maxWidth: 120 }}>
-                                <ButtonGroup aria-label="button group" sx={{ alignItems: 'center' }}>
+
                                   <Tooltip title="เรียกคิว">
                                     <span>
-                                      {status == 'waiting' && (
-                                        <Button
-                                          // sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                          variant="contained"
-                                          size="small"
-                                          color="info"
-                                          onClick={() => handleClickOpen(row.step_id, 'call', row.queue_id, row)}
-                                          endIcon={<RightSquareOutlined />}
-                                        >
-                                          เรียกคิว
-                                        </Button>
-                                      )}
+                                      <Button
+                                        // sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                        variant="contained"
+                                        size="small"
+                                        color="primary"
+                                        onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row)}
+                                        // endIcon={<RightSquareOutlined />}
+                                      >
+                                        ปิดคิว
+                                      </Button>
                                     </span>
                                   </Tooltip>
-
-                                  {status == 'processing' && (
-                                    <div>
-                                      <Tooltip title="เรียกคิว">
-                                        <span>
-                                          <Button
-                                            // sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                            variant="contained"
-                                            size="small"
-                                            color="error"
-                                            onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row)}
-                                          >
-                                            ยกเลิก
-                                          </Button>
-                                        </span>
-                                      </Tooltip>
-
-                                      <Tooltip title="เรียกคิว">
-                                        <span>
-                                          <Button
-                                            // sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                            variant="contained"
-                                            size="small"
-                                            color="primary"
-                                            onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row)}
-                                            // endIcon={<RightSquareOutlined />}
-                                          >
-                                            ปิดคิว
-                                          </Button>
-                                        </span>
-                                      </Tooltip>
-                                    </div>
-                                  )}
-                                </ButtonGroup>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </>
+                                </div>
+                              )}
+                            </ButtonGroup>
+                          </TableCell>
+                        </TableRow>
                       );
                     })}
 

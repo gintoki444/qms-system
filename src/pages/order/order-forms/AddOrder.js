@@ -66,10 +66,15 @@ function AddOrder() {
           res.data.reserve.map((result) => {
             setReservationData(result);
             setInitialValue({
+              ref_order_id: '',
               company_id: result.company_id,
               product_company_id: result.product_company_id,
-              product_brand_id: result.product_brand_id
+              product_brand_id: result.product_brand_id,
+              description: '',
+              order_date: moment(new Date()).format('YYYY-MM-DD'),
+              items: items
             });
+            setSelectIdCom(result.product_company_id);
             getProductBrand(result.product_company_id);
             getProduct(result.product_company_id, result.product_brand_id);
           });
@@ -84,6 +89,7 @@ function AddOrder() {
     try {
       reserveRequest.getProductByIdComAndBrandId(idCom, idBrand).then((response) => {
         setProductList(response);
+        console.log('select Product', response);
       });
     } catch (error) {
       console.log(error);
@@ -125,6 +131,8 @@ function AddOrder() {
   const handleChangeBrand = (e) => {
     setProductList([]);
     setItems[{ product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }];
+    console.log('selectIdCom', selectIdCom);
+    console.log('e.target.value', e.target.value);
     getProduct(selectIdCom, e.target.value);
   };
 
@@ -144,7 +152,7 @@ function AddOrder() {
   const [validationSchema, setValidationSchema] = useState(
     Yup.object().shape({
       ref_order_id: Yup.string().required('กรุณาระบุหมายเลขคำสั่งซื้อ'),
-      // description: Yup.string().required('กรุณาระบุรายละเอียด'),
+      description: Yup.string().required('กรุณาระบุรายละเอียด'),
       order_date: Yup.string().required('กรุณาระบุวันที่สั่งซื้อสินค้า'),
       product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
       product_brand_id: Yup.string().required('กรุณาระบุตรา(สินค้า)'),
@@ -241,8 +249,16 @@ function AddOrder() {
         return;
       }
 
-      // values.items = items;
+      if (!values.product_brand_id || !values.product_company_id) {
+        setErrors(false);
+        setSubmitting(false);
+        alert('ระบุบริษัท(สินค้า)/ตรา(สินค้า)');
+        return;
+      }
+
+      // if (values === 999) {
       await createOrder(values);
+      // }
     } catch (err) {
       console.error(err);
     }

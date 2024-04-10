@@ -143,43 +143,44 @@ function UpdateProductManagement() {
     other: ''
   };
 
-  const text = productRegis.product_register_remark;
-  const partsText1 = text.split(',');
-  const partsText2 = text.split('/');
-  let remarkTxtList = [];
-  if (partsText1.length > 1) {
-    remarkTxtList = partsText1;
-  }
+  if (productRegis.product_register_remark) {
+    const text = productRegis.product_register_remark;
+    const partsText1 = text.split(',');
+    const partsText2 = text.split('/');
+    let remarkTxtList = [];
+    if (partsText1.length > 1) {
+      remarkTxtList = partsText1;
+    }
 
-  if (partsText2.length > 1) {
-    remarkTxtList = partsText2;
-  }
-  
-  if (remarkTxtList.length > 0) {
-    remarkTxtList.map((x) => {
-      if (x == '*ทุบก่อนจ่าย') {
-        initialValue.checkbox1 = x;
-      } else if (x == '*ระงับจ่าย') {
-        initialValue.checkbox2 = x;
-      } else {
-        if (!initialValue.checkbox1 && !initialValue.checkbox2) {
-          initialValue.other = initialValue.product_register_remark;
+    if (partsText2.length > 1) {
+      remarkTxtList = partsText2;
+    }
+
+    if (remarkTxtList.length > 0) {
+      remarkTxtList.map((x) => {
+        if (x == '*ทุบก่อนจ่าย') {
+          initialValue.checkbox1 = x;
+        } else if (x == '*ระงับจ่าย') {
+          initialValue.checkbox2 = x;
         } else {
-          const removedText = text.replace(/[*]ทุบก่อนจ่า|ย,|[*]ระงับจ่า|ย,/g, '');
-          initialValue.other = removedText;
+          if (!initialValue.checkbox1 && !initialValue.checkbox2) {
+            initialValue.other = initialValue.product_register_remark;
+          } else {
+            const removedText = text.replace(/[*]ทุบก่อนจ่า|ย,|[*]ระงับจ่า|ย,/g, '');
+            initialValue.other = removedText;
+          }
         }
-      }
-    });
-  } else {
-    if (text == '*ทุบก่อนจ่าย') {
-      initialValue.checkbox1 = text;
-    } else if (text == '*ระงับจ่าย') {
-      initialValue.checkbox2 = text;
+      });
     } else {
-      initialValue.other = text;
+      if (text == '*ทุบก่อนจ่าย') {
+        initialValue.checkbox1 = text;
+      } else if (text == '*ระงับจ่าย') {
+        initialValue.checkbox2 = text;
+      } else {
+        initialValue.other = text;
+      }
     }
   }
-
   const valiDationSchema = Yup.object().shape({
     product_company_id: Yup.string().required('กรุณาเลือกบริษัท(สินค้า)'),
     product_id: Yup.string().max(255).required('กรุณาเลือกเบรนสินค้า'),
@@ -232,7 +233,7 @@ function UpdateProductManagement() {
         </Backdrop>
       )}
       <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} lg={12} md={10}>
           <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
             <Formik initialValues={initialValue} validationSchema={valiDationSchema} enableReinitialize={true} onSubmit={handleSubmits}>
               {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (

@@ -41,21 +41,29 @@ function AddCar() {
     });
   };
 
+  const [provincesList, setProvincesList] = useState([]);
+  const getProvinces = () => {
+    carRequest.getAllProvinces().then((response) => {
+      setProvincesList(response);
+    });
+  };
+
   useEffect(() => {
     getCarType();
+    getProvinces();
   }, []);
 
   const initialValue = {
     registration_no: '',
     brand: '',
     color: '',
+    province_id: '',
     car_type_id: ''
   };
 
   const valiDationSchema = Yup.object().shape({
     registration_no: Yup.string().max(255).required('กรุณาระบุทะเบียนรถ'),
-    brand: Yup.string().max(255).required('กรุณาระบุยี่ห้อรถ'),
-    color: Yup.string().max(255).required('กรุณาระบุสีรถ'),
+    province_id: Yup.string().max(255).required('กรุณาระบุจังหวัด'),
     car_type_id: Yup.string().required('กรุณาระบุประเภทรถ')
   });
 
@@ -74,6 +82,7 @@ function AddCar() {
       formData.append('registration_no', values.registration_no);
       formData.append('brand', values.brand);
       formData.append('car_type_id', values.car_type_id);
+      formData.append('province_id', values.province_id);
       formData.append('color', values.color);
       formData.append('created_at', values.created_at);
       formData.append('updated_at', values.updated_at);
@@ -148,6 +157,39 @@ function AddCar() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
+                    <InputLabel>จังหวัด *</InputLabel>
+                    <FormControl>
+                      <Select
+                        displayEmpty
+                        variant="outlined"
+                        name="province_id"
+                        value={values.province_id}
+                        onChange={handleChange}
+                        placeholder="เลือกจังหวัด"
+                        fullWidth
+                        error={Boolean(touched.province_id && errors.province_id)}
+                      >
+                        <MenuItem disabled value="">
+                          เลือกจังหวัด
+                        </MenuItem>
+                        {provincesList &&
+                          provincesList.map((province) => (
+                            <MenuItem key={province.province_id} value={province.province_id}>
+                              {province.name_th}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                    {touched.car_type_id && errors.car_type_id && (
+                      <FormHelperText error id="helper-car_type_id">
+                        {errors.car_type_id}
+                      </FormHelperText>
+                    )}
+                  </Stack>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Stack spacing={1}>
                     <InputLabel>ประเภทรถ *</InputLabel>
                     <FormControl>
                       <Select
@@ -181,7 +223,7 @@ function AddCar() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
-                    <InputLabel htmlFor="brand-car">ยี้ห้อรถ*</InputLabel>
+                    <InputLabel htmlFor="brand-car">ยี้ห้อรถ</InputLabel>
                     <OutlinedInput
                       id="brand-car"
                       type="brand"
@@ -203,7 +245,7 @@ function AddCar() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
-                    <InputLabel htmlFor="color-car">สีรถ*</InputLabel>
+                    <InputLabel htmlFor="color-car">สีรถ</InputLabel>
                     <OutlinedInput
                       id="color-car"
                       type="text"

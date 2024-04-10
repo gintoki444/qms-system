@@ -100,7 +100,7 @@ function Product() {
 
           <Grid item>
             <MainCard content={false} sx={{ mt: 1.5 }}>
-              <Box sx={{ pt: 1, pr: 2 }}>
+              <Box sx={{ pt: 1 }}>
                 <ProductManagementTable onFilter={valueFilter} />
               </Box>
             </MainCard>

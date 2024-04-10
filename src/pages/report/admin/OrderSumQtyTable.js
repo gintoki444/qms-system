@@ -62,6 +62,12 @@ const headCells = [
     label: 'รวมจ่าย (ตัน)'
   },
   {
+    id: 'total_smash',
+    align: 'right',
+    disablePadding: true,
+    label: 'จำนวนสินค้าทุบ (ตัน)'
+  },
+  {
     id: 'remaining_total',
     align: 'left',
     disablePadding: false,
@@ -184,12 +190,13 @@ export default function OrderSumQtyTable({ startDate, endDate, clickDownload, on
                         .toFixed(3)
                         .padStart(5, '0')}
                     </TableCell>
+                    <TableCell align="right">{row.total_smash ? parseFloat(row.total_smash) : 0}</TableCell>
                     <TableCell align="left">{row.warehouse_name}</TableCell>
-                    <TableCell align="left">{row.setup_pile_date ? moment(new Date()).format('DD-MM-YYYY') : '-'}</TableCell>
+                    <TableCell align="left">{row.setup_pile_date ? moment(new Date()).format('DD/MM/YYYY') : '-'}</TableCell>
                   </TableRow>
                 ))}
               <TableRow>
-                <TableCell colSpan={6} align="right" sx={{ p: 3 }}>
+                <TableCell colSpan={7} align="right" sx={{ p: 2 }}>
                   <Typography variant="h5">ยอดรวมจ่าย: </Typography>
                 </TableCell>
                 <TableCell align="right">

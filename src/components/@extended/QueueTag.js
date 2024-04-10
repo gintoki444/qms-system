@@ -1,10 +1,10 @@
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 
 // material-ui
 // import { useTheme } from '@mui/material/styles';
 import { Chip } from '@mui/material';
 
-const QueueTag = ({ id, token }) => {
+const QueueTag = ({ id, token, sx = {} }) => {
   //   const theme = useTheme();
   let main;
   switch (id) {
@@ -34,14 +34,13 @@ const QueueTag = ({ id, token }) => {
       main = 'primary';
   }
 
-  return (
-    <Chip color="primary" style={{ backgroundColor: main }} label={token} />
-  );
+  return <Chip color="primary" style={{ backgroundColor: main }} sx={sx} label={token} />;
 };
 
-// QueueTag.propTypes = {
-//   id: PropTypes.number,
-//   token: PropTypes.string
-// };
+QueueTag.propTypes = {
+  //   id: PropTypes.number,
+  sx: PropTypes.object,
+  token: PropTypes.string
+};
 
 export default QueueTag;

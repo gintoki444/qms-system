@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 // import { styled } from '@mui/material/styles';
 
 // import { Link as RouterLink } from 'react-router-dom';
-const apiUrl = process.env.REACT_APP_API_URL;
+import * as reportRequest from '_api/reportRequest';
 
 // material-ui
 import {
@@ -16,11 +16,11 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
-  Typography
-  // , Chip
+  Typography,
+  Chip
 } from '@mui/material';
 
-import { CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
+// import { CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 
 import moment from 'moment-timezone';
 
@@ -33,34 +33,22 @@ const headCells = [
     label: 'ลำดับ'
   },
   {
-    id: 'queue',
-    align: 'center',
+    id: 'dateRecall',
+    align: 'left',
     disablePadding: true,
-    label: 'คิวที่'
+    label: 'วันที่ทวนสอบ'
   },
   {
     id: 'queueNum',
-    align: 'left',
+    align: 'center',
     disablePadding: true,
     label: 'หมายเลขคิว'
   },
   {
-    id: 'timeIn',
+    id: 'stations',
     align: 'left',
     disablePadding: true,
-    label: 'เวลาเข้า'
-  },
-  {
-    id: 'timeOut',
-    align: 'left',
-    disablePadding: true,
-    label: 'เวลาออก'
-  },
-  {
-    id: 'company',
-    align: 'left',
-    disablePadding: false,
-    label: 'ชื่อร้าน'
+    label: 'สถานี'
   },
   {
     id: 'registration_no',
@@ -69,10 +57,10 @@ const headCells = [
     label: 'ทะเบียนรถ'
   },
   {
-    id: 'tel',
+    id: 'company',
     align: 'left',
     disablePadding: false,
-    label: 'เบอร์โทร'
+    label: 'บริษัท/ร้านค้า'
   },
   {
     id: 'driveName',
@@ -81,16 +69,40 @@ const headCells = [
     label: 'ชื่อผู้ขับ'
   },
   {
-    id: 'checking1',
-    align: 'center',
+    id: 'tel',
+    align: 'left',
     disablePadding: false,
-    label: 'คลุมผ้าใบ(ตัวแม่)'
+    label: 'เบอร์โทร'
   },
   {
-    id: 'checking2',
+    id: 'timeIn',
+    align: 'left',
+    disablePadding: false,
+    label: 'เวลาเริ่ม'
+  },
+  {
+    id: 'timeOut',
+    align: 'left',
+    disablePadding: false,
+    label: 'เวลาเสร็จ'
+  },
+  {
+    id: 'times',
+    align: 'left',
+    disablePadding: false,
+    label: 'เวลาที่ใช้'
+  },
+  {
+    id: 'status',
     align: 'center',
     disablePadding: false,
-    label: 'คลุมผ้าใบ(ตัวลูก)'
+    label: 'สถานะ'
+  },
+  {
+    id: 'details',
+    align: 'left',
+    disablePadding: false,
+    label: 'สาเหตุ'
   }
 ];
 
@@ -118,7 +130,7 @@ OrderTableHead.propTypes = {
   orderBy: PropTypes.string
 };
 
-export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }) {
+function StepRecallsTable({ startDate, endDate, clickDownload }) {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [loading, setLoading] = useState(true);
@@ -126,10 +138,6 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }
   //   const currentDate = moment(new Date()).format('YYYY-MM-DD');
   // const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
 
-  // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
-  const padZero = (num) => {
-    return num < 10 ? `0${num}` : num;
-  };
   useEffect(() => {
     fetchData();
 
@@ -141,22 +149,19 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }
   const [items, setItems] = useState([]);
 
   const fetchData = async () => {
-    getOrderSumQty();
+    getAllRecall();
   };
 
-  const getOrderSumQty = () => {
-    const requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-
-    fetch(apiUrl + '/carstimeinout?start_date=' + startDate + '&end_date=' + endDate, requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        setItems(result);
+  const getAllRecall = () => {
+    setLoading(true);
+    try {
+      reportRequest.getStepsRecall(startDate, endDate).then((response) => {
+        setItems(response);
         setLoading(false);
-      })
-      .catch((error) => console.error(error));
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // รวม grand total ของ quantity ของทุกรายการ items
@@ -194,55 +199,37 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }
                 items.map((row, index) => (
                   <TableRow key={row.step_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                     <TableCell align="center">{index + 1}</TableCell>
-                    <TableCell align="center">{padZero(row.queue_number)}</TableCell>
-                    <TableCell align="center">{row.token}</TableCell>
-                    <TableCell align="left">
+                    <TableCell align="center">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
                         {/* {row.start_time ? row.start_time.slice(11, 19) : '-'} */}
-                        {row.start_time ? moment(row.start_time).format('DD/MM/YYYY') : ''}
-                        {row.start_time ? ' ' + row.start_time.slice(11, 19) : '-'}
+                        {row.created_date ? moment(row.created_date).format('DD/MM/YYYY') : ''}
+                        {/* {row.created_date ? ' ' + row.created_date.slice(11, 19) : '-'} */}
                       </div>
                     </TableCell>
+                    <TableCell align="center">{row.recall_data.token}</TableCell>
+                    {/* <TableCell align="center">{padZero(row.queue_number)}</TableCell> */}
                     <TableCell align="left">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
-                        {row.end_time ? moment(row.end_time).format('DD/MM/YYYY') : ''}
-                        {row.end_time ? ' ' + row.end_time.slice(11, 19) : '-'}
+                        {row.recall_data.station_description}
                       </div>
                     </TableCell>
-                    <TableCell align="left">{row.company_name}</TableCell>
-                    <TableCell align="left">{row.registration_no}</TableCell>
-                    <TableCell align="left">{row.driver_mobile}</TableCell>
-                    <TableCell align="left">{row.driver_name}</TableCell>
+                    <TableCell align="left">{row.recall_data.registration_no}</TableCell>
+                    <TableCell align="left">{row.recall_data.company_name}</TableCell>
+                    <TableCell align="left">{row.recall_data.driver_name}</TableCell>
+                    <TableCell align="left">{row.recall_data.driver_mobile}</TableCell>
+                    <TableCell align="center">{row.recall_data.start_time ? row.recall_data.start_time.slice(11, 19) : '-'}</TableCell>
+                    <TableCell align="center">{row.recall_data.end_time ? row.recall_data.end_time.slice(11, 19) : '-'}</TableCell>
+                    <TableCell align="center">{row.recall_data.elapsed_time ? row.recall_data.elapsed_time : '-'}</TableCell>
                     <TableCell align="center">
-                      {row.parent_has_cover == 'Y' ? (
-                        <Typography sx={{ fontSize: 24, color: 'green' }}>
-                          <CheckCircleOutlined color="success" />
-                          <span style={{ fontSize: 16, color: 'green', display: 'none', textAlign: 'center' }}>
-                            {row.trailer_has_cover}
-                          </span>
-                        </Typography>
-                      ) : (
-                        <Typography sx={{ fontSize: 24, color: 'red' }}>
-                          <CloseCircleOutlined />
-                          <span style={{ fontSize: 16, color: 'red', display: 'none', textAlign: 'center' }}>N</span>
-                        </Typography>
+                      {row.recall_data.status == 'completed' && (
+                        <Chip color={'success'} label={'สำเร็จ'} sx={{ minWidth: '78.7px!important' }} />
+                      )}
+                      {row.recall_data.status == 'processing' && (
+                        <Chip color={'warning'} label={'รอตรวจสอบ'} sx={{ minWidth: '78.7px!important' }} />
                       )}
                     </TableCell>
-                    <TableCell align="center">
-                      {row.trailer_has_cover == 'Y' ? (
-                        <Typography sx={{ fontSize: 24, color: 'green' }}>
-                          <CheckCircleOutlined color="success" />
-                          <span style={{ fontSize: 16, color: 'green', display: 'none', textAlign: 'center' }}>
-                            {row.trailer_has_cover}
-                          </span>
-                        </Typography>
-                      ) : (
-                        <Typography sx={{ fontSize: 24, color: 'red' }}>
-                          <CloseCircleOutlined />
-                          <span style={{ fontSize: 16, color: 'red', display: 'none', textAlign: 'center' }}>N</span>
-                        </Typography>
-                      )}
-                    </TableCell>
+
+                    <TableCell align="left">{row.remark}</TableCell>
                   </TableRow>
                 ))}
 
@@ -269,3 +256,5 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }
     </Box>
   );
 }
+
+export default StepRecallsTable;

@@ -31,6 +31,7 @@ import MainCard from 'components/MainCard';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import { SaveOutlined } from '@ant-design/icons';
+import { useSnackbar } from 'notistack';
 
 // DateTime
 import moment from 'moment';
@@ -39,6 +40,7 @@ function AddReserve() {
   const [loading, setLoading] = useState(false);
   const currentDate = new Date().toISOString().split('T')[0];
   const userRoles = useSelector((state) => state.auth.roles);
+  const { enqueueSnackbar } = useSnackbar();
 
   // =============== Get Company ===============//
   const [companyList, setCompanyList] = useState([]);
@@ -102,7 +104,6 @@ function AddReserve() {
   const getProductCompany = () => {
     try {
       reserveRequest.getAllproductCompanys().then((response) => {
-        console.log(response);
         setProductCompany(response);
       });
     } catch (error) {
@@ -111,7 +112,6 @@ function AddReserve() {
   };
 
   const handleChangeProductCom = (e) => {
-    console.log(e.target.value);
     getProductBrand(e.target.value);
   };
 
@@ -121,40 +121,10 @@ function AddReserve() {
     try {
       reserveRequest.getProductBrandById(id).then((response) => {
         setProductBrand(response);
-        console.log();
       });
     } catch (error) {
       console.log(error);
     }
-  };
-
-  // =============== Get Warehouses ===============//
-  const [warehousesList, setWarehousesList] = useState([]);
-  const getWarehouses = () => {
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-    fetch(apiUrl + '/allwarehouses', requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        setWarehousesList(result);
-      })
-      .catch((error) => console.log('error', error));
-  };
-
-  // =============== Get Stations ===============//
-  const [stationsList, setStationsList] = useState([]);
-  const getStation = () => {
-    const urlapi = apiUrl + `/allstations`;
-    axios
-      .get(urlapi)
-      .then((res) => {
-        if (res) {
-          setStationsList(res.data.filter((x) => x.station_group_id === 3));
-        }
-      })
-      .catch((err) => console.log(err));
   };
 
   // =============== useEffect ===============//
@@ -163,9 +133,6 @@ function AddReserve() {
       getCompanyLsit();
       getCarLsit();
       getDriverLsit();
-      getWarehouses();
-      // getBrandList();
-      getStation();
       getProductCompany();
     }
   }, [userRoles]);
@@ -178,9 +145,10 @@ function AddReserve() {
     product_brand_id: '',
     driver_id: '',
     description: '',
-    pickup_date: moment(new Date()).format('YYYY-MM-DD'),
-    warehouse_id: 2,
-    reserve_station_id: 3,
+    pickup_date: moment(new Date()).format('yyyy-MM-DD'),
+    warehouse_id: 1,
+    station_id: 1,
+    reserve_station_id: 1,
     status: 'waiting',
     total_quantity: 0
   };
@@ -223,13 +191,13 @@ function AddReserve() {
         .request(config)
         .then((result) => {
           if (result.data.status === 'ok') {
+            enqueueSnackbar('บันทึกข้อมูลสำเร็จ!', { variant: 'success' });
             setMessageCreateReserve(result.data.results.insertId);
           } else {
             alert(result.message.sqlMessage);
           }
 
           setStatus({ success: false });
-          setLoading(false);
           setSubmitting(false);
         })
         .catch((error) => {
@@ -408,7 +376,6 @@ function AddReserve() {
                     <FormControl fullWidth>
                       <Select
                         displayEmpty
-                        select
                         variant="outlined"
                         name="car_id"
                         value={values.car_id || ''}
@@ -419,9 +386,10 @@ function AddReserve() {
                         <MenuItem disabled value="">
                           เลือกรถบรรทุก
                         </MenuItem>
+                        <MenuItem value="1">ไม่ระบุรถบรรทุก</MenuItem>
                         {carList.map((cars) => (
                           <MenuItem key={cars.car_id} value={cars.car_id}>
-                            {cars.brand} : {cars.registration_no}
+                            ทะเบียน : {cars.registration_no}
                           </MenuItem>
                         ))}
                       </Select>
@@ -452,6 +420,7 @@ function AddReserve() {
                         <MenuItem disabled value="">
                           เลือกคนขับรถ
                         </MenuItem>
+                        <MenuItem value="1">ไม่ระบุคนขับรถ</MenuItem>
                         {driverList.map((driver) => (
                           <MenuItem key={driver.driver_id} value={driver.driver_id}>
                             {driver.firstname} {driver.lastname}
@@ -512,33 +481,6 @@ function AddReserve() {
                   </Stack>
                 </Grid>
 
-                {userRoles === 0 && (
-                  <Grid item xs={12} md={6}>
-                    <Stack spacing={1}>
-                      <InputLabel>คลังสินค้า</InputLabel>
-                      <TextField
-                        select
-                        variant="outlined"
-                        name="warehouse_id"
-                        value={values.warehouse_id}
-                        onChange={handleChange}
-                        placeholder="เลือกคลังสินค้า"
-                        fullWidth
-                      >
-                        {warehousesList.map((warehouses) => (
-                          <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
-                            {warehouses.description}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                      {touched.company && errors.company && (
-                        <FormHelperText error id="helper-text-company-car">
-                          {errors.company}
-                        </FormHelperText>
-                      )}
-                    </Stack>
-                  </Grid>
-                )}
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
                     <InputLabel>จำนวนสินค้า</InputLabel>
@@ -562,33 +504,6 @@ function AddReserve() {
                   </Stack>
                 </Grid>
 
-                {userRoles === 0 && (
-                  <Grid item xs={12} md={6}>
-                    <Stack spacing={1}>
-                      <InputLabel>หัวจ่าย</InputLabel>
-                      <TextField
-                        select
-                        variant="outlined"
-                        name="reserve_station_id"
-                        value={values.reserve_station_id}
-                        onChange={handleChange}
-                        placeholder="เลือกคลังสินค้า"
-                        fullWidth
-                      >
-                        {stationsList.map((station) => (
-                          <MenuItem key={station.station_id} value={station.station_id}>
-                            {station.station_description}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                      {touched.reserve_station_id && errors.reserve_station_id && (
-                        <FormHelperText error id="helper-text-reserve_station_id">
-                          {errors.reserve_station_id}
-                        </FormHelperText>
-                      )}
-                    </Stack>
-                  </Grid>
-                )}
                 <Grid item xs={12}>
                   <Button
                     disableElevation

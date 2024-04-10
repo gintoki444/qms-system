@@ -33,11 +33,7 @@ import {
 // project import
 // import Dot from 'components/@extended/Dot';
 
-import {
-  // ProfileOutlined,
-  EditOutlined,
-  DeleteOutlined
-} from '@ant-design/icons';
+import { EditOutlined } from '@ant-design/icons';
 
 // import axios from 'axios';
 
@@ -154,6 +150,10 @@ const QueueStatus = ({ status }) => {
   let title;
 
   switch (status) {
+    case 'pending':
+      color = 'error';
+      title = 'รอคำสั่งซื้อ';
+      break;
     case 'processing':
       color = 'warning';
       title = 'ดำเนินการ';
@@ -164,7 +164,7 @@ const QueueStatus = ({ status }) => {
       break;
     case 'waiting':
       color = 'secondary';
-      title = 'รอเรียกคิว';
+      title = 'รอเลือกหัวจ่าย';
       break;
     default:
       color = 'secondary';
@@ -173,7 +173,7 @@ const QueueStatus = ({ status }) => {
 
   return (
     <Tooltip title={title}>
-      <Chip color={color} label={title} sx={{ minWidth: '78.7px!important' }} />
+      <Chip color={color} label={title} sx={{ minWidth: '100px!important' }} />
     </Tooltip>
   );
 };
@@ -184,22 +184,22 @@ QueueStatus.propTypes = {
 
 function Step0Table({ startDate, endDate }) {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const userRoles = useSelector((state) => state.auth.roles);
   const userId = useSelector((state) => state.auth.roles);
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    setLoading(true);
     if (userRoles && userId) {
       getQueue();
     }
   }, [userId, userRoles, startDate, endDate]);
 
   const getQueue = () => {
+    setLoading(true);
     try {
-      stepRequest.getAllStep0().then((response) => {
-        setItems(response);
+      stepRequest.getAllStep0ByDate(startDate, endDate).then((response) => {
+        setItems(response.filter((x) => x.token !== null));
         setLoading(false);
       });
     } catch (e) {
@@ -241,33 +241,30 @@ function Step0Table({ startDate, endDate }) {
                 items.map((row, index) => {
                   return (
                     <TableRow key={index}>
-                      <TableCell align="center">{row.queue_number}</TableCell>
+                      <TableCell align="center">{index + 1}</TableCell>
                       <TableCell align="left">{moment(row.queue_date).format('MM/DD/YYYY')}</TableCell>
                       <TableCell align="center">
                         <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
+                        {row.queue_remain == 1 && <span style={{ color: 'red' }}> (คิวค้าง)</span>}
                       </TableCell>
                       <TableCell align="left">{row.company}</TableCell>
                       <TableCell align="left">{row.registration_no}</TableCell>
                       <TableCell align="left">{row.driver}</TableCell>
                       <TableCell align="left">{row.mobile_no}</TableCell>
-                      <TableCell align="center">{row.step1_status !== 'none' ? <QueueStatus status={row.step1_status} /> : '-'}</TableCell>
 
+                      {parseFloat(row.total_quantity) <= 0 && (
+                        <TableCell align="center">
+                          <QueueStatus status={'pending'} />
+                        </TableCell>
+                      )}
+
+                      {parseFloat(row.total_quantity) > 0 && (
+                        <TableCell align="center">
+                          {row.team_id === null ? <QueueStatus status={'waiting'} /> : <QueueStatus status={'completed'} />}
+                        </TableCell>
+                      )}
                       <TableCell align="center">
                         <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
-                          {/* <Tooltip title="รายละเอียด">
-                            <span>
-                              <Button
-                                sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                variant="contained"
-                                size="medium"
-                                color="info"
-                                onClick={() => updateDrivers(row.queue_id)}
-                              >
-                                <ProfileOutlined />
-                              </Button>
-                            </span>
-                          </Tooltip> */}
-
                           <Tooltip title="แก้ไข">
                             <span>
                               <Button
@@ -281,23 +278,6 @@ function Step0Table({ startDate, endDate }) {
                               </Button>
                             </span>
                           </Tooltip>
-
-                          {userRoles && (userRoles === 10 || userRoles === 1) && (
-                            <Tooltip title="ลบ">
-                              <span>
-                                <Button
-                                  variant="contained"
-                                  sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                  size="medium"
-                                  disabled={row.status === 'completed'}
-                                  color="error"
-                                  onClick={() => handleClickOpen(row.queue_id, row.reserve_id, row.step1_status)}
-                                >
-                                  <DeleteOutlined />
-                                </Button>
-                              </span>
-                            </Tooltip>
-                          )}
                         </ButtonGroup>
                         {/* <Button 
                     sx={{ minWidth: '33px!important', p: '6px 0px' }}

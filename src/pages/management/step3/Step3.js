@@ -61,7 +61,7 @@ function Step3() {
   };
 
   const [valueFilter, setValueFilter] = useState(0);
-  const handleChange = (event, newValue) => {
+  const handleChange = (newValue) => {
     setValueFilter(newValue);
   };
   return (

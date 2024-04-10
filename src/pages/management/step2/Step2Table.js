@@ -45,6 +45,7 @@ import QueueTag from 'components/@extended/QueueTag';
 
 // Sound Call
 import SoundCall from 'components/@extended/SoundCall';
+import { Stack } from '../../../../node_modules/@mui/material/index';
 
 export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
@@ -178,17 +179,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
   const [textnotify, setText] = useState('');
   const [station_count, setStationCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  // const [selectedStation, setSelectedStation] = useState('');
   const [stations, setStations] = useState([]);
-  // const [loadingteams, setLoadingTeams] = useState([]);
   const [saveLoading, setSaveLoading] = useState(false);
   saveLoading;
   const [message, setMessage] = useState('');
 
   //เพิ่ม function get จำนวนสถานีของ step 1
-  const station_num = 17;
-
-  //const [loadingteam, setLoadingTeam] = React.useState('');
+  const station_num = 20;
   const [station_id, setStationId] = useState(0);
 
   useEffect(() => {
@@ -206,21 +203,22 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
       } else if (status === 'processing') {
         await processingGet();
       }
-      setLoading(false);
       await getStation();
       await getStepCount(2, 'processing');
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+
+    setLoading(false);
   };
 
   const waitingGet = async () => {
     try {
       await getQueues.getStep2Waitting().then((response) => {
         if (onFilter == 0) {
-          setItems(response);
+          setItems(response.filter((x) => x.team_id !== null && x.reserve_station_id !== 1));
         } else {
-          setItems(response.filter((x) => x.product_company_id == onFilter) || []);
+          setItems(response.filter((x) => x.product_company_id == onFilter && x.team_id !== null && x.reserve_station_id !== 1) || []);
         }
         cleckStations();
       });
@@ -331,11 +329,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
   //Update สถานะคิวที่ให้บริการ
   const step1Update = (step_id, statusupdate, stations_id) => {
     return new Promise((resolve, reject) => {
-      setLoading(true);
-
       if (stations_id === '') {
         alert('กรุณาเลือกหัวจ่าย');
-        setLoading(false);
         //reject("กรุณาเลือกหัจ่าย");
         return;
       } else {
@@ -346,7 +341,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
           if (foundItem) {
             // พบ item ที่มี station_id ที่ต้องการ
             alert("หัวจ่าย '" + foundItem.station_description + "' ไม่ว่าง");
-            setLoading(false);
             return;
           } else {
             // การใช้งาน Line Notify
@@ -389,7 +383,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
           }
         })
         .catch((error) => {
-          console.log('error', error);
           reject(error);
         });
     });
@@ -455,7 +448,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
       fetch(apiUrl + '/updatestarttime/' + step_id, requestOptions)
         .then((response) => response.json())
         .then((result) => {
-          //console.log(result)
           if (result['status'] === 'ok') {
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
@@ -493,7 +485,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
       fetch(apiUrl + '/updateendtime/' + step_id, requestOptions)
         .then((response) => response.json())
         .then((result) => {
-          //console.log(result)
           if (result['status'] === 'ok') {
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
@@ -556,10 +547,18 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             result.items.map((data) => {
               const getProductRegis = productList.filter((x) => x.product_id == data.product_id);
               data.productRegis = getProductRegis;
+
+              if (data.product_id) {
+                const selectedOption = { id: data.item_id, value: data.product_id };
+                setOrderSelect((prevState) => {
+                  const updatedOptions = [...prevState];
+                  updatedOptions.push(selectedOption);
+                  return updatedOptions;
+                });
+              }
             });
           }
         });
-        console.log('response :', response);
         setOrders(response);
         setLoadOrder(false);
       }
@@ -568,7 +567,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
 
   const [productList, setProductList] = useState([]);
   const getWareHouseManager = async () => {
-    setLoading(true);
     try {
       adminRequest.getAllProductRegister().then((response) => {
         if (onFilter) {
@@ -576,7 +574,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
         } else {
           setProductList(response);
         }
-        setLoading(false);
       });
     } catch (error) {
       console.log(error);
@@ -624,6 +621,23 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     }
   };
 
+  // =============== ปรับสถานะหัวจ่าย ===============//
+  const updateStation = (id, status) => {
+    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
+    try {
+      const data = {
+        station_status: status,
+        time_update: currentDate
+      };
+
+      stepRequest.putStationStatus(id, data);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
   const handleClickOpen = (step_id, fr, queues_id, station_id, queuesData) => {
     //ข้อความแจ้งเตือน
     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
@@ -659,7 +673,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
   };
 
   const handleClose = async (flag) => {
-    setLoading(true);
     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
     if (flag === 1) {
       if (fr === 'call') {
@@ -671,10 +684,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             });
 
             if (orderSelect.length != countItem) {
-              setLoading(false);
               alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
               return;
             } else {
+              setLoading(true);
               setOpen(false);
               orderSelect.map((dataOrder) => {
                 const setData = {
@@ -683,6 +696,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                 };
                 updateRegisterItems(dataOrder.id, setData);
               });
+              updateStation(station_id, 'working');
               setStationCount(station_count + 1);
               await step1Update(id_update, 'processing', station_id);
               await updateStartTime(id_update);
@@ -690,16 +704,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             }
           } else {
             alert('กรุณาเลือกหัวจ่าย');
-            setLoading(false);
           }
         } else {
           alert('สถานีบริการเต็ม');
-          setLoading(false);
         }
       } else {
         if (fr === 'close') {
           //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว 27 = Station ว่าง
-          setLoading(false);
           if (teamId === '' || teamId === null) {
             alert('กรุณาเลือกทีมขึ้นสินค้า');
             return;
@@ -710,10 +721,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             return;
           }
 
-          if (labor_line_id === '' || labor_line_id === null) {
-            alert('กรุณาเลือกหมายเลขสาย');
-            return;
-          }
+          // if (labor_line_id === '' || labor_line_id === null) {
+          //   alert('กรุณาเลือกหมายเลขสาย');
+          //   return;
+          // }
 
           let countItem = 0;
           orders.map((orderData) => {
@@ -730,6 +741,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
           }
 
           try {
+            setLoading(true);
             setOpen(false);
             // การใช้งาน Line Notify
             if (orderSelect.length > 0 || typeSelect.length !== 0) {
@@ -768,7 +780,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             }
 
             // if (id_update == 9999) {
-            setLoading(true);
             getStepToken(id_update)
               .then(({ queue_id, token }) => {
                 lineNotify(queue_id, token);
@@ -779,6 +790,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
               });
 
             setStationCount(station_count - 1);
+            updateStation(station_id, 'waiting');
+
             await updateLoadingTeam(id_update);
             await updateLoadingTeam(id_update_next);
             await updateTeamLoading();
@@ -795,6 +808,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
           }
         } else {
           // การใช้งาน Line Notify
+          setLoading(true);
           getStepToken(id_update)
             .then(({ queue_id, token }) => {
               lineNotify(queue_id, token);
@@ -804,15 +818,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
               // ทำอะไรกับข้อผิดพลาด
             });
 
+          updateStation(station_id, 'waiting');
           setStationCount(station_count - 1);
           step1Update(id_update, 'waiting', 27);
           updateStartTime(id_update);
-
           // Trigger the parent to reload the other instance with the common status
         }
       }
-    } else {
-      setLoading(false);
     }
     setOrders([]);
     setOpen(false);
@@ -861,9 +873,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
 
     fetch(apiUrl + '/line-notify', requestOptions)
       .then((response) => response.text())
-      .then((result) => {
-        console.log(result);
-      })
       .catch((error) => console.error(error));
   };
 
@@ -1041,21 +1050,17 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     let titleTxtStation = '';
     let getWarehouseData = '';
 
-    console.log('queues.station_id :', queues.station_id);
-
     if (queues.station_id == 27) {
       const getStationData = stationsList.filter((x) => x.station_id == queues.reserve_station_id);
 
       getWarehouseData = warehousesList.filter((x) => x.warehouse_id == getStationData[0].warehouse_id);
       titleTxtStation = getStationData[0].station_description;
     } else {
+      getWarehouseData = warehousesList.filter((x) => x.warehouse_id == queues.warehouse_id);
       titleTxtStation = queues.station_description;
     }
 
-    console.log('getWarehouseData :', getWarehouseData);
-
     const cleanedStringStation = titleTxtStation.replace(/^A\d\/\d\s*/g, '');
-
 
     // ==== แยกตัวอักษรป้ายทะเบียนรถ ====
     const titleTxtCar = queues.registration_no;
@@ -1090,7 +1095,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
           <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
             <DialogTitle id="responsive-dialog-title" align="center">
               <Typography variant="h5">
-                {textnotify} ID:{id_update}
+                {textnotify}หมายเลข : <QueueTag id={queues.product_company_id || ''} token={queues.token} />
               </Typography>
             </DialogTitle>
             <DialogContent sx={{ minWidth: 400 }}>
@@ -1098,9 +1103,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
                     <Grid item xs={12}>
-                      <Typography variant="h5">
-                        <strong>ข้อมูลกองสินค้า:</strong>
-                      </Typography>
+                      <Stack spacing={1}>
+                        <Typography variant="h5">ข้อมูลกองสินค้า:</Typography>
+                        <Typography variant="body1">บริษัท (สินค้า): {queues.product_company_name}</Typography>
+                        <Typography variant="body1">ตรา (สินค้า): {queues.product_brand_name}</Typography>
+                      </Stack>
                     </Grid>
 
                     {orders.map((ordersItems, orderId) => (
@@ -1109,34 +1116,47 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                           <Grid container spacing={2}>
                             {ordersItems.items.map((orderItem, orderItemId) => (
                               <Grid item xs={12} md={12} key={orderItemId}>
-                                <InputLabel sx={{ mt: 1, mb: 1 }}>กองสินค้า : {orderItem.name}</InputLabel>
+                                <InputLabel sx={{ mt: 1, mb: 1 }}>
+                                  สูตรสินค้า : {orderItem.name} {orderItem.product_id}
+                                </InputLabel>
 
                                 {!loadOrders ? (
                                   <FormControl sx={{ width: '100%' }} size="small">
                                     <Select
                                       displayEmpty
                                       variant="outlined"
-                                      value={orderSelect[orderItem.item_id]}
+                                      // value={orderSelect[orderItem.item_id]}
+                                      value={orderSelect[orderItem.item_id] || orderItem.product_register_id || ''}
                                       onChange={(e) => {
                                         handleChangeProduct(e, orderItem.item_id);
+                                        orderItem.product_register_id = e.target.value;
                                       }}
                                     >
                                       <MenuItem disabled value="">
-                                        เลือกกองสินค้า
+                                        เลือกสูตรสินค้า
                                       </MenuItem>
                                       {orderItem.productRegis &&
                                         // orderItem.productRegis.length > 0 &&
-                                        orderItem.productRegis.map((productRegis) => (
-                                          <MenuItem key={productRegis.product_register_id} value={productRegis.product_register_id}>
-                                            {productRegis.product_register_name}{' '}
-                                            {productRegis.product_register_date
-                                              ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
-                                              : '-'}
-                                            {productRegis.product_register_date
-                                              ? ` (${calculateAge(productRegis.product_register_date)}) `
-                                              : '-'}
-                                          </MenuItem>
-                                        ))}
+                                        orderItem.productRegis.map(
+                                          (productRegis) =>
+                                            productRegis.total_remain > 0 && (
+                                              <MenuItem key={productRegis.product_register_id} value={productRegis.product_register_id}>
+                                                {productRegis.product_register_name}{' '}
+                                                {productRegis.product_register_date
+                                                  ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
+                                                  : '-'}
+                                                {productRegis.product_register_date
+                                                  ? ` (${calculateAge(productRegis.product_register_date)}) `
+                                                  : '-'}
+                                                {productRegis.product_register_remark ? (
+                                                  <span style={{ color: 'red' }}> ({productRegis.product_register_remark})</span>
+                                                ) : (
+                                                  ''
+                                                )}
+                                                <strong> ({productRegis.total_remain} ตัน)</strong>
+                                              </MenuItem>
+                                            )
+                                        )}
                                     </Select>
                                   </FormControl>
                                 ) : (
@@ -1173,7 +1193,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             {fr === 'close' ? (
               <>
                 <DialogTitle id="responsive-dialog-title" align="center">
-                  <Typography variant="h5">{'ปิดคิวรับสินค้า'}</Typography>
+                  <Typography variant="h5">
+                    {'ปิดคิวรับสินค้า'}หมายเลข : <QueueTag id={queues.product_company_id || ''} token={queues.token} />
+                  </Typography>
                 </DialogTitle>
                 <DialogContent>
                   <MainCard>
@@ -1295,6 +1317,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                             value={contractorId == null ? '' : contractorId}
                             onChange={(e) => {
                               handleChangeContractor(e);
+                              setcontractorId(e.target.value);
                             }}
                             placeholder="เลือกสายแรงงาน"
                           >
@@ -1365,17 +1388,23 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                               เลือกกองสินค้า
                                             </MenuItem>
                                             {orderItem.productRegis !== undefined &&
-                                              orderItem.productRegis.map((productRegis, index) => (
-                                                <MenuItem key={index} value={productRegis.product_register_id}>
-                                                  {productRegis.product_register_name}{' '}
-                                                  {productRegis.product_register_date
-                                                    ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
-                                                    : '-'}
-                                                  {productRegis.product_register_date
-                                                    ? ` (${calculateAge(productRegis.product_register_date)}) `
-                                                    : '-'}
-                                                </MenuItem>
-                                              ))}
+                                              orderItem.productRegis.map(
+                                                (productRegis, index) =>
+                                                  productRegis.total_remain > 0 && (
+                                                    <MenuItem key={index} value={productRegis.product_register_id}>
+                                                      {productRegis.product_register_name}{' '}
+                                                      {productRegis.product_register_date
+                                                        ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
+                                                        : '-'}
+                                                      {productRegis.product_register_date
+                                                        ? ` (${calculateAge(productRegis.product_register_date)}) `
+                                                        : '-'}
+                                                      {productRegis.product_register_remark
+                                                        ? ` (${productRegis.product_register_remark}) `
+                                                        : ''}
+                                                    </MenuItem>
+                                                  )
+                                              )}
                                           </Select>
                                         </FormControl>
                                       </Grid>
@@ -1507,7 +1536,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
 
                 <DialogContent>
                   <DialogContentText>
-                    ต้องการ {textnotify} ID:{id_update} หรือไม่?
+                    ต้องการ <strong> {textnotify} </strong> คิวหมายเลข :{' '}
+                    <QueueTag id={queues.product_company_id || ''} token={queues.token} /> หรือไม่?
                   </DialogContentText>
                 </DialogContent>
               </>
@@ -1561,7 +1591,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                           </TableCell>
                           <TableCell align="center">
                             <QueueTag id={row.product_company_id || ''} token={row.token} />
-                            {/* <Chip color="primary" label={row.token} /> */}
+                            {moment(row.queue_date).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
+                              <span style={{ color: 'red' }}> (คิวค้าง)</span>
+                            )}
                           </TableCell>
                           <TableCell align="center">
                             <Chip color="primary" sx={{ width: '122px' }} label={row.registration_no} />
@@ -1570,7 +1602,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                             <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>
                           </TableCell>
                           <TableCell align="left">
-                            <Typography sx={{ width: '240px' }}>{row.company_name}</Typography>
+                            <Typography sx={{ width: '240px' }}>
+                              {row.company_name} ({row.count_car_id} คิว)
+                            </Typography>
                           </TableCell>
                           <TableCell align="left">{row.driver_name}</TableCell>
                           <TableCell align="left">{row.driver_mobile}</TableCell>

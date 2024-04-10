@@ -38,6 +38,12 @@ const headCells = [
     label: 'ทะเบียนรถ'
   },
   {
+    id: 'province',
+    align: 'left',
+    disablePadding: true,
+    label: 'จังหวัด'
+  },
+  {
     id: 'typeCar',
     align: 'left',
     disablePadding: false,
@@ -185,11 +191,12 @@ function CarTable() {
               {car.map((row, index) => {
                 return (
                   <TableRow key={index}>
-                    <TableCell align="center">{row.car_id}</TableCell>
+                    <TableCell align="center">{index + 1}</TableCell>
                     <TableCell align="left">{row.registration_no}</TableCell>
-                    <TableCell align="left">{row.brand}</TableCell>
+                    <TableCell align="left">{row.province_id ? row.name_th : '-'}</TableCell>
                     <TableCell align="left">{row.car_type_id ? setCarTypeName(row.car_type_id) : '-'}</TableCell>
-                    <TableCell align="left">{row.color}</TableCell>
+                    <TableCell align="left">{row.brand ? row.brand : '-'}</TableCell>
+                    <TableCell align="left">{row.color ? row.color : '-'}</TableCell>
                     {/* {permission.length > 0 &&  */}
                     <TableCell align="center">
                       <ButtonGroup variant="contained" aria-label="Basic button group">

@@ -20,5 +20,5 @@ export const sendLinenotify = async (message) => {
   };
 
   const response = await fetch(apiUrl + '/line-notify', requestOptions);
-  return response;
+  return response.text();
 };

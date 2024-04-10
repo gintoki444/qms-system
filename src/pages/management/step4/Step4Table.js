@@ -30,20 +30,12 @@ import { useTheme } from '@mui/material/styles';
 import * as getQueues from '_api/queueReques';
 const apiUrl = process.env.REACT_APP_API_URL;
 
-// import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-// import DoneIcon from '@mui/icons-material/Done';
 import CircularProgress from '@mui/material/CircularProgress';
 import { RightSquareOutlined } from '@ant-design/icons';
 import moment from 'moment';
-
-// import { useDispatch, useSelector } from 'react-redux';
-// import { setStation } from 'store/reducers/station';
+import QueueTag from 'components/@extended/QueueTag';
 
 export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
-  // const station_count = useSelector((state) => state.station.station_count);
-  // const dispatch = useDispatch();
-  // console.log(station_count);
-
   // ==============================|| ORDER TABLE - HEADER ||============================== //
   const headCells = [
     {
@@ -294,8 +286,6 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
       team_id: team_id
     });
 
-    console.log(raw);
-
     const requestOptions = {
       method: 'PUT',
       headers: myHeaders,
@@ -366,7 +356,6 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
             fetchData();
             onStatusChange(status === 'waiting' ? 'processing' : 'waiting');
           } else {
-            console.log('not update updateStartTime');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
           }
         })
@@ -399,10 +388,8 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
         .then((result) => {
           //console.log(result)
           if (result['status'] === 'ok') {
-            console.log('updateEndTime is ok');
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
-            console.log('not update updateEndTime');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
           }
         })
@@ -508,10 +495,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
     };
 
     fetch(apiUrl + '/line-notify', requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        console.log(result);
-      })
+      .then((response) => response.text())
       .catch((error) => console.error(error));
   };
 
@@ -684,7 +668,10 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
                           {row.queue_time ? ' - ' + row.queue_time : ''}
                         </TableCell>
                         <TableCell align="left">
-                          <Chip color="primary" label={row.token} />
+                          <QueueTag id={row.product_company_id || ''} token={row.token} />
+                          {moment(row.queue_date).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
+                            <span style={{ color: 'red' }}> (คิวค้าง)</span>
+                          )}
                         </TableCell>
                         <TableCell align="center">
                           <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />

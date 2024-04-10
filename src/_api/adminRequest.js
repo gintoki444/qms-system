@@ -643,3 +643,53 @@ export const deleteProducts = async (id) => {
   const result = await response.json();
   return result;
 };
+
+export const getCutOffProductById = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/productcutoffbyid/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const AddCutOffProduct= async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/addcutoffproduct/', requestOptions);
+
+  return await response.json();
+};
+
+export const deleteCutOffProduct = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deletecutoffproduct/${id}`, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const getOrdersProductsByIdRegister = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/ordersproductsbyregisterid?product_register_id=' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};

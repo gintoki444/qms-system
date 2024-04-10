@@ -34,6 +34,33 @@ export const getAllStep0 = async () => {
   return result;
 };
 
+export const getAllStep0ByDate = async (startDate, endDate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/step0reservesbydate?pickup_date1=${startDate}&pickup_date2=${endDate}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// แก้ไขสถานะ หัวจ่าย
+export const putStationStatus = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/updatestationstatus/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
 // ==============================|| ข้อมูล Checkers   ||============================== //
 export const getAllCheckers = async () => {
   const requestOptions = {

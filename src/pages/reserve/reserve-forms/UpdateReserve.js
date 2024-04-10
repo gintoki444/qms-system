@@ -48,6 +48,7 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 
 import MainCard from 'components/MainCard';
+import { useSnackbar } from 'notistack';
 // import { SaveOutlined, DiffOutlined, PrinterOutlined, RollbackOutlined } from '@ant-design/icons';
 import {
   DiffOutlined,
@@ -55,8 +56,8 @@ import {
   PrinterOutlined,
   SaveOutlined,
   RollbackOutlined,
-  DeleteOutlined
-  // EditOutlined
+  DeleteOutlined,
+  StopOutlined
 } from '@ant-design/icons';
 
 // DateTime
@@ -64,11 +65,13 @@ import moment from 'moment';
 
 function UpdateReserve() {
   const userRoles = useSelector((state) => state.auth.roles);
+  const userID = useSelector((state) => state.auth.user_id);
   const [loading, setLoading] = useState(false);
   const [checkDate, setCheckDate] = useState(false);
   const currentDate = new Date().toISOString().split('T')[0];
   const dateNow = moment(new Date()).format('YYYY-MM-DD');
-  const [user_Id, setUserId] = useState(false);
+  const [user_Id, setUserId] = useState('');
+  const { enqueueSnackbar } = useSnackbar();
 
   // =============== Get Reserve ID ===============//
   const [reservationData, setReservationData] = useState({
@@ -115,16 +118,19 @@ function UpdateReserve() {
   // =============== Get Company ===============//
   const [companyList, setCompanyList] = useState([]);
   const getCompanyList = () => {
-    const urlapi = apiUrl + `/allcompany/` + user_Id;
-    axios
-      .get(urlapi)
-      .then((res) => {
-        if (res) {
-          setCompanyList(res.data);
-          getCarLsit();
-        }
-      })
-      .catch((err) => console.log(err));
+    if (user_Id) {
+      const urlapi = apiUrl + `/allcompany/` + user_Id;
+      axios
+        .get(urlapi)
+        .then((res) => {
+          console.log('res:', res);
+          if (res) {
+            setCompanyList(res.data);
+            getCarLsit();
+          }
+        })
+        .catch((err) => console.log(err));
+    }
   };
 
   // =============== Get Car ===============//
@@ -140,7 +146,7 @@ function UpdateReserve() {
       .get(urlapi)
       .then((res) => {
         if (res) {
-          setCarList(res.data);
+          setCarList(res.data.filter((x) => x.user_id == userID || x.user_id == user_Id));
           getDriverLsit();
         }
       })
@@ -160,27 +166,12 @@ function UpdateReserve() {
       .get(urlapi)
       .then((res) => {
         if (res) {
-          setDriverList(res.data);
+          setDriverList(res.data.filter((x) => x.user_id == userID || x.user_id == user_Id));
           getOrders();
         }
       })
       .catch((err) => console.log(err));
   };
-
-  // =============== Get Brand ===============//
-  // const [brandList, setBrandList] = useState([]);
-  // const getBrandList = () => {
-  //   var requestOptions = {
-  //     method: 'GET',
-  //     redirect: 'follow'
-  //   };
-  //   fetch(apiUrl + '/allproductbrandgroup', requestOptions)
-  //     .then((response) => response.json())
-  //     .then((result) => {
-  //       setBrandList(result);
-  //     })
-  //     .catch((error) => console.log('error', error));
-  // };
 
   // =============== Get Product Company ===============//
   const [productCompany, setProductCompany] = useState([]);
@@ -223,108 +214,24 @@ function UpdateReserve() {
       .catch((err) => console.log(err));
   };
 
-  // // =============== Get Warehouses ===============//
-  // const [selectWarehouse, setSelectWareHouse] = useState('');
-  // const [warehousesList, setWarehousesList] = useState([]);
-  // const getWarehouses = () => {
-  //   adminRequest
-  //     .getAllWareHouse()
-  //     .then((result) => {
-  //       setWarehousesList(result);
-  //     })
-  //     .catch((error) => console.log('error', error));
-  // };
-
-  // const handleChangeWarehouse = (e) => {
-  //   setTeamLoading([]);
-  //   setTeamLoadingList([]);
-  //   getStation(e.target.value);
-  //   getTeamloading(e.target.value);
-  // };
-
-  // // =============== Get Stations ===============//
-  // const [stationsList, setStationsList] = useState([]);
-  // const getStation = (id) => {
-  //   try {
-  //     adminRequest.getStationsByWareHouse(id).then((response) => {
-  //       setStationsList(response);
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // // =============== Get TeamLoanding ===============//
-  // // const [team_id, setTeamId] = useState([]);
-  // const [teamloadingList, setTeamLoadingList] = useState([]);
-  // const getTeamloading = (id) => {
-  //   try {
-  //     adminRequest.getLoadingTeamById(id).then((result) => {
-  //       setTeamLoadingList(result);
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // const [teamLoading, setTeamLoading] = useState([]);
-  // const getTeamManagers = async (id) => {
-  //   try {
-  //     const teamManager = await adminRequest.getTeamManager(id);
-  //     const teamChecker = await adminRequest.getTeamChecker(id);
-  //     const teamForklift = await adminRequest.getTeamForklift(id);
-  //     const combinedData = [...teamManager, ...teamChecker, ...teamForklift];
-  //     setTeamLoading(combinedData);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // const handleChangeTeam = (e) => {
-  //   setTeamLoading([]);
-  //   getTeamManagers(e);
-  // };
-
-  // // =============== Get Contractor ===============//
-  // const [contractorList, setContractorList] = useState([]);
-  // const getAllContractor = () => {
-  //   try {
-  //     adminRequest.getAllContractors().then((result) => {
-  //       setContractorList(result);
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // const handleChangeContractor = (e) => {
-  //   getLaborLine(e.target.value);
-  // };
-
-  // =============== Get Contractor and laybor Line ===============//
-  // const [layborLineList, setLayborLineList] = useState([]);
-  // const getLaborLine = (id) => {
-  //   try {
-  //     adminRequest.getContractorById(id).then((result) => {
-  //       setLayborLineList(result.labor_lines);
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  const updateReserveTotal = async (id) => {
+    try {
+      reserveRequest.getReserTotalByID(id).then(() => {
+        getReserve();
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   // =============== useEffect ===============//
   useEffect(() => {
     getReserve();
     getProductCompany();
-    // if (user_Id) {
-    //   getBrandList();
-    // }
 
-    // if (userRoles === 9 || userRoles === 1) {
-    //   getWarehouses();
-    //   getAllContractor();
-    // }
+    if (user_Id) {
+      getCompanyList();
+    }
   }, [user_Id]);
 
   const getReserve = () => {
@@ -339,18 +246,12 @@ function UpdateReserve() {
             if (dateNow == moment(result.pickup_date).format('YYYY-MM-DD')) {
               setCheckDate(true);
             }
+            console.log('setReservationData:', result);
             setReservationData(result);
             setCompanyId(result.product_company_id);
             checkQueueCompanyCount(result.product_company_id);
             getProductBrand(result.product_company_id);
-            getCompanyList();
-
-            // if (userRoles === 9 || userRoles === 1) {
-            //   getStation(result.warehouse_id);
-            //   getTeamloading(result.warehouse_id);
-            //   getTeamManagers(result.team_id);
-            //   getLaborLine(result.contractor_id);
-            // }
+            getOrders();
           });
         }
       })
@@ -401,17 +302,16 @@ function UpdateReserve() {
       values.created_at = currentDate;
       values.updated_at = currentDate;
       values.brand_group_id = values.product_company_id;
-      // const teamValue = {
-      //   team_id: values.team_id,
-      //   contractor_id: values.contractor_id
-      // };
 
       await reserveRequest
         .putReserById(id, values)
         .then((result) => {
           if (result.status === 'ok') {
-            window.location.href = '/reserve';
+            enqueueSnackbar('บันทึกข้อมูลสำเร็จ!', { variant: 'success' });
+            getReserve();
+            // window.location.href = '/reserve';
           } else {
+            enqueueSnackbar('บันทึกข้อมูลไม่สำเร็จ!', { variant: 'error' });
             alert(result['message']['sqlMessage']);
           }
         })
@@ -427,7 +327,7 @@ function UpdateReserve() {
   const [open, setOpen] = useState(false);
   const [reserve_id, setReserveId] = useState(0);
   const [notifytext, setNotifyText] = useState('');
-  const [total_quantity, setTotalQuantity] = useState(0);
+  // const [total_quantity, setTotalQuantity] = useState(0);
   const [brand_code, setBrandCode] = useState('');
   const [conpany_id, setCompanyId] = useState('');
 
@@ -438,20 +338,26 @@ function UpdateReserve() {
 
   const [orderId, setOrderId] = useState([]);
   const [onClick, setOnClick] = useState([]);
-  const handleClickOpen = (id, onClick, total_quantity) => {
+  // const handleClickOpen = (id, onClick, total_quantity) => {
+  const handleClickOpen = (id, onClick) => {
     try {
       if (onClick == 'add-queue') {
-        if (total_quantity === '0') {
-          alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
-          return;
-        } else {
-          setOnClick(onClick);
-          setNotifyText('ต้องการอนุมัติการจองคิวหรือไม่?');
-          //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
-          setReserveId(id);
-          setTotalQuantity(total_quantity);
-          setOpen(true);
-        }
+        // if (total_quantity === '0') {
+        //   alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
+        //   return;
+        // } else {
+        setOnClick(onClick);
+        setNotifyText('ต้องการอนุมัติการจองคิวหรือไม่?');
+        //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
+        setReserveId(id);
+        // setTotalQuantity(total_quantity);
+        setOpen(true);
+        // }
+      } else if (onClick == 'remain-queue') {
+        setOpen(true);
+        setReserveId(id);
+        setOnClick(onClick);
+        setNotifyText('ต้องการบันทึกข้อมูลคิวค้าง');
       } else {
         setOpen(true);
         setOrderId(id);
@@ -471,8 +377,14 @@ function UpdateReserve() {
         //click มาจากการลบ
         setLoading(true);
         // if (flag === 99) {
-        addQueue(reserve_id, total_quantity);
+        // addQueue(reserve_id, total_quantity);
+        addQueue(reserve_id);
         // }
+      }
+    } else if (onClick == 'remain-queue') {
+      if (flag === 1) {
+        setLoading(true);
+        updateQueueRemain(reserve_id);
       }
     } else {
       if (flag === 1) {
@@ -510,8 +422,6 @@ function UpdateReserve() {
         if (response) {
           setBrandCode(response.product_company_code);
           resolve(response.queue_count_company_code);
-          console.log('getQueueTokenByIdCom:', response.queue_count_company_code);
-          console.log('setBrandCode:', response.product_company_code);
         }
       });
     });
@@ -576,28 +486,28 @@ function UpdateReserve() {
   };
 
   //สร้าง addQueue รับค่า reserve_id ,total_quantity
-  const addQueue = async (id, total_quantity) => {
+  const addQueue = async (
+    id
+    // , total_quantity
+  ) => {
     try {
       //ตรวจสอบข้อมูลคิว มีการสร้างจาก reserve id นี้แล้วหรือยัง
       const queuecountf = await checkQueueDataf(id);
 
       if (queuecountf === 0) {
-        if (total_quantity > 0) {
-          //สร้างข้อมูลคิว
-          const queue_number = (await checkQueueCompanyCount(conpany_id)) + 1;
-
-          const queue_id_createf = await createQueuef(id, brand_code, queue_number);
-
-          //แจ้งเตือนหลังจากสร้าง Queue แล้ว
-          await getMessageCreateQueue(queue_id_createf, id);
-
-          //สร้าง step 1-4
-          //createStep(queue_id_createf)
-          await createStepsf(queue_id_createf);
-          setLoading(true);
-        } else {
-          alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
-        }
+        // if (total_quantity > 0) {
+        //สร้างข้อมูลคิว
+        const queue_number = (await checkQueueCompanyCount(conpany_id)) + 1;
+        const queue_id_createf = await createQueuef(id, brand_code, queue_number);
+        //แจ้งเตือนหลังจากสร้าง Queue แล้ว
+        await getMessageCreateQueue(queue_id_createf, id);
+        //สร้าง step 1-4
+        //createStep(queue_id_createf)
+        await createStepsf(queue_id_createf);
+        setLoading(true);
+        // } else {
+        //   alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
+        // }
       } else {
         //alert("สร้างคิวแล้ว")
         // const queue_id = await getQueueIdf(id);
@@ -607,27 +517,6 @@ function UpdateReserve() {
       console.error('Error fetching data:', error);
     }
   };
-
-  //สร้าง get Queues Counts
-  // const getQueuesCount = () => {
-  //   return new Promise((resolve, reject) => {
-  //     const currentDate = moment(new Date()).format('YYYY-MM-DD');
-
-  //     const requestOptions = {
-  //       method: 'GET',
-  //       redirect: 'follow'
-  //     };
-
-  //     fetch(apiUrl + '/queues/count?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
-  //       .then((response) => response.json())
-  //       .then((result) => {
-  //         resolve(result['queue_count']);
-  //       })
-  //       .catch((error) => {
-  //         reject(error);
-  //       });
-  //   });
-  // };
 
   //สร้าง ข้อความ Line notification
   const getMessageCreateQueue = async (queue_id, reserve_id) => {
@@ -827,14 +716,31 @@ function UpdateReserve() {
   };
 
   // =============== เพิ่มรายการสินค้า ===============//
+  const updateQueueRemain = (reserve_id) => {
+    const queueRemain = {
+      queue_remain: true
+    };
+    try {
+      reserveRequest.putQueueRemainByID(reserve_id, queueRemain).then((response) => {
+        console.log(response);
+        setLoading(false);
+      });
+    } catch (error) {
+      setOpen(false);
+      console.log(error);
+    }
+  };
+
+  // =============== เพิ่มรายการสินค้า ===============//
   const addOrder = () => {
     // window.location = `/order/add/${id}`;
     navigate(`/order/add/${id}`);
   };
 
+  // =============== ลบรายการสินค้า ===============//
   const deleteOrder = () => {
     reserveRequest.deleteOrderId(orderId).then(() => {
-      getReserve();
+      updateReserveTotal(id);
     });
   };
 
@@ -849,10 +755,6 @@ function UpdateReserve() {
     navigate('/prints/reserve', { state: { reserveId: id, link: '/reserve/update/' + id } });
   };
 
-  // const updateOrder = (id) => {
-  //   console.log(id);
-  // };
-
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -865,15 +767,17 @@ function UpdateReserve() {
       )}
 
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-        <DialogTitle id="responsive-dialog-title">{'แจ้งเตือน'}</DialogTitle>
+        <DialogTitle id="responsive-dialog-title">
+          <Typography variant="h5">{'แจ้งเตือน'}</Typography>
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>{notifytext}</DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={() => handleClose(0)}>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
+          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
             ยกเลิก
           </Button>
-          <Button onClick={() => handleClose(1)} autoFocus>
+          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
             ยืนยัน
           </Button>
         </DialogActions>
@@ -911,22 +815,6 @@ function UpdateReserve() {
                               ))}
                           </Select>
                         </FormControl>
-                        {/* <TextField
-                          select
-                          variant="outlined"
-                          name="company_id"
-                          value={values.company_id}
-                          onChange={handleChange}
-                          placeholder="เลือกบริษัท/ร้านค้า"
-                          onBlur={handleBlur}
-                          fullWidth
-                        >
-                          {companyList.map((companias) => (
-                            <MenuItem key={companias.company_id} value={companias.company_id}>
-                              {companias.name}
-                            </MenuItem>
-                          ))}
-                        </TextField> */}
                         {touched.company_id && errors.company_id && (
                           <FormHelperText error id="helper-text-company-car">
                             {errors.company_id}
@@ -934,33 +822,6 @@ function UpdateReserve() {
                         )}
                       </Stack>
                     </Grid>
-                    {/* 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>กลุ่มสินค้า*</InputLabel>
-                        <TextField
-                          select
-                          variant="outlined"
-                          name="brand_group_id"
-                          value={values.brand_group_id}
-                          onChange={handleChange}
-                          placeholder="เลือกกลุ่มสินค้า"
-                          fullWidth
-                        >
-                          {brandList.length > 0 &&
-                            brandList.map((brand) => (
-                              <MenuItem key={brand.brand_group_id} value={brand.brand_group_id}>
-                                {brand.group_code} - {brand.description}
-                              </MenuItem>
-                            ))}
-                        </TextField>
-                        {touched.brand_group_id && errors.brand_group_id && (
-                          <FormHelperText error id="helper-text-company-car">
-                            {errors.brand_group_id}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid> */}
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
@@ -1034,59 +895,74 @@ function UpdateReserve() {
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>รถบรรทุก</InputLabel>
-                        <TextField
-                          select
-                          variant="outlined"
-                          name="car_id"
-                          value={values.car_id}
-                          onChange={handleChange}
-                          placeholder="เลือกรถบรรทุก"
-                          fullWidth
-                        >
-                          <MenuItem value="" disabled>
-                            <em>Placeholder</em>
-                          </MenuItem>
-                          {carList.length > 0 &&
-                            carList.map((cars) => (
-                              <MenuItem key={cars.car_id} value={cars.car_id}>
-                                {cars.registration_no} : {cars.brand}
-                              </MenuItem>
-                            ))}
-                        </TextField>
-                        {touched.company && errors.company && (
-                          <FormHelperText error id="helper-text-company-car">
-                            {errors.company}
-                          </FormHelperText>
-                        )}
+                        <FormControl fullWidth>
+                          <Select
+                            displayEmpty
+                            variant="outlined"
+                            name="car_id"
+                            value={values.car_id}
+                            onChange={handleChange}
+                            placeholder="เลือกรถบรรทุก"
+                            fullWidth
+                          >
+                            <MenuItem value="" disabled>
+                              เลือกรถบรรทุก
+                            </MenuItem>
+                            <MenuItem value="1">ไม่ระบุรถบรรทุก</MenuItem>
+                            {carList.length > 0 &&
+                              carList.map(
+                                (cars) =>
+                                  cars.car_id !== 1 && (
+                                    <MenuItem key={cars.car_id} value={cars.car_id}>
+                                      ทะเบียน : {cars.registration_no}
+                                    </MenuItem>
+                                  )
+                              )}
+                          </Select>
+                        </FormControl>
                       </Stack>
+                      {touched.company && errors.company && (
+                        <FormHelperText error id="helper-text-company-car">
+                          {errors.company}
+                        </FormHelperText>
+                      )}
                     </Grid>
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>คนขับรถ</InputLabel>
-                        <TextField
-                          select
-                          variant="outlined"
-                          type="date"
-                          name="driver_id"
-                          value={values.driver_id}
-                          onChange={handleChange}
-                          placeholder="เลือกคนขับรถ"
-                          fullWidth
-                        >
-                          {driverList.length > 0 &&
-                            driverList.map((driver) => (
-                              <MenuItem key={driver.driver_id} value={driver.driver_id}>
-                                {driver.firstname} {driver.lastname}
-                              </MenuItem>
-                            ))}
-                        </TextField>
-                        {touched.company && errors.company && (
-                          <FormHelperText error id="helper-text-company-car">
-                            {errors.company}
-                          </FormHelperText>
-                        )}
+                        <FormControl fullWidth>
+                          <Select
+                            displayEmpty
+                            variant="outlined"
+                            type="date"
+                            name="driver_id"
+                            value={values.driver_id}
+                            onChange={handleChange}
+                            placeholder="เลือกคนขับรถ"
+                            fullWidth
+                          >
+                            <MenuItem value="" disabled>
+                              เลือกคนขับรถ
+                            </MenuItem>
+                            <MenuItem value="1">ไม่ระบุคนขับรถ</MenuItem>
+                            {driverList.length > 0 &&
+                              driverList.map(
+                                (driver) =>
+                                  driver.driver_id !== 1 && (
+                                    <MenuItem key={driver.driver_id} value={driver.driver_id}>
+                                      {driver.firstname} {driver.lastname}
+                                    </MenuItem>
+                                  )
+                              )}
+                          </Select>
+                        </FormControl>
                       </Stack>
+                      {touched.company && errors.company && (
+                        <FormHelperText error id="helper-text-company-car">
+                          {errors.company}
+                        </FormHelperText>
+                      )}
                     </Grid>
 
                     <Grid item xs={12} md={6}>
@@ -1261,26 +1137,44 @@ function UpdateReserve() {
                     </Grid>
                   </Grid>
 
-                  <Grid item xs={12} sx={{ '& button': { m: 1 }, pl: '8px' }}>
+                  <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
                     <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
 
-                    {orderList.length > 0 &&
-                      reservationData.status !== 'completed' &&
-                      (userRoles === 9 || userRoles === 1) &&
-                      checkDate == true && (
-                        <Button
-                          size="mediam"
-                          variant="outlined"
-                          color="success"
-                          disabled={
-                            dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') || values.total_quantity == 0 || checkDate == false
-                          }
-                          onClick={() => handleClickOpen(reservationData.reserve_id, 'add-queue', reservationData.total_quantity)}
-                          startIcon={<DiffOutlined />}
-                        >
-                          สร้างคิว
-                        </Button>
-                      )}
+                    {reservationData.status !== 'completed' && (userRoles === 9 || userRoles === 1) && checkDate == true && (
+                      <Button
+                        size="mediam"
+                        variant="contained"
+                        color="success"
+                        disabled={
+                          dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
+                          checkDate == false ||
+                          initialValue.car_id == 1 ||
+                          initialValue.driver_id == 1
+                        }
+                        onClick={() => handleClickOpen(reservationData.reserve_id, 'add-queue', reservationData.total_quantity)}
+                        startIcon={<DiffOutlined />}
+                      >
+                        สร้างคิว
+                      </Button>
+                    )}
+
+                    {(userRoles === 9 || userRoles === 1) && checkDate == true && (
+                      <Button
+                        size="mediam"
+                        variant="contained"
+                        color="warning"
+                        // disabled={
+                        //   dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
+                        //   checkDate == false ||
+                        //   initialValue.car_id == 1 ||
+                        //   initialValue.driver_id == 1
+                        // }
+                        onClick={() => handleClickOpen(reservationData.reserve_id, 'remain-queue')}
+                        startIcon={<StopOutlined />}
+                      >
+                        คิวค้าง
+                      </Button>
+                    )}
 
                     {orderList.length > 0 && (
                       <Button

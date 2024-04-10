@@ -134,3 +134,31 @@ export const putReserveStatus = async (id, data) => {
   const result = await response.json();
   return result;
 };
+
+export const getReserTotalByID = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/updatereservetotal/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+export const putQueueRemainByID = async (id, data) => {
+  var myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+
+  var raw = JSON.stringify(data);
+
+  var requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + `/updatequeueremain/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};

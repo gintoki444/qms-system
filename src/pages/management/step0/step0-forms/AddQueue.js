@@ -405,7 +405,7 @@ function AddQueue() {
   };
   const updateTeamData = (values) => {
     try {
-      adminRequest.putReserveTeamData(id, values);
+      adminRequest.putReserveTeamData(id, values).then(() => backToReserce());
     } catch (error) {
       console.log(error);
     }
@@ -432,7 +432,6 @@ function AddQueue() {
           if (result.status === 'ok') {
             updateTeamLoading(teamValue);
             updateTeamData(values.team_data);
-            backToReserce();
           } else {
             alert(result['message']['sqlMessage']);
           }
@@ -617,7 +616,7 @@ function AddQueue() {
                           </MenuItem>
                           {carList.map((cars) => (
                             <MenuItem key={cars.car_id} value={cars.car_id}>
-                              {cars.registration_no} : {cars.brand}
+                              ทะเบียน : {cars.registration_no}
                             </MenuItem>
                           ))}
                         </TextField>

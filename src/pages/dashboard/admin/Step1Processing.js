@@ -75,7 +75,7 @@ const headCells = [
     id: 'endtime',
     align: 'center',
     disablePadding: false,
-    label: 'เวลา'
+    label: 'เวลาที่ใช้'
   },
   {
     id: 'status',

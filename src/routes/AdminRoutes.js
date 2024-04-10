@@ -36,6 +36,8 @@ const ProductsManagement = Loadable(lazy(() => import('pages/admin/ProductsManag
 const AddProductManagement = Loadable(lazy(() => import('pages/admin/ProductsManagement/product-forms/AddProductManagement')));
 const UpdateProductManagement = Loadable(lazy(() => import('pages/admin/ProductsManagement/product-forms/UpdateProductManagement')));
 const AddProductReceive = Loadable(lazy(() => import('pages/admin/ProductsManagement/product-forms/AddProductReceive')));
+const AddCutOffProduct = Loadable(lazy(() => import('pages/admin/ProductsManagement/product-forms/AddCutOffProduct')));
+const ProductsDetails = Loadable(lazy(() => import('pages/admin/ProductsManagement/ProductDetails')));
 
 // render -  Product management
 const Products = Loadable(lazy(() => import('pages/admin/Products/Products')));
@@ -156,6 +158,14 @@ const AdminsRoutes = {
         {
           path: 'add-receive/:id',
           element: <AddProductReceive />
+        },
+        {
+          path: 'add-cutoff/:id',
+          element: <AddCutOffProduct />
+        },
+        {
+          path: 'details/:id',
+          element: <ProductsDetails />
         }
       ]
     },

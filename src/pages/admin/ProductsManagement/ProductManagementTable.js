@@ -20,7 +20,7 @@ import {
   DialogTitle
 } from '@mui/material';
 
-import { FileAddOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { FileAddOutlined, EditOutlined, DeleteOutlined, SwitcherOutlined, ContainerOutlined } from '@ant-design/icons';
 
 // Link api url
 import * as adminRequest from '_api/adminRequest';
@@ -224,6 +224,14 @@ function ProductManagementTable({ onFilter }) {
     navigate('/admin/product-register/add-receive/' + id);
   };
 
+  const addCutOffProduct = (id) => {
+    navigate('/admin/product-register/add-cutoff/' + id);
+  };
+
+  const productsDetails = (id) => {
+    navigate('/admin/product-register/details/' + id);
+  };
+
   return (
     <Box>
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
@@ -274,11 +282,13 @@ function ProductManagementTable({ onFilter }) {
                     <TableCell align="left">
                       <QueueTag id={row.product_company_id} token={row.product_company_name_th2} />
                     </TableCell>
-                    <TableCell align="left">{row.name}</TableCell>
+                    <TableCell align="left">
+                      <Tooltip title={row.name}>{row.name.length > 8 ? `${row.name.substring(0, 8)}...` : row.name}</Tooltip>
+                    </TableCell>
                     <TableCell align="left">
                       <Tooltip title={row.product_register_name}>
-                        {row.product_register_name.length > 30
-                          ? `${row.product_register_name.substring(0, 30)}...`
+                        {row.product_register_name.length > 20
+                          ? `${row.product_register_name.substring(0, 20)}...`
                           : row.product_register_name}
                       </Tooltip>
                     </TableCell>
@@ -291,11 +301,50 @@ function ProductManagementTable({ onFilter }) {
                     <TableCell align="right">{row.register_beginning_balance}</TableCell>
                     <TableCell align="right">{row.total_receive ? row.total_receive : '-'}</TableCell>
                     <TableCell align="right">{row.total_sold ? row.total_sold : '-'}</TableCell>
-                    <TableCell align="right">{row.total_remain ? row.total_remain : '-'}</TableCell>
-                    <TableCell align="left">{row.product_register_remark ? row.product_register_remark : '-'}</TableCell>
+                    <TableCell align="right">
+                      {row.total_remain ? (
+                        <>
+                          {parseFloat(row.total_remain) < 0 && <span style={{ color: 'red' }}>{row.total_remain}</span>}
+                          {parseFloat(row.total_remain) > 0 && row.total_remain}
+                        </>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+                    <TableCell align="left">
+                      {row.product_register_remark ? (
+                        <Tooltip title={row.product_register_remark}>
+                          {row.product_register_remark.length > 12 ? `${row.name.substring(0, 12)}...` : row.product_register_remark}
+                        </Tooltip>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
                     {/* {permission.length > 0 &&  */}
                     <TableCell align="right">
                       <ButtonGroup variant="contained" aria-label="Basic button group">
+                        <Tooltip title="รายละเอียดสินค้า">
+                          <Button
+                            variant="contained"
+                            size="medium"
+                            color="success"
+                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                            onClick={() => productsDetails(row.product_register_id)}
+                          >
+                            <ContainerOutlined />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip title="เบิกสินค้า">
+                          <Button
+                            variant="contained"
+                            size="medium"
+                            color="warning"
+                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                            onClick={() => addCutOffProduct(row.product_register_id)}
+                          >
+                            <SwitcherOutlined />
+                          </Button>
+                        </Tooltip>
                         <Tooltip title="รับสินค้า">
                           <Button
                             variant="contained"

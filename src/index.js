@@ -12,6 +12,8 @@ import { Provider as ReduxProvider } from 'react-redux';
 import 'assets/third-party/apex-chart.css';
 import { AuthProvider } from 'components/AuthenUser';
 
+import { SnackbarProvider } from 'notistack';
+
 // project import
 import App from './App';
 import { store } from 'store';
@@ -26,7 +28,9 @@ root.render(
     <ReduxProvider store={store}>
       <BrowserRouter basename="">
         <AuthProvider>
-          <App />
+          <SnackbarProvider autoHideDuration={2000}>
+            <App />
+          </SnackbarProvider>
         </AuthProvider>
       </BrowserRouter>
     </ReduxProvider>

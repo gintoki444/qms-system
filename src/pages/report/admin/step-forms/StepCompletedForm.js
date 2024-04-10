@@ -28,6 +28,8 @@ import {
 import moment from 'moment';
 import 'moment-timezone';
 
+// import moment from 'moment/min/moment-with-locales';
+
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
@@ -226,7 +228,7 @@ function StepCompletedForm({ stepId, startDate, endDate }) {
                   <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                     <TableCell align="center">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px' }}>
-                        {moment(row.end_time).format('DD/MM/yyyy')}
+                        {moment(row.end_time).tz('America/Los_Angeles').format('DD/MM/yyyy')}
                       </div>
                     </TableCell>
                     <TableCell align="center">

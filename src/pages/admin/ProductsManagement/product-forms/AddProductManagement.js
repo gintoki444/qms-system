@@ -149,7 +149,7 @@ function AddProducts() {
   return (
     <Grid alignItems="center" justifyContent="space-between">
       <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} lg={12} md={10}>
           <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
             <Formik initialValues={initialValue} validationSchema={valiDationSchema} onSubmit={handleSubmits}>
               {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (

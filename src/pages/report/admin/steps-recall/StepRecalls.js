@@ -1,14 +1,6 @@
 import React, { useState, useRef } from 'react';
 
-import {
-  Grid,
-  Box,
-  TextField,
-  Button,
-  Stack,
-  Divider
-  // Typography
-} from '@mui/material';
+import { Grid, Box, TextField, Button, Stack, Divider, Tooltip } from '@mui/material';
 import MainCard from 'components/MainCard';
 // import OrderSumQtyTable from './OrderSumQtyTable';
 
@@ -17,14 +9,16 @@ import { SearchOutlined, FileExcelOutlined } from '@ant-design/icons';
 
 import { useDownloadExcel } from 'react-export-table-to-excel';
 
-import CarsTimeInOutTable from './CarsTimeInOutTable';
-import { Tooltip } from '../../../../node_modules/@mui/material/index';
-const CarsTimeInOut = () => {
+// import CarsTimeInOutTable from './CarsTimeInOutTable';
+import StepRecallsTable from './StepRecallsTable';
+// import { Tooltip } from '../../../../node_modules/@mui/material/index';
+
+function StepRecalls() {
   // ======= Export file excel =======;
   const tableRef = useRef(null);
   const { onDownload } = useDownloadExcel({
     currentTableRef: tableRef.current,
-    filename: 'carstime-in-out',
+    filename: 'report-step-recall',
     sheet: moment(new Date()).format('DD-MM-YYYY')
   });
 
@@ -53,7 +47,7 @@ const CarsTimeInOut = () => {
   return (
     <Grid alignItems="center" justifyContent="space-between">
       <Grid container rowSpacing={1} columnSpacing={1.75}>
-        <Grid item xs={12} md={10} lg={10}>
+        <Grid item xs={12} md={12}>
           <Grid container rowSpacing={1} columnSpacing={1.75}>
             <Grid item xs={3}>
               <Stack spacing={1}>
@@ -95,7 +89,7 @@ const CarsTimeInOut = () => {
           </Grid>
           <Grid item>
             <MainCard
-              title={'ตารางข้อมูลรถเข้า-ออกโรงงาน'}
+              title={'ตารางข้อมูลการทวนสอบ'}
               content={false}
               sx={{ mt: 1.5 }}
               secondary={
@@ -108,7 +102,7 @@ const CarsTimeInOut = () => {
             >
               <Divider></Divider>
               <Box sx={{ pt: 1, pr: 2 }}>
-                <CarsTimeInOutTable startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} clickDownload={tableRef} />
+                <StepRecallsTable startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} clickDownload={tableRef} />
               </Box>
             </MainCard>
           </Grid>
@@ -116,6 +110,6 @@ const CarsTimeInOut = () => {
       </Grid>
     </Grid>
   );
-};
+}
 
-export default CarsTimeInOut;
+export default StepRecalls;

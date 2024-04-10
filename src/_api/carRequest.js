@@ -12,3 +12,15 @@ export const getAllCarType = async () => {
   const result = await response.json();
   return result;
 };
+
+// ==============================|| Cars: (ข้อมูลจังหวัด รถ) ||============================== //
+export const getAllProvinces = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/allprovinces/', requestOptions);
+
+  const result = await response.json();
+  return result;
+};

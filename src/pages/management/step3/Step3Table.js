@@ -50,9 +50,6 @@ import SoundCall from 'components/@extended/SoundCall';
 import QueueTag from 'components/@extended/QueueTag';
 
 export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
-  // const station_count = useSelector((state) => state.station.station_count);
-  // const dispatch = useDispatch();
-  // console.log(station_count);
 
   // ==============================|| ORDER TABLE - HEADER ||============================== //
   const headCells = [
@@ -241,8 +238,6 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
     try {
       queueReques.getAllStepById(id).then((response) => {
         setQueuesDetial(response);
-        console.log('queuesDetial :', queuesDetial);
-        console.log('queuesDetial :', response);
       });
     } catch (error) {
       console.log(error);
@@ -356,8 +351,6 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
       team_id: team_id
     });
 
-    console.log(raw);
-
     const requestOptions = {
       method: 'PUT',
       headers: myHeaders,
@@ -401,7 +394,6 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
       fetch(apiUrl + '/updatestarttime/' + step_id, requestOptions)
         .then((response) => response.json())
         .then((result) => {
-          //console.log(result)
           if (result['status'] === 'ok') {
             resolve(result);
 
@@ -409,7 +401,6 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
             onStatusChange(status === 'waiting' ? 'processing' : 'waiting');
             fetchData();
           } else {
-            console.log('not update updateStartTime');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
           }
         })
@@ -509,10 +500,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
     };
 
     fetch(apiUrl + '/line-notify', requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        console.log(result);
-      })
+      .then((response) => response.text())
       .catch((error) => console.error(error));
   };
 
@@ -558,7 +546,6 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
     } catch (error) {
       console.log(error);
     }
-    console.log('recallData :', recallData);
   };
 
   const checkStations = (id) => {
@@ -568,7 +555,6 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
         .then((response) => {
           if (response) {
             const count = response.filter((x) => x.station_id == id).length;
-            console.log(count);
             resolve(count);
           } else {
             resolve(0); // Return 0 if response is empty
@@ -587,8 +573,6 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
     stepRequest.getReserveById(id).then((response) => {
       if (response) {
         setreserves(response.reserve);
-        console.log(reserves);
-        console.log(response.reserve);
       }
     });
   };
@@ -636,7 +620,6 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
           return;
         }
         if (isEmpty(selectedStations)) {
-          console.log('selectedStations :', selectedStations);
           alert('กรุณาเลือกสถานีชั่งหนัก!');
           return;
         }
@@ -690,7 +673,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
 
               updateLoadingTeam(id_update_next, team_id);
               updateLoadingTeam(id_update, team_id);
-              step2Update(id_update_next, 'waiting', 27);
+              step2Update(id_update_next, 'processing', 27);
               step1Update(id_update, 'completed', queues.station_id);
               updateEndTime(id_update);
               updateWeight2(id_update);
@@ -988,8 +971,10 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                         </TableCell>
 
                         <TableCell align="center">
-                          {/* <Chip color="primary" label={row.token} /> */}
                           <QueueTag id={row.product_company_id || ''} token={row.token} />
+                            {moment(row.queue_date).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
+                              <span style={{ color: 'red' }}> (คิวค้าง)</span>
+                            )}
                         </TableCell>
 
                         <TableCell align="center">

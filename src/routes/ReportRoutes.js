@@ -17,6 +17,8 @@ const Step2Completed = Loadable(lazy(() => import('pages/report/admin/Step2Compl
 const Step3Completed = Loadable(lazy(() => import('pages/report/admin/Step3Completed')));
 const Step4Completed = Loadable(lazy(() => import('pages/report/admin/Step4Completed')));
 
+const StepsRecall = Loadable(lazy(() => import('pages/report/admin/steps-recall/StepRecalls')));
+
 // ==============================|| AUTH ROUTING ||============================== //
 
 const ReportRoutes = {
@@ -50,6 +52,10 @@ const ReportRoutes = {
     {
       path: 'step4-completed',
       element: <Step4Completed />
+    },
+    {
+      path: 'steps-recall',
+      element: <StepsRecall />
     }
   ]
 };

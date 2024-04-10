@@ -46,7 +46,7 @@ import { SaveOutlined, RollbackOutlined, DeleteOutlined } from '@ant-design/icon
 // DateTime
 import moment from 'moment';
 
-function AddProductReceive() {
+function AddCutOffProduct() {
   const userId = localStorage.getItem('user_id');
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -92,15 +92,15 @@ function AddProductReceive() {
     }
   };
 
-  const [productReceiveList, setProductReceiveList] = useState([]);
+  const [cutOffProductList, setCutOffProductList] = useState([]);
   const getProductReceives = () => {
     try {
-      adminRequest.getProductReceiveById(id).then((response) => {
+      adminRequest.getCutOffProductById(id).then((response) => {
         if (response.length > 0) {
-          setProductReceiveList(response);
+          setCutOffProductList(response);
           setLoading(false);
         } else {
-          setProductReceiveList([]);
+          setCutOffProductList([]);
           setLoading(false);
         }
       });
@@ -171,9 +171,9 @@ function AddProductReceive() {
     register_beginning_balance: productRegis.register_beginning_balance,
     product_register_remark: productRegis.product_register_remark,
     product_register_id: id,
-    receive_date: moment(new Date()).format('YYYY-MM-DD'),
-    receive_amount: '',
-    receive_remark: '',
+    cutoff_date: moment(new Date()).format('YYYY-MM-DD'),
+    cutoff_amount: '',
+    cutoff_remark: '',
     checkbox1: '',
     checkbox2: '',
     other: ''
@@ -225,20 +225,20 @@ function AddProductReceive() {
     product_register_name: Yup.string().max(255).required('กรุณาระบุทำเบียน'),
     product_register_date: Yup.string().max(255).required('กรุณาระบุวันที่ตั้งกอง'),
     register_beginning_balance: Yup.string().required('กรุณาระบุยอดที่ยกมา'),
-    receive_date: Yup.string().required('กรุณาระบุวันที่รับสินค้า'),
-    receive_amount: Yup.string().required('กรุณาระบุจำนวนยอดรับสินค้า'),
-    receive_remark: Yup.string().required('กรุณาระบุหมายเหตุ')
+    cutoff_date: Yup.string().required('กรุณาระบุวันที่เบิกสินค้า'),
+    cutoff_amount: Yup.string().required('กรุณาระบุจำนวนยอดเบิกสินค้า'),
+    cutoff_remark: Yup.string().required('กรุณาระบุหมายเหตุ')
   });
 
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
     setLoading(true);
     try {
-      adminRequest.AddProductsReceive(values).then((response) => {
+      adminRequest.AddCutOffProduct(values).then((response) => {
         if (response.status === 'ok') {
-          values.receive_date = moment(new Date()).format('YYYY-MM-DD');
-          values.receive_amount = '';
-          values.receive_remark = '';
+          values.cutoff_date = moment(new Date()).format('YYYY-MM-DD');
+          values.cutoff_amount = '';
+          values.cutoff_remark = '';
           getProductReceives();
         } else {
           alert(result['message']['sqlMessage']);
@@ -258,27 +258,25 @@ function AddProductReceive() {
     try {
       setOpen(true);
       setReceiveId(id);
-      setNotifyText('ต้องการลบข้อมูลการสั่งซื้อสินค้า');
+      setNotifyText('ต้องการลบข้อมูลการเบิกสินค้า');
     } catch (e) {
       console.log(e);
     }
-    //กำหนดข้อความแจ้งเตือน
-    // setNotifyText('ต้องการสร้างคิวหรือไม่?');
   };
 
   const handleClose = (flag) => {
     if (flag === 1) {
       setLoading(true);
-      deleteProductReceive(receive_id);
+      deleteCutOffProduct(receive_id);
       console.log('receive_id :', receive_id);
     }
 
     setOpen(false);
   };
 
-  const deleteProductReceive = (id) => {
+  const deleteCutOffProduct = (id) => {
     try {
-      adminRequest.deleteProductReceive(id).then((response) => {
+      adminRequest.deleteCutOffProduct(id).then((response) => {
         if (response.status == 'ok') {
           getProductReceives();
         } else {
@@ -328,7 +326,7 @@ function AddProductReceive() {
                 <form noValidate onSubmit={handleSubmit}>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
-                      <Typography variant="h5">เพิ่มข้อมูลรับสินค้า</Typography>
+                      <Typography variant="h5">เพิ่มข้อมูลตัดเบิกสินค้า</Typography>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -598,73 +596,73 @@ function AddProductReceive() {
                     </Grid>
 
                     <Grid item xs={12}>
-                      <Typography variant="h5">ข้อมูลรับสินค้า</Typography>
+                      <Typography variant="h5">ข้อมูลตัดเบิกสินค้า</Typography>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                     </Grid>
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel>วันที่รับ *</InputLabel>
+                        <InputLabel>วันที่เบิก *</InputLabel>
                         <TextField
                           required
                           fullWidth
                           type="date"
-                          id="receive_date"
-                          name="receive_date"
+                          id="cutoff_date"
+                          name="cutoff_date"
                           onBlur={handleBlur}
-                          value={values.receive_date}
+                          value={values.cutoff_date}
                           onChange={handleChange}
                         />
-                        {touched.receive_date && errors.receive_date && (
-                          <FormHelperText error id="helper-text-receive_date">
-                            {errors.receive_date}receive_date
+                        {touched.cutoff_date && errors.cutoff_date && (
+                          <FormHelperText error id="helper-text-cutoff_date">
+                            {errors.cutoff_date}
                           </FormHelperText>
                         )}
                       </Stack>
                     </Grid>
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel htmlFor="receive_amount">ยอดรับสินค้า *</InputLabel>
+                        <InputLabel htmlFor="cutoff_amount">ยอดเบิกสินค้า *</InputLabel>
                         <OutlinedInput
-                          id="receive_amount"
+                          id="cutoff_amount"
                           type="number"
-                          value={values.receive_amount}
-                          name="receive_amount"
+                          value={values.cutoff_amount}
+                          name="cutoff_amount"
                           onBlur={handleBlur}
                           onChange={handleChange}
-                          placeholder="ยอดรับ"
+                          placeholder="ยอดเบิก"
                           fullWidth
-                          error={Boolean(touched.receive_amount && errors.receive_amount)}
+                          error={Boolean(touched.cutoff_amount && errors.cutoff_amount)}
                         />
-                        {touched.receive_amount && errors.receive_amount && (
-                          <FormHelperText error id="helper-text-receive_amount">
-                            {errors.receive_amount}
+                        {touched.cutoff_amount && errors.cutoff_amount && (
+                          <FormHelperText error id="helper-text-cutoff_amount">
+                            {errors.cutoff_amount}
                           </FormHelperText>
                         )}
                       </Stack>
                     </Grid>
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel htmlFor="receive_remark">หมายเหตุ*</InputLabel>
+                        <InputLabel htmlFor="cutoff_remark">หมายเหตุ*</InputLabel>
                         <OutlinedInput
-                          id="receive_remark"
+                          id="cutoff_remark"
                           type="text"
-                          value={values.receive_remark}
-                          name="receive_remark"
+                          value={values.cutoff_remark}
+                          name="cutoff_remark"
                           onBlur={handleBlur}
                           onChange={handleChange}
                           placeholder="หมายเหตุ"
                           fullWidth
-                          error={Boolean(touched.receive_remark && errors.receive_remark)}
+                          error={Boolean(touched.cutoff_remark && errors.cutoff_remark)}
                         />
-                        {touched.receive_remark && errors.receive_remark && (
-                          <FormHelperText error id="helper-text-receive_remark">
-                            {errors.receive_remark}
+                        {touched.cutoff_remark && errors.cutoff_remark && (
+                          <FormHelperText error id="helper-text-cutoff_remark">
+                            {errors.cutoff_remark}
                           </FormHelperText>
                         )}
                       </Stack>
                     </Grid>
 
-                    {productReceiveList.length > 0 && (
+                    {cutOffProductList.length > 0 && (
                       <Grid item xs={12} md={12}>
                         <TableContainer>
                           <Table
@@ -684,9 +682,9 @@ function AddProductReceive() {
                                 <TableCell sx={{ p: '12px' }} align="center">
                                   ลำดับ
                                 </TableCell>
-                                <TableCell sx={{ p: '12px' }}>วันที่รับ</TableCell>
+                                <TableCell sx={{ p: '12px' }}>วันที่เบิก</TableCell>
                                 <TableCell sx={{ p: '12px' }} align="right">
-                                  จำนวนรับ
+                                  จำนวนเบิก
                                 </TableCell>
                                 <TableCell sx={{ p: '12px' }}>หมายเหตุ</TableCell>
                                 <TableCell sx={{ p: '12px' }} align="right">
@@ -695,15 +693,15 @@ function AddProductReceive() {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {productReceiveList.length > 0 &&
-                                productReceiveList.map((productReceive, index) => (
+                              {cutOffProductList.length > 0 &&
+                                cutOffProductList.map((cutOffProduct, index) => (
                                   <TableRow key={index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="left">{moment(productReceive.receive_date).format('DD/MM/YYYY')}</TableCell>
-                                    <TableCell align="right">{productReceive.receive_amount}</TableCell>
-                                    <TableCell align="left">{productReceive.receive_remark}</TableCell>
+                                    <TableCell align="left">{moment(cutOffProduct.cutoff_date).format('DD/MM/YYYY')}</TableCell>
+                                    <TableCell align="right">{cutOffProduct.cutoff_amount}</TableCell>
+                                    <TableCell align="left">{cutOffProduct.cutoff_remark}</TableCell>
                                     <TableCell align="right">
-                                      <Tooltip title="ลบข้อมูลรับ">
+                                      <Tooltip title="ลบข้อมูลเบิก">
                                         <span>
                                           <Button
                                             variant="contained"
@@ -711,7 +709,7 @@ function AddProductReceive() {
                                             size="medium"
                                             color="error"
                                             // onClick={() => deleteDrivers(row.reserve_id)}
-                                            onClick={() => handleClickOpen(productReceive.product_receive_id)}
+                                            onClick={() => handleClickOpen(cutOffProduct.product_cutoff_id)}
                                           >
                                             <DeleteOutlined />
                                           </Button>
@@ -721,11 +719,11 @@ function AddProductReceive() {
                                   </TableRow>
                                 ))}
                               {/* {order.items.map((item, index) => (
-                                <TableRow key={index}>
-                                  <TableCell width={'50%'}>{item.name}</TableCell>
-                                  <TableCell align="right">{item.quantity} ตัน</TableCell>
-                                </TableRow>
-                              ))} */}
+                                  <TableRow key={index}>
+                                    <TableCell width={'50%'}>{item.name}</TableCell>
+                                    <TableCell align="right">{item.quantity} ตัน</TableCell>
+                                  </TableRow>
+                                ))} */}
                             </TableBody>
                           </Table>
                         </TableContainer>
@@ -742,7 +740,7 @@ function AddProductReceive() {
                         color="success"
                         startIcon={<SaveOutlined />}
                       >
-                        เพิ่มข้อมูลรับสินค้า
+                        เพิ่มข้อมูลตัดเบิกสินค้า
                       </Button>
 
                       <Button
@@ -769,4 +767,4 @@ function AddProductReceive() {
   );
 }
 
-export default AddProductReceive;
+export default AddCutOffProduct;

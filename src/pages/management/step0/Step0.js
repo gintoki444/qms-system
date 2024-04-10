@@ -7,10 +7,13 @@ import MainCard from 'components/MainCard';
 import { SearchOutlined } from '@ant-design/icons';
 
 import moment from 'moment';
+
 const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
 // project import
 import Step0Table from './Step0Table';
+import AllStations from './step0-forms/AllStations';
+import { Divider } from '../../../../node_modules/@mui/material/index';
 
 function Step0() {
   const userRole = useSelector((state) => state.auth?.roles);
@@ -37,10 +40,6 @@ function Step0() {
     });
   };
 
-  // const addReserve = () => {
-  //   // window.location = '/car/add';
-  //   navigate('/reserve/add');
-  // };
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
       {userRole === 5 && (
@@ -88,9 +87,16 @@ function Step0() {
               ค้นหา
             </Button>
           </Grid>
-          <Grid item xs={12} md={3} align="right">
-          </Grid>
+          <Grid item xs={12} md={3} align="right"></Grid>
         </Grid>
+
+        <Grid item xs={12} sx={{ mt: 1.5 }}>
+          <MainCard content={true} title="สถานีทั้งหมด">
+            <Divider sx={{ mt: -2, mb: 1 }} />
+            <AllStations />
+          </MainCard>
+        </Grid>
+
         <MainCard content={false} sx={{ mt: 1.5 }}>
           <Box sx={{ pt: 1, pr: 2 }}>
             <Step0Table startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} />

@@ -25,12 +25,6 @@ import {
   TextField,
   Backdrop,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Tooltip,
   FormControlLabel,
   Checkbox
 } from '@mui/material';
@@ -41,14 +35,13 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import MainCard from 'components/MainCard';
-import { SaveOutlined, RollbackOutlined, DeleteOutlined } from '@ant-design/icons';
+import { RollbackOutlined } from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
 
-function AddProductReceive() {
+function ProductDetails() {
   const userId = localStorage.getItem('user_id');
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { id } = useParams();
 
@@ -62,7 +55,9 @@ function AddProductReceive() {
     getProductCompany();
     getProducts();
     getWarehouses();
+    getOrderProducts();
     getProductReceives();
+    getCutOffProduct();
   }, [id]);
 
   // =============== Get Product Register ===============//
@@ -92,6 +87,7 @@ function AddProductReceive() {
     }
   };
 
+  // =============== Get Product Receives ===============//
   const [productReceiveList, setProductReceiveList] = useState([]);
   const getProductReceives = () => {
     try {
@@ -101,6 +97,42 @@ function AddProductReceive() {
           setLoading(false);
         } else {
           setProductReceiveList([]);
+          setLoading(false);
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // =============== Get CutOff Product ===============//
+  const [orderProductList, setOrderProductList] = useState([]);
+  const getOrderProducts = () => {
+    try {
+      adminRequest.getOrdersProductsByIdRegister(id).then((response) => {
+        if (response.length > 0) {
+          setOrderProductList(response);
+          setLoading(false);
+        } else {
+          setOrderProductList([]);
+          setLoading(false);
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // =============== Get CutOff Product ===============//
+  const [cutOffProductList, setCutOffProductList] = useState([]);
+  const getCutOffProduct = () => {
+    try {
+      adminRequest.getCutOffProductById(id).then((response) => {
+        if (response.length > 0) {
+          setCutOffProductList(response);
+          setLoading(false);
+        } else {
+          setCutOffProductList([]);
           setLoading(false);
         }
       });
@@ -171,9 +203,9 @@ function AddProductReceive() {
     register_beginning_balance: productRegis.register_beginning_balance,
     product_register_remark: productRegis.product_register_remark,
     product_register_id: id,
-    receive_date: moment(new Date()).format('YYYY-MM-DD'),
-    receive_amount: '',
-    receive_remark: '',
+    cutoff_date: moment(new Date()).format('YYYY-MM-DD'),
+    cutoff_amount: '',
+    cutoff_remark: '',
     checkbox1: '',
     checkbox2: '',
     other: ''
@@ -225,20 +257,20 @@ function AddProductReceive() {
     product_register_name: Yup.string().max(255).required('กรุณาระบุทำเบียน'),
     product_register_date: Yup.string().max(255).required('กรุณาระบุวันที่ตั้งกอง'),
     register_beginning_balance: Yup.string().required('กรุณาระบุยอดที่ยกมา'),
-    receive_date: Yup.string().required('กรุณาระบุวันที่รับสินค้า'),
-    receive_amount: Yup.string().required('กรุณาระบุจำนวนยอดรับสินค้า'),
-    receive_remark: Yup.string().required('กรุณาระบุหมายเหตุ')
+    cutoff_date: Yup.string().required('กรุณาระบุวันที่เบิกสินค้า'),
+    cutoff_amount: Yup.string().required('กรุณาระบุจำนวนยอดเบิกสินค้า'),
+    cutoff_remark: Yup.string().required('กรุณาระบุหมายเหตุ')
   });
 
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
     setLoading(true);
     try {
-      adminRequest.AddProductsReceive(values).then((response) => {
+      adminRequest.AddCutOffProduct(values).then((response) => {
         if (response.status === 'ok') {
-          values.receive_date = moment(new Date()).format('YYYY-MM-DD');
-          values.receive_amount = '';
-          values.receive_remark = '';
+          values.cutoff_date = moment(new Date()).format('YYYY-MM-DD');
+          values.cutoff_amount = '';
+          values.cutoff_remark = '';
           getProductReceives();
         } else {
           alert(result['message']['sqlMessage']);
@@ -249,44 +281,6 @@ function AddProductReceive() {
       setStatus({ success: false });
       setErrors({ submit: err.message });
       setSubmitting(false);
-    }
-  };
-
-  const [receive_id, setReceiveId] = useState(0);
-  const [notifytext, setNotifyText] = useState('');
-  const handleClickOpen = (id) => {
-    try {
-      setOpen(true);
-      setReceiveId(id);
-      setNotifyText('ต้องการลบข้อมูลการสั่งซื้อสินค้า');
-    } catch (e) {
-      console.log(e);
-    }
-    //กำหนดข้อความแจ้งเตือน
-    // setNotifyText('ต้องการสร้างคิวหรือไม่?');
-  };
-
-  const handleClose = (flag) => {
-    if (flag === 1) {
-      setLoading(true);
-      deleteProductReceive(receive_id);
-      console.log('receive_id :', receive_id);
-    }
-
-    setOpen(false);
-  };
-
-  const deleteProductReceive = (id) => {
-    try {
-      adminRequest.deleteProductReceive(id).then((response) => {
-        if (response.status == 'ok') {
-          getProductReceives();
-        } else {
-          alert(response.message);
-        }
-      });
-    } catch (error) {
-      console.log(error);
     }
   };
 
@@ -305,30 +299,14 @@ function AddProductReceive() {
         </Backdrop>
       )}
       <Grid container spacing={3}>
-        <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-          <DialogTitle id="responsive-dialog-title" align="center">
-            <Typography variant="h5">{'แจ้งเตือน'}</Typography>
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>{notifytext}</DialogContentText>
-          </DialogContent>
-          <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
-            <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
-              ยกเลิก
-            </Button>
-            <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
-              ยืนยัน
-            </Button>
-          </DialogActions>
-        </Dialog>
         <Grid item xs={12} lg={12} md={10}>
           <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
             <Formik initialValues={initialValue} validationSchema={valiDationSchema} enableReinitialize={true} onSubmit={handleSubmits}>
-              {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
+              {({ errors, handleBlur, handleChange, handleSubmit, touched, values, setFieldValue }) => (
                 <form noValidate onSubmit={handleSubmit}>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
-                      <Typography variant="h5">เพิ่มข้อมูลรับสินค้า</Typography>
+                      <Typography variant="h5">เพิ่มข้อมูลตัดเบิกสินค้า</Typography>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -597,154 +575,178 @@ function AddProductReceive() {
                       </Stack>
                     </Grid>
 
-                    <Grid item xs={12}>
-                      <Typography variant="h5">ข้อมูลรับสินค้า</Typography>
-                      <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>วันที่รับ *</InputLabel>
-                        <TextField
-                          required
-                          fullWidth
-                          type="date"
-                          id="receive_date"
-                          name="receive_date"
-                          onBlur={handleBlur}
-                          value={values.receive_date}
-                          onChange={handleChange}
-                        />
-                        {touched.receive_date && errors.receive_date && (
-                          <FormHelperText error id="helper-text-receive_date">
-                            {errors.receive_date}receive_date
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel htmlFor="receive_amount">ยอดรับสินค้า *</InputLabel>
-                        <OutlinedInput
-                          id="receive_amount"
-                          type="number"
-                          value={values.receive_amount}
-                          name="receive_amount"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="ยอดรับ"
-                          fullWidth
-                          error={Boolean(touched.receive_amount && errors.receive_amount)}
-                        />
-                        {touched.receive_amount && errors.receive_amount && (
-                          <FormHelperText error id="helper-text-receive_amount">
-                            {errors.receive_amount}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel htmlFor="receive_remark">หมายเหตุ*</InputLabel>
-                        <OutlinedInput
-                          id="receive_remark"
-                          type="text"
-                          value={values.receive_remark}
-                          name="receive_remark"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="หมายเหตุ"
-                          fullWidth
-                          error={Boolean(touched.receive_remark && errors.receive_remark)}
-                        />
-                        {touched.receive_remark && errors.receive_remark && (
-                          <FormHelperText error id="helper-text-receive_remark">
-                            {errors.receive_remark}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
-
-                    {productReceiveList.length > 0 && (
-                      <Grid item xs={12} md={12}>
-                        <TableContainer>
-                          <Table
-                            aria-labelledby="tableTitle"
-                            size="small"
-                            sx={{
-                              '& .MuiTableCell-root:first-of-type': {
-                                pl: 2
-                              },
-                              '& .MuiTableCell-root:last-of-type': {
-                                pr: 3
-                              }
-                            }}
-                          >
-                            <TableHead>
-                              <TableRow>
-                                <TableCell sx={{ p: '12px' }} align="center">
-                                  ลำดับ
-                                </TableCell>
-                                <TableCell sx={{ p: '12px' }}>วันที่รับ</TableCell>
-                                <TableCell sx={{ p: '12px' }} align="right">
-                                  จำนวนรับ
-                                </TableCell>
-                                <TableCell sx={{ p: '12px' }}>หมายเหตุ</TableCell>
-                                <TableCell sx={{ p: '12px' }} align="right">
-                                  Action
-                                </TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {productReceiveList.length > 0 &&
-                                productReceiveList.map((productReceive, index) => (
-                                  <TableRow key={index}>
-                                    <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="left">{moment(productReceive.receive_date).format('DD/MM/YYYY')}</TableCell>
-                                    <TableCell align="right">{productReceive.receive_amount}</TableCell>
-                                    <TableCell align="left">{productReceive.receive_remark}</TableCell>
-                                    <TableCell align="right">
-                                      <Tooltip title="ลบข้อมูลรับ">
-                                        <span>
-                                          <Button
-                                            variant="contained"
-                                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                            size="medium"
-                                            color="error"
-                                            // onClick={() => deleteDrivers(row.reserve_id)}
-                                            onClick={() => handleClickOpen(productReceive.product_receive_id)}
-                                          >
-                                            <DeleteOutlined />
-                                          </Button>
-                                        </span>
-                                      </Tooltip>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              {/* {order.items.map((item, index) => (
+                    <Grid item xs={12} md={12}>
+                      <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
+                        <Grid container spacing={3}>
+                          {productReceiveList.length > 0 && (
+                            <>
+                              <Grid item xs={12} md={12}>
+                                <Typography variant="h5">ข้อมูลรับสินค้า</Typography>
+                                <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                                <TableContainer>
+                                  <Table
+                                    aria-labelledby="tableTitle"
+                                    size="small"
+                                    sx={{
+                                      '& .MuiTableCell-root:first-of-type': {
+                                        pl: 2
+                                      },
+                                      '& .MuiTableCell-root:last-of-type': {
+                                        pr: 3
+                                      }
+                                    }}
+                                  >
+                                    <TableHead>
+                                      <TableRow>
+                                        <TableCell sx={{ p: '12px', width: '5% ' }} align="center">
+                                          ลำดับ
+                                        </TableCell>
+                                        <TableCell sx={{ p: '12px', width: '15% ' }} align="center">
+                                          วันที่รับ
+                                        </TableCell>
+                                        <TableCell sx={{ p: '12px', width: '10%' }} align="right">
+                                          จำนวนรับ (ตัน)
+                                        </TableCell>
+                                        <TableCell sx={{ p: '12px', width: '35%' }}>หมายเหตุ</TableCell>
+                                      </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                      {productReceiveList.length > 0 &&
+                                        productReceiveList.map((productReceive, index) => (
+                                          <TableRow key={index}>
+                                            <TableCell align="center">{index + 1}</TableCell>
+                                            <TableCell align="center">{moment(productReceive.receive_date).format('DD/MM/YYYY')}</TableCell>
+                                            <TableCell align="right">{productReceive.receive_amount}</TableCell>
+                                            <TableCell align="left">{productReceive.receive_remark}</TableCell>
+                                          </TableRow>
+                                        ))}
+                                      {/* {order.items.map((item, index) => (
                                 <TableRow key={index}>
                                   <TableCell width={'50%'}>{item.name}</TableCell>
                                   <TableCell align="right">{item.quantity} ตัน</TableCell>
                                 </TableRow>
                               ))} */}
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
-                      </Grid>
-                    )}
-                    {/* {permission.length > 0 && permission.add_data && ( */}
-                    <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                      <Button
-                        disableElevation
-                        disabled={isSubmitting}
-                        size="mediam"
-                        type="submit"
-                        variant="contained"
-                        color="success"
-                        startIcon={<SaveOutlined />}
-                      >
-                        เพิ่มข้อมูลรับสินค้า
-                      </Button>
+                                    </TableBody>
+                                  </Table>
+                                </TableContainer>
+                              </Grid>
+                            </>
+                          )}
 
+                          {orderProductList.length > 0 && (
+                            <>
+                              <Grid item xs={12} md={12}>
+                                <Typography variant="h5">ข้อมูลสั่งซื้อสินค้า</Typography>
+                                <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                                <TableContainer>
+                                  <Table
+                                    aria-labelledby="tableTitle"
+                                    size="small"
+                                    sx={{
+                                      '& .MuiTableCell-root:first-of-type': {
+                                        pl: 2
+                                      },
+                                      '& .MuiTableCell-root:last-of-type': {
+                                        pr: 3
+                                      }
+                                    }}
+                                  >
+                                    <TableHead>
+                                      <TableRow>
+                                        <TableCell sx={{ p: '12px', width: '5% ' }} align="center">
+                                          ลำดับ
+                                        </TableCell>
+                                        <TableCell sx={{ p: '12px', width: '15% ' }} align="center">
+                                          วันที่สั่งซื้อ
+                                        </TableCell>
+                                        <TableCell sx={{ p: '12px', width: '10%' }} align="right">
+                                          จำนวน (ตัน)
+                                        </TableCell>
+                                        <TableCell sx={{ p: '12px', width: '35%' }}>หมายเหตุ</TableCell>
+                                      </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                      {orderProductList.length > 0 &&
+                                        orderProductList.map((orderProduct, index) => (
+                                          <TableRow key={index}>
+                                            <TableCell align="center">{index + 1}</TableCell>
+                                            <TableCell align="center">{moment(orderProduct.order_date).format('DD/MM/YYYY')}</TableCell>
+                                            <TableCell align="right">{orderProduct.total_sold}</TableCell>
+                                            <TableCell align="left">{orderProduct.description}</TableCell>
+                                          </TableRow>
+                                        ))}
+                                      {/* {order.items.map((item, index) => (
+                                    <TableRow key={index}>
+                                      <TableCell width={'50%'}>{item.name}</TableCell>
+                                      <TableCell align="right">{item.quantity} ตัน</TableCell>
+                                    </TableRow>
+                                  ))} */}
+                                    </TableBody>
+                                  </Table>
+                                </TableContainer>
+                              </Grid>
+                            </>
+                          )}
+
+                          {cutOffProductList.length > 0 && (
+                            <>
+                              <Grid item xs={12} md={12}>
+                                <Typography variant="h5">ข้อมูลตัดเบิกสินค้า</Typography>
+                                <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                                <TableContainer>
+                                  <Table
+                                    aria-labelledby="tableTitle"
+                                    size="small"
+                                    sx={{
+                                      '& .MuiTableCell-root:first-of-type': {
+                                        pl: 2
+                                      },
+                                      '& .MuiTableCell-root:last-of-type': {
+                                        pr: 3
+                                      }
+                                    }}
+                                  >
+                                    <TableHead>
+                                      <TableRow>
+                                        <TableCell sx={{ p: '12px', width: '5% ' }} align="center">
+                                          ลำดับ
+                                        </TableCell>
+                                        <TableCell sx={{ p: '12px', width: '15% ' }} align="center">
+                                          วันที่เบิก
+                                        </TableCell>
+                                        <TableCell sx={{ p: '12px', width: '10%' }} align="right">
+                                          จำนวนเบิก (ตัน)
+                                        </TableCell>
+                                        <TableCell sx={{ p: '12px', width: '35%' }}>หมายเหตุ</TableCell>
+                                      </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                      {cutOffProductList.length > 0 &&
+                                        cutOffProductList.map((cutOffProduct, index) => (
+                                          <TableRow key={index}>
+                                            <TableCell align="center">{index + 1}</TableCell>
+                                            <TableCell align="center">{moment(cutOffProduct.cutoff_date).format('DD/MM/YYYY')}</TableCell>
+                                            <TableCell align="right">{cutOffProduct.cutoff_amount}</TableCell>
+                                            <TableCell align="left">{cutOffProduct.cutoff_remark}</TableCell>
+                                          </TableRow>
+                                        ))}
+                                      {/* {order.items.map((item, index) => (
+                                    <TableRow key={index}>
+                                      <TableCell width={'50%'}>{item.name}</TableCell>
+                                      <TableCell align="right">{item.quantity} ตัน</TableCell>
+                                    </TableRow>
+                                  ))} */}
+                                    </TableBody>
+                                  </Table>
+                                </TableContainer>
+                              </Grid>
+                            </>
+                          )}
+                        </Grid>
+                      </MainCard>
+                    </Grid>
+
+                    <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
                       <Button
                         size="mediam"
                         variant="contained"
@@ -757,7 +759,6 @@ function AddProductReceive() {
                         ยกเลิก
                       </Button>
                     </Grid>
-                    {/* )} */}
                   </Grid>
                 </form>
               )}
@@ -769,4 +770,4 @@ function AddProductReceive() {
   );
 }
 
-export default AddProductReceive;
+export default ProductDetails;

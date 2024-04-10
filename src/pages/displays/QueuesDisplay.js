@@ -9,6 +9,7 @@ import IconLogo from 'assets/images/logo.png';
 import Step1Queue from './Step1Queue';
 import Step2Queue from './Step2Queue';
 import Step3Queue from './Step3Queue';
+import AuthFooter from 'components/cards/AuthFooter';
 
 function QueuesDisplay() {
   const fullscreenRef = useRef(null);
@@ -23,7 +24,7 @@ function QueuesDisplay() {
     }
   };
   // ========= set Web Socket ========= //
-  const [queueData, setQueueData] = useState([]);
+  // const [queueData, setQueueData] = useState([]);
   const [step1Data, setStep1Data] = useState([]);
   const [step2Data, setStep2Data] = useState([]);
   const [step3Data, setStep3Data] = useState([]);
@@ -31,12 +32,10 @@ function QueuesDisplay() {
   useEffect(() => {
     const wssurl = 'wss://queue-wss-f7e0505c7aa0.herokuapp.com';
 
-    // setWssUrl(wssurl);
-
     const ws = new WebSocket(wssurl);
 
     ws.onopen = () => {
-      console.log('WebSocket connection established');
+      // console.log('WebSocket connection established');
     };
 
     ws.onmessage = (event) => {
@@ -44,22 +43,27 @@ function QueuesDisplay() {
       setStep1Data(data.filter((x) => x.order == 1));
       setStep2Data(data.filter((x) => x.order == 2));
       setStep3Data(data.filter((x) => x.order == 3));
-      console.log('Received message from server:', data);
-      setQueueData(data);
+      // console.log('Received message from server:', data);
+      // setQueueData(data);
     };
 
     ws.onclose = () => {
-      console.log('WebSocket connection closed');
+      // console.log('WebSocket connection closed');
     };
 
     return () => {
       ws.close();
     };
   }, []);
-  console.log(queueData);
+  // console.log(queueData);
   return (
     <>
-      <Grid alignItems="center" justifyContent="space-between" ref={fullscreenRef} style={{ background: '#ebebeb' }}>
+      <Grid
+        alignItems="center"
+        justifyContent="space-between"
+        ref={fullscreenRef}
+        sx={{ background: '#ebebeb', height: '100vh', flexDirection: 'column', display: 'flex' }}
+      >
         <Grid container rowSpacing={3}>
           <Grid item xs={12} sx={{ background: '#fff' }}>
             <Stack sx={{ pb: 2, pt: 2, justifyContent: 'center', alignItems: 'center', width: '100%' }} onClick={toggleFullScreen}>
@@ -70,8 +74,7 @@ function QueuesDisplay() {
           <Grid
             xs={12}
             sx={{
-              textAlign: 'center'
-              // height: { xs: '100%', md: '18.333vh' }
+              textAlign: 'left'
             }}
           >
             <Step1Queue queues={step1Data} />
@@ -79,8 +82,7 @@ function QueuesDisplay() {
           <Grid
             xs={12}
             sx={{
-              textAlign: 'center'
-              // height: { xs: '100%', md: '55.333vh' }
+              textAlign: 'left'
             }}
           >
             <Step2Queue queues={step2Data} />
@@ -88,12 +90,14 @@ function QueuesDisplay() {
           <Grid
             xs={12}
             sx={{
-              textAlign: 'center'
-              // height: { xs: '100%', md: '18.333vh' }
+              textAlign: 'left'
             }}
           >
             <Step3Queue queues={step3Data} />
           </Grid>
+        </Grid>
+        <Grid  sx={{ pt: 1, pb: 1, borderTop: '1px solid #fff', background: '#fff', mb: -1, width: '100%' }}>
+          <AuthFooter />
         </Grid>
       </Grid>
     </>

@@ -47,7 +47,9 @@ function Step1() {
       await getQueues.getStep1Waitting().then((response) => {
         if (company.length > 0) {
           company.map((x) => {
-            let countCompany = response.filter((i) => i.product_company_id == x.product_company_id).length;
+            let countCompany = response.filter(
+              (i) => i.product_company_id == x.product_company_id && parseFloat(i.total_quantity) > 0
+            ).length;
 
             setItems((prevState) => ({
               ...prevState,
@@ -57,7 +59,7 @@ function Step1() {
         }
 
         setCompanyList(company);
-        setCountAllQueue(response.length);
+        setCountAllQueue(response.filter((x) => parseFloat(x.total_quantity) > 0).length);
       });
     } catch (e) {
       console.log(e);

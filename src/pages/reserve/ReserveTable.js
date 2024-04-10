@@ -256,7 +256,7 @@ export default function ReserveTable({ startDate, endDate }) {
   const [open, setOpen] = useState(false);
   const [notifytext, setNotifyText] = useState('');
   const [reserve_id, setReserveId] = useState(0);
-  const [total_quantity, setTotalQuantity] = useState(0);
+  // const [total_quantity, setTotalQuantity] = useState(0);
   const [brand_code, setBrandCode] = useState('');
   const [conpany_id, setCompanyId] = useState('');
   const [onclick, setOnClick] = useState('');
@@ -276,11 +276,10 @@ export default function ReserveTable({ startDate, endDate }) {
       } else {
         setNotifyText('ต้องการสร้างคิวหรือไม่?');
       }
-      console.log('brand_code :', brand_code);
 
       setOnClick(click);
       setReserveId(id);
-      setTotalQuantity(total_quantity);
+      // setTotalQuantity(total_quantity);
       setBrandCode(brand_code);
       setCompanyId(conpany_id);
       setOpen(true);
@@ -292,7 +291,7 @@ export default function ReserveTable({ startDate, endDate }) {
       //click มาจากการลบ
       if (onclick == 'add-queue') {
         setSaveLoading(true);
-        addQueue(reserve_id, total_quantity);
+        addQueue(reserve_id);
       }
       if (onclick == 'delete') {
         setSaveLoading(true);
@@ -328,7 +327,6 @@ export default function ReserveTable({ startDate, endDate }) {
       queuesRequest.getQueueTokenByIdCom(id, currentDate, currentDate).then((response) => {
         if (response) {
           resolve(response.queue_count_company_code);
-          console.log('getQueueTokenByIdCom:', response.queue_count_company_code);
         }
       });
     });
@@ -422,14 +420,14 @@ export default function ReserveTable({ startDate, endDate }) {
   // };
 
   //สร้าง addQueue รับค่า reserve_id ,total_quantity
-  const addQueue = async (id, total_quantity) => {
+  const addQueue = async (id) => {
     try {
       //ตรวจสอบข้อมูลคิว มีการสร้างจาก reserve id นี้แล้วหรือยัง
 
       const queuecountf = await checkQueueDataf(id);
 
       if (queuecountf === 0) {
-        if (total_quantity > 0) {
+        // if (total_quantity > 0) {
           //สร้างข้อมูลคิว
           const queue_number = (await checkQueueCompanyCount(conpany_id)) + 1;
 
@@ -441,9 +439,9 @@ export default function ReserveTable({ startDate, endDate }) {
           //สร้าง step 1-4
           //createStep(queue_id_createf)
           await createStepsf(queue_id_createf, id);
-        } else {
-          alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
-        }
+        // } else {
+        //   alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
+        // }
       } else {
         //alert("สร้างคิวแล้ว")
         // const queue_id = await getQueueIdf(id);
@@ -761,8 +759,9 @@ export default function ReserveTable({ startDate, endDate }) {
                                   disabled={
                                     row.status === 'completed' ||
                                     currentDate !== moment(row.pickup_date).format('YYYY-MM-DD') ||
-                                    row.total_quantity == 0
-                                  }
+                                    row.car_id == 1 ||
+                                    row.driver_id == 1
+                                  } 
                                   color="info"
                                   onClick={() =>
                                     handleClickOpen(

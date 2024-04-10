@@ -109,3 +109,14 @@ export const getAvgStepCompleted = async (id, startdate, enddate) => {
   const result = await response.json();
   return result;
 };
+
+// ==============================|| Report Steps Recall ||============================== //
+export const getStepsRecall = async (startdate, enddate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/allstepsrecall?start_date=${startdate}&end_date=${enddate}`, requestOptions);
+  const result = await response.json();
+  return result;
+};

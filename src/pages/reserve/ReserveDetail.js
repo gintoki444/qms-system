@@ -88,7 +88,7 @@ function ReserveDetail() {
   const [open, setOpen] = useState(false);
   const [notifytext, setNotifyText] = useState('');
   const [reserve_id, setReserveId] = useState(0);
-  const [total_quantity, setTotalQuantity] = useState(0);
+  // const [total_quantity, setTotalQuantity] = useState(0);
   const [brand_code, setBrandCode] = useState('');
   const [conpany_id, setCompanyId] = useState('');
 
@@ -118,18 +118,18 @@ function ReserveDetail() {
   // };
   // const handleClickOpen = (id, click, total_quantity, brand_code, conpany_id) => {
 
-  const handleClickOpen = (id, total_quantity) => {
+  const handleClickOpen = (id) => {
     try {
-      if (total_quantity === '0') {
-        alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
-        return;
-      } else {
-        setNotifyText('ต้องการอนุมัติการจองคิวหรือไม่?');
-        //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
-        setReserveId(id);
-        setTotalQuantity(total_quantity);
-        setOpen(true);
-      }
+      // if (total_quantity === '0') {
+      //   alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
+      //   return;
+      // } else {
+      setNotifyText('ต้องการอนุมัติการจองคิวหรือไม่?');
+      //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
+      setReserveId(id);
+      // setTotalQuantity(total_quantity);
+      setOpen(true);
+      // }
     } catch (e) {
       console.log(e);
     }
@@ -141,7 +141,8 @@ function ReserveDetail() {
     if (flag === 1) {
       //click มาจากการลบ
       setLoading(true);
-      addQueue(reserve_id, total_quantity);
+      // addQueue(reserve_id, total_quantity);
+      addQueue(reserve_id);
     }
     setOpen(false);
   };
@@ -173,8 +174,6 @@ function ReserveDetail() {
         if (response) {
           setBrandCode(response.product_company_code);
           resolve(response.queue_count_company_code);
-          console.log('getQueueTokenByIdCom:', response.queue_count_company_code);
-          console.log('setBrandCode:', response.product_company_code);
         }
       });
     });
@@ -267,27 +266,28 @@ function ReserveDetail() {
   // };
 
   //สร้าง addQueue รับค่า reserve_id ,total_quantity
-  const addQueue = async (id, total_quantity) => {
+  // const addQueue = async (id, total_quantity) => {
+  const addQueue = async (id) => {
     try {
       //ตรวจสอบข้อมูลคิว มีการสร้างจาก reserve id นี้แล้วหรือยัง
       const queuecountf = await checkQueueDataf(id);
 
       if (queuecountf === 0) {
-        if (total_quantity > 0) {
-          //สร้างข้อมูลคิว
-          const queue_number = (await checkQueueCompanyCount(conpany_id)) + 1;
+        // if (total_quantity > 0) {
+        //สร้างข้อมูลคิว
+        const queue_number = (await checkQueueCompanyCount(conpany_id)) + 1;
 
-          const queue_id_createf = await createQueuef(id, brand_code, queue_number);
+        const queue_id_createf = await createQueuef(id, brand_code, queue_number);
 
-          //แจ้งเตือนหลังจากสร้าง Queue แล้ว
-          await getMessageCreateQueue(queue_id_createf, id);
+        //แจ้งเตือนหลังจากสร้าง Queue แล้ว
+        await getMessageCreateQueue(queue_id_createf, id);
 
-          //สร้าง step 1-4
-          //createStep(queue_id_createf)
-          await createStepsf(queue_id_createf, id);
-        } else {
-          alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
-        }
+        //สร้าง step 1-4
+        //createStep(queue_id_createf)
+        await createStepsf(queue_id_createf, id);
+        // } else {
+        //   alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
+        // }
       } else {
         //alert("สร้างคิวแล้ว")
         // const queue_id = await getQueueIdf(id);
@@ -689,11 +689,17 @@ function ReserveDetail() {
           </MainCard>
 
           <Grid item xs={12} sx={{ '& button': { m: 1, mt: 2 } }} align="center">
-            {orderList.length > 0 && reserveData.status !== 'completed' && (userRoles === 9 || userRoles === 1) && (
+            {(userRoles === 9 || userRoles === 1) && (
               <Button
                 size="mediam"
                 variant="outlined"
                 color="success"
+                disabled={
+                  reserveData.status === 'completed' ||
+                  currentDate !== moment(reserveData.pickup_date).format('YYYY-MM-DD') ||
+                  reserveData.car_id == 1 ||
+                  reserveData.driver_id == 1
+                }
                 onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity)}
                 startIcon={<DiffOutlined />}
               >

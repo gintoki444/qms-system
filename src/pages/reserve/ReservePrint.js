@@ -71,7 +71,6 @@ function ReservePrint() {
           setTaxNo(result['reserve'][0]['tax_no']);
           setPickupDate(result['reserve'][0]['pickup_date']);
           setTotalQuantity(result['reserve'][0]['total_quantity']);
-          console.log(result);
         }
       })
       .catch((error) => console.log('error', error));
@@ -88,7 +87,6 @@ function ReservePrint() {
         fetch(apiUrl + '/orders/' + id, requestOptions)
           .then((response) => response.json())
           .then((result) => {
-            console.log(result);
             setOrders(result);
             setOpen(false);
           })
