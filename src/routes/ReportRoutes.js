@@ -11,6 +11,7 @@ import MainLayout from 'layout/MainLayout/index';
 const DailyProductOut = Loadable(lazy(() => import('pages/report/admin/DailyProductOut')));
 const OrderSumQty = Loadable(lazy(() => import('pages/report/admin/OrderSumQty')));
 const CarsTimeInOut = Loadable(lazy(() => import('pages/report/admin/CarsTimeInOut')));
+const ConTractorSum = Loadable(lazy(() => import('pages/report/admin/contractor-sum/ConTractorSum')));
 
 const Step1Completed = Loadable(lazy(() => import('pages/report/admin/Step1Completed')));
 const Step2Completed = Loadable(lazy(() => import('pages/report/admin/Step2Completed')));
@@ -36,6 +37,10 @@ const ReportRoutes = {
     {
       path: 'carstimeinout',
       element: <CarsTimeInOut />
+    },
+    {
+      path: 'contractorsum',
+      element: <ConTractorSum />
     },
     {
       path: 'step1-completed',

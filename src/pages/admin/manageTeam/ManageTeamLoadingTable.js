@@ -145,11 +145,6 @@ function ManageTeamLoadingTable() {
           ]
         }
       ]);
-      console.log(wareHouseList);
-      //   console.log(wareHouseList[0].team_forklift);
-
-      //       addminRequest.getAllWareHouseManager().then((response) => {
-      //         setWareHouseList(response);
       setOpen(false);
       //   });
     } catch (error) {

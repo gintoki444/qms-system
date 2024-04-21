@@ -131,7 +131,7 @@ function WareHouseTable() {
   const deteteManager = (id) => {
     try {
       adminRequest.deleteManagerWareHouse(id).then(() => {
-        getWareHouseManager();
+        getManager();
       });
     } catch (error) {
       console.log(error);

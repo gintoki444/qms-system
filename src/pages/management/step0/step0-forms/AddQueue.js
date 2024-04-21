@@ -232,20 +232,10 @@ function AddQueue() {
   // =============== Get TeamLoanding ===============//
   // const [team_id, setTeamId] = useState([]);
   const [teamloadingList, setTeamLoadingList] = useState([]);
-  // const getTeamloading = (id) => {
-  //   try {
-  //     adminRequest.getLoadingTeamByIdwh(id).then((result) => {
-  //       setTeamLoadingList(result);
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
   const getTeamloading = () => {
     try {
       adminRequest.getAllLoadingTeamByStation().then((result) => {
-        setTeamLoadingList(result);
+        setTeamLoadingList(result.filter((x) => x.station_status == 'waiting'));
       });
     } catch (error) {
       console.log(error);
@@ -601,6 +591,30 @@ function AddQueue() {
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
+                        <InputLabel>วันที่เข้ารับสินค้า*</InputLabel>
+                        <TextField
+                          required
+                          fullWidth
+                          type="date"
+                          id="pickup_date"
+                          name="pickup_date"
+                          onBlur={handleBlur}
+                          value={values.pickup_date}
+                          onChange={handleChange}
+                          inputProps={{
+                            min: currentDate
+                          }}
+                        />
+                        {touched.pickup_date && errors.pickup_date && (
+                          <FormHelperText error id="helper-text-pickup_date">
+                            {errors.pickup_date}
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
                         <InputLabel>รถบรรทุก</InputLabel>
                         <TextField
                           select
@@ -655,31 +669,7 @@ function AddQueue() {
                       </Stack>
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>วันที่เข้ารับสินค้า*</InputLabel>
-                        <TextField
-                          required
-                          fullWidth
-                          type="date"
-                          id="pickup_date"
-                          name="pickup_date"
-                          onBlur={handleBlur}
-                          value={values.pickup_date}
-                          onChange={handleChange}
-                          inputProps={{
-                            min: currentDate
-                          }}
-                        />
-                        {touched.pickup_date && errors.pickup_date && (
-                          <FormHelperText error id="helper-text-pickup_date">
-                            {errors.pickup_date}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
+                    {/* <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>หัวข้อการจอง*</InputLabel>
                         <OutlinedInput
@@ -698,7 +688,7 @@ function AddQueue() {
                           </FormHelperText>
                         )}
                       </Stack>
-                    </Grid>
+                    </Grid> */}
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>

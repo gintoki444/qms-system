@@ -80,7 +80,7 @@ function ManageTeamLoading() {
 
   // =============== Get TeamLoanding ===============//
   const [team_id, setTeam_id] = useState('');
-  const [teamloadingList, setTeamLoadingList] = useState([]); 
+  const [teamloadingList, setTeamLoadingList] = useState([]);
 
   const getTeamloading = () => {
     try {
@@ -115,7 +115,7 @@ function ManageTeamLoading() {
   const getManagers = async () => {
     try {
       adminRequest.getAllManager().then((result) => {
-        setManagerList(result); 
+        setManagerList(result);
       });
     } catch (error) {
       console.log(error);
@@ -214,7 +214,9 @@ function ManageTeamLoading() {
 
   const deleteTeamChecker = async (checker_id) => {
     try {
-      await adminRequest.deleteChecker(checker_id);
+      await adminRequest.deleteTeamChecker(checker_id).then((response) => {
+        console.log('deleteTeamChecker', response);
+      });
     } catch (error) {
       console.log(error);
     }

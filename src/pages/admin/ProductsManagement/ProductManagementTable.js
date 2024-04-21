@@ -207,7 +207,7 @@ function ProductManagementTable({ onFilter }) {
 
   const deteteProductManagement = (id) => {
     try {
-      adminRequest.deleteManagerWareHouse(id).then(() => {
+      adminRequest.deteteProductRegister(id).then(() => {
         getWareHouseManager();
       });
     } catch (error) {

@@ -25,7 +25,7 @@ import {
   Tooltip,
   ButtonGroup,
   Checkbox,
-  // CheckboxGroup,
+  // Autocomplete,
   FormControlLabel,
   OutlinedInput
 } from '@mui/material';
@@ -330,8 +330,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
   const step1Update = (step_id, statusupdate, stations_id) => {
     return new Promise((resolve, reject) => {
       if (stations_id === '') {
+        setLoading(false);
         alert('กรุณาเลือกหัวจ่าย');
-        //reject("กรุณาเลือกหัจ่าย");
         return;
       } else {
         if (fr === 'call') {
@@ -340,6 +340,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
 
           if (foundItem) {
             // พบ item ที่มี station_id ที่ต้องการ
+            setLoading(false);
             alert("หัวจ่าย '" + foundItem.station_description + "' ไม่ว่าง");
             return;
           } else {
@@ -549,7 +550,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
               data.productRegis = getProductRegis;
 
               if (data.product_id) {
-                const selectedOption = { id: data.item_id, value: data.product_id };
+                const selectedOption = { id: data.item_id, value: data.product_register_id };
                 setOrderSelect((prevState) => {
                   const updatedOptions = [...prevState];
                   updatedOptions.push(selectedOption);
@@ -599,25 +600,56 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     });
   };
 
-  const [typeSelect, setTypeSelect] = useState({});
+  const [typeSelect, setTypeSelect] = useState([]);
 
   const handleChangeSelect = (id, name) => (event) => {
     const { value, checked } = event.target;
-    setTypeSelect((prevState) => ({
-      ...prevState,
-      [id]: { ...prevState[id], [name]: checked ? value || true : false }
-    }));
+    // setTypeSelect((prevState) => ({
+    //   ...prevState,
+    //   [id]: { ...prevState[id], [name]: checked ? value || true : false }
+    // }));
+    const selectedOption = { id: id, name: name, value: checked ? value || true : false };
+
+    setTypeSelect((prevState) => {
+      const updatedOptions = [...prevState];
+
+      const index = updatedOptions.findIndex((option) => option.id === id && option.name === name);
+      if (index !== -1) {
+        updatedOptions[index] = selectedOption;
+      } else {
+        updatedOptions.push(selectedOption);
+      }
+      return updatedOptions;
+    });
   };
 
   const [typeNumSelect, setTypeNumSelect] = useState({});
-  const handleChangeTypeNum = (e, id, maxNum) => {
+  const handleChangeTypeNum = (id, name, e, maxNum) => {
+    const selectedOption = { id: id, name: name, value: e.target.value };
+
     if (e.target.value > maxNum) {
       alert(`จำนวนสินค้าต้องไม่เกิน "${maxNum}" ตัน`);
+      return;
+    } else if (e.target.value < 0) {
+      alert(`จำนวนสินค้าต้องมากกว่า "0" ตัน`);
+      return;
     } else {
-      setTypeNumSelect((prevState) => ({
-        ...prevState,
-        [id]: e.target.value
-      }));
+      setTypeNumSelect((prevState) => {
+        const updatedOptions = [...prevState];
+
+        const index = updatedOptions.findIndex((option) => option.id === id && option.name === name);
+        if (index !== -1) {
+          updatedOptions[index] = selectedOption;
+        } else {
+          updatedOptions.push(selectedOption);
+        }
+        return updatedOptions;
+      });
+
+      // setTypeNumSelect((prevState) => ({
+      //   ...prevState,
+      //   [id]: e.target.value
+      // }));
     }
   };
 
@@ -692,15 +724,18 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
               orderSelect.map((dataOrder) => {
                 const setData = {
                   product_register_id: dataOrder.value,
-                  smash_quantity: 0
+                  smash_quantity: 0,
+                  sling_hook_quantity: 0,
+                  sling_sort_quantity: 0,
+                  jumbo_hook_quantity: 0
                 };
                 updateRegisterItems(dataOrder.id, setData);
               });
+
               updateStation(station_id, 'working');
               setStationCount(station_count + 1);
               await step1Update(id_update, 'processing', station_id);
               await updateStartTime(id_update);
-              // }
             }
           } else {
             alert('กรุณาเลือกหัวจ่าย');
@@ -721,65 +756,96 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             return;
           }
 
-          // if (labor_line_id === '' || labor_line_id === null) {
-          //   alert('กรุณาเลือกหมายเลขสาย');
-          //   return;
-          // }
-
           let countItem = 0;
           orders.map((orderData) => {
             countItem = countItem + orderData.items.length;
           });
 
-          if (typeSelect) {
-            for (let key in typeSelect) {
-              if (typeSelect[key].checked1 == 'on' && !typeNumSelect[key]) {
-                alert('กรุณาระบุจำนวนสินค้าทุบ');
-                return;
+          let countSelectError = 0;
+          let countSelectErrorNum = 0;
+          if (typeSelect.length > 0) {
+            typeSelect.map((checked) => {
+              if (checked.value == 'on') {
+                const finNumSelect = typeNumSelect.filter((x) => x.id == checked.id && x.name === checked.name);
+                if (finNumSelect.length == 0 || finNumSelect[0].value == '') {
+                  countSelectError++;
+                } else if (finNumSelect.length > 0 && parseFloat(finNumSelect[0].value) <= 0) {
+                  countSelectErrorNum++;
+                }
               }
-            }
+            });
           }
 
+          if (countSelectError > 0) {
+            alert('กรุณาระบุจำนวนสินค้าให้ถูกต้อง');
+            return;
+          }
+          if (countSelectErrorNum > 0) {
+            alert('กรุณาระบุจำนวนสินค้าให้มากกว่า 0');
+            return;
+          }
+
+          // if (id_update == 9999) {
           try {
             setLoading(true);
             setOpen(false);
-            // การใช้งาน Line Notify
+
             if (orderSelect.length > 0 || typeSelect.length !== 0) {
               orders.map((order) => {
                 order.items.map((items) => {
                   const checkOrderSelect = orderSelect.filter((x) => x.id == items.item_id);
+                  const filterNumSelect = typeNumSelect.filter((x) => x.id == items.item_id);
+
                   if (checkOrderSelect.length > 0) {
                     checkOrderSelect.map((dataOrder) => {
-                      if (typeNumSelect[items.item_id]) {
+                      if (filterNumSelect.length > 0) {
                         const setData = {
                           product_register_id: dataOrder.value,
-                          smash_quantity: typeNumSelect[items.item_id]
+                          smash_quantity: 0,
+                          sling_hook_quantity: 0,
+                          sling_sort_quantity: 0,
+                          jumbo_hook_quantity: 0
                         };
 
-                        updateRegisterItems(items.item_id, setData);
+                        filterNumSelect.map((x) => {
+                          if (x.name === 'checked1') setData.smash_quantity = x.value;
+                          if (x.name === 'checked2') setData.sling_hook_quantity = x.value;
+                          if (x.name === 'checked3') setData.sling_sort_quantity = x.value;
+                          if (x.name === 'checked4') setData.jumbo_hook_quantity = x.value;
+                        });
+                        updateRegisterItems(dataOrder.id, setData);
                       } else {
                         const setData = {
-                          product_register_id: dataOrder.value,
-                          smash_quantity: 0
+                          product_register_id: items.product_register_id,
+                          smash_quantity: 0,
+                          sling_hook_quantity: 0,
+                          sling_sort_quantity: 0,
+                          jumbo_hook_quantity: 0
                         };
-
                         updateRegisterItems(items.item_id, setData);
                       }
                     });
                   } else {
-                    if (typeNumSelect[items.item_id]) {
+                    if (filterNumSelect.length > 0) {
                       const setData = {
                         product_register_id: items.product_register_id,
-                        smash_quantity: typeNumSelect[items.item_id]
+                        smash_quantity: 0,
+                        sling_hook_quantity: 0,
+                        sling_sort_quantity: 0,
+                        jumbo_hook_quantity: 0
                       };
+                      filterNumSelect.map((x) => {
+                        if (x.name === 'checked1') setData.smash_quantity = x.value;
+                        if (x.name === 'checked2') setData.sling_hook_quantity = x.value;
+                        if (x.name === 'checked3') setData.sling_sort_quantity = x.value;
+                        if (x.name === 'checked4') setData.jumbo_hook_quantity = x.value;
+                      });
                       updateRegisterItems(items.item_id, setData);
                     }
                   }
                 });
               });
             }
-
-            // if (id_update == 9999) {
             getStepToken(id_update)
               .then(({ queue_id, token }) => {
                 lineNotify(queue_id, token);
@@ -800,12 +866,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             await updateEndTime(id_update);
             await updateStartTime(id_update_next);
             await step1Update(id_update, 'completed', station_id);
-            // }
           } catch (error) {
             console.error(error);
             // จัดการข้อผิดพลาดตามที่ต้องการ
             alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
           }
+          // }
         } else {
           // การใช้งาน Line Notify
           setLoading(true);
@@ -846,6 +912,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
 
   const updateRegisterItems = async (id, data) => {
     await stepRequest.putRegisterItem(id, data);
+    // .then((response) => {
+    //   console.log('response', response);
+    // });
   };
 
   //Update lineNotify Message
@@ -1133,7 +1202,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                       }}
                                     >
                                       <MenuItem disabled value="">
-                                        เลือกสูตรสินค้า
+                                        เลือกกองสินค้า
                                       </MenuItem>
                                       {orderItem.productRegis &&
                                         // orderItem.productRegis.length > 0 &&
@@ -1399,64 +1468,195 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                                       {productRegis.product_register_date
                                                         ? ` (${calculateAge(productRegis.product_register_date)}) `
                                                         : '-'}
-                                                      {productRegis.product_register_remark
-                                                        ? ` (${productRegis.product_register_remark}) `
-                                                        : ''}
+                                                      {productRegis.product_register_remark ? (
+                                                        <span style={{ color: 'red' }}> ({productRegis.product_register_remark})</span>
+                                                      ) : (
+                                                        ''
+                                                      )}
                                                     </MenuItem>
                                                   )
                                               )}
                                           </Select>
                                         </FormControl>
                                       </Grid>
-                                      <Grid item xs={12} md={6}>
+                                      <Grid item xs={12} md={12}>
                                         <InputLabel sx={{ mt: 1, mb: 1 }}>ประเภท</InputLabel>
                                         <FormControlLabel
                                           control={
                                             <Checkbox
-                                              checked={typeSelect[orderItem.item_id]?.checked1 || false}
+                                              checked={typeSelect.some(
+                                                (item) => item.id == orderItem.item_id && item.name === 'checked1' && item.value === 'on'
+                                              )}
                                               onChange={handleChangeSelect(orderItem.item_id, 'checked1')}
                                               name="checked1"
                                             />
                                           }
-                                          label="สินค้าทุบ"
+                                          label="ทุบปุ๋ย"
                                         />
-
-                                        {/* <FormControlLabel
-                                          sx={{ display: 'none' }}
+                                        <FormControlLabel
                                           control={
                                             <Checkbox
-                                              checked
+                                              // checked={typeSelect[orderItem.item_id]?.checked2 || false}
+                                              checked={typeSelect.some(
+                                                (item) => item.id == orderItem.item_id && item.name === 'checked2' && item.value === 'on'
+                                              )}
                                               onChange={handleChangeSelect(orderItem.item_id, 'checked2')}
                                               name="checked2"
                                             />
                                           }
-                                          label="สินค้าไม่ทุบ"
-                                        /> */}
+                                          label="เกี่ยวสลิง"
+                                        />
+                                        <FormControlLabel
+                                          control={
+                                            <Checkbox
+                                              // checked={typeSelect[orderItem.item_id]?.checked3 || false}
+                                              checked={typeSelect.some(
+                                                (item) => item.id == orderItem.item_id && item.name === 'checked3' && item.value === 'on'
+                                              )}
+                                              onChange={handleChangeSelect(orderItem.item_id, 'checked3')}
+                                              name="checked3"
+                                            />
+                                          }
+                                          label="เรียงสลิง"
+                                        />
+                                        <FormControlLabel
+                                          control={
+                                            <Checkbox
+                                              // checked={typeSelect[orderItem.item_id]?.checked4 || false}
+                                              checked={typeSelect.some(
+                                                (item) => item.id == orderItem.item_id && item.name === 'checked4' && item.value === 'on'
+                                              )}
+                                              onChange={handleChangeSelect(orderItem.item_id, 'checked4')}
+                                              name="checked4"
+                                            />
+                                          }
+                                          label="เกี่ยวจัมโบ้"
+                                        />
                                       </Grid>
-                                      {typeSelect[orderItem.item_id]?.checked1 && (
-                                        <>
-                                          <Grid item xs={12} md={6}>
-                                            <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                              จำนวนสินค้าทุบ : (สูงสุด {parseFloat((orderItem.quantity * 1).toFixed(3)) + ' ตัน'})
-                                            </InputLabel>
-                                            <FormControl sx={{ width: '100%' }} size="small">
-                                              <OutlinedInput
-                                                size="small"
-                                                id={typeNumSelect[orderItem.item_id]}
-                                                type="number"
-                                                value={typeNumSelect[orderItem.item_id]}
-                                                onChange={(e) => {
-                                                  handleChangeTypeNum(
-                                                    e,
-                                                    orderItem.item_id,
-                                                    parseFloat((orderItem.quantity * 1).toFixed(3))
-                                                  );
-                                                }}
-                                                placeholder="จำนวน"
-                                              />
-                                            </FormControl>
-                                          </Grid>
-                                        </>
+                                      {typeSelect.some(
+                                        (item) => item.id == orderItem.item_id && item.name === 'checked1' && item.value === 'on'
+                                      ) && (
+                                        <Grid item xs={12} md={12}>
+                                          <InputLabel sx={{ mt: 1, mb: 1.5 }}>
+                                            จำนวนทุบปุ๋ย : (สูงสุด {parseFloat((orderItem.quantity * 1).toFixed(3)) + ' ตัน'})
+                                          </InputLabel>
+                                          <FormControl sx={{ width: '100%' }} size="small">
+                                            <OutlinedInput
+                                              size="small"
+                                              id={typeNumSelect[orderItem.item_id]}
+                                              type="number"
+                                              value={
+                                                typeNumSelect.find((item) => item.id == orderItem.item_id && item.name === 'checked1')
+                                                  ?.value || ''
+                                              }
+                                              onChange={(e) => {
+                                                handleChangeTypeNum(
+                                                  orderItem.item_id,
+                                                  'checked1',
+                                                  e,
+                                                  parseFloat((orderItem.quantity * 1).toFixed(3))
+                                                );
+                                              }}
+                                              placeholder="จำนวน"
+                                            />
+                                          </FormControl>
+                                        </Grid>
+                                      )}
+                                      {typeSelect.some(
+                                        (item) => item.id == orderItem.item_id && item.name === 'checked2' && item.value === 'on'
+                                      ) && (
+                                        <Grid item xs={12} md={12}>
+                                          <InputLabel sx={{ mt: 1, mb: 1.5 }}>
+                                            จำนวนเกี่ยวสลิง : (สูงสุด {parseFloat((orderItem.quantity * 1).toFixed(3)) + ' ตัน'})
+                                          </InputLabel>
+                                          <FormControl sx={{ width: '100%' }} size="small">
+                                            <OutlinedInput
+                                              size="small"
+                                              id={typeNumSelect[orderItem.item_id]}
+                                              type="number"
+                                              value={
+                                                typeNumSelect.find((item) => item.id == orderItem.item_id && item.name === 'checked2')
+                                                  ?.value || ''
+                                              }
+                                              // onChange={(e) => {
+                                              //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
+                                              // }}
+                                              onChange={(e) => {
+                                                handleChangeTypeNum(
+                                                  orderItem.item_id,
+                                                  'checked2',
+                                                  e,
+                                                  parseFloat((orderItem.quantity * 1).toFixed(3))
+                                                );
+                                              }}
+                                              placeholder="จำนวน"
+                                            />
+                                          </FormControl>
+                                        </Grid>
+                                      )}
+                                      {typeSelect.some(
+                                        (item) => item.id == orderItem.item_id && item.name === 'checked3' && item.value === 'on'
+                                      ) && (
+                                        <Grid item xs={12} md={12}>
+                                          <InputLabel sx={{ mt: 1, mb: 1.5 }}>
+                                            จำนวนเรียงสลิง : (สูงสุด {parseFloat((orderItem.quantity * 1).toFixed(3)) + ' ตัน'})
+                                          </InputLabel>
+                                          <FormControl sx={{ width: '100%' }} size="small">
+                                            <OutlinedInput
+                                              size="small"
+                                              id={typeNumSelect[orderItem.item_id]}
+                                              type="number"
+                                              value={
+                                                typeNumSelect.find((item) => item.id == orderItem.item_id && item.name === 'checked3')
+                                                  ?.value || ''
+                                              }
+                                              // onChange={(e) => {
+                                              //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
+                                              // }}
+                                              onChange={(e) => {
+                                                handleChangeTypeNum(
+                                                  orderItem.item_id,
+                                                  'checked3',
+                                                  e,
+                                                  parseFloat((orderItem.quantity * 1).toFixed(3))
+                                                );
+                                              }}
+                                              placeholder="จำนวน"
+                                            />
+                                          </FormControl>
+                                        </Grid>
+                                      )}
+                                      {typeSelect.some(
+                                        (item) => item.id == orderItem.item_id && item.name === 'checked4' && item.value === 'on'
+                                      ) && (
+                                        <Grid item xs={12} md={12}>
+                                          <InputLabel sx={{ mt: 1, mb: 1.5 }}>
+                                            จำนวนเกี่ยวจัมโบ้ : (สูงสุด {parseFloat((orderItem.quantity * 1).toFixed(3)) + ' ตัน'})
+                                          </InputLabel>
+                                          <FormControl sx={{ width: '100%' }} size="small">
+                                            <OutlinedInput
+                                              size="small"
+                                              id={typeNumSelect[orderItem.item_id]}
+                                              type="number"
+                                              value={
+                                                typeNumSelect.find((item) => item.id == orderItem.item_id && item.name === 'checked4')
+                                                  ?.value || ''
+                                              }
+                                              // onChange={(e) => {
+                                              //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
+                                              // }}
+                                              onChange={(e) => {
+                                                handleChangeTypeNum(
+                                                  orderItem.item_id,
+                                                  'checked4',
+                                                  e,
+                                                  parseFloat((orderItem.quantity * 1).toFixed(3))
+                                                );
+                                              }}
+                                              placeholder="จำนวน"
+                                            />
+                                          </FormControl>
+                                        </Grid>
                                       )}
                                     </>
                                   ))}

@@ -116,6 +116,17 @@ export const getReserDetailID = async (id) => {
   return result;
 };
 
+// ==============================|| ข้อมูลคิวด้วย Id reserve ||============================== //
+export const getQueuesByIdReserve = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/queuebyreserveid/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
 // ==============================|| ข้อมูลการจองคิว ||============================== //
 export const putReserveStatus = async (id, data) => {
   var myHeaders = new Headers();

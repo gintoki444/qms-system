@@ -221,7 +221,7 @@ function AddCar() {
                   </Stack>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                {/* <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
                     <InputLabel htmlFor="brand-car">ยี้ห้อรถ</InputLabel>
                     <OutlinedInput
@@ -263,7 +263,7 @@ function AddCar() {
                       </FormHelperText>
                     )}
                   </Stack>
-                </Grid>
+                </Grid> */}
                 {/* {permission.length > 0 && permission.add_data && ( */}
                 <Grid item xs={12}>
                   <Button

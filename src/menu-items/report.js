@@ -46,6 +46,15 @@ const report = {
       // breadcrumbs: false
     },
     {
+      id: 'contractorsum',
+      title: 'รายงานสรุปยอดแรงงาน',
+      type: 'item',
+      url: '/report/contractorsum',
+      icon: FundViewOutlined,
+      target: false
+      // breadcrumbs: false
+    },
+    {
       id: 'step1',
       title: 'รายงาน Step1-ชั่งเบา',
       type: 'item',

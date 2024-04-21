@@ -9,7 +9,7 @@ import axios from '../../../node_modules/axios/index';
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 import * as queuesRequest from '_api/queueReques';
-// import * as reseveRequest from '_api/reserveRequest';
+import * as reserveRequest from '_api/reserveRequest';
 
 // import QRCode from 'react-qr-code';
 // import logo from '../../assets/images/ICON-02.png';
@@ -33,7 +33,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import MainCard from 'components/MainCard';
-import { DiffOutlined, PrinterOutlined, EditOutlined, RollbackOutlined } from '@ant-design/icons';
+import { DiffOutlined, PrinterOutlined, EditOutlined, RollbackOutlined, ContainerOutlined } from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
@@ -146,6 +146,17 @@ function ReserveDetail() {
     }
     setOpen(false);
   };
+
+  //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
+  async function getQueueIdByReserve(reserve_id) {
+    try {
+      reserveRequest.getQueuesByIdReserve(reserve_id).then((response) => {
+        window.location.href = '/queues/detail/' + response[0].queue_id;
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
   async function checkQueueDataf(reserve_id) {
@@ -290,8 +301,8 @@ function ReserveDetail() {
         // }
       } else {
         //alert("สร้างคิวแล้ว")
-        // const queue_id = await getQueueIdf(id);
-        window.location.href = '/queues/detail/' + queue_id;
+        updateReserveStatus(reserve_id);
+        getQueueIdByReserve(id);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -516,15 +527,17 @@ function ReserveDetail() {
         </Backdrop>
       )}
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-        <DialogTitle id="responsive-dialog-title">{'แจ้งเตือน'}</DialogTitle>
+        <DialogTitle id="responsive-dialog-title">
+          <Typography variant="h5">{'แจ้งเตือน'}</Typography>
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>{notifytext}</DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={() => handleClose(0)}>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
+          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
             ยกเลิก
           </Button>
-          <Button onClick={() => handleClose(1)} autoFocus>
+          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
             ยืนยัน
           </Button>
         </DialogActions>
@@ -689,7 +702,7 @@ function ReserveDetail() {
           </MainCard>
 
           <Grid item xs={12} sx={{ '& button': { m: 1, mt: 2 } }} align="center">
-            {(userRoles === 9 || userRoles === 1) && (
+            {(userRoles === 9 || userRoles === 1) && reserveData.status !== 'completed' && (
               <Button
                 size="mediam"
                 variant="outlined"
@@ -718,8 +731,19 @@ function ReserveDetail() {
                 พิมพ์
               </Button>
             )}
+            {reserveData.status === 'completed' && (
+              <Button
+                size="mediam"
+                variant="contained"
+                color="primary"
+                onClick={() => getQueueIdByReserve(reserveData.reserve_id)}
+                startIcon={<ContainerOutlined />}
+              >
+                ข้อมูลคิว
+              </Button>
+            )}
 
-            {orderList.length > 0 && reserveData.status !== 'completed' && (
+            {reserveData.status !== 'completed' && (
               <Button
                 size="mediam"
                 type="submit"

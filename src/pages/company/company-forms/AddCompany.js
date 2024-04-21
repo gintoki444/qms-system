@@ -22,7 +22,7 @@ function AddCompany() {
 
   const initialValue = {
     name: '',
-    country: '',
+    country: 'ไทย',
     open_time: '08.00-18.00',
     description: '',
     tax_no: '',
@@ -60,8 +60,6 @@ function AddCompany() {
       formData.append('contact_person', values.contact_person);
       formData.append('created_at', values.created_at);
       formData.append('updated_at', values.updated_at);
-
-      console.log(values);
 
       let config = {
         method: 'post',
@@ -105,8 +103,12 @@ function AddCompany() {
             name: Yup.string().max(255).required('กรุณาระบุชื่อ บริษัท/ร้านค้า'),
             country: Yup.string().max(255).required('กรุณาระบุประเทศ'),
             open_time: Yup.string().max(255).required('กรุณาระบุเวลาทำการ'),
-            description: Yup.string().max(255).required('กรุณาระบุรายละเอียดของบริษัท'),
-            tax_no: Yup.string().min(13).max(13).required('กรุณาระบุเลขที่ผู้เสียภาษี'),
+            // description: Yup.string().max(255).required('กรุณาระบุรายละเอียดของบริษัท'),
+            tax_no: Yup.string()
+              .matches(/^[0-9]*$/, 'กรุณาระบุเลขที่ผู้เสียภาษีเป็นตัวเลขเท่านั้น')
+              .min(13)
+              .max(13)
+              .required('กรุณาระบุเลขที่ผู้เสียภาษี'),
             phone: Yup.string()
               .min(8, 'กรุณาระบุเบอร์โทรศัพท์อย่างน้อย 8 หลัก')
               .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
@@ -115,13 +117,13 @@ function AddCompany() {
               .required('กรุณาระบุเบอร์โทรศัพท์'),
             address: Yup.string().max(255).required('กรุณาระบุที่อยู่'),
             zipcode: Yup.string().max(5).required('กรุณาระบุรหัสไปรษณีย์'),
-            contact_person: Yup.string().max(255).required('กรุณาระบุชื่อผู้ติดต่อ'),
-            contact_number: Yup.string()
-              .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
-              .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
-              .min(9, 'กรุณาระบุเบอร์โทรศัพท์ 9 หลัก')
-              .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
-              .required('กรุณาระบุเบอร์โทรศัพท์ผู้ติดต่อ')
+            // contact_person: Yup.string().max(255).required('กรุณาระบุชื่อผู้ติดต่อ'),
+            // contact_number: Yup.string()
+            //   .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
+            //   .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
+            //   .min(9, 'กรุณาระบุเบอร์โทรศัพท์ 9 หลัก')
+            //   .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
+            //   .required('กรุณาระบุเบอร์โทรศัพท์ผู้ติดต่อ')
           })}
           onSubmit={handleSubmits}
         >
@@ -290,7 +292,7 @@ function AddCompany() {
 
                 <Grid item xs={6}>
                   <Stack spacing={1}>
-                    <InputLabel htmlFor="description-company">รายละเอียด*</InputLabel>
+                    <InputLabel htmlFor="description-company">รายละเอียด</InputLabel>
                     <OutlinedInput
                       id="description-company"
                       type="description"
@@ -317,7 +319,7 @@ function AddCompany() {
 
                 <Grid item xs={6}>
                   <Stack spacing={1}>
-                    <InputLabel htmlFor="contact_person-company">ชื่อผู้ติดต่อ*</InputLabel>
+                    <InputLabel htmlFor="contact_person-company">ชื่อผู้ติดต่อ</InputLabel>
                     <OutlinedInput
                       id="contact_person-company"
                       type="contact_person"
@@ -339,7 +341,7 @@ function AddCompany() {
 
                 <Grid item xs={6}>
                   <Stack spacing={1}>
-                    <InputLabel htmlFor="contact_number-company">เบอร์โทรผู้ติดต่อ*</InputLabel>
+                    <InputLabel htmlFor="contact_number-company">เบอร์โทรผู้ติดต่อ</InputLabel>
                     <OutlinedInput
                       id="contact_number-company"
                       type="contact_number"

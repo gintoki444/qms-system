@@ -244,7 +244,7 @@ export const deleteChecker = async (id) => {
     method: 'DELETE',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + `/deleteteamchecker/${id}`, requestOptions);
+  const response = await fetch(apiUrl + `/deletechecker/${id}`, requestOptions);
 
   const result = await response.text();
   return result;
@@ -588,6 +588,19 @@ export const putProductRegisterById = async (id, data) => {
   return result;
 };
 
+
+export const deteteProductRegister = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deleteproductregister/${id}`, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+
 export const putProductById = async (id, data) => {
   const myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');
@@ -643,6 +656,7 @@ export const deleteProducts = async (id) => {
   const result = await response.json();
   return result;
 };
+
 
 export const getCutOffProductById = async (id) => {
   const requestOptions = {

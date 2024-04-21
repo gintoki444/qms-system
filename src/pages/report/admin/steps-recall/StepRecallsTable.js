@@ -80,18 +80,18 @@ const headCells = [
     disablePadding: false,
     label: 'เวลาเริ่ม'
   },
-  {
-    id: 'timeOut',
-    align: 'left',
-    disablePadding: false,
-    label: 'เวลาเสร็จ'
-  },
-  {
-    id: 'times',
-    align: 'left',
-    disablePadding: false,
-    label: 'เวลาที่ใช้'
-  },
+  // {
+  //   id: 'timeOut',
+  //   align: 'left',
+  //   disablePadding: false,
+  //   label: 'เวลาเสร็จ'
+  // },
+  // {
+  //   id: 'times',
+  //   align: 'left',
+  //   disablePadding: false,
+  //   label: 'เวลาที่ใช้'
+  // },
   {
     id: 'status',
     align: 'center',
@@ -217,9 +217,9 @@ function StepRecallsTable({ startDate, endDate, clickDownload }) {
                     <TableCell align="left">{row.recall_data.company_name}</TableCell>
                     <TableCell align="left">{row.recall_data.driver_name}</TableCell>
                     <TableCell align="left">{row.recall_data.driver_mobile}</TableCell>
-                    <TableCell align="center">{row.recall_data.start_time ? row.recall_data.start_time.slice(11, 19) : '-'}</TableCell>
-                    <TableCell align="center">{row.recall_data.end_time ? row.recall_data.end_time.slice(11, 19) : '-'}</TableCell>
-                    <TableCell align="center">{row.recall_data.elapsed_time ? row.recall_data.elapsed_time : '-'}</TableCell>
+                    <TableCell align="left">{row.recall_data.start_time ? row.recall_data.start_time.slice(11, 19) : '-'}</TableCell>
+                    {/* <TableCell align="center">{row.recall_data.end_time ? row.recall_data.end_time.slice(11, 19) : '-'}</TableCell>
+                    <TableCell align="center">{row.recall_data.elapsed_time ? row.recall_data.elapsed_time : '-'}</TableCell> */}
                     <TableCell align="center">
                       {row.recall_data.status == 'completed' && (
                         <Chip color={'success'} label={'สำเร็จ'} sx={{ minWidth: '78.7px!important' }} />

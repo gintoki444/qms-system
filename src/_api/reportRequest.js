@@ -120,3 +120,14 @@ export const getStepsRecall = async (startdate, enddate) => {
   const result = await response.json();
   return result;
 };
+
+// ==============================|| รายงาน ordersproductssum ||============================== //
+export const getContractorSummary = async (startDate, endDate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/contractorsum?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
+  const result = await response.json();
+  return result;
+};

@@ -23,10 +23,6 @@ function Product() {
     navigate('add');
   };
 
-  useEffect(() => {
-    getProductCompany();
-  }, []);
-
   const [companyList, setCompanyList] = useState([]);
   const getProductCompany = () => {
     stepRequest.getAllProductCompany().then((response) => {
@@ -58,6 +54,9 @@ function Product() {
     }
   };
 
+  useEffect(() => {
+    getProductCompany();
+  }, [items]);
   const [valueFilter, setValueFilter] = useState('');
   const handleChange = (newValue) => {
     setValueFilter(newValue);

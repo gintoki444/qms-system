@@ -49,18 +49,18 @@ const headCells = [
     disablePadding: false,
     label: 'ประเภทรถ'
   },
-  {
-    id: 'taxpayer',
-    align: 'left',
-    disablePadding: false,
-    label: 'ยี้ห้อรถ'
-  },
-  {
-    id: 'tel',
-    align: 'left',
-    disablePadding: false,
-    label: 'สีรถ'
-  },
+  // {
+  //   id: 'taxpayer',
+  //   align: 'left',
+  //   disablePadding: false,
+  //   label: 'ยี้ห้อรถ'
+  // },
+  // {
+  //   id: 'tel',
+  //   align: 'left',
+  //   disablePadding: false,
+  //   label: 'สีรถ'
+  // },
   {
     id: 'action',
     align: 'center',
@@ -195,8 +195,8 @@ function CarTable() {
                     <TableCell align="left">{row.registration_no}</TableCell>
                     <TableCell align="left">{row.province_id ? row.name_th : '-'}</TableCell>
                     <TableCell align="left">{row.car_type_id ? setCarTypeName(row.car_type_id) : '-'}</TableCell>
-                    <TableCell align="left">{row.brand ? row.brand : '-'}</TableCell>
-                    <TableCell align="left">{row.color ? row.color : '-'}</TableCell>
+                    {/* <TableCell align="left">{row.brand ? row.brand : '-'}</TableCell>
+                    <TableCell align="left">{row.color ? row.color : '-'}</TableCell> */}
                     {/* {permission.length > 0 &&  */}
                     <TableCell align="center">
                       <ButtonGroup variant="contained" aria-label="Basic button group">

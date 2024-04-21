@@ -11,6 +11,7 @@ import axios from '../../../../node_modules/axios/index';
 const apiUrl = process.env.REACT_APP_API_URL;
 import * as reserveRequest from '_api/reserveRequest';
 import * as queuesRequest from '_api/queueReques';
+import * as companyRequest from '_api/companyRequest';
 // import * as adminRequest from '_api/adminRequest';
 
 // const userId = localStorage.getItem('user_id');
@@ -39,7 +40,8 @@ import {
   DialogActions,
   CircularProgress,
   Tooltip,
-  ButtonGroup
+  ButtonGroup,
+  Autocomplete
 } from '@mui/material';
 
 import MenuItem from '@mui/material/MenuItem';
@@ -57,11 +59,15 @@ import {
   SaveOutlined,
   RollbackOutlined,
   DeleteOutlined,
-  StopOutlined
+  StopOutlined,
+  ContainerOutlined
 } from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
+
+import AddCar from './AddCar';
+import AddDriver from './AddDriver';
 
 function UpdateReserve() {
   const userRoles = useSelector((state) => state.auth.roles);
@@ -119,17 +125,14 @@ function UpdateReserve() {
   const [companyList, setCompanyList] = useState([]);
   const getCompanyList = () => {
     if (user_Id) {
-      const urlapi = apiUrl + `/allcompany/` + user_Id;
-      axios
-        .get(urlapi)
-        .then((res) => {
-          console.log('res:', res);
-          if (res) {
-            setCompanyList(res.data);
-            getCarLsit();
-          }
-        })
-        .catch((err) => console.log(err));
+      try {
+        companyRequest.getAllCompanyByuserId(user_Id).then((response) => {
+          setCompanyList(response);
+          getCarLsit();
+        });
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -146,7 +149,7 @@ function UpdateReserve() {
       .get(urlapi)
       .then((res) => {
         if (res) {
-          setCarList(res.data.filter((x) => x.user_id == userID || x.user_id == user_Id));
+          setCarList(res.data.filter((x) => x.user_id == userID || x.user_id == user_Id || x.user_id == 1));
           getDriverLsit();
         }
       })
@@ -166,7 +169,8 @@ function UpdateReserve() {
       .get(urlapi)
       .then((res) => {
         if (res) {
-          setDriverList(res.data.filter((x) => x.user_id == userID || x.user_id == user_Id));
+          setDriverList(res.data.filter((x) => x.user_id == userID || x.user_id == user_Id || x.user_id == 1));
+          setLoading(false);
           getOrders();
         }
       })
@@ -211,7 +215,10 @@ function UpdateReserve() {
         setOrderList(res.data);
         setLoading(false);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
   };
 
   const updateReserveTotal = async (id) => {
@@ -246,7 +253,7 @@ function UpdateReserve() {
             if (dateNow == moment(result.pickup_date).format('YYYY-MM-DD')) {
               setCheckDate(true);
             }
-            console.log('setReservationData:', result);
+
             setReservationData(result);
             setCompanyId(result.product_company_id);
             checkQueueCompanyCount(result.product_company_id);
@@ -284,16 +291,12 @@ function UpdateReserve() {
     product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
     product_brand_id: Yup.string().required('กรุณาระบุตรา(สินค้า)'),
     reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
-    pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า')
-    // description: Yup.string().required('กรุณากรอกiรายละเอียดการจอง')
+    pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
+    car_id: Yup.string().required('กรุณาเลือกรถบรรทุก'),
+    driver_id: Yup.string().required('กรุณาเลือกคนขับรถ')
   });
 
   // =============== บันทึกข้อมูล ===============//
-  // const updateTeamLoading = (values) => {
-  //   adminRequest.putReserveTeam(id, values).then(() => {
-  //     window.location.href = '/reserve';
-  //   });
-  // };
   const handleSubmits = async (values) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     try {
@@ -327,7 +330,6 @@ function UpdateReserve() {
   const [open, setOpen] = useState(false);
   const [reserve_id, setReserveId] = useState(0);
   const [notifytext, setNotifyText] = useState('');
-  // const [total_quantity, setTotalQuantity] = useState(0);
   const [brand_code, setBrandCode] = useState('');
   const [conpany_id, setCompanyId] = useState('');
 
@@ -338,21 +340,13 @@ function UpdateReserve() {
 
   const [orderId, setOrderId] = useState([]);
   const [onClick, setOnClick] = useState([]);
-  // const handleClickOpen = (id, onClick, total_quantity) => {
   const handleClickOpen = (id, onClick) => {
     try {
       if (onClick == 'add-queue') {
-        // if (total_quantity === '0') {
-        //   alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
-        //   return;
-        // } else {
         setOnClick(onClick);
         setNotifyText('ต้องการอนุมัติการจองคิวหรือไม่?');
-        //กำหนดค่า click มาจากเพิ่มข้อมูลคิว
         setReserveId(id);
-        // setTotalQuantity(total_quantity);
         setOpen(true);
-        // }
       } else if (onClick == 'remain-queue') {
         setOpen(true);
         setReserveId(id);
@@ -367,8 +361,6 @@ function UpdateReserve() {
     } catch (e) {
       console.log(e);
     }
-    //กำหนดข้อความแจ้งเตือน
-    // setNotifyText('ต้องการสร้างคิวหรือไม่?');
   };
 
   const handleClose = (flag) => {
@@ -376,10 +368,7 @@ function UpdateReserve() {
       if (flag === 1) {
         //click มาจากการลบ
         setLoading(true);
-        // if (flag === 99) {
-        // addQueue(reserve_id, total_quantity);
         addQueue(reserve_id);
-        // }
       }
     } else if (onClick == 'remain-queue') {
       if (flag === 1) {
@@ -394,6 +383,17 @@ function UpdateReserve() {
     }
     setOpen(false);
   };
+
+  //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
+  async function getQueueIdByReserve(reserve_id) {
+    try {
+      reserveRequest.getQueuesByIdReserve(reserve_id).then((response) => {
+        window.location.href = '/queues/detail/' + response[0].queue_id;
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
   async function checkQueueDataf(reserve_id) {
@@ -486,32 +486,25 @@ function UpdateReserve() {
   };
 
   //สร้าง addQueue รับค่า reserve_id ,total_quantity
-  const addQueue = async (
-    id
-    // , total_quantity
-  ) => {
+  const addQueue = async (id) => {
     try {
       //ตรวจสอบข้อมูลคิว มีการสร้างจาก reserve id นี้แล้วหรือยัง
       const queuecountf = await checkQueueDataf(id);
 
       if (queuecountf === 0) {
-        // if (total_quantity > 0) {
         //สร้างข้อมูลคิว
         const queue_number = (await checkQueueCompanyCount(conpany_id)) + 1;
         const queue_id_createf = await createQueuef(id, brand_code, queue_number);
+
         //แจ้งเตือนหลังจากสร้าง Queue แล้ว
         await getMessageCreateQueue(queue_id_createf, id);
         //สร้าง step 1-4
-        //createStep(queue_id_createf)
         await createStepsf(queue_id_createf);
         setLoading(true);
-        // } else {
-        //   alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
-        // }
       } else {
         //alert("สร้างคิวแล้ว")
-        // const queue_id = await getQueueIdf(id);
-        window.location.href = '/queues/detail/' + queue_id;
+        updateReserveStatus(reserve_id);
+        getQueueIdByReserve(id);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -755,6 +748,19 @@ function UpdateReserve() {
     navigate('/prints/reserve', { state: { reserveId: id, link: '/reserve/update/' + id } });
   };
 
+  // =============== เพิ่มข้อมูลรถ ===============//
+  const handleSaveForm = (formData) => {
+    // Handle saving the form data
+    console.log('Form data:', formData);
+    getCarLsit();
+  };
+
+  // =============== เพิ่มข้อมูลคนขับรถ ===============//
+  const handleSaveDriverForm = (formData) => {
+    // Handle saving the form data
+    console.log('handleSaveDriverForm:', formData);
+    getDriverLsit();
+  };
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -765,7 +771,6 @@ function UpdateReserve() {
           <CircularProgress color="primary" />
         </Backdrop>
       )}
-
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
         <DialogTitle id="responsive-dialog-title">
           <Typography variant="h5">{'แจ้งเตือน'}</Typography>
@@ -798,7 +803,36 @@ function UpdateReserve() {
                       <Stack spacing={1}>
                         <InputLabel>บริษัท/ร้านค้า*</InputLabel>
                         <FormControl fullWidth>
-                          <Select
+                          <Autocomplete
+                            disablePortal
+                            id="company-list"
+                            options={companyList}
+                            value={companyList.length > 0 ? companyList.find((item) => item.company_id === values.company_id) : []}
+                            onChange={(e, value) => {
+                              const newValue = value ? value.company_id : '';
+                              setFieldValue('company_id', newValue);
+                            }}
+                            getOptionLabel={(option) => option.name}
+                            sx={{
+                              width: '100%',
+                              '& .MuiOutlinedInput-root': {
+                                padding: '3px 8px!important'
+                              },
+                              '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                                right: '7px!important',
+                                top: 'calc(50% - 18px)'
+                              }
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                name="company_id"
+                                placeholder="เลือกบริษัท/ร้านค้า"
+                                error={Boolean(touched.company_id && errors.company_id)}
+                              />
+                            )}
+                          />
+                          {/* <Select
                             labelId="select-label"
                             id="select"
                             name="company_id"
@@ -813,7 +847,7 @@ function UpdateReserve() {
                                   {companias.name}
                                 </MenuItem>
                               ))}
-                          </Select>
+                          </Select> */}
                         </FormControl>
                         {touched.company_id && errors.company_id && (
                           <FormHelperText error id="helper-text-company-car">
@@ -894,80 +928,7 @@ function UpdateReserve() {
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
-                        <InputLabel>รถบรรทุก</InputLabel>
-                        <FormControl fullWidth>
-                          <Select
-                            displayEmpty
-                            variant="outlined"
-                            name="car_id"
-                            value={values.car_id}
-                            onChange={handleChange}
-                            placeholder="เลือกรถบรรทุก"
-                            fullWidth
-                          >
-                            <MenuItem value="" disabled>
-                              เลือกรถบรรทุก
-                            </MenuItem>
-                            <MenuItem value="1">ไม่ระบุรถบรรทุก</MenuItem>
-                            {carList.length > 0 &&
-                              carList.map(
-                                (cars) =>
-                                  cars.car_id !== 1 && (
-                                    <MenuItem key={cars.car_id} value={cars.car_id}>
-                                      ทะเบียน : {cars.registration_no}
-                                    </MenuItem>
-                                  )
-                              )}
-                          </Select>
-                        </FormControl>
-                      </Stack>
-                      {touched.company && errors.company && (
-                        <FormHelperText error id="helper-text-company-car">
-                          {errors.company}
-                        </FormHelperText>
-                      )}
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>คนขับรถ</InputLabel>
-                        <FormControl fullWidth>
-                          <Select
-                            displayEmpty
-                            variant="outlined"
-                            type="date"
-                            name="driver_id"
-                            value={values.driver_id}
-                            onChange={handleChange}
-                            placeholder="เลือกคนขับรถ"
-                            fullWidth
-                          >
-                            <MenuItem value="" disabled>
-                              เลือกคนขับรถ
-                            </MenuItem>
-                            <MenuItem value="1">ไม่ระบุคนขับรถ</MenuItem>
-                            {driverList.length > 0 &&
-                              driverList.map(
-                                (driver) =>
-                                  driver.driver_id !== 1 && (
-                                    <MenuItem key={driver.driver_id} value={driver.driver_id}>
-                                      {driver.firstname} {driver.lastname}
-                                    </MenuItem>
-                                  )
-                              )}
-                          </Select>
-                        </FormControl>
-                      </Stack>
-                      {touched.company && errors.company && (
-                        <FormHelperText error id="helper-text-company-car">
-                          {errors.company}
-                        </FormHelperText>
-                      )}
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>วันที่เข้ารับสินค้า*</InputLabel>
+                        <InputLabel>วันที่เข้ารับสินค้า *</InputLabel>
                         <TextField
                           required
                           fullWidth
@@ -991,6 +952,111 @@ function UpdateReserve() {
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
+                        <InputLabel>รถบรรทุก *</InputLabel>
+                        <FormControl fullWidth>
+                          <Autocomplete
+                            disablePortal
+                            id="car-list"
+                            options={carList}
+                            value={carList.length > 0 ? carList.find((item) => item.car_id === values.car_id) : []}
+                            // value={carList.find((item) => {
+                            //   if (item.car_id === values.car_id) {
+                            //     return item.registration_no;
+                            //   }
+                            // })}
+                            onChange={(e, value) => {
+                              const newValue = value ? value.car_id : '';
+                              setFieldValue('car_id', newValue);
+                            }}
+                            getOptionLabel={(option) => {
+                              if (option.car_id !== 1) {
+                                return 'ทะเบียนรถ : ' + option.registration_no;
+                              } else {
+                                return 'ไม่ระบุรถบรรทุก';
+                              }
+                            }}
+                            sx={{
+                              width: '100%',
+                              '& .MuiOutlinedInput-root': {
+                                padding: '3px 8px!important'
+                              },
+                              '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                                right: '7px!important',
+                                top: 'calc(50% - 18px)'
+                              }
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                name="car_id"
+                                placeholder="เลือกรถบรรทุก"
+                                error={Boolean(touched.car_id && errors.car_id)}
+                              />
+                            )}
+                          />
+                        </FormControl>
+                        {touched.car_id && errors.car_id && (
+                          <FormHelperText error id="helper-text-company-car">
+                            {errors.car_id}
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                      {reservationData.status !== 'completed' && (userRoles === 9 || userRoles === 1) && (
+                        <AddCar userID={user_Id} onSaves={handleSaveForm} carsList={carList} />
+                      )}
+                    </Grid>
+
+                    <Grid item xs={12} md={6} align="left">
+                      <Stack spacing={1}>
+                        <InputLabel>คนขับรถ *</InputLabel>
+                        <FormControl fullWidth>
+                          <Autocomplete
+                            disablePortal
+                            id="driver-list"
+                            options={driverList}
+                            name="driver_id"
+                            value={driverList.length > 0 ? driverList.find((item) => item.driver_id === values.driver_id) : []}
+                            // defaultValue={driverList.find((item) => item.driver_id === values.driver_id)?.driver_id}
+                            onChange={(e, value) => {
+                              const newValue = value ? value.driver_id : '';
+                              setFieldValue('driver_id', newValue);
+                            }}
+                            getOptionLabel={(option) => {
+                              if (option.driver_id !== 1) {
+                                return option.firstname + option.lastname;
+                              } else {
+                                return 'ไม่ระบุคนขับรถ';
+                              }
+                            }}
+                            sx={{
+                              width: '100%',
+                              '& .MuiOutlinedInput-root': {
+                                padding: '3px 8px!important'
+                              },
+                              '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                                right: '7px!important',
+                                top: 'calc(50% - 18px)'
+                              }
+                            }}
+                            error={Boolean(touched.driver_id && errors.driver_id)}
+                            renderInput={(params) => (
+                              <TextField {...params} placeholder="เลือกคนขับรถ" error={Boolean(touched.driver_id && errors.driver_id)} />
+                            )}
+                          />
+                        </FormControl>
+                        {touched.driver_id && errors.driver_id && (
+                          <FormHelperText error id="helper-text-driver_id-car">
+                            {errors.driver_id}
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                      {reservationData.status !== 'completed' && (userRoles === 9 || userRoles === 1) && (
+                        <AddDriver userID={user_Id} onSaves={handleSaveDriverForm} driverList={driverList} />
+                      )}
+                    </Grid>
+
+                    {/* <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
                         <InputLabel>เหตุผลการจอง</InputLabel>
                         <OutlinedInput
                           id="description"
@@ -1008,7 +1074,7 @@ function UpdateReserve() {
                           </FormHelperText>
                         )}
                       </Stack>
-                    </Grid>
+                    </Grid> */}
 
                     <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
@@ -1052,9 +1118,14 @@ function UpdateReserve() {
                           orderList.map((order, index) => (
                             <Grid item xs={12} key={index} sx={{ mb: 2 }}>
                               <Grid container spacing={2} sx={{ mb: '15px' }}>
-                                <Grid item xs={12} md={12}>
+                                <Grid item xs={12} md={6}>
                                   <Typography variant="body1">
                                     <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
+                                  </Typography>
+                                </Grid>
+                                <Grid item xs={12} md={12}>
+                                  <Typography variant="body1">
+                                    <strong>วันที่สั่งซื้อสินค้า : </strong> {moment(order.order_date).format('DD/MM/YYYY')}
                                   </Typography>
                                 </Grid>
                                 <Grid item xs={12} md={12}>
@@ -1198,6 +1269,17 @@ function UpdateReserve() {
                         startIcon={<SaveOutlined />}
                       >
                         บันทึกข้อมูลการจอง
+                      </Button>
+                    )}
+                    {reservationData.status === 'completed' && (
+                      <Button
+                        size="mediam"
+                        variant="contained"
+                        color="primary"
+                        onClick={() => getQueueIdByReserve(id)}
+                        startIcon={<ContainerOutlined />}
+                      >
+                        ข้อมูลคิว
                       </Button>
                     )}
                     <Button

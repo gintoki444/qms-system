@@ -73,13 +73,13 @@ const headCells = [
     disablePadding: true,
     label: 'เบรน Code'
   },
-  {
-    id: 'description',
-    align: 'left',
-    disablePadding: true,
-    width: '12%',
-    label: 'เหตุผลการจอง'
-  },
+  // {
+  //   id: 'description',
+  //   align: 'left',
+  //   disablePadding: true,
+  //   width: '12%',
+  //   label: 'เหตุผลการจอง'
+  // },
   {
     id: 'Company',
     align: 'left',
@@ -153,8 +153,8 @@ const OrderStatus = ({ status }) => {
 
   switch (status) {
     case 'pending':
-      color = 'warning';
-      title = 'Pending';
+      color = 'error';
+      title = 'รอคำสั่งซื้อ';
       break;
     case 'completed':
       color = 'success';
@@ -162,7 +162,7 @@ const OrderStatus = ({ status }) => {
       break;
     case 'waiting':
       color = 'warning';
-      title = 'รออนุมัติ';
+      title = 'รอออกคิว';
       break;
     default:
       color = 'secondary';
@@ -171,7 +171,9 @@ const OrderStatus = ({ status }) => {
 
   return (
     <Stack direction="row" spacing={1} sx={{ justifyContent: 'center' }}>
-      <Chip color={color ? color : ''} label={title} sx={{ minWidth: 70 }} />
+      <Tooltip title={title}>
+        <Chip color={color ? color : ''} label={title} sx={{ minWidth: 70 }} />
+      </Tooltip>
     </Stack>
   );
 };
@@ -301,6 +303,17 @@ export default function ReserveTable({ startDate, endDate }) {
     setOpen(false);
   };
 
+  //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
+  async function getQueueIdByReserve(reserve_id) {
+    try {
+      reserveRequest.getQueuesByIdReserve(reserve_id).then((response) => {
+        window.location.href = '/queues/detail/' + response[0].queue_id;
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   //=========================================== ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง //===========================================
   async function checkQueueDataf(reserve_id) {
     let config = {
@@ -428,24 +441,24 @@ export default function ReserveTable({ startDate, endDate }) {
 
       if (queuecountf === 0) {
         // if (total_quantity > 0) {
-          //สร้างข้อมูลคิว
-          const queue_number = (await checkQueueCompanyCount(conpany_id)) + 1;
+        //สร้างข้อมูลคิว
+        const queue_number = (await checkQueueCompanyCount(conpany_id)) + 1;
 
-          const queue_id_createf = await createQueuef(id, brand_code, queue_number);
+        const queue_id_createf = await createQueuef(id, brand_code, queue_number);
 
-          //แจ้งเตือนหลังจากสร้าง Queue แล้ว
-          await getMessageCreateQueue(queue_id_createf, id);
+        //แจ้งเตือนหลังจากสร้าง Queue แล้ว
+        await getMessageCreateQueue(queue_id_createf, id);
 
-          //สร้าง step 1-4
-          //createStep(queue_id_createf)
-          await createStepsf(queue_id_createf, id);
+        //สร้าง step 1-4
+        //createStep(queue_id_createf)
+        await createStepsf(queue_id_createf, id);
         // } else {
         //   alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
         // }
       } else {
         //alert("สร้างคิวแล้ว")
-        // const queue_id = await getQueueIdf(id);
-        window.location.href = '/queues/detail/' + queue_id;
+        updateReserveStatus(id);
+        getQueueIdByReserve(id);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -655,15 +668,17 @@ export default function ReserveTable({ startDate, endDate }) {
   return (
     <Box>
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-        <DialogTitle id="responsive-dialog-title">{'แจ้งเตือน'}</DialogTitle>
+        <DialogTitle id="responsive-dialog-title">
+          <Typography variant="h5">{'แจ้งเตือน'}</Typography>
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>{notifytext}</DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={() => handleClose(0)}>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
+          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
             ยกเลิก
           </Button>
-          <Button onClick={() => handleClose(1)} autoFocus>
+          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
             ยืนยัน
           </Button>
         </DialogActions>
@@ -716,7 +731,7 @@ export default function ReserveTable({ startDate, endDate }) {
                         <Chip color={'primary'} label={row.registration_no} sx={{ width: 122, border: 1 }} />
                       </TableCell>
                       <TableCell align="center">{getTokenCompany(row.product_company_id)}</TableCell>
-                      <TableCell align="left">
+                      {/* <TableCell align="left">
                         {row.r_description ? (
                           <Tooltip title={row.r_description}>
                             {row.r_description.substring(0, 30)} {row.r_description.length >= 20 && '...'}
@@ -724,14 +739,18 @@ export default function ReserveTable({ startDate, endDate }) {
                         ) : (
                           <>-</>
                         )}
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell align="left">{row.company}</TableCell>
                       <TableCell align="left">{row.contact_person}</TableCell>
                       <TableCell align="left">{row.contact_number}</TableCell>
                       <TableCell align="left">{row.driver}</TableCell>
                       <TableCell align="right"> {parseFloat((row.total_quantity * 1).toFixed(3))}</TableCell>
                       <TableCell align="center">
-                        <OrderStatus status={row.status} />
+                        {row.status == 'completed' && parseFloat(row.total_quantity) == 0 ? (
+                          <OrderStatus status={'pending'} />
+                        ) : (
+                          <OrderStatus status={row.status} />
+                        )}
                       </TableCell>
                       <TableCell align="center">
                         <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
@@ -761,7 +780,7 @@ export default function ReserveTable({ startDate, endDate }) {
                                     currentDate !== moment(row.pickup_date).format('YYYY-MM-DD') ||
                                     row.car_id == 1 ||
                                     row.driver_id == 1
-                                  } 
+                                  }
                                   color="info"
                                   onClick={() =>
                                     handleClickOpen(

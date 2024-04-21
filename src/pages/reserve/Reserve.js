@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
@@ -13,21 +13,41 @@ const currentDate = moment(new Date()).format('YYYY-MM-DD');
 import ReserveTable from './ReserveTable';
 
 function Reserve() {
+  let startDate = localStorage.getItem('reserve_startDate');
+  let endDate = localStorage.getItem('reserve_endDate');
+  useEffect(() => {
+    // if (!startDate) {
+    //   startDate = currentDate;
+    // }
+    // if (!endDate) {
+    //   endDate = currentDate;
+    // }
+  }, [startDate, endDate]);
+  
+  if (!startDate) {
+    startDate = currentDate;
+  }
+  if (!endDate) {
+    endDate = currentDate;
+  }
   const userRole = useSelector((state) => state.auth?.roles);
   const navigate = useNavigate();
 
-  const [selectedDate1, setSelectedDate1] = useState(currentDate);
-  const [selectedDate2, setSelectedDate2] = useState(currentDate);
+  const [selectedDate1, setSelectedDate1] = useState(startDate);
+  const [selectedDate2, setSelectedDate2] = useState(endDate);
   const [selectedDateRange, setSelectedDateRange] = useState({
-    startDate: currentDate,
-    endDate: currentDate
+    startDate: selectedDate1,
+    endDate: selectedDate2
   });
   const handleDateChange1 = (event) => {
     setSelectedDate1(event.target.value);
+
+    localStorage.setItem('reserve_startDate', event.target.value);
   };
 
   const handleDateChange2 = (event) => {
     setSelectedDate2(event.target.value);
+    localStorage.setItem('reserve_endDate', event.target.value);
   };
 
   const handleSearch = () => {

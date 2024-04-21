@@ -270,7 +270,7 @@ function UpdateCar() {
                     )}
                   </Stack>
                 </Grid>
-
+                {/* 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
                     <InputLabel htmlFor="brand-car">ยี้ห้อรถ</InputLabel>
@@ -313,7 +313,7 @@ function UpdateCar() {
                       </FormHelperText>
                     )}
                   </Stack>
-                </Grid>
+                </Grid> */}
 
                 <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
                   <Button

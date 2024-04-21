@@ -53,7 +53,7 @@ const CarsTimeInOut = () => {
   return (
     <Grid alignItems="center" justifyContent="space-between">
       <Grid container rowSpacing={1} columnSpacing={1.75}>
-        <Grid item xs={12} md={10} lg={10}>
+        <Grid item xs={12} md={12} lg={12}>
           <Grid container rowSpacing={1} columnSpacing={1.75}>
             <Grid item xs={3}>
               <Stack spacing={1}>

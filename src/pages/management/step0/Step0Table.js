@@ -199,7 +199,7 @@ function Step0Table({ startDate, endDate }) {
     setLoading(true);
     try {
       stepRequest.getAllStep0ByDate(startDate, endDate).then((response) => {
-        setItems(response.filter((x) => x.token !== null));
+        setItems(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0));
         setLoading(false);
       });
     } catch (e) {
@@ -242,7 +242,7 @@ function Step0Table({ startDate, endDate }) {
                   return (
                     <TableRow key={index}>
                       <TableCell align="center">{index + 1}</TableCell>
-                      <TableCell align="left">{moment(row.queue_date).format('MM/DD/YYYY')}</TableCell>
+                      <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
                       <TableCell align="center">
                         <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
                         {row.queue_remain == 1 && <span style={{ color: 'red' }}> (คิวค้าง)</span>}

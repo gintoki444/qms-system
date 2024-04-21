@@ -25,7 +25,8 @@ import {
   Backdrop,
   CircularProgress,
   FormControl,
-  Select
+  Select,
+  Autocomplete
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import MenuItem from '@mui/material/MenuItem';
@@ -59,11 +60,27 @@ function AddReserve() {
   // =============== Get Car ===============//
   const [carList, setCarList] = useState([]);
   const getCarLsit = () => {
-    const urlapi = apiUrl + `/allcars/` + userId;
+    const urlapi = apiUrl + `/allcars/${userId}`;
     axios
       .get(urlapi)
       .then((res) => {
         if (res) {
+          res.data.unshift({
+            car_id: 1,
+            user_id: 1,
+            registration_no: 'ไม่ระบุรถ',
+            brand: 'ไม่ระบุ',
+            color: 'ไม่ระบุ',
+            car_type_id: 4,
+            province_id: null,
+            created_at: '2024-04-04T21:17:43.000Z',
+            updated_at: '2024-04-04T21:17:43.000Z',
+            car_type_name: 'รถสิบล้อ',
+            code: null,
+            name_th: null,
+            name_en: null,
+            geography_id: null
+          });
           setCarList(res.data);
         }
       })
@@ -73,31 +90,27 @@ function AddReserve() {
   // =============== Get Driver ===============//
   const [driverList, setDriverList] = useState([]);
   const getDriverLsit = () => {
-    const urlapi = apiUrl + `/alldrivers/` + userId;
+    const urlapi = apiUrl + `/alldrivers/${userId}`;
     axios
       .get(urlapi)
       .then((res) => {
         if (res) {
+          res.data.unshift({
+            driver_id: 1,
+            user_id: 1,
+            firstname: 'ไม่ระบุคนขับรถ',
+            lastname: '',
+            license_no: 'ไม่ระบุ',
+            id_card_no: 'ไม่ระบุ',
+            mobile_no: 'ไม่ระบุ',
+            created_at: '2024-04-04T21:21:02.000Z',
+            updated_at: '2024-04-04T21:21:02.000Z'
+          });
           setDriverList(res.data);
         }
       })
       .catch((err) => console.log(err));
   };
-
-  // =============== Get Brand ===============//
-  // const [brandList, setBrandList] = useState([]);
-  // const getBrandList = () => {
-  //   var requestOptions = {
-  //     method: 'GET',
-  //     redirect: 'follow'
-  //   };
-  //   fetch(apiUrl + '/allproductbrandgroup', requestOptions)
-  //     .then((response) => response.json())
-  //     .then((result) => {
-  //       setBrandList(result);
-  //     })
-  //     .catch((error) => console.log('error', error));
-  // };
 
   // =============== Get Product Company ===============//
   const [productCompany, setProductCompany] = useState([]);
@@ -160,7 +173,9 @@ function AddReserve() {
     product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
     product_brand_id: Yup.string().required('กรุณาระบุตรา(สินค้า)'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
-    reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย')
+    reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
+    car_id: Yup.string().required('กรุณาเลือกรถบรรทุก'),
+    driver_id: Yup.string().required('กรุณาเลือกคนขับรถ')
     // description: Yup.string().required('กรุณากรอกหัวข้อการจอง')
   });
 
@@ -176,6 +191,7 @@ function AddReserve() {
       values.created_at = currentDate;
       values.updated_at = currentDate;
 
+      // console.log(values);
       let config = {
         method: 'post',
         maxBodyLength: Infinity,
@@ -273,9 +289,37 @@ function AddReserve() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
-                    <InputLabel>บริษัท/ร้านค้า*</InputLabel>
+                    <InputLabel>บริษัท/ร้านค้า *</InputLabel>
                     <FormControl fullWidth>
-                      <Select
+                      <Autocomplete
+                        disablePortal
+                        id="company-list"
+                        options={companyList}
+                        onChange={(e, value) => {
+                          const newValue = value ? value.company_id : null;
+                          setFieldValue('company_id', newValue);
+                        }}
+                        getOptionLabel={(option) => option.name}
+                        sx={{
+                          width: '100%',
+                          '& .MuiOutlinedInput-root': {
+                            padding: '3px 8px!important'
+                          },
+                          '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                            right: '7px!important',
+                            top: 'calc(50% - 18px)'
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            name="company_id"
+                            placeholder="เลือกบริษัท/ร้านค้า"
+                            error={Boolean(touched.company_id && errors.company_id)}
+                          />
+                        )}
+                      />
+                      {/* <Select
                         displayEmpty
                         variant="outlined"
                         name="company_id"
@@ -293,7 +337,7 @@ function AddReserve() {
                             {companias.name}
                           </MenuItem>
                         ))}
-                      </Select>
+                      </Select> */}
                     </FormControl>
                     {touched.company_id && errors.company_id && (
                       <FormHelperText error id="helper-text-company-car">
@@ -372,73 +416,7 @@ function AddReserve() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
-                    <InputLabel>รถบรรทุก</InputLabel>
-                    <FormControl fullWidth>
-                      <Select
-                        displayEmpty
-                        variant="outlined"
-                        name="car_id"
-                        value={values.car_id || ''}
-                        onChange={handleChange}
-                        fullWidth
-                        error={Boolean(touched.car_id && errors.car_id)}
-                      >
-                        <MenuItem disabled value="">
-                          เลือกรถบรรทุก
-                        </MenuItem>
-                        <MenuItem value="1">ไม่ระบุรถบรรทุก</MenuItem>
-                        {carList.map((cars) => (
-                          <MenuItem key={cars.car_id} value={cars.car_id}>
-                            ทะเบียน : {cars.registration_no}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    {touched.car_id && errors.car_id && (
-                      <FormHelperText error id="helper-text-company-car">
-                        {errors.car_id}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>คนขับรถ</InputLabel>
-                    <FormControl fullWidth>
-                      <Select
-                        displayEmpty
-                        variant="outlined"
-                        type="date"
-                        name="driver_id"
-                        value={values.driver_id || ''}
-                        onChange={handleChange}
-                        placeholder="เลือกคนขับรถ"
-                        fullWidth
-                        error={Boolean(touched.driver_id && errors.driver_id)}
-                      >
-                        <MenuItem disabled value="">
-                          เลือกคนขับรถ
-                        </MenuItem>
-                        <MenuItem value="1">ไม่ระบุคนขับรถ</MenuItem>
-                        {driverList.map((driver) => (
-                          <MenuItem key={driver.driver_id} value={driver.driver_id}>
-                            {driver.firstname} {driver.lastname}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    {touched.company && errors.company && (
-                      <FormHelperText error id="helper-text-company-car">
-                        {errors.company}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>วันที่เข้ารับสินค้า*</InputLabel>
+                    <InputLabel>วันที่เข้ารับสินค้า *</InputLabel>
                     <TextField
                       required
                       fullWidth
@@ -462,6 +440,111 @@ function AddReserve() {
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
+                    <InputLabel>รถบรรทุก *</InputLabel>
+                    <FormControl fullWidth>
+                      <Autocomplete
+                        disablePortal
+                        id="car-list"
+                        options={carList}
+                        onChange={(e, value) => {
+                          const newValue = value ? value.car_id : '';
+                          setFieldValue('car_id', newValue);
+                        }}
+                        getOptionLabel={(option) => {
+                          if (option.car_id !== 1) {
+                            return 'ทะเบียนรถ : ' + option.registration_no;
+                          } else {
+                            return 'ไม่ระบุรถบรรทุก';
+                          }
+                        }}
+                        sx={{
+                          width: '100%',
+                          '& .MuiOutlinedInput-root': {
+                            padding: '3px 8px!important'
+                          },
+                          '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                            right: '7px!important',
+                            top: 'calc(50% - 18px)'
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            name="car_id"
+                            placeholder="เลือกรถบรรทุก"
+                            error={Boolean(touched.car_id && errors.car_id)}
+                          />
+                        )}
+                      />
+                      {/* <Select
+                        displayEmpty
+                        variant="outlined"
+                        name="car_id"
+                        value={values.car_id || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        error={Boolean(touched.car_id && errors.car_id)}
+                      >
+                        <MenuItem disabled value="">
+                          เลือกรถบรรทุก
+                        </MenuItem>
+                        <MenuItem value="1">ไม่ระบุรถบรรทุก</MenuItem>
+                        {carList.map((cars) => (
+                          <MenuItem key={cars.car_id} value={cars.car_id}>
+                            ทะเบียน : {cars.registration_no}
+                          </MenuItem>
+                        ))}
+                      </Select> */}
+                    </FormControl>
+                    {touched.car_id && errors.car_id && (
+                      <FormHelperText error id="helper-text-company-car">
+                        {errors.car_id}
+                      </FormHelperText>
+                    )}
+                  </Stack>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Stack spacing={1}>
+                    <InputLabel>คนขับรถ *</InputLabel>
+                    <FormControl fullWidth>
+                      <Autocomplete
+                        disablePortal
+                        id="driver-list"
+                        options={driverList}
+                        name="driver_id"
+                        // onChange={(e, value) => setFieldValue('driver_id', value.driver_id)}
+                        onChange={(e, value) => {
+                          const newValue = value ? value.driver_id : '';
+                          setFieldValue('driver_id', newValue);
+                        }}
+                        getOptionLabel={(option) => option.firstname + option.lastname}
+                        sx={{
+                          width: '100%',
+                          '& .MuiOutlinedInput-root': {
+                            padding: '3px 8px!important'
+                          },
+                          '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                            right: '7px!important',
+                            top: 'calc(50% - 18px)'
+                          }
+                        }}
+                        error={Boolean(touched.driver_id && errors.driver_id)}
+                        renderInput={(params) => (
+                          <TextField {...params} placeholder="เลือกคนขับรถ" error={Boolean(touched.driver_id && errors.driver_id)} />
+                        )}
+                      />
+                    </FormControl>
+                    {touched.driver_id && errors.driver_id && (
+                      <FormHelperText error id="helper-text-driver_id-car">
+                        {errors.driver_id}
+                      </FormHelperText>
+                    )}
+                  </Stack>
+                </Grid>
+
+                {/* <Grid item xs={12} md={6}>
+                  <Stack spacing={1}>
                     <InputLabel>เหตุผลการจอง</InputLabel>
                     <OutlinedInput
                       id="description"
@@ -479,7 +562,7 @@ function AddReserve() {
                       </FormHelperText>
                     )}
                   </Stack>
-                </Grid>
+                </Grid> */}
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>

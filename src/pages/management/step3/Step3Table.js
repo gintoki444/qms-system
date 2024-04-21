@@ -50,7 +50,6 @@ import SoundCall from 'components/@extended/SoundCall';
 import QueueTag from 'components/@extended/QueueTag';
 
 export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
-
   // ==============================|| ORDER TABLE - HEADER ||============================== //
   const headCells = [
     {
@@ -193,7 +192,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
       } else if (status === 'processing') {
         await processingGet();
       }
-      await getStepCount(3, 'processing');
+      // await getStepCount(3, 'processing');
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -219,7 +218,18 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
   const processingGet = async () => {
     try {
       await queueReques.getStep3Processing().then((response) => {
-        setItems(response);
+        const step3 = response;
+        queueReques.getStep1Processing().then((response) => {
+          if (response.length > 0) {
+            response.map((x) => {
+              step3.push(x);
+            });
+          }
+          setItems(step3);
+          setStationCount(step3.length);
+          // dispatch(setStation({ station_count: step3.length }));
+        });
+        // setItems(response);
       });
     } catch (e) {
       console.log(e);
@@ -553,12 +563,25 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
       queueReques
         .getStep3Processing()
         .then((response) => {
-          if (response) {
-            const count = response.filter((x) => x.station_id == id).length;
-            resolve(count);
-          } else {
-            resolve(0); // Return 0 if response is empty
-          }
+          const step3Check = response;
+
+          queueReques.getStep1Processing().then((response) => {
+            const step1Check = response;
+
+            if (id == 23) {
+              const countStep1 = step1Check.filter((x) => x.station_id == 2).length;
+              const countStep3 = step3Check.filter((x) => x.station_id == id).length;
+
+              const count = countStep3 + countStep1;
+              resolve(count);
+            } else {
+              const countStep1 = step1Check.filter((x) => x.station_id == 29).length;
+              const countStep3 = step3Check.filter((x) => x.station_id == id).length;
+
+              const count = countStep3 + countStep1;
+              resolve(count);
+            }
+          });
         })
         .catch((error) => {
           console.error(error);
@@ -610,10 +633,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
   const handleClose = async (flag) => {
     // flag = 1 = ยืนยัน
     if (flag === 1) {
-      //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
       if (fr === 'call') {
-        // station_count = จำนวนคิวที่กำลังเข้ารับบรการ, station_num = จำนวนหัวจ่ายในสถานีทั้งหมด
-
         const checkstation = await checkStations(selectedStations[id_update]);
         if (checkstation > 0) {
           alert('สถานีบริการนี้กำลังใช้งานอยู่');
@@ -724,7 +744,6 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
   };
 
   const handleCallQueue = (queues) => {
-    
     let detialTxt = '';
 
     if (queues.station_description == 'รอเรียกคิว' && isEmpty(selectedStations)) {
@@ -734,17 +753,17 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
         const getStations = stations.filter((x) => x.station_id === selectedStations[queues.step_id]);
         const textStation = getStations[0].station_description;
         const updatedText = textStation.replace(/ชั่งหนักที่ /g, '');
-        detialTxt = `เข้าสถานีชั่งหนัก ช่องที่ ${updatedText}`;
+        detialTxt = `เข้าสถานีชั่งหนัก ช่องที่${updatedText}`;
       }
     } else {
       if (isEmpty(selectedStations)) {
         const updatedText = queues.station_description.replace(/ชั่งหนักที่ /g, '');
-        detialTxt = `เข้าสถานีชั่งหนัก ช่องที่ ${updatedText}`;
+        detialTxt = `เข้าสถานีชั่งหนัก ช่องที่${updatedText}`;
       } else {
         const getStations = stations.filter((x) => x.station_id === selectedStations[queues.step_id]);
         const textStation = getStations[0].station_description;
         const updatedText = textStation.replace(/ชั่งหนักที่ /g, '');
-        detialTxt = `เข้าสถานีชั่งหนัก ช่องที่ ${updatedText}`;
+        detialTxt = `เข้าสถานีชั่งหนัก ช่องที่${updatedText}`;
       }
     }
 
@@ -972,9 +991,9 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
 
                         <TableCell align="center">
                           <QueueTag id={row.product_company_id || ''} token={row.token} />
-                            {moment(row.queue_date).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
-                              <span style={{ color: 'red' }}> (คิวค้าง)</span>
-                            )}
+                          {moment(row.queue_date).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
+                            <span style={{ color: 'red' }}> (คิวค้าง)</span>
+                          )}
                         </TableCell>
 
                         <TableCell align="center">
@@ -1002,7 +1021,12 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
 
                         <TableCell align="center">
                           {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอคิวชั่งหนัก'} />}
-                          {status == 'processing' && <Chip color="success" sx={{ width: '95px' }} label={'กำลังชั่งหนัก'} />}
+                          {status == 'processing' && row.station_id !== 2 && row.station_id !== 29 && (
+                            <Chip color="success" sx={{ width: '95px' }} label={'กำลังชั่งหนัก '} />
+                          )}
+                          {(row.station_id === 2 || row.station_id === 29) && (
+                            <Chip color="success" sx={{ width: '95px' }} label={'กำลังชั่งเบา '} />
+                          )}
                         </TableCell>
                         {status == 'processing' && (
                           <TableCell align="center">
@@ -1027,7 +1051,6 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                           <ButtonGroup aria-label="button group" sx={{ alignItems: 'center' }}>
                             {status == 'waiting' && (
                               <Button
-                                // sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                 variant="contained"
                                 size="small"
                                 color="info"
@@ -1040,7 +1063,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                             {status == 'processing' && (
                               <div>
                                 <Button
-                                  // startIcon={<ArrowBackIosIcon />}
+                                  disabled={row.station_id == 2 || row.station_id == 29}
                                   variant="contained"
                                   size="small"
                                   onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.team_id, row)}
@@ -1049,7 +1072,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                                   ยกเลิก
                                 </Button>
                                 <Button
-                                  // endIcon={<DoneIcon />}
+                                  disabled={row.station_id == 2 || row.station_id == 29}
                                   size="small"
                                   variant="contained"
                                   onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row.team_id, row)}

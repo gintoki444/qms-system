@@ -125,7 +125,8 @@ function AddProducts() {
     if (values.other) setRemarkTxt = (setRemarkTxt ? setRemarkTxt + ',' : setRemarkTxt) + values.other;
 
     values.product_register_remark = setRemarkTxt;
-
+    values.product_register_staus = 'A';
+    console.log(values);
     try {
       adminRequest.AddProductRegister(values).then((response) => {
         if (response.status === 'ok') {

@@ -205,7 +205,7 @@ function CheckersTable() {
               {checkersList.map((row, index) => {
                 return (
                   <TableRow key={index}>
-                    <TableCell align="center">{index+1}</TableCell>
+                    <TableCell align="center">{index + 1}</TableCell>
                     <TableCell align="left">{row.checker_name}</TableCell>
                     <TableCell align="left">{row.contact_info}</TableCell>
                     <TableCell align="left">{row.department}</TableCell>

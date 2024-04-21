@@ -31,7 +31,7 @@ import {
 // import Dot from 'components/@extended/Dot';
 
 // Link api queues
-import * as getQueues from '_api/queueReques';
+import * as queueReques from '_api/queueReques';
 import * as stepRequest from '_api/StepRequest';
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -181,7 +181,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
   const [items, setItems] = useState([]);
   const waitingGet = async () => {
     try {
-      await getQueues.getStep1Waitting().then((response) => {
+      await queueReques.getStep1Waitting().then((response) => {
         if (onFilter == 0) {
           setItems(response.filter((x) => parseFloat(x.total_quantity) > 0));
         } else {
@@ -196,9 +196,17 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
   //ข้อมูล รอเรียกคิว step1
   const processingGet = async () => {
     try {
-      await getQueues.getStep1Processing().then((response) => {
-        setItems(response);
-        dispatch(setStation({ station_count: response.length }));
+      await queueReques.getStep1Processing().then((response) => {
+        const step1 = response;
+        queueReques.getStep3Processing().then((response) => {
+          if (response.length > 0)
+            response.map((x) => {
+              step1.push(x);
+            });
+          setItems(step1);
+          dispatch(setStation({ station_count: step1.length }));
+        });
+        // dispatch(setStation({ station_count: response.length }));
       });
     } catch (e) {
       console.log(e);
@@ -207,19 +215,32 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
 
   const checkStations = (id) => {
     return new Promise((resolve, reject) => {
-      getQueues
+      queueReques
         .getStep1Processing()
         .then((response) => {
-          if (response) {
-            const count = response.filter((x) => x.station_id == id).length;
-            resolve(count);
-          } else {
-            resolve(0); // Return 0 if response is empty
-          }
+          const step1Check = response;
+
+          queueReques.getStep3Processing().then((response) => {
+            const step3Check = response;
+
+            if (id == 2) {
+              const countStep3 = step3Check.filter((x) => x.station_id == 23).length;
+              const countStep1 = step1Check.filter((x) => x.station_id == id).length;
+
+              const count = countStep3 + countStep1;
+              resolve(count);
+            } else {
+              const countStep3 = step3Check.filter((x) => x.station_id == 30).length;
+              const countStep1 = step1Check.filter((x) => x.station_id == id).length;
+
+              const count = countStep3 + countStep1;
+              resolve(count);
+            }
+          });
         })
         .catch((error) => {
           console.error(error);
-          reject(error); // Reject with error if there's an error
+          reject(error);
         });
     });
   };
@@ -277,9 +298,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
     // flag === 1 คลิกยืนยัน และ fr = คลิกมาจากปุ่มไหน
     if (flag === 1) {
       if (fr === 'call') {
-        // setTimeout(() => {
-        // }, 100);
-
         const checkstation = await checkStations(selectedStations[id_update]);
         if (checkstation > 0) {
           alert('สถานีบริการนี้กำลังใช้งานอยู่');
@@ -320,6 +338,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
           try {
             setLoading(true);
             setOpen(false);
+            setItems([]);
             // การใช้งาน Line Notify
             getStepToken(id_update)
               .then(({ queue_id, reserve_id, token }) => {
@@ -347,6 +366,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
       if (fr === 'cancel') {
         setLoading(true);
         setOpen(false);
+        setItems([]);
         //ยกเลิก
         // การใช้งาน Line Notify
         getStepToken(id_update)
@@ -599,10 +619,8 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
         .then((response) => response.json())
         .then((result) => {
           if (result['status'] === 'ok') {
-            console.log('updateEndTime is ok');
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
-            console.log('not update updateEndTime');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
           }
         })
@@ -620,17 +638,17 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
         const getStations = stations.filter((x) => x.station_id === selectedStations[queues.step_id]);
         const textStation = getStations[0].station_description;
         const updatedText = textStation.replace(/ชั่งเบาที่ /g, '');
-        detialTxt = `เข้าสถานีชั่งเบา ช่องที่ ${updatedText}`;
+        detialTxt = `เข้าสถานีชั่งเบาช่องที่${updatedText}`;
       }
     } else {
       if (isEmpty(selectedStations)) {
         const updatedText = queues.station_description.replace(/ชั่งเบาที่ /g, '');
-        detialTxt = `เข้าสถานีชั่งเบา ช่องที่ ${updatedText}`;
+        detialTxt = `เข้าสถานีชั่งเบาช่องที่${updatedText}`;
       } else {
         const getStations = stations.filter((x) => x.station_id === selectedStations[queues.step_id]);
         const textStation = getStations[0].station_description;
         const updatedText = textStation.replace(/ชั่งเบาที่ /g, '');
-        detialTxt = `เข้าสถานีชั่งเบา ช่องที่ ${updatedText}`;
+        detialTxt = `เข้าสถานีชั่งเบาช่องที่${updatedText}`;
       }
     }
 
@@ -829,7 +847,12 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
                           </TableCell>
                           <TableCell align="center">
                             {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอคิวชั่งเบา'} />}
-                            {status == 'processing' && <Chip color="success" sx={{ width: '95px' }} label={'กำลังชั่งเบา'} />}
+                            {status == 'processing' && row.station_id !== 23 && row.station_id !== 30 && (
+                              <Chip color="success" sx={{ width: '95px' }} label={'กำลังชั่งเบา '} />
+                            )}
+                            {(row.station_id === 23 || row.station_id === 30) && (
+                              <Chip color="success" sx={{ width: '95px' }} label={'กำลังชั่งหนัก '} />
+                            )}
                           </TableCell>
                           {status == 'processing' && (
                             <TableCell align="center">
@@ -874,6 +897,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
                                     <span>
                                       <Button
                                         // sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                        disabled={row.station_id == 23 || row.station_id == 30}
                                         variant="contained"
                                         size="small"
                                         color="error"
@@ -891,6 +915,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
                                         variant="contained"
                                         size="small"
                                         color="primary"
+                                        disabled={row.station_id == 23 || row.station_id == 30}
                                         onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row)}
                                         // endIcon={<RightSquareOutlined />}
                                       >

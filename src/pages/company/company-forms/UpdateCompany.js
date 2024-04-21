@@ -49,7 +49,7 @@ function UpdateCompany() {
     name: Yup.string().max(255).required('กรุณาระบุชื่อ บริษัท/ร้านค้า'),
     country: Yup.string().max(255).required('กรุณาระบุประเทศ'),
     open_time: Yup.string().max(255).required('กรุณาระบุเวลาทำการ'),
-    description: Yup.string().max(255).required('กรุณาระบุรายละเอียดของบริษัท'),
+    // description: Yup.string().max(255).required('กรุณาระบุรายละเอียดของบริษัท'),
     tax_no: Yup.string().min(13).max(13).required('กรุณาระบุเลขที่ผู้เสียภาษี'),
     phone: Yup.string()
       .min(8, 'กรุณาระบุเบอร์โทรศัพท์อย่างน้อย 8 หลัก')
@@ -59,13 +59,13 @@ function UpdateCompany() {
       .required('กรุณาระบุเบอร์โทรศัพท์'),
     address: Yup.string().max(255).required('กรุณาระบุที่อยู่'),
     zipcode: Yup.string().max(5).required('กรุณาระบุรหัสไปรษณีย์'),
-    contact_person: Yup.string().max(255).required('กรุณาระบุชื่อผู้ติดต่อ'),
-    contact_number: Yup.string()
-      .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
-      .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
-      .min(9, 'กรุณาระบุเบอร์โทรศัพท์ 9 หลัก')
-      .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
-      .required('กรุณาระบุเบอร์โทรศัพท์ผู้ติดต่อ')
+    // contact_person: Yup.string().max(255).required('กรุณาระบุชื่อผู้ติดต่อ'),
+    // contact_number: Yup.string()
+    //   .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
+    //   .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
+    //   .min(9, 'กรุณาระบุเบอร์โทรศัพท์ 9 หลัก')
+    //   .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
+    //   .required('กรุณาระบุเบอร์โทรศัพท์ผู้ติดต่อ')
   });
 
   const { id } = useParams();
@@ -315,7 +315,7 @@ function UpdateCompany() {
 
                 <Grid item xs={6}>
                   <Stack spacing={1}>
-                    <InputLabel htmlFor="description-company">รายละเอียด*</InputLabel>
+                    <InputLabel htmlFor="description-company">รายละเอียด</InputLabel>
                     <OutlinedInput
                       id="description-company"
                       type="description"
@@ -342,7 +342,7 @@ function UpdateCompany() {
 
                 <Grid item xs={6}>
                   <Stack spacing={1}>
-                    <InputLabel htmlFor="contact_person-company">ชื่อผู้ติดต่อ*</InputLabel>
+                    <InputLabel htmlFor="contact_person-company">ชื่อผู้ติดต่อ</InputLabel>
                     <OutlinedInput
                       id="contact_person-company"
                       type="contact_person"
@@ -364,7 +364,7 @@ function UpdateCompany() {
 
                 <Grid item xs={6}>
                   <Stack spacing={1}>
-                    <InputLabel htmlFor="contact_number-company">เบอร์โทรผู้ติดต่อ*</InputLabel>
+                    <InputLabel htmlFor="contact_number-company">เบอร์โทรผู้ติดต่อ</InputLabel>
                     <OutlinedInput
                       id="contact_number-company"
                       type="contact_number"

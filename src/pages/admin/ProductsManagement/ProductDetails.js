@@ -35,7 +35,8 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import MainCard from 'components/MainCard';
-import { RollbackOutlined } from '@ant-design/icons';
+
+import { RollbackOutlined, PrinterOutlined } from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
@@ -288,6 +289,10 @@ function ProductDetails() {
   const backToPage = () => {
     navigate('/admin/product-register/');
   };
+
+  const backToPrintPage = () => {
+    navigate('/prints/product-manager', { state: { productId: id, link: '/admin/product-register/details/' + id } });
+  };
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -306,7 +311,7 @@ function ProductDetails() {
                 <form noValidate onSubmit={handleSubmit}>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
-                      <Typography variant="h5">เพิ่มข้อมูลตัดเบิกสินค้า</Typography>
+                      <Typography variant="h5">รายละเอียดข้อมูลกองสินค้า</Typography>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -747,6 +752,15 @@ function ProductDetails() {
                     </Grid>
 
                     <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
+                      <Button
+                        size="mediam"
+                        variant="contained"
+                        color="info"
+                        onClick={() => backToPrintPage(id)}
+                        startIcon={<PrinterOutlined />}
+                      >
+                        พิมพ์
+                      </Button>
                       <Button
                         size="mediam"
                         variant="contained"
