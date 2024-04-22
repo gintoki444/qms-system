@@ -15,6 +15,7 @@ import {
   Typography,
   Button,
   CircularProgress,
+  CardContent,
   ButtonGroup
 } from '@mui/material';
 import MainCard from 'components/MainCard';
@@ -32,6 +33,7 @@ import { SelectOutlined, CloseSquareOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 import * as adminRequest from '_api/adminRequest';
+import { Divider } from '../../../../node_modules/@mui/material/index';
 
 function ManageTeamLoading() {
   const [loading, setLoading] = useState(false);
@@ -58,11 +60,6 @@ function ManageTeamLoading() {
     await adminRequest
       .getAllWareHouse()
       .then((result) => {
-        console.log(
-          'result filter:',
-          result.filter((x) => x.warehouse_id == selectId)
-        );
-
         setWarehousesList(result.filter((x) => x.warehouse_id == selectId));
       })
       .catch((error) => console.log('error', error));
@@ -214,9 +211,7 @@ function ManageTeamLoading() {
 
   const deleteTeamChecker = async (checker_id) => {
     try {
-      await adminRequest.deleteTeamChecker(checker_id).then((response) => {
-        console.log('deleteTeamChecker', response);
-      });
+      await adminRequest.deleteTeamChecker(checker_id);
     } catch (error) {
       console.log(error);
     }
@@ -301,7 +296,6 @@ function ManageTeamLoading() {
         if (checker_team_name === null) {
           setLoading(true);
           setOpen(false);
-          console.log(checker_id);
           await addTeamForklift(checker_id);
           await getTeamManagers(team_id);
           reloading();
@@ -340,7 +334,6 @@ function ManageTeamLoading() {
             <DialogContent>
               <DialogContentText>
                 ต้องการ {textnotify}
-                {/* ID:{id_update}  */}
                 หรือไม่?
               </DialogContentText>
             </DialogContent>
@@ -565,7 +558,7 @@ function ManageTeamLoading() {
                 <Grid item sx={{ mb: 1 }}>
                   <Typography variant="h5">เลือกแล้ว: พนักงานจ่ายสินค้า</Typography>
                 </Grid>
-                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
+                <MainCard boxShadow={true} contentSX={{ p: 0, pb: '0!important' }}>
                   <TableContainer
                     sx={{
                       width: '100%',
@@ -596,17 +589,6 @@ function ManageTeamLoading() {
                               <TableCell align="center">{index + 1}</TableCell>
                               <TableCell align="left">{row.checker_name}</TableCell>
                               <TableCell align="left">{row.team_name}</TableCell>
-                              <TableCell align="right">
-                                <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
-                                  <Button
-                                    color="error"
-                                    endIcon={<CloseSquareOutlined />}
-                                    onClick={() => handleClickOpen(row.team_checker_id, 'removed', '', 'ยกเลิกพนักงาน')}
-                                  >
-                                    ยกเลิก
-                                  </Button>
-                                </ButtonGroup>
-                              </TableCell>
                             </TableRow>
                           ))}
                           {select_checker_items.length == 0 && (
@@ -629,6 +611,28 @@ function ManageTeamLoading() {
                       )}
                     </Table>
                   </TableContainer>
+                  <Divider />
+                  <CardContent sx={{ p: 1, pb: '8px!important' }}>
+                    <Grid container spacing={0}>
+                      <Grid item xs={12}>
+                        <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
+                          <Button
+                            endIcon={<SelectOutlined />}
+                            // onClick={() => handleClickOpen(row.forklift_id, 'selected_forklift', row.team_name, 'เลือกโฟล์คลิฟท์')}
+                          >
+                            เลือก
+                          </Button>
+                          <Button
+                            color="error"
+                            endIcon={<CloseSquareOutlined />}
+                            // onClick={() => handleClickOpen(row.team_checker_id, 'removed', '', 'ยกเลิกพนักงาน')}
+                          >
+                            ยกเลิก
+                          </Button>
+                        </ButtonGroup>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
                 </MainCard>
               </Grid>
 
@@ -802,7 +806,7 @@ function ManageTeamLoading() {
                               <TableCell align="center">{index + 1}</TableCell>
                               <TableCell align="left">{row.checker_name}</TableCell>
                               <TableCell align="left">{row.team_name}</TableCell>
-                              <TableCell align="right">
+                              {/* <TableCell align="right">
                                 <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
                                   <Button
                                     endIcon={<SelectOutlined />}
@@ -811,7 +815,7 @@ function ManageTeamLoading() {
                                     เลือก
                                   </Button>
                                 </ButtonGroup>
-                              </TableCell>
+                              </TableCell> */}
                             </TableRow>
                           ))}
                         </TableBody>
@@ -865,16 +869,6 @@ function ManageTeamLoading() {
                               <TableCell align="center">{index + 1}</TableCell>
                               <TableCell align="left">{row.forklift_name}</TableCell>
                               <TableCell align="left">{row.team_name}</TableCell>
-                              <TableCell align="right">
-                                <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
-                                  <Button
-                                    endIcon={<SelectOutlined />}
-                                    onClick={() => handleClickOpen(row.forklift_id, 'selected_forklift', row.team_name, 'เลือกโฟล์คลิฟท์')}
-                                  >
-                                    เลือก
-                                  </Button>
-                                </ButtonGroup>
-                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -981,13 +975,13 @@ const checkerHeadCells = [
   //   disablePadding: false,
   //   label: 'โกดัง'
   // },
-  {
-    id: 'action',
-    align: 'right',
-    width: '10%',
-    disablePadding: false,
-    label: 'Actions'
-  }
+  // {
+  //   id: 'action',
+  //   align: 'right',
+  //   width: '10%',
+  //   disablePadding: false,
+  //   label: 'Actions'
+  // }
 ];
 
 function CheckerTableHead({ status }) {
@@ -1031,13 +1025,13 @@ const forkliftHeadCells = [
   //   disablePadding: false,
   //   label: 'โกดัง'
   // },
-  {
-    id: 'action',
-    align: 'right',
-    width: '10%',
-    disablePadding: false,
-    label: 'Actions'
-  }
+  // {
+  //   id: 'action',
+  //   align: 'right',
+  //   width: '10%',
+  //   disablePadding: false,
+  //   label: 'Actions'
+  // }
 ];
 
 function ForkliftTableHead({ status }) {
