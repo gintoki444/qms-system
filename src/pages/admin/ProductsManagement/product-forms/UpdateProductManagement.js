@@ -26,7 +26,8 @@ import {
   Backdrop,
   CircularProgress,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  Autocomplete
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
@@ -186,7 +187,7 @@ function UpdateProductManagement() {
     product_id: Yup.string().max(255).required('กรุณาเลือกเบรนสินค้า'),
     product_brand_id: Yup.string().max(255).required('กรุณาเลือกสินค้า'),
     warehouse_id: Yup.string().max(255).required('กรุณาเลือกคลังสินค้า'),
-    product_register_name: Yup.string().max(255).required('กรุณาระบุทำเบียน'),
+    product_register_name: Yup.string().max(255).required('กรุณาระบุทะเบียน'),
     product_register_date: Yup.string().max(255).required('กรุณาระบุวันที่ตั้งกอง'),
     register_beginning_balance: Yup.string().required('กรุณาระบุยอดที่ยกมา')
   });
@@ -317,7 +318,32 @@ function UpdateProductManagement() {
                       <Stack spacing={1}>
                         <InputLabel>สินค้า *</InputLabel>
                         <FormControl>
-                          <Select
+                          <Autocomplete
+                            id="product-list"
+                            options={productList}
+                            name="product_id"
+                            value={productList.length > 0 ? productList.find((item) => item.product_id === values.product_id) : []}
+                            onChange={(e, value) => {
+                              const newValue = value ? value.product_id : '';
+                              setFieldValue('product_id', newValue);
+                            }}
+                            getOptionLabel={(option) => (option.name ? option.name : '')}
+                            sx={{
+                              width: '100%',
+                              '& .MuiOutlinedInput-root': {
+                                padding: '3px 8px!important'
+                              },
+                              '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                                right: '7px!important',
+                                top: 'calc(50% - 18px)'
+                              }
+                            }}
+                            error={Boolean(touched.product_id && errors.product_id)}
+                            renderInput={(params) => (
+                              <TextField {...params} placeholder="เลือกสินค้า" error={Boolean(touched.product_id && errors.product_id)} />
+                            )}
+                          />
+                          {/* <Select
                             displayEmpty
                             variant="outlined"
                             name="product_id"
@@ -336,7 +362,7 @@ function UpdateProductManagement() {
                                   {product.name}
                                 </MenuItem>
                               ))}
-                          </Select>
+                          </Select> */}
                         </FormControl>
                         {touched.product_brand_id && errors.product_brand_id && (
                           <FormHelperText error id="helper-product_brand_id">

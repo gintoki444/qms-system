@@ -89,7 +89,6 @@ function AddOrder() {
     try {
       reserveRequest.getProductByIdComAndBrandId(idCom, idBrand).then((response) => {
         setProductList(response);
-        console.log('select Product', response);
       });
     } catch (error) {
       console.log(error);
@@ -131,8 +130,6 @@ function AddOrder() {
   const handleChangeBrand = (e) => {
     setProductList([]);
     setItems[{ product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }];
-    console.log('selectIdCom', selectIdCom);
-    console.log('e.target.value', e.target.value);
     getProduct(selectIdCom, e.target.value);
   };
 

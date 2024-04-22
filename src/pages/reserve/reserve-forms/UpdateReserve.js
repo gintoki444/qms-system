@@ -970,7 +970,7 @@ function UpdateReserve() {
                             }}
                             getOptionLabel={(option) => {
                               if (option.car_id !== 1) {
-                                return 'ทะเบียนรถ : ' + option.registration_no;
+                                return option.registration_no ? 'ทะเบียนรถ : ' + option.registration_no : '';
                               } else {
                                 return 'ไม่ระบุรถบรรทุก';
                               }
@@ -1023,7 +1023,7 @@ function UpdateReserve() {
                             }}
                             getOptionLabel={(option) => {
                               if (option.driver_id !== 1) {
-                                return option.firstname + option.lastname;
+                                return option.firstname ? option.firstname + option.lastname : '';
                               } else {
                                 return 'ไม่ระบุคนขับรถ';
                               }
