@@ -2,6 +2,7 @@
 import { UserOutlined, TeamOutlined, FileDoneOutlined, GoldOutlined } from '@ant-design/icons';
 import { ReactComponent as ForkliftIcon } from 'assets/icon/icon-forklift.svg';
 import { ReactComponent as WarehouseIcon } from 'assets/icon/icon-warehouse.svg';
+import { ReactComponent as LaberIcon } from 'assets/icon/icon-labor.svg';
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
 
 const admins = {
@@ -43,6 +44,15 @@ const admins = {
       type: 'item',
       url: '/admin/forklifts',
       icon: ForkliftIcon,
+      target: false
+      // breadcrumbs: false
+    },
+    {
+      id: 'laborLines',
+      title: 'ข้อมูลสายแรงงานขึ้นสินค้า',
+      type: 'item',
+      url: '/admin/contractors',
+      icon: LaberIcon,
       target: false
       // breadcrumbs: false
     },

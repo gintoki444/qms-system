@@ -1,4 +1,4 @@
-// import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 // import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 
 // third party
@@ -6,12 +6,25 @@ import * as Yup from 'yup';
 import { Formik } from 'formik';
 import axios from '../../../../node_modules/axios/index';
 import { useSelector } from 'react-redux';
+import { useSnackbar } from 'notistack';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
+import * as companyRequest from '_api/companyRequest';
 
 // material-ui
-import { Button, FormHelperText, Grid, InputLabel, OutlinedInput, Stack, Typography, Divider } from '@mui/material';
+import {
+  Button,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Typography,
+  Divider,
+  Backdrop,
+  CircularProgress
+} from '@mui/material';
 import MainCard from 'components/MainCard';
 import { SaveOutlined } from '@ant-design/icons';
 // DateTime
@@ -19,6 +32,9 @@ import moment from 'moment';
 
 function AddCompany() {
   const userId = useSelector((state) => state.auth.user_id);
+  const { enqueueSnackbar } = useSnackbar();
+  const [company, setCompany] = useState([]);
+  const [open, setOpen] = useState(false);
 
   const initialValue = {
     name: '',
@@ -33,90 +49,122 @@ function AddCompany() {
     contact_number: ''
   };
 
+  useEffect(() => {
+    getCompany();
+  }, [userId]);
+
+  const getCompany = () => {
+    setOpen(true);
+    companyRequest
+      .getAllCompanyByuserId(userId)
+      .then((response) => {
+        setCompany(response);
+        setOpen(false);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
   // =============== บันทึกข้อมูล ===============//
 
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     const formData = new FormData();
-    try {
-      values.user_id = userId;
-      values.created_at = currentDate;
-      values.updated_at = currentDate;
-      values.location_lat = '0000';
-      values.location_lng = '0000';
 
-      formData.append('user_id', values.user_id);
-      formData.append('name', values.name);
-      formData.append('country', values.country);
-      formData.append('open_time', values.open_time);
-      formData.append('description', values.description);
-      formData.append('tax_no', values.tax_no);
-      formData.append('phone', values.phone);
-      formData.append('address', values.address);
-      formData.append('zipcode', values.zipcode);
-      formData.append('location_lat', values.location_lat);
-      formData.append('location_lng', values.location_lng);
-      formData.append('contact_number', values.contact_number);
-      formData.append('contact_person', values.contact_person);
-      formData.append('created_at', values.created_at);
-      formData.append('updated_at', values.updated_at);
+    if (company.filter((x) => x.name == values.name).length > 0) {
+      enqueueSnackbar('ไม่สามารถเพิ่มข้อมูลร้านค้าซ้ำได้!', { variant: 'error' });
+    } else {
+      try {
+        setOpen(true);
+        values.user_id = userId;
+        values.created_at = currentDate;
+        values.updated_at = currentDate;
+        values.location_lat = '0000';
+        values.location_lng = '0000';
 
-      let config = {
-        method: 'post',
-        maxBodyLength: Infinity,
-        url: apiUrl + '/addcompany',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: formData
-      };
+        formData.append('user_id', values.user_id);
+        formData.append('name', values.name);
+        formData.append('country', values.country);
+        formData.append('open_time', values.open_time);
+        formData.append('description', values.description);
+        formData.append('tax_no', values.tax_no);
+        formData.append('phone', values.phone);
+        formData.append('address', values.address);
+        formData.append('zipcode', values.zipcode);
+        formData.append('location_lat', values.location_lat);
+        formData.append('location_lng', values.location_lng);
+        formData.append('contact_number', values.contact_number);
+        formData.append('contact_person', values.contact_person);
+        formData.append('created_at', values.created_at);
+        formData.append('updated_at', values.updated_at);
 
-      axios
-        .request(config)
-        .then((result) => {
-          console.log('result :', result);
-          if (result.data.status === 'ok') {
-            window.location.href = '/company';
-          } else {
-            alert(result['message']['sqlMessage']);
-          }
+        let config = {
+          method: 'post',
+          maxBodyLength: Infinity,
+          url: apiUrl + '/addcompany',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          data: formData
+        };
 
-          setStatus({ success: false });
-          setSubmitting(false);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    } catch (err) {
-      console.error(err);
-      setStatus({ success: false });
-      setErrors({ submit: err.message });
-      setSubmitting(false);
+        axios
+          .request(config)
+          .then((result) => {
+            console.log('result :', result);
+            if (result.data.status === 'ok') {
+              enqueueSnackbar('บันทึกข้อมูลร้านค้า/บริษัท สำเร็จ!', { variant: 'success' });
+              window.location.href = '/company';
+            } else {
+              // alert(result['message']['sqlMessage']);
+              enqueueSnackbar('บันทึกข้อมูลร้านค้า/บริษัท ไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
+            }
+
+            setStatus({ success: false });
+            setSubmitting(false);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } catch (err) {
+        console.error(err);
+        setStatus({ success: false });
+        setErrors({ submit: err.message });
+        setSubmitting(false);
+      }
     }
   };
   return (
     <Grid container alignItems="center" justifyContent="space-between">
+      {open && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={open}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
         <Formik
           initialValues={initialValue}
           validationSchema={Yup.object().shape({
-            name: Yup.string().max(255).required('กรุณาระบุชื่อ บริษัท/ร้านค้า'),
-            country: Yup.string().max(255).required('กรุณาระบุประเทศ'),
-            open_time: Yup.string().max(255).required('กรุณาระบุเวลาทำการ'),
-            // description: Yup.string().max(255).required('กรุณาระบุรายละเอียดของบริษัท'),
-            tax_no: Yup.string()
-              .matches(/^[0-9]*$/, 'กรุณาระบุเลขที่ผู้เสียภาษีเป็นตัวเลขเท่านั้น')
-              .min(13)
-              .max(13)
-              .required('กรุณาระบุเลขที่ผู้เสียภาษี'),
-            phone: Yup.string()
-              .min(8, 'กรุณาระบุเบอร์โทรศัพท์อย่างน้อย 8 หลัก')
-              .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
-              .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
-              .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
-              .required('กรุณาระบุเบอร์โทรศัพท์'),
-            address: Yup.string().max(255).required('กรุณาระบุที่อยู่'),
-            zipcode: Yup.string().max(5).required('กรุณาระบุรหัสไปรษณีย์'),
+            name: Yup.string().max(255).required('กรุณาระบุชื่อ บริษัท/ร้านค้า')
+            // country: Yup.string().max(255).required('กรุณาระบุประเทศ'),
+            // open_time: Yup.string().max(255).required('กรุณาระบุเวลาทำการ'),
+            // // description: Yup.string().max(255).required('กรุณาระบุรายละเอียดของบริษัท'),
+            // tax_no: Yup.string()
+            //   .matches(/^[0-9]*$/, 'กรุณาระบุเลขที่ผู้เสียภาษีเป็นตัวเลขเท่านั้น')
+            //   .min(13)
+            //   .max(13)
+            //   .required('กรุณาระบุเลขที่ผู้เสียภาษี'),
+            // phone: Yup.string()
+            //   .min(8, 'กรุณาระบุเบอร์โทรศัพท์อย่างน้อย 8 หลัก')
+            //   .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
+            //   .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
+            //   .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
+            //   .required('กรุณาระบุเบอร์โทรศัพท์'),
+            // address: Yup.string().max(255).required('กรุณาระบุที่อยู่'),
+            // zipcode: Yup.string().max(5).required('กรุณาระบุรหัสไปรษณีย์'),
             // contact_person: Yup.string().max(255).required('กรุณาระบุชื่อผู้ติดต่อ'),
             // contact_number: Yup.string()
             //   .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')

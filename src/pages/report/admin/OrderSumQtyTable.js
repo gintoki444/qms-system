@@ -192,7 +192,7 @@ export default function OrderSumQtyTable({ startDate, endDate, clickDownload, on
                     </TableCell>
                     <TableCell align="right">{row.total_smash ? parseFloat(row.total_smash) : 0}</TableCell>
                     <TableCell align="left">{row.warehouse_name}</TableCell>
-                    <TableCell align="left">{row.setup_pile_date ? moment(new Date()).format('DD/MM/YYYY') : '-'}</TableCell>
+                    <TableCell align="left">{row.setup_pile_date ? moment(row.setup_pile_date).format('DD/MM/YYYY') : '-'}</TableCell>
                   </TableRow>
                 ))}
               <TableRow>

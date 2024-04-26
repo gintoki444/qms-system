@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 
-import * as stepRequest from '_api/StepRequest';
-import * as getQueues from '_api/queueReques';
+// import * as stepRequest from '_api/StepRequest';
+// import * as getQueues from '_api/queueReques';
 
 import { Step4Table } from './Step4Table';
 
-import { Grid, Stack, Box, Typography, Badge } from '@mui/material';
+import {
+  Grid,
+  Stack,
+  Box
+  // , Typography, Badge
+} from '@mui/material';
 import MainCard from 'components/MainCard';
 
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import QueueTab from 'components/@extended/QueueTab';
+// import Tabs from '@mui/material/Tabs';
+// import Tab from '@mui/material/Tab';
+// import QueueTab from 'components/@extended/QueueTab';
 
 function Step4() {
   const [commonStatus, setCommonStatus] = useState('');
@@ -26,44 +31,44 @@ function Step4() {
   };
 
   useEffect(() => {
-    getProductCompany();
+    // getProductCompany();
   }, []);
 
-  const [companyList, setCompanyList] = useState([]);
-  const getProductCompany = () => {
-    stepRequest.getAllProductCompany().then((response) => {
-      waitingGet(response);
-    });
-  };
+  // const [companyList, setCompanyList] = useState([]);
+  // const getProductCompany = () => {
+  //   stepRequest.getAllProductCompany().then((response) => {
+  //     waitingGet(response);
+  //   });
+  // };
 
-  const [items, setItems] = useState({});
-  const [countAllQueue, setCountAllQueue] = useState(0);
-  const waitingGet = async (company) => {
-    try {
-      await getQueues.getStep4Waitting().then((response) => {
-        if (company.length > 0) {
-          company.map((x) => {
-            let countCompany = response.filter((i) => i.product_company_id == x.product_company_id).length;
-            console;
-            setItems((prevState) => ({
-              ...prevState,
-              [x.product_company_id]: countCompany
-            }));
-          });
-        }
+  // const [items, setItems] = useState({});
+  // const [countAllQueue, setCountAllQueue] = useState(0);
+  // const waitingGet = async (company) => {
+  //   try {
+  //     await getQueues.getStep4Waitting().then((response) => {
+  //       if (company.length > 0) {
+  //         company.map((x) => {
+  //           let countCompany = response.filter((i) => i.product_company_id == x.product_company_id).length;
+  //           console;
+  //           setItems((prevState) => ({
+  //             ...prevState,
+  //             [x.product_company_id]: countCompany
+  //           }));
+  //         });
+  //       }
 
-        setCompanyList(company);
-        setCountAllQueue(response.length);
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  //       setCompanyList(company);
+  //       setCountAllQueue(response.length);
+  //     });
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
 
-  const [valueFilter, setValueFilter] = useState(0);
-  const handleChange = (newValue) => {
-    setValueFilter(newValue);
-  };
+  // const [valueFilter, setValueFilter] = useState(0);
+  // const handleChange = (newValue) => {
+  //   setValueFilter(newValue);
+  // };
 
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
@@ -84,7 +89,7 @@ function Step4() {
           </Grid>
         </Grid>
 
-        <Grid container alignItems="center" justifyContent="flex-end" sx={{ mt: 3 }}>
+        {/* <Grid container alignItems="center" justifyContent="flex-end" sx={{ mt: 3 }}>
           <Grid item xs={12}>
             <MainCard content={false} sx={{ mt: 1.5 }}>
               <Box fullWidth>
@@ -112,19 +117,15 @@ function Step4() {
                           numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                           txtLabel={company.product_company_name_th2}
                           onSelect={() => handleChange(company.product_company_id)}
-                          // {...a11yProps(company.product_company_id)}
                         />
                       ))}
                   </Tabs>
                 </Box>
                 <Step4Table status={'waiting'} title={'รอเรียกคิว'} onStatusChange={handleStatusChange} onFilter={valueFilter} />
               </Box>
-              {/* <Box sx={{ pt: 1, pr: 2 }}>
-                <Step4Table onStatusChange={handleStatusChange} status={'waiting'} title={'รอเรียกคิว'}  />
-              </Box> */}
             </MainCard>
           </Grid>
-        </Grid>
+        </Grid> */}
       </Grid>
     </Grid>
   );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSnackbar } from 'notistack';
 
 // third party
 import * as Yup from 'yup';
@@ -20,7 +21,11 @@ import {
   Divider,
   FormControl,
   Select,
-  MenuItem
+  MenuItem,
+  Backdrop,
+  CircularProgress,
+  Autocomplete,
+  TextField
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import { SaveOutlined } from '@ant-design/icons';
@@ -29,7 +34,9 @@ import { SaveOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 function AddCar() {
+  const { enqueueSnackbar } = useSnackbar();
   const userId = localStorage.getItem('user_id');
+  const [open, setOpen] = useState(false);
   if (!userId) {
     window.location.href = '/login';
   }
@@ -48,10 +55,23 @@ function AddCar() {
     });
   };
 
+  const [carList, setCarList] = useState([]);
+  const getCarList = async () => {
+    setOpen(true);
+    try {
+      carRequest.getAllCars(userId).then((response) => {
+        setCarList(response);
+        setOpen(false);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
   useEffect(() => {
+    getCarList();
     getCarType();
     getProvinces();
-  }, []);
+  }, [userId]);
 
   const initialValue = {
     registration_no: '',
@@ -71,61 +91,68 @@ function AddCar() {
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     const formData = new FormData();
-    console.log(values);
 
-    try {
-      values.user_id = userId;
-      values.created_at = currentDate;
-      values.updated_at = currentDate;
+    if (carList.filter((x) => x.registration_no === values.registration_no).length > 0) {
+      enqueueSnackbar('ไม่สามารถเพิ่มข้อมูลรถซ้ำได้!', { variant: 'error' });
+    } else {
+      try {
+        values.user_id = userId;
+        values.created_at = currentDate;
+        values.updated_at = currentDate;
 
-      formData.append('user_id', values.user_id);
-      formData.append('registration_no', values.registration_no);
-      formData.append('brand', values.brand);
-      formData.append('car_type_id', values.car_type_id);
-      formData.append('province_id', values.province_id);
-      formData.append('color', values.color);
-      formData.append('created_at', values.created_at);
-      formData.append('updated_at', values.updated_at);
+        formData.append('user_id', values.user_id);
+        formData.append('registration_no', values.registration_no);
+        formData.append('brand', values.brand);
+        formData.append('car_type_id', values.car_type_id);
+        formData.append('province_id', values.province_id);
+        formData.append('color', values.color);
+        formData.append('created_at', values.created_at);
+        formData.append('updated_at', values.updated_at);
 
-      let config = {
-        method: 'post',
-        maxBodyLength: Infinity,
-        url: apiUrl + '/addcar',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: formData
-      };
+        let config = {
+          method: 'post',
+          maxBodyLength: Infinity,
+          url: apiUrl + '/addcar',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          data: formData
+        };
 
-      axios
-        .request(config)
-        .then((result) => {
-          console.log('result :', result);
+        axios.request(config).then((result) => {
           if (result.data.status === 'ok') {
+            enqueueSnackbar('บันทึกข้อมูลรถสำเร็จ!', { variant: 'success' });
             window.location.href = '/car';
           } else {
-            alert(result['message']['sqlMessage']);
+            enqueueSnackbar('บันทึกข้อมูลรถ ไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
+            // alert(result['message']['sqlMessage']);
           }
 
           setStatus({ success: false });
           setSubmitting(false);
-        })
-        .catch((error) => {
-          console.log(error);
         });
-    } catch (err) {
-      console.error(err);
-      setStatus({ success: false });
-      setErrors({ submit: err.message });
-      setSubmitting(false);
+      } catch (err) {
+        console.error(err);
+        setStatus({ success: false });
+        setErrors({ submit: err.message });
+        setSubmitting(false);
+      }
     }
   };
 
   return (
     <Grid container alignItems="center" justifyContent="space-between">
+      {open && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={open}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
         <Formik initialValues={initialValue} validationSchema={valiDationSchema} onSubmit={handleSubmits}>
-          {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
+          {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
             <form noValidate onSubmit={handleSubmit}>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
@@ -159,7 +186,35 @@ function AddCar() {
                   <Stack spacing={1}>
                     <InputLabel>จังหวัด *</InputLabel>
                     <FormControl>
-                      <Select
+                      <Autocomplete
+                        disablePortal
+                        id="province-list"
+                        options={provincesList}
+                        onChange={(e, value) => {
+                          const newValue = value ? value.province_id : null;
+                          setFieldValue('province_id', newValue);
+                        }}
+                        getOptionLabel={(option) => option.name_th}
+                        sx={{
+                          width: '100%',
+                          '& .MuiOutlinedInput-root': {
+                            padding: '3px 8px!important'
+                          },
+                          '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                            right: '7px!important',
+                            top: 'calc(50% - 18px)'
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            name="province_id"
+                            placeholder="เลือกจังหวัด"
+                            error={Boolean(touched.province_id && errors.province_id)}
+                          />
+                        )}
+                      />
+                      {/* <Select
                         displayEmpty
                         variant="outlined"
                         name="province_id"
@@ -178,11 +233,11 @@ function AddCar() {
                               {province.name_th}
                             </MenuItem>
                           ))}
-                      </Select>
+                      </Select> */}
                     </FormControl>
-                    {touched.car_type_id && errors.car_type_id && (
-                      <FormHelperText error id="helper-car_type_id">
-                        {errors.car_type_id}
+                    {touched.province_id && errors.province_id && (
+                      <FormHelperText error id="helper-province_id">
+                        {errors.province_id}
                       </FormHelperText>
                     )}
                   </Stack>

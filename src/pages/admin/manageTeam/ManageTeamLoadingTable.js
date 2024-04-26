@@ -92,7 +92,7 @@ function CompantTableHead() {
         ))}
       </TableRow>
     </TableHead>
-  );
+  ); 
 }
 
 function ManageTeamLoadingTable() {

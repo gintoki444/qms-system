@@ -177,7 +177,7 @@ function ConTractorSum() {
           </Grid>
           <Grid item>
             <MainCard
-              title={'ตารางข้อมูลสรุปยอดแรงงาน'}
+              title={'ตารางข้อมูลสรุปยอดขึ้นสินค้าสายแรงงาน'}
               content={false}
               sx={{ mt: 1.5 }}
               secondary={

@@ -35,22 +35,16 @@ const headCells = [
     label: 'ลำดับ'
   },
   {
-    id: 'name',
+    id: 'contractor_name',
     align: 'left',
     disablePadding: true,
-    label: 'ชื่อ-นามสกุล'
+    label: 'ชื่อสายแรงงาน'
   },
   {
-    id: 'contact_info',
+    id: 'contract_company_name',
     align: 'left',
     disablePadding: false,
-    label: 'ข้อมูลติดต่อ'
-  },
-  {
-    id: 'department',
-    align: 'left',
-    disablePadding: false,
-    label: 'แผนก'
+    label: 'สังกัด'
   },
   {
     id: 'stetus',
@@ -80,23 +74,21 @@ function CompantTableHead() {
     </TableHead>
   );
 }
-
-function ForkliftsTable() {
+function ContractorsTable() {
   //   const [car, setCar] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [forkliftsList, setForkliftsList] = useState([]);
+  const [contractorList, setContractorList] = useState([]);
 
   useEffect(() => {
-    // getPermission();
-    getForklift();
+    getContractor();
   }, []);
 
-  const getForklift = async () => {
+  const getContractor = async () => {
     setLoading(true);
     try {
-      adminRequest.getAllForklifts().then((response) => {
-        setForkliftsList(response);
+      adminRequest.getAllContractors().then((response) => {
+        setContractorList(response);
         setLoading(false);
       });
     } catch (error) {
@@ -105,11 +97,11 @@ function ForkliftsTable() {
   };
 
   // ลบข้อมูล Forklift
-  const [forklift_id, setforklift_id] = useState(false);
+  const [contractor_id, setcontractor_id] = useState(false);
   const [textnotify, setText] = useState('');
 
-  const handleClickOpen = (forklift_id) => {
-    setforklift_id(forklift_id);
+  const handleClickOpen = (contractor_id) => {
+    setcontractor_id(contractor_id);
     setText('ลบข้อมูล');
     setOpen(true);
   };
@@ -117,15 +109,15 @@ function ForkliftsTable() {
   const handleClose = (flag) => {
     if (flag === 1) {
       setLoading(true);
-      deteteForklifts(forklift_id);
+      deteteContractor(contractor_id);
     }
     setOpen(false);
   };
 
-  const deteteForklifts = (id) => {
+  const deteteContractor = (id) => {
     try {
-      adminRequest.deleteForklifts(id).then(() => {
-        getForklift();
+      adminRequest.deleteContractorById(id).then(() => {
+        getContractor();
       });
     } catch (error) {
       console.log(error);
@@ -133,8 +125,8 @@ function ForkliftsTable() {
   };
 
   const navigate = useNavigate();
-  const updateForklift = (id) => {
-    navigate('/admin/forklifts/update/' + id);
+  const updateContractor = (id) => {
+    navigate('/admin/contractors/update/' + id);
   };
 
   return (
@@ -180,13 +172,12 @@ function ForkliftsTable() {
           <CompantTableHead />
           {!loading ? (
             <TableBody>
-              {forkliftsList.map((row, index) => {
+              {contractorList.map((row, index) => {
                 return (
                   <TableRow key={index}>
                     <TableCell align="center">{index + 1}</TableCell>
-                    <TableCell align="left">{row.forklift_name}</TableCell>
-                    <TableCell align="left">{row.contact_info}</TableCell>
-                    <TableCell align="left">{row.department}</TableCell>
+                    <TableCell align="left">{row.contractor_name}</TableCell>
+                    <TableCell align="left">{row.contract_company_name}</TableCell>
                     <TableCell align="center">
                       {row.status == 'A' ? (
                         <Typography color="success" variant="body1" sx={{ color: 'green' }}>
@@ -207,7 +198,7 @@ function ForkliftsTable() {
                             size="medium"
                             color="primary"
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => updateForklift(row.forklift_id)}
+                            onClick={() => updateContractor(row.contractor_id)}
                           >
                             <EditOutlined />
                           </Button>
@@ -218,7 +209,7 @@ function ForkliftsTable() {
                             size="medium"
                             color="error"
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => handleClickOpen(row.forklift_id)}
+                            onClick={() => handleClickOpen(row.contractor_id)}
                           >
                             <DeleteOutlined />
                           </Button>
@@ -229,7 +220,7 @@ function ForkliftsTable() {
                   </TableRow>
                 );
               })}
-              {forkliftsList.length == 0 && (
+              {contractorList.length == 0 && (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
                     ไม่พบข้อมูล
@@ -253,4 +244,4 @@ function ForkliftsTable() {
   );
 }
 
-export default ForkliftsTable;
+export default ContractorsTable;

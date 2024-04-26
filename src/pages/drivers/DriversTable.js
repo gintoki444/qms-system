@@ -20,6 +20,7 @@ import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
+import * as driverRequest from '_api/driverRequest';
 
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
@@ -48,12 +49,12 @@ const headCells = [
     disablePadding: false,
     label: 'เลขที่บัตรประชาชน'
   },
-  {
-    id: 'license_no',
-    align: 'left',
-    disablePadding: false,
-    label: 'เลขที่ใบขับขี่'
-  },
+  // {
+  //   id: 'license_no',
+  //   align: 'left',
+  //   disablePadding: false,
+  //   label: 'เลขที่ใบขับขี่'
+  // },
   {
     id: 'action',
     align: 'center',
@@ -89,22 +90,14 @@ function DriverTable() {
 
   const getDrivers = () => {
     setOpen(true);
-    let config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: apiUrl + '/alldrivers/' + userId,
-      headers: {}
-    };
-
-    axios
-      .request(config)
-      .then((response) => {
-        setDriver(response.data);
+    try {
+      driverRequest.getAllDriver(userId).then((response) => {
         setOpen(false);
-      })
-      .catch((error) => {
-        console.log(error);
+        setDriver(response);
       });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const navigate = useNavigate();
@@ -172,7 +165,7 @@ function DriverTable() {
                     <TableCell align="left">{row.firstname + ' ' + row.lastname}</TableCell>
                     <TableCell align="left">{row.mobile_no}</TableCell>
                     <TableCell align="left">{row.id_card_no}</TableCell>
-                    <TableCell align="left">{row.license_no}</TableCell>
+                    {/* <TableCell align="left">{row.license_no}</TableCell> */}
                     <TableCell align="center">
                       <ButtonGroup variant="contained" aria-label="Basic button group">
                         <Tooltip title="แก้ไข">

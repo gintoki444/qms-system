@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 
 // third party
 import * as Yup from 'yup';
@@ -25,7 +26,9 @@ import {
   CircularProgress,
   FormControl,
   Select,
-  MenuItem
+  MenuItem,
+  Autocomplete,
+  TextField
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 
@@ -33,6 +36,7 @@ import MainCard from 'components/MainCard';
 import moment from 'moment';
 
 function UpdateCar() {
+  const { enqueueSnackbar } = useSnackbar();
   const [open, setOpen] = useState(false);
   let [initialValue, setInitialValue] = useState({
     registration_no: '',
@@ -84,6 +88,18 @@ function UpdateCar() {
       });
   };
 
+  const [carList, setCarList] = useState([]);
+  const getCarList = async () => {
+    setOpen(true);
+    try {
+      carRequest.getAllCars(userId).then((response) => {
+        setCarList(response);
+        setOpen(false);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
   // =============== Get ข้อมูล Type Car ===============//
   const [carTypeList, setCarTypeList] = useState([]);
   const getCarType = () => {
@@ -101,6 +117,7 @@ function UpdateCar() {
 
   useEffect(() => {
     getCar(id);
+    getCarList();
     getCarType();
     getProvinces();
   }, [id]);
@@ -108,53 +125,57 @@ function UpdateCar() {
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     const formData = new FormData();
-    console.log(values);
 
-    try {
-      values.user_id = userId;
-      values.created_at = currentDate;
-      values.updated_at = currentDate;
+    if (carList.filter((x) => x.registration_no === values.registration_no && x.car_id !== parseInt(id)).length > 0) {
+      enqueueSnackbar('ไม่สามารถแก้ไขข้อมูลรถซ้ำได้!', { variant: 'error' });
+    } else {
+      try {
+        values.user_id = userId;
+        values.created_at = currentDate;
+        values.updated_at = currentDate;
 
-      formData.append('user_id', values.user_id);
-      formData.append('registration_no', values.registration_no);
-      formData.append('car_type_id', values.car_type_id);
-      formData.append('province_id', values.province_id);
-      formData.append('brand', values.brand);
-      formData.append('color', values.color);
-      formData.append('created_at', values.created_at);
-      formData.append('updated_at', values.updated_at);
+        formData.append('user_id', values.user_id);
+        formData.append('registration_no', values.registration_no);
+        formData.append('car_type_id', values.car_type_id);
+        formData.append('province_id', values.province_id);
+        formData.append('brand', values.brand);
+        formData.append('color', values.color);
+        formData.append('created_at', values.created_at);
+        formData.append('updated_at', values.updated_at);
 
-      let config = {
-        method: 'put',
-        maxBodyLength: Infinity,
-        url: apiUrl + '/updatecar/' + id,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: formData
-      };
+        let config = {
+          method: 'put',
+          maxBodyLength: Infinity,
+          url: apiUrl + '/updatecar/' + id,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          data: formData
+        };
 
-      axios
-        .request(config)
-        .then((result) => {
-          console.log('result :', result);
-          if (result.data.status === 'ok') {
-            window.location.href = '/car';
-          } else {
-            alert(result['message']['sqlMessage']);
-          }
+        axios
+          .request(config)
+          .then((result) => {
+            if (result.data.status === 'ok') {
+              enqueueSnackbar('บันทึกข้อมูลรถสำเร็จ!', { variant: 'success' });
+              window.location.href = '/car';
+            } else {
+              enqueueSnackbar('บันทึกข้อมูลร้านค้า/บริษัท ไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
+              alert(result['message']['sqlMessage']);
+            }
 
-          setStatus({ success: false });
-          setSubmitting(false);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    } catch (err) {
-      console.error(err);
-      setStatus({ success: false });
-      setErrors({ submit: err.message });
-      setSubmitting(false);
+            setStatus({ success: false });
+            setSubmitting(false);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } catch (err) {
+        console.error(err);
+        setStatus({ success: false });
+        setErrors({ submit: err.message });
+        setSubmitting(false);
+      }
     }
   };
 
@@ -175,7 +196,7 @@ function UpdateCar() {
       )}
       <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
         <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
-          {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
+          {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
             <form noValidate onSubmit={handleSubmit}>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
@@ -209,7 +230,36 @@ function UpdateCar() {
                   <Stack spacing={1}>
                     <InputLabel>จังหวัด *</InputLabel>
                     <FormControl>
-                      <Select
+                      <Autocomplete
+                        disablePortal
+                        id="province-list"
+                        options={provincesList}
+                        onChange={(e, value) => {
+                          const newValue = value ? value.province_id : null;
+                          setFieldValue('province_id', newValue);
+                        }}
+                        value={provincesList.length > 0 ? provincesList.find((item) => item.province_id === values.province_id) : []}
+                        getOptionLabel={(option) => (option.name_th ? option.name_th : '')}
+                        sx={{
+                          width: '100%',
+                          '& .MuiOutlinedInput-root': {
+                            padding: '3px 8px!important'
+                          },
+                          '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                            right: '7px!important',
+                            top: 'calc(50% - 18px)'
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            name="province_id"
+                            placeholder="เลือกจังหวัด"
+                            error={Boolean(touched.province_id && errors.province_id)}
+                          />
+                        )}
+                      />
+                      {/* <Select
                         displayEmpty
                         variant="outlined"
                         name="province_id"
@@ -228,7 +278,7 @@ function UpdateCar() {
                               {province.name_th}
                             </MenuItem>
                           ))}
-                      </Select>
+                      </Select> */}
                     </FormControl>
                     {touched.province_id && errors.province_id && (
                       <FormHelperText error id="helper-province_id">
@@ -270,50 +320,6 @@ function UpdateCar() {
                     )}
                   </Stack>
                 </Grid>
-                {/* 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel htmlFor="brand-car">ยี้ห้อรถ</InputLabel>
-                    <OutlinedInput
-                      id="brand-car"
-                      type="brand"
-                      value={values.brand}
-                      name="brand"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="ยี้ห้อรถ"
-                      fullWidth
-                      error={Boolean(touched.brand && errors.brand)}
-                    />
-                    {touched.brand && errors.brand && (
-                      <FormHelperText error id="helper-text-brand-car">
-                        {errors.brand}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel htmlFor="color-car">สีรถ</InputLabel>
-                    <OutlinedInput
-                      id="color-car"
-                      type="text"
-                      value={values.color}
-                      name="color"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="สีรถ"
-                      fullWidth
-                      error={Boolean(touched.color && errors.color)}
-                    />
-                    {touched.color && errors.color && (
-                      <FormHelperText error id="helper-text-color-car">
-                        {errors.color}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid> */}
 
                 <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
                   <Button

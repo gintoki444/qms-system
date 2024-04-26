@@ -10,7 +10,9 @@ const AddUser = Loadable(lazy(() => import('pages/User/user-forms/AddUser')));
 const UpdateUser = Loadable(lazy(() => import('pages/User/user-forms/UpdateUser')));
 
 // render -  Manage Team Loading
+const ManageTeam = Loadable(lazy(() => import('pages/admin/manageTeam/ManageTeam')));
 const ManageTeamLoading = Loadable(lazy(() => import('pages/admin/manageTeam/ManageTeamLoading')));
+const ManageTeamTable = Loadable(lazy(() => import('pages/admin/manageTeam/ManageTeamLoadingTable')));
 const AddManageTeam = Loadable(lazy(() => import('pages/admin/manageTeam/manage-team-form/AddManageTeam')));
 
 // render -  WareHouse Manage Team Loading
@@ -27,6 +29,16 @@ const UpdateChecker = Loadable(lazy(() => import('pages/admin/Checkers/checker-f
 const Forklifts = Loadable(lazy(() => import('pages/admin/Forklifts/Forklifts')));
 const AddForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklift-forms/AddForklift')));
 const UpdateForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklift-forms/UpdateForklift')));
+
+// render -  LayborLine
+// const LaborLines = Loadable(lazy(() => import('pages/admin/LaborLines/LaborLines')));
+// const AddForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklift-forms/AddForklift')));
+// const UpdateForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklift-forms/UpdateForklift')));
+
+// render -  Contractors
+const Contractors = Loadable(lazy(() => import('pages/admin/Contractors/Contractors')));
+const AddContractor = Loadable(lazy(() => import('pages/admin/Contractors/contractor-forms/AddContractor')));
+const UpdateContractor = Loadable(lazy(() => import('pages/admin/Contractors/contractor-forms/UpdateContractor')));
 
 const Step0 = Loadable(lazy(() => import('pages/management/step0/Step0')));
 const AddQueue = Loadable(lazy(() => import('pages/management/step0/step0-forms/AddQueue')));
@@ -78,6 +90,14 @@ const AdminsRoutes = {
         {
           path: '',
           element: <ManageTeamLoading />
+        },
+        {
+          path: 'manage-page',
+          element: <ManageTeam />
+        },
+        {
+          path: 'manage-page-table',
+          element: <ManageTeamTable />
         },
         {
           path: 'add',
@@ -137,6 +157,23 @@ const AdminsRoutes = {
         {
           path: 'update/:id',
           element: <UpdateForklift />
+        }
+      ]
+    },
+    {
+      path: 'contractors',
+      children: [
+        {
+          path: '',
+          element: <Contractors />
+        },
+        {
+          path: 'add',
+          element: <AddContractor />
+        },
+        {
+          path: 'update/:id',
+          element: <UpdateContractor />
         }
       ]
     },

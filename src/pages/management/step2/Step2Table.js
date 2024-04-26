@@ -1210,7 +1210,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                           (productRegis) =>
                                             productRegis.total_remain > 0 && (
                                               <MenuItem key={productRegis.product_register_id} value={productRegis.product_register_id}>
-                                                {productRegis.product_register_name}{' '}
+                                                {'โกดัง : ' + productRegis.warehouse_name + ' '}
+                                                {productRegis.product_register_name}
                                                 {productRegis.product_register_date
                                                   ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
                                                   : '-'}
@@ -1461,7 +1462,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                                 (productRegis, index) =>
                                                   productRegis.total_remain > 0 && (
                                                     <MenuItem key={index} value={productRegis.product_register_id}>
-                                                      {productRegis.product_register_name}{' '}
+                                                      {'โกดัง : ' + productRegis.warehouse_name + ' '}
+                                                      {productRegis.product_register_name}
                                                       {productRegis.product_register_date
                                                         ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
                                                         : '-'}

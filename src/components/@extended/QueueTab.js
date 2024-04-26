@@ -44,14 +44,15 @@ const QueueTab = ({ id, numQueue, txtLabel, onSelect }) => {
       border: `0px solid ${main}`,
       backgroundColor: main,
       color: '#fff',
-      padding: '0 4px'
+      padding: '0 4px',
+      maxWidth: '20px'
     }
   }));
 
   return (
     <Tab
       sx={{ opacity: '1!important', ml: '5px!important' }}
-      label={<StyledBadge badgeContent={numQueue}>{txtLabel}</StyledBadge>}
+      label={<StyledBadge badgeContent={numQueue} max={999}>{txtLabel}</StyledBadge>}
       onClick={() => onSelect(id)}
       color="primary"
     />

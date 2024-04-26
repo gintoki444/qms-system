@@ -250,6 +250,17 @@ export const deleteChecker = async (id) => {
   return result;
 };
 
+export const getAllTeamCheckers = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/allteamcheckers/`, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
 export const getTeamChecker = async (id) => {
   const requestOptions = {
     method: 'GET',
@@ -330,6 +341,17 @@ export const addForklifts = async (data) => {
   const response = await fetch(apiUrl + '/addforklift/', requestOptions);
 
   return await response.text();
+};
+
+export const getAllTeamForklifts = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/allteamforklifts/`, requestOptions);
+
+  const result = await response.json();
+  return result;
 };
 
 export const addTeamForklifts = async (data) => {
@@ -415,6 +437,18 @@ export const addTeamForklift = async (data) => {
   return await response.text();
 };
 
+// ==============================|| LaborLines: (สำหรับข้อมูล สายแรงงาน) ||============================== //
+export const getAllLaborLines = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/alllaborlines/', requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
 // ==============================|| LoadingTeam: (สำหรับข้อมูล ทีมโหลดสินค้า) ||============================== //
 export const getAllLoadingTeam = async () => {
   const requestOptions = {
@@ -457,6 +491,17 @@ export const getLoadingTeamById = async (id) => {
   const result = await response.json();
   return result;
 };
+// ==============================|| Company contractors: (สำหรับข้อมูล บริษัทสายรายงาน) ||============================== //
+export const getAllCompanyContractors = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/allcontractorscompany/', requestOptions);
+
+  const result = await response.json();
+  return result;
+};
 
 // ==============================|| Contractors: (สำหรับข้อมูล สายรายงาน) ||============================== //
 export const getAllContractors = async () => {
@@ -481,6 +526,61 @@ export const getContractorById = async (id) => {
   return result;
 };
 
+export const getContractorsById = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/contractor/${id}`, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const AddContractors = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/addcontractor/', requestOptions);
+
+  return await response.json();
+};
+
+export const putContractor = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/updatecontractor/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const deleteContractorById = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deletecontractor/${id}`, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
 // ==============================|| Product Register: (สำหรับข้อมูล จัดการกองสินค้า) ||============================== //
 export const getAllProductRegister = async () => {
   const requestOptions = {
@@ -588,7 +688,6 @@ export const putProductRegisterById = async (id, data) => {
   return result;
 };
 
-
 export const deteteProductRegister = async (id) => {
   const requestOptions = {
     method: 'DELETE',
@@ -599,7 +698,6 @@ export const deteteProductRegister = async (id) => {
   const result = await response.json();
   return result;
 };
-
 
 export const putProductById = async (id, data) => {
   const myHeaders = new Headers();
@@ -657,7 +755,6 @@ export const deleteProducts = async (id) => {
   return result;
 };
 
-
 export const getCutOffProductById = async (id) => {
   const requestOptions = {
     method: 'GET',
@@ -669,7 +766,7 @@ export const getCutOffProductById = async (id) => {
   return result;
 };
 
-export const AddCutOffProduct= async (data) => {
+export const AddCutOffProduct = async (data) => {
   const myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');
   const raw = JSON.stringify(data);

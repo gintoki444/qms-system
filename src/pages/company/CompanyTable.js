@@ -161,8 +161,8 @@ function CompanyTable() {
                   <TableRow key={index}>
                     <TableCell align="center">{index + 1}</TableCell>
                     <TableCell align="left">{row.name}</TableCell>
-                    <TableCell align="left">{row.tax_no}</TableCell>
-                    <TableCell align="left">{row.phone}</TableCell>
+                    <TableCell align="left">{row.tax_no ? row.tax_no : '-'}</TableCell>
+                    <TableCell align="left">{row.phone ? row.phone : '-'}</TableCell>
                     <TableCell align="left">{row.contact_person ? row.contact_person : '-'}</TableCell>
                     <TableCell align="left">{row.contact_number ? row.contact_number : '-'}</TableCell>
                     <TableCell align="center">

@@ -13,9 +13,9 @@ import {
   TableRow,
   TableCell,
   Typography,
+  Tooltip,
   Button,
   CircularProgress,
-  CardContent,
   ButtonGroup
 } from '@mui/material';
 import MainCard from 'components/MainCard';
@@ -28,12 +28,13 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
-import { SelectOutlined, CloseSquareOutlined } from '@ant-design/icons';
+import { SelectOutlined } from '@ant-design/icons';
 
 import moment from 'moment';
 
 import * as adminRequest from '_api/adminRequest';
-import { Divider } from '../../../../node_modules/@mui/material/index';
+
+import ManageTeam from './ManageTeam';
 
 function ManageTeamLoading() {
   const [loading, setLoading] = useState(false);
@@ -47,9 +48,9 @@ function ManageTeamLoading() {
   const reloading = async () => {
     setLoading(true);
     getTeamloading();
-    await getAllWareHouseManagers();
-    await getAllCheckers();
-    await getAllForklifts();
+    // await getAllWareHouseManagers();
+    // await getAllCheckers();
+    // await getAllForklifts();
     setLoading(false);
   };
 
@@ -60,6 +61,11 @@ function ManageTeamLoading() {
     await adminRequest
       .getAllWareHouse()
       .then((result) => {
+        console.log(
+          'result filter:',
+          result.filter((x) => x.warehouse_id == selectId)
+        );
+
         setWarehousesList(result.filter((x) => x.warehouse_id == selectId));
       })
       .catch((error) => console.log('error', error));
@@ -89,15 +95,27 @@ function ManageTeamLoading() {
     }
   };
 
+  // const getTeamManagers = async (id, select) => {
   const getTeamManagers = async (id) => {
     try {
-      const teamManager = await adminRequest.getTeamManager(id);
-      const teamChecker = await adminRequest.getTeamChecker(id);
-      const teamForklift = await adminRequest.getTeamForklift(id);
+      // if (select == 'team-manager') {
+      //   const teamManager = await adminRequest.getTeamManager(id);
+      //   setSelectManagerItems(teamManager);
+      // } else if (select == 'team-checker') {
+      //   const teamChecker = await adminRequest.getTeamChecker(id);
+      //   setSelectCheckerItems(teamChecker);
+      // } else if (select == 'team-forklift') {
+      //   const teamForklift = await adminRequest.getTeamForklift(id);
+      //   setSelectForkliftItems(teamForklift);
+      // }
 
-      setSelectManagerItems(teamManager);
-      setSelectCheckerItems(teamChecker);
-      setSelectForkliftItems(teamForklift);
+        const teamManager = await adminRequest.getTeamManager(id);
+        setSelectManagerItems(teamManager);
+        const teamChecker = await adminRequest.getTeamChecker(id);
+        setSelectCheckerItems(teamChecker);
+        const teamForklift = await adminRequest.getTeamForklift(id);
+        setSelectForkliftItems(teamForklift);
+
       // adminRequest.getLoadingTeamById(id).then((result) => {
       //   setSelectManagerItems(result.team_managers);
       //   setSelectCheckerItems(result.team_checkers);
@@ -125,6 +143,9 @@ function ManageTeamLoading() {
       filterTeam.map((data) => {
         getWarehouses(data.warehouse_id);
         getTeamManagers(data.team_id);
+        // getTeamManagers(data.team_id, 'team-manager');
+        // getTeamManagers(data.team_id, 'team-checker');
+        // getTeamManagers(data.team_id, 'team-forklift');
         getStation(data.warehouse_id, data.station_id);
 
         setWareHouse(data.warehouse_id);
@@ -151,17 +172,17 @@ function ManageTeamLoading() {
   };
 
   // =============== Get WareHouse Manager ===============//
-  const [allManager, setAllManager] = useState([]);
+  // const [allManager, setAllManager] = useState([]);
   const [select_manager_items, setSelectManagerItems] = useState([]);
-  const getAllWareHouseManagers = async () => {
-    try {
-      await adminRequest.getAllWareHouseManager().then((response) => {
-        setAllManager(response);
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const getAllWareHouseManagers = async () => {
+  //   try {
+  //     await adminRequest.getAllWareHouseManager().then((response) => {
+  //       setAllManager(response);
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   const [selectManager, setSelectManager] = useState('');
   const updateWareHouseManager = async () => {
@@ -173,6 +194,7 @@ function ManageTeamLoading() {
       await adminRequest.putTeamManager(team_id, data).then((response) => {
         if (response.status == 'ok') {
           getTeamManagers(team_id);
+          // getTeamManagers(team_id, 'team-manager');
           reloading();
         }
       });
@@ -186,17 +208,17 @@ function ManageTeamLoading() {
   };
 
   // =============== Get Checker ===============//
-  const [checker_items, setCheckerItems] = useState([]);
+  // const [checker_items, setCheckerItems] = useState([]);
   const [select_checker_items, setSelectCheckerItems] = useState([]);
-  const getAllCheckers = async () => {
-    try {
-      await adminRequest.getAllCheckers().then((response) => {
-        setCheckerItems(response);
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const getAllCheckers = async () => {
+  //   try {
+  //     await adminRequest.getAllCheckers().then((response) => {
+  //       setCheckerItems(response);
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   const addTeamChecker = async (checker_id) => {
     const currenDate = moment(new Date()).format('YYYY-MM-DD');
@@ -211,24 +233,26 @@ function ManageTeamLoading() {
 
   const deleteTeamChecker = async (checker_id) => {
     try {
-      await adminRequest.deleteTeamChecker(checker_id);
+      await adminRequest.deleteTeamChecker(checker_id).then((response) => {
+        console.log('deleteTeamChecker', response);
+      });
     } catch (error) {
       console.log(error);
     }
   };
 
   // =============== Get Forklift ===============//
-  const [forklift_items, setForkliftItems] = useState([]);
+  // const [forklift_items, setForkliftItems] = useState([]);
   const [select_forklift_items, setSelectForkliftItems] = useState([]);
-  const getAllForklifts = async () => {
-    try {
-      await adminRequest.getAllForklifts().then((response) => {
-        setForkliftItems(response);
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const getAllForklifts = async () => {
+  //   try {
+  //     await adminRequest.getAllForklifts().then((response) => {
+  //       setForkliftItems(response);
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   const addTeamForklift = async (forklift_id) => {
     const currenDate = moment(new Date()).format('YYYY-MM-DD');
@@ -286,7 +310,9 @@ function ManageTeamLoading() {
           setLoading(true);
           setOpen(false);
           await addTeamChecker(checker_id);
-          await getTeamManagers(team_id);
+          // await getTeamManagers(team_id);
+          getTeamManagers(team_id);
+          // await getTeamManagers(team_id, 'team-checker');
           reloading();
         } else {
           alert('พนักงานจ่ายสินค้านี้ ถูกเลือกแล้ว!');
@@ -296,8 +322,10 @@ function ManageTeamLoading() {
         if (checker_team_name === null) {
           setLoading(true);
           setOpen(false);
+          console.log(checker_id);
           await addTeamForklift(checker_id);
           await getTeamManagers(team_id);
+          // await getTeamManagers(team_id, 'team-forklift');
           reloading();
         } else {
           alert('พนักงานจ่ายสินค้านี้ ถูกเลือกแล้ว!');
@@ -310,6 +338,8 @@ function ManageTeamLoading() {
         //alert("removed")
         await deleteTeamChecker(checker_id);
         await getTeamManagers(team_id);
+        // await getTeamManagers(team_id, 'team-checker');
+        // await getTeamManagers(team_id);
         reloading();
       }
 
@@ -318,12 +348,24 @@ function ManageTeamLoading() {
         setOpen(false);
         await deleteTeamForklift(checker_id);
         await getTeamManagers(team_id);
+        // await getTeamManagers(team_id, 'team-forklift');
         reloading();
       }
     }
     // await dataGetSelectCheckers(teamload);
     // dataGetCheckers();
     setOpen(false);
+  };
+
+  // const [onUpdates, setOnUpdates] = useState(false);
+  const handleUpdate = (onChanges) => {
+    // if (onChanges == true) {
+    //   setOnUpdates(onUpdates);
+    // }
+    if (onChanges == true) {
+      getTeamManagers(team_id);
+      console.log('onChanges:', onChanges);
+    }
   };
   return (
     <Grid alignItems="center" justifyContent="space-between">
@@ -334,6 +376,7 @@ function ManageTeamLoading() {
             <DialogContent>
               <DialogContentText>
                 ต้องการ {textnotify}
+                {/* ID:{id_update}  */}
                 หรือไม่?
               </DialogContentText>
             </DialogContent>
@@ -521,12 +564,14 @@ function ManageTeamLoading() {
                               <TableCell align="left">{row.warehouse_name}</TableCell>
                               <TableCell align="right">
                                 <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
-                                  <Button
-                                    endIcon={<SelectOutlined />}
-                                    onClick={() => handleClickOpen(team_id, 'change-manager', '', row.warehouse_name)}
-                                  >
-                                    เปลี่ยน
-                                  </Button>
+                                  <Tooltip title="เปลี่ยน">
+                                    <Button
+                                      sx={{ fontSize: '18px' }}
+                                      onClick={() => handleClickOpen(team_id, 'change-manager', '', row.warehouse_name)}
+                                    >
+                                      <SelectOutlined />
+                                    </Button>
+                                  </Tooltip>
                                 </ButtonGroup>
                               </TableCell>
                             </TableRow>
@@ -558,7 +603,7 @@ function ManageTeamLoading() {
                 <Grid item sx={{ mb: 1 }}>
                   <Typography variant="h5">เลือกแล้ว: พนักงานจ่ายสินค้า</Typography>
                 </Grid>
-                <MainCard boxShadow={true} contentSX={{ p: 0, pb: '0!important' }}>
+                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
                   <TableContainer
                     sx={{
                       width: '100%',
@@ -589,6 +634,17 @@ function ManageTeamLoading() {
                               <TableCell align="center">{index + 1}</TableCell>
                               <TableCell align="left">{row.checker_name}</TableCell>
                               <TableCell align="left">{row.team_name}</TableCell>
+                              {/* <TableCell align="right">
+                                <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
+                                  <Button
+                                    color="error"
+                                    endIcon={<CloseSquareOutlined />}
+                                    onClick={() => handleClickOpen(row.team_checker_id, 'removed', '', 'ยกเลิกพนักงาน')}
+                                  >
+                                    ยกเลิก
+                                  </Button>
+                                </ButtonGroup>
+                              </TableCell> */}
                             </TableRow>
                           ))}
                           {select_checker_items.length == 0 && (
@@ -611,28 +667,6 @@ function ManageTeamLoading() {
                       )}
                     </Table>
                   </TableContainer>
-                  <Divider />
-                  <CardContent sx={{ p: 1, pb: '8px!important' }}>
-                    <Grid container spacing={0}>
-                      <Grid item xs={12}>
-                        <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
-                          <Button
-                            endIcon={<SelectOutlined />}
-                            // onClick={() => handleClickOpen(row.forklift_id, 'selected_forklift', row.team_name, 'เลือกโฟล์คลิฟท์')}
-                          >
-                            เลือก
-                          </Button>
-                          <Button
-                            color="error"
-                            endIcon={<CloseSquareOutlined />}
-                            // onClick={() => handleClickOpen(row.team_checker_id, 'removed', '', 'ยกเลิกพนักงาน')}
-                          >
-                            ยกเลิก
-                          </Button>
-                        </ButtonGroup>
-                      </Grid>
-                    </Grid>
-                  </CardContent>
                 </MainCard>
               </Grid>
 
@@ -671,7 +705,7 @@ function ManageTeamLoading() {
                               <TableCell align="center">{index + 1}</TableCell>
                               <TableCell align="left">{row.forklift_name}</TableCell>
                               <TableCell align="left">{row.team_name}</TableCell>
-                              <TableCell align="right">
+                              {/* <TableCell align="right">
                                 <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
                                   <Button
                                     color="error"
@@ -681,7 +715,7 @@ function ManageTeamLoading() {
                                     ยกเลิก
                                   </Button>
                                 </ButtonGroup>
-                              </TableCell>
+                              </TableCell> */}
                             </TableRow>
                           ))}
                           {select_forklift_items.length == 0 && (
@@ -712,7 +746,10 @@ function ManageTeamLoading() {
       </Grid>
 
       {/* ========== Row Select Team ==========*/}
-      <Grid container rowSpacing={1} columnSpacing={1.75} sx={{ mt: 2 }}>
+      <Grid>
+        <ManageTeam teamId={team_id} onHandleChange={handleUpdate} />
+      </Grid>
+      {/* <Grid container rowSpacing={1} columnSpacing={1.75} sx={{ mt: 2 }}>
         <Grid item xs={12} lg={12}>
           <MainCard>
             <Grid container spacing={1}>
@@ -806,7 +843,7 @@ function ManageTeamLoading() {
                               <TableCell align="center">{index + 1}</TableCell>
                               <TableCell align="left">{row.checker_name}</TableCell>
                               <TableCell align="left">{row.team_name}</TableCell>
-                              {/* <TableCell align="right">
+                              <TableCell align="right">
                                 <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
                                   <Button
                                     endIcon={<SelectOutlined />}
@@ -815,7 +852,7 @@ function ManageTeamLoading() {
                                     เลือก
                                   </Button>
                                 </ButtonGroup>
-                              </TableCell> */}
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -869,6 +906,16 @@ function ManageTeamLoading() {
                               <TableCell align="center">{index + 1}</TableCell>
                               <TableCell align="left">{row.forklift_name}</TableCell>
                               <TableCell align="left">{row.team_name}</TableCell>
+                              <TableCell align="right">
+                                <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
+                                  <Button
+                                    endIcon={<SelectOutlined />}
+                                    onClick={() => handleClickOpen(row.forklift_id, 'selected_forklift', row.team_name, 'เลือกโฟล์คลิฟท์')}
+                                  >
+                                    เลือก
+                                  </Button>
+                                </ButtonGroup>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -889,7 +936,7 @@ function ManageTeamLoading() {
             </Grid>
           </MainCard>
         </Grid>
-      </Grid>
+      </Grid> */}
     </Grid>
   );
 }
@@ -968,7 +1015,7 @@ const checkerHeadCells = [
     align: 'left',
     disablePadding: false,
     label: 'ชื่อทีม'
-  },
+  }
   // {
   //   id: 'checkHouseName',
   //   align: 'left',
@@ -1018,7 +1065,7 @@ const forkliftHeadCells = [
     align: 'left',
     disablePadding: false,
     label: 'ชื่อทีม'
-  },
+  }
   // {
   //   id: 'forkHouseName',
   //   align: 'left',

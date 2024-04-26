@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useSnackbar } from 'notistack';
 
 // third party
 import * as Yup from 'yup';
@@ -30,6 +31,8 @@ import MainCard from 'components/MainCard';
 import moment from 'moment';
 
 function UpdateCompany() {
+  const userId = useSelector((state) => state.auth.user_id);
+  const { enqueueSnackbar } = useSnackbar();
   const [open, setOpen] = useState(false);
   let [initialValue, setInitialValue] = useState({
     name: '',
@@ -46,19 +49,19 @@ function UpdateCompany() {
 
   // =============== Validate Forms ===============//
   const validationSchema = Yup.object().shape({
-    name: Yup.string().max(255).required('กรุณาระบุชื่อ บริษัท/ร้านค้า'),
-    country: Yup.string().max(255).required('กรุณาระบุประเทศ'),
-    open_time: Yup.string().max(255).required('กรุณาระบุเวลาทำการ'),
-    // description: Yup.string().max(255).required('กรุณาระบุรายละเอียดของบริษัท'),
-    tax_no: Yup.string().min(13).max(13).required('กรุณาระบุเลขที่ผู้เสียภาษี'),
-    phone: Yup.string()
-      .min(8, 'กรุณาระบุเบอร์โทรศัพท์อย่างน้อย 8 หลัก')
-      .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
-      .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
-      .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
-      .required('กรุณาระบุเบอร์โทรศัพท์'),
-    address: Yup.string().max(255).required('กรุณาระบุที่อยู่'),
-    zipcode: Yup.string().max(5).required('กรุณาระบุรหัสไปรษณีย์'),
+    name: Yup.string().max(255).required('กรุณาระบุชื่อ บริษัท/ร้านค้า')
+    // country: Yup.string().max(255).required('กรุณาระบุประเทศ'),
+    // open_time: Yup.string().max(255).required('กรุณาระบุเวลาทำการ'),
+    // // description: Yup.string().max(255).required('กรุณาระบุรายละเอียดของบริษัท'),
+    // tax_no: Yup.string().min(13).max(13).required('กรุณาระบุเลขที่ผู้เสียภาษี'),
+    // phone: Yup.string()
+    //   .min(8, 'กรุณาระบุเบอร์โทรศัพท์อย่างน้อย 8 หลัก')
+    //   .max(10, 'กรุณาระบุเบอร์โทรศัพท์ 10 หลัก')
+    //   .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
+    //   .matches(/^[0-9]*$/, 'กรุณาระบุเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น')
+    //   .required('กรุณาระบุเบอร์โทรศัพท์'),
+    // address: Yup.string().max(255).required('กรุณาระบุที่อยู่'),
+    // zipcode: Yup.string().max(5).required('กรุณาระบุรหัสไปรษณีย์'),
     // contact_person: Yup.string().max(255).required('กรุณาระบุชื่อผู้ติดต่อ'),
     // contact_number: Yup.string()
     //   .matches(/^0/, 'กรุณาระบุเบอร์โทรศัพท์ตัวแรกเป็น 0')
@@ -72,10 +75,24 @@ function UpdateCompany() {
 
   useEffect(() => {
     getCompany(id);
+    getCompanyList();
   }, [id]);
 
   // =============== Get ข้อมูล Company ===============//
+  const [companyList, setCompanyList] = useState([]);
+  const getCompanyList = () => {
+    setOpen(true);
 
+    companyRequest
+      .getAllCompanyByuserId(userId)
+      .then((response) => {
+        setCompanyList(response);
+        setOpen(false);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
   const getCompany = async (id) => {
     setOpen(true);
 
@@ -107,29 +124,35 @@ function UpdateCompany() {
   };
 
   // =============== บันทึกข้อมูล ===============//
-  const userId = useSelector((state) => state.auth.user_id);
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     // const formData = new FormData();
-    try {
-      values.user_id = userId;
-      values.created_at = currentDate;
-      values.updated_at = currentDate;
-      values.location_lat = '0000';
-      values.location_lng = '0000';
+    if (companyList.filter((x) => x.name == values.name && x.company_id !== parseInt(id)).length > 0) {
+      enqueueSnackbar('ไม่สามารถแก้ไขข้อมูลร้านค้าซ้ำได้!', { variant: 'error' });
+    } else {
+      try {
+        setOpen(true);
+        values.user_id = userId;
+        values.created_at = currentDate;
+        values.updated_at = currentDate;
+        values.location_lat = '0000';
+        values.location_lng = '0000';
 
-      companyRequest.updateCompany(id, values).then((result) => {
-        if (result.status === 'ok') {
-          window.location.href = '/company';
-        } else {
-          alert(result['message']['sqlMessage']);
-        }
-      });
-    } catch (err) {
-      console.error(err);
-      setStatus({ success: false });
-      setErrors({ submit: err.message });
-      setSubmitting(false);
+        companyRequest.updateCompany(id, values).then((result) => {
+          if (result.status === 'ok') {
+            enqueueSnackbar('บันทึกข้อมูลร้านค้า/บริษัท สำเร็จ!', { variant: 'success' });
+            window.location.href = '/company';
+          } else {
+            enqueueSnackbar('บันทึกข้อมูลร้านค้า/บริษัท ไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
+            // alert(result['message']['sqlMessage']);
+          }
+        });
+      } catch (err) {
+        console.error(err);
+        setStatus({ success: false });
+        setErrors({ submit: err.message });
+        setSubmitting(false);
+      }
     }
   };
 

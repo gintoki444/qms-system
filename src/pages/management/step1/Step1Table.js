@@ -707,7 +707,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
               <DialogContent sx={{ width: 350 }}>
                 <Grid container alignItems="center" justifyContent="flex-end" spacing={2}>
                   <Grid item xs={12}>
-                    <InputLabel sx={{ fontSize: 16 }}>น้ำหนักชั่งหนัก</InputLabel>
+                    <InputLabel sx={{ fontSize: 16 }}>น้ำหนักชั่งเบา</InputLabel>
                     <FormControl variant="standard" sx={{ width: '100%', fontFamily: 'kanit' }}>
                       <Input
                         id="standard-adornment-weight"
@@ -720,7 +720,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
                         value={weight}
                         onChange={(e) => handleChange(e.target.value)}
                       />
-                      {/* <FormHelperText id="standard-weight-helper-text">น้ำหนักชั่งหนัก</FormHelperText> */}
                     </FormControl>
                   </Grid>
                 </Grid>

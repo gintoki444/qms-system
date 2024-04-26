@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 
 // third party
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import axios from '../../../../node_modules/axios/index';
 import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
+
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
+import * as driverRequest from '_api/driverRequest';
 
 // material-ui
 import {
@@ -30,6 +33,7 @@ import moment from 'moment';
 
 function UpdateDrivers() {
   const [open, setOpen] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
   let [initialValue, setInitialValue] = useState({
     firstname: '',
     lastname: '',
@@ -72,60 +76,81 @@ function UpdateDrivers() {
 
   useEffect(() => {
     getDriver(id);
+    getDriversList();
   }, [id]);
+
+  const [driverList, setDriverList] = useState([]);
+  const getDriversList = () => {
+    setOpen(true);
+    try {
+      driverRequest.getAllDriver(userId).then((response) => {
+        setOpen(false);
+        setDriverList(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   // =============== บันทึกข้อมูล ===============//
   const userId = localStorage.getItem('user_id');
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     const formData = new FormData();
-    console.log(values);
 
-    try {
-      values.user_id = userId;
-      values.created_at = currentDate;
-      values.updated_at = currentDate;
+    if (
+      driverList.filter((x) => x.firstname == values.firstname && x.lastname == values.lastname && x.driver_id !== parseInt(id)).length > 0
+    ) {
+      enqueueSnackbar('ไม่สามารถแก้ไขข้อมูลคนขับซ้ำได้!', { variant: 'error' });
+    } else {
+      try {
+        values.user_id = userId;
+        values.created_at = currentDate;
+        values.updated_at = currentDate;
 
-      formData.append('user_id', values.user_id);
-      formData.append('firstname', values.firstname);
-      formData.append('lastname', values.lastname);
-      formData.append('license_no', values.license_no);
-      formData.append('id_card_no', values.id_card_no);
-      formData.append('mobile_no', values.mobile_no);
-      formData.append('created_at', values.created_at);
-      formData.append('updated_at', values.updated_at);
+        formData.append('user_id', values.user_id);
+        formData.append('firstname', values.firstname);
+        formData.append('lastname', values.lastname);
+        formData.append('license_no', values.license_no);
+        formData.append('id_card_no', values.id_card_no);
+        formData.append('mobile_no', values.mobile_no);
+        formData.append('created_at', values.created_at);
+        formData.append('updated_at', values.updated_at);
 
-      let config = {
-        method: 'put',
-        maxBodyLength: Infinity,
-        url: apiUrl + '/updatedriver/' + id,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: formData
-      };
+        let config = {
+          method: 'put',
+          maxBodyLength: Infinity,
+          url: apiUrl + '/updatedriver/' + id,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          data: formData
+        };
 
-      axios
-        .request(config)
-        .then((result) => {
-          console.log('result :', result);
-          if (result.data.status === 'ok') {
-            window.location.href = '/drivers';
-          } else {
-            alert(result['message']['sqlMessage']);
-          }
+        axios
+          .request(config)
+          .then((result) => {
+            console.log('result :', result);
+            if (result.data.status === 'ok') {
+              enqueueSnackbar('บันทึกข้อมูลคนขับรถสำเร็จ!', { variant: 'success' });
+              window.location.href = '/drivers';
+            } else {
+              enqueueSnackbar('บันทึกข้อมูลคนขับรถไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
+              // alert(result['message']['sqlMessage']);
+            }
 
-          setStatus({ success: false });
-          setSubmitting(false);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    } catch (err) {
-      console.error(err);
-      setStatus({ success: false });
-      setErrors({ submit: err.message });
-      setSubmitting(false);
+            setStatus({ success: false });
+            setSubmitting(false);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } catch (err) {
+        console.error(err);
+        setStatus({ success: false });
+        setErrors({ submit: err.message });
+        setSubmitting(false);
+      }
     }
   };
 
@@ -133,11 +158,11 @@ function UpdateDrivers() {
   const validationSchema = Yup.object().shape({
     firstname: Yup.string().max(255).required('กรุณาระบุชื่อ'),
     lastname: Yup.string().max(255).required('กรุณาระบุนามสกุล'),
-    license_no: Yup.string()
-      .matches(/^[0-9]*$/, 'กรุณาระบุเลขใบขับขี่เป็นตัวเลขเท่านั้น')
-      .min(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
-      .max(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
-      .required('กรุณาระบุเลขใบขับขี่'),
+    // license_no: Yup.string()
+    //   .matches(/^[0-9]*$/, 'กรุณาระบุเลขใบขับขี่เป็นตัวเลขเท่านั้น')
+    //   .min(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
+    //   .max(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
+    //   .required('กรุณาระบุเลขใบขับขี่'),
     id_card_no: Yup.string()
       .nullable()
       .matches(/^[0-9]*$/, 'กรุณาระบุเลขบัตรประชาชนเป็นตัวเลขเท่านั้น')
@@ -243,7 +268,7 @@ function UpdateDrivers() {
                   </Stack>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                {/* <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
                     <InputLabel htmlFor="license_no-driver">เลขที่ใบขับขี่*</InputLabel>
                     <OutlinedInput
@@ -263,7 +288,7 @@ function UpdateDrivers() {
                       </FormHelperText>
                     )}
                   </Stack>
-                </Grid>
+                </Grid> */}
 
                 <Grid item xs={12} md={6}>
                   <Stack spacing={1}>

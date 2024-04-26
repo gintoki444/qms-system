@@ -236,7 +236,7 @@ function AddReserve() {
     await reserveRequest.getReserDetailID(id).then((result) => {
       result.reserve.map((data) => {
         const company_name_m = 'บริษัท: ' + data.name;
-        const registration_no_m = 'ทะเบียนรถ: ' + data.registration_no;
+        const registration_no_m = data.registration_no;
         const driver_name_m = 'คนขับรถ: ' + data.driver;
         const driver_mobile_m = 'เบอร์โทร: ' + data.mobile_no;
 
@@ -452,7 +452,7 @@ function AddReserve() {
                         }}
                         getOptionLabel={(option) => {
                           if (option.car_id !== 1) {
-                            return 'ทะเบียนรถ : ' + option.registration_no;
+                            return option.registration_no;
                           } else {
                             return 'ไม่ระบุรถบรรทุก';
                           }

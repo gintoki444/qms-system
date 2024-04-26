@@ -70,7 +70,7 @@ function Product() {
               <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
                 <Tab
                   label={
-                    <Badge badgeContent={countAllQueue} color="error">
+                    <Badge badgeContent={countAllQueue} color="error" max={999}>
                       {'ทั้งหมด'}
                     </Badge>
                   }

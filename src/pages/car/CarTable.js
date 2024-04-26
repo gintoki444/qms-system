@@ -14,13 +14,12 @@ import {
   Typography,
   CircularProgress
 } from '@mui/material';
-
-import * as carRequest from '_api/carRequest';
-import axios from '../../../node_modules/axios/index';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
+import * as carRequest from '_api/carRequest';
+import axios from '../../../node_modules/axios/index';
 
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
@@ -112,26 +111,18 @@ function CarTable() {
     // getPermission();
     getCar();
     getCarType();
-  }, []);
+  }, [userId]);
 
   const getCar = async () => {
     setOpen(true);
-    let config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: apiUrl + '/allcars/' + userId,
-      headers: {}
-    };
-
-    await axios
-      .request(config)
-      .then((response) => {
-        setCar(response.data);
+    try {
+      carRequest.getAllCars(userId).then((response) => {
+        setCar(response);
         setOpen(false);
-      })
-      .catch((error) => {
-        console.log(error);
       });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const navigate = useNavigate();
