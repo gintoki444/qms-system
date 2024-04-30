@@ -217,6 +217,7 @@ function AddReserve() {
           setSubmitting(false);
         })
         .catch((error) => {
+          enqueueSnackbar('บันทึกข้อมูลไม่สำเร็จ!', { variant: 'warning' });
           setLoading(false);
           alert(error);
         });
@@ -518,7 +519,7 @@ function AddReserve() {
                           const newValue = value ? value.driver_id : '';
                           setFieldValue('driver_id', newValue);
                         }}
-                        getOptionLabel={(option) => option.firstname + option.lastname}
+                        getOptionLabel={(option) => option.firstname + ' ' + option.lastname}
                         sx={{
                           width: '100%',
                           '& .MuiOutlinedInput-root': {

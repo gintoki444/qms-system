@@ -34,6 +34,8 @@ import PropTypes from 'prop-types';
 import { StepContent } from '../../../node_modules/@mui/material/index';
 import { PrinterOutlined, RollbackOutlined } from '@ant-design/icons';
 
+import CopyLinkButton from 'components/CopyLinkButton';
+
 // Get api queuesRequest
 import * as queueRequest from '_api/queueReques';
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -52,6 +54,8 @@ function QueueDetail() {
 
   const isMobile = useMediaQuery('(max-width:600px)');
   const [activeStep, setActiveStep] = useState(0);
+
+  const prurl = window.location.href;
 
   useEffect(() => {
     getQueueById(id);
@@ -580,6 +584,7 @@ function QueueDetail() {
 
                   {(userRoles === 10 || userRoles === 1) && (
                     <>
+                      <CopyLinkButton link={prurl} />
                       <Button
                         size="mediam"
                         variant="contained"

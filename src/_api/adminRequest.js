@@ -583,14 +583,18 @@ export const deleteContractorById = async (id) => {
 };
 // ==============================|| Product Register: (สำหรับข้อมูล จัดการกองสินค้า) ||============================== //
 export const getAllProductRegister = async () => {
-  const requestOptions = {
-    method: 'GET',
-    redirect: 'follow'
-  };
-  const response = await fetch(apiUrl + '/allproductregister/', requestOptions);
+  try {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+    const response = await fetch(apiUrl + '/allproductregister/', requestOptions);
 
-  const result = await response.json();
-  return result;
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const getAllProducts = async () => {

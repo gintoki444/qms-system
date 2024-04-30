@@ -25,7 +25,8 @@ import {
   TableRow,
   TableBody,
   TableCell,
-  FormControl
+  FormControl,
+  Autocomplete
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import TextField from '@mui/material/TextField';
@@ -36,6 +37,7 @@ import Select from '@mui/material/Select';
 import { PlusSquareOutlined, MinusSquareOutlined, SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 // DateTime
 import moment from 'moment';
+import { useSnackbar } from 'notistack';
 
 function AddOrder() {
   const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
@@ -43,6 +45,7 @@ function AddOrder() {
   const [items, setItems] = useState([
     { product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }
   ]);
+  const { enqueueSnackbar } = useSnackbar();
 
   let [initialValue, setInitialValue] = useState({
     ref_order_id: '',
@@ -109,7 +112,10 @@ function AddOrder() {
 
   const [selectIdCom, setSelectIdCom] = useState('');
   const handleChangeProductCom = (e) => {
-    setItems[{ product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }];
+    setCoutRowsProduct(1);
+
+    const newItem = [{ product_id: null, quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }];
+    setItems(newItem);
     setProductList([]);
     getProductBrand(e.target.value);
     setSelectIdCom(e.target.value);
@@ -129,7 +135,9 @@ function AddOrder() {
 
   const handleChangeBrand = (e) => {
     setProductList([]);
-    setItems[{ product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }];
+    setCoutRowsProduct(1);
+    const newItem = [{ product_id: null, quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }];
+    setItems(newItem);
     getProduct(selectIdCom, e.target.value);
   };
 
@@ -141,22 +149,29 @@ function AddOrder() {
   }, [id]);
 
   // =============== Validate Forms ===============//
-  const generateItemSchema = () =>
-    Yup.object().shape({
-      product_id: Yup.string().required('กรุณาระบุสินค้า'),
-      quantity: Yup.number().required('กรุณาระบุจำนวนสินค้า').min(0.2, 'กรุณาระบุจำนวนสินค้าอย่างน้อย 0.2 ตัน')
-    });
-  const [validationSchema, setValidationSchema] = useState(
-    Yup.object().shape({
-      ref_order_id: Yup.string().required('กรุณาระบุหมายเลขคำสั่งซื้อ'),
-      description: Yup.string().required('กรุณาระบุรายละเอียด'),
-      order_date: Yup.string().required('กรุณาระบุวันที่สั่งซื้อสินค้า'),
-      product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
-      product_brand_id: Yup.string().required('กรุณาระบุตรา(สินค้า)'),
-      items: Yup.array().of(generateItemSchema())
-    })
-  );
-
+  // const generateItemSchema = () =>
+  //   Yup.object().shape({
+  //     product_id: Yup.string().required('กรุณาระบุสินค้า'),
+  //     quantity: Yup.number().required('กรุณาระบุจำนวนสินค้า').min(0.2, 'กรุณาระบุจำนวนสินค้าอย่างน้อย 0.2 ตัน')
+  //   });
+  // const [validationSchema, setValidationSchema] = useState(
+  //   Yup.object().shape({
+  //     ref_order_id: Yup.string().required('กรุณาระบุหมายเลขคำสั่งซื้อ'),
+  //     description: Yup.string().required('กรุณาระบุรายละเอียด'),
+  //     order_date: Yup.string().required('กรุณาระบุวันที่สั่งซื้อสินค้า'),
+  //     product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
+  //     product_brand_id: Yup.string().required('กรุณาระบุตรา(สินค้า)')
+  //     items: Yup.array().of(generateItemSchema())
+  //   })
+  // );
+  const validationSchema = Yup.object().shape({
+    ref_order_id: Yup.string().required('กรุณาระบุหมายเลขคำสั่งซื้อ'),
+    description: Yup.string().required('กรุณาระบุรายละเอียด'),
+    order_date: Yup.string().required('กรุณาระบุวันที่สั่งซื้อสินค้า'),
+    product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
+    product_brand_id: Yup.string().required('กรุณาระบุตรา(สินค้า)')
+    // items: Yup.array().of(generateItemSchema())
+  });
   // =============== บันทึกข้อมูล ===============//
   //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
   function createOrder(data) {
@@ -168,7 +183,8 @@ function AddOrder() {
         }, 0);
 
         if (items.length === 0) {
-          alert('กรุณาเพิ่มข้อมูล : items.length = 0');
+          // alert('กรุณาเพิ่มข้อมูล : items.length = 0');
+          enqueueSnackbar('กรุณาเพิ่มข้อมูลสินค้า', { variant: 'warning' });
           return;
         }
 
@@ -221,6 +237,7 @@ function AddOrder() {
     fetch(apiUrl + '/updatereservetotal/' + id, requestOptions)
       .then((response) => response.json())
       .then(() => {
+        enqueueSnackbar('บันทึกข้อมูลคำสั่งซื้อสำเร็จ!', { variant: 'success' });
         editReserve();
       })
       .catch((error) => console.log('error', error));
@@ -233,23 +250,37 @@ function AddOrder() {
   const handleSubmits = async (values, { setErrors, setSubmitting }) => {
     try {
       let coutItemId = 0;
+      let coutItemsTotal = 0;
       items.map((x) => {
         if (x.product_id) {
           coutItemId = coutItemId + 1;
+          if (x.quantity <= 0) {
+            coutItemsTotal = coutItemsTotal + 1;
+          }
         }
       });
+
+      if (coutItemsTotal !== 0) {
+        setErrors(false);
+        setSubmitting(false);
+        enqueueSnackbar('กรุณาระบุจำนวนสินค้าให้มากกว่า 0 ตัน', { variant: 'warning' });
+
+        return;
+      }
 
       if (items.length !== coutItemId) {
         setErrors(false);
         setSubmitting(false);
-        alert('กรุณาเพิ่มข้อมูลสินค้าให้ครบถ้วน');
+        // alert('กรุณาเพิ่มข้อมูลสินค้าให้ครบถ้วน');
+        enqueueSnackbar('กรุณาเพิ่มข้อมูลสินค้าให้ครบถ้วน', { variant: 'warning' });
         return;
       }
 
       if (!values.product_brand_id || !values.product_company_id) {
         setErrors(false);
         setSubmitting(false);
-        alert('ระบุบริษัท(สินค้า)/ตรา(สินค้า)');
+        // alert('ระบุบริษัท(สินค้า)/ตรา(สินค้า)');
+        enqueueSnackbar('ระบุบริษัท(สินค้า)/ตรา(สินค้า)', { variant: 'warning' });
         return;
       }
 
@@ -271,20 +302,25 @@ function AddOrder() {
     initialValue.items = items;
   };
 
+  const handleInputChangeSelect = (e, index) => {
+    const updatedItems = [...items];
+
+    if (e !== null) {
+      const { product_id } = e;
+      updatedItems[index]['product_id'] = product_id;
+    } else {
+      updatedItems[index]['product_id'] = e;
+    }
+
+    setItems(updatedItems);
+    initialValue.items = items;
+  };
+
   // =============== เพิ่ม-ลบรา รายการสินค้า ===============//
   const [coutRowsProduct, setCoutRowsProduct] = useState(1);
   const addItem = () => {
     items.push({ product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate });
-
     setCoutRowsProduct(coutRowsProduct + 1);
-
-    setValidationSchema((prevSchema) => {
-      return Yup.object().shape({
-        ...prevSchema.fields,
-        items: Yup.array().of(generateItemSchema())
-      });
-    });
-
     initialValue.items = items;
   };
 
@@ -292,6 +328,7 @@ function AddOrder() {
     setCoutRowsProduct(coutRowsProduct - 1);
     const updatedItems = [...items];
     updatedItems.splice(index, 1);
+
     setItems(updatedItems);
   };
 
@@ -475,14 +512,48 @@ function AddOrder() {
                             <TableRow key={index}>
                               <TableCell>
                                 <FormControl sx={{ m: 1, minWidth: 200 }} size="small">
-                                  <Select
+                                  <Autocomplete
+                                    disablePortal
+                                    id="product-list"
+                                    options={productList}
+                                    value={item.product_id ? productList.find((x) => x.product_id === item.product_id) : null}
+                                    // onChange={(e, value) => setFieldValue('driver_id', value.driver_id)}
+                                    onChange={(e, value) => {
+                                      // const newValue = value ? value.product_id : (value.product_id = '');
+                                      setFieldValue(item.product_id, value);
+                                      handleInputChangeSelect(value, index);
+                                    }}
+                                    getOptionLabel={(option) => option.name || null}
+                                    sx={{
+                                      width: '100%',
+                                      '& .MuiOutlinedInput-root': {
+                                        padding: '3px 8px!important'
+                                      },
+                                      '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                                        right: '7px!important',
+                                        top: 'calc(50% - 18px)'
+                                      }
+                                    }}
+                                    error={Boolean(touched.product_id && errors.product_id)}
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        placeholder="เลือกสินค้า"
+                                        error={Boolean(touched.product_id && errors.product_id)}
+                                      />
+                                    )}
+                                  />
+                                  {/* <Select
                                     displayEmpty
                                     labelId="demo-simple-select-label"
                                     id={`items.${index}.product_id`}
                                     placeholder="สินค้า"
                                     size="small"
                                     value={item.product_id || ''}
-                                    onChange={(e) => handleInputChange(e, index)}
+                                    onChange={(e) => {
+                                      handleInputChange(e, index);
+                                      console.log(e);
+                                    }}
                                     name={`product_id`}
                                     error={Boolean(touched.items && errors.items)}
                                   >
@@ -494,7 +565,7 @@ function AddOrder() {
                                         {product.name}
                                       </MenuItem>
                                     ))}
-                                  </Select>
+                                  </Select> */}
 
                                   {touched.items && touched.items[index] && errors.items && errors.items[index] && (
                                     <>

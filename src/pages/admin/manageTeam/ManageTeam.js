@@ -9,6 +9,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import { SelectOutlined, CloseSquareOutlined } from '@ant-design/icons';
 import * as adminRequest from '_api/adminRequest';
@@ -23,6 +24,18 @@ function ManageTeam({ teamId, onHandleChange }) {
     reloading();
   }, [teamId, onHandleChange]);
 
+  const getMuiTheme = () =>
+    createTheme({
+      components: {
+        MUIDataTableToolbar: {
+          styleOverrides: {
+            root: {
+              backgroundColor: '#FF0000'
+            }
+          }
+        }
+      }
+    });
   const reloading = async () => {
     setLoading(true);
     getAllWareHouseManagers();
@@ -35,10 +48,11 @@ function ManageTeam({ teamId, onHandleChange }) {
     viewColumns: false,
     print: false,
     download: false,
-    // selectableRows: false,
+    selectableRows: 'none',
     elevation: 0,
-    rowsPerPage: 10,
-    rowsPerPageOptions: [10, 20, 30],
+    rowsPerPage: 30,
+    responsive: 'standard',
+    rowsPerPageOptions: [10, 20, 30, 40, 50],
     customHeader: {
       background: 'linear-gradient(to right, #4b6cb7, #182848)',
       color: '#fff'
@@ -91,8 +105,9 @@ function ManageTeam({ teamId, onHandleChange }) {
     print: false,
     download: false,
     elevation: 0,
-    rowsPerPage: 10,
-    rowsPerPageOptions: [10, 20, 30],
+    rowsPerPage: 30,
+    responsive: 'standard',
+    rowsPerPageOptions: [10, 20, 30, 40, 50],
     customHeader: {
       background: 'linear-gradient(to right, #4b6cb7, #182848)',
       color: '#fff'
@@ -175,7 +190,7 @@ function ManageTeam({ teamId, onHandleChange }) {
     }
   };
   const addTeamChecker = async (teamCheckers) => {
-    await adminRequest.addTeamChecker(teamCheckers)
+    await adminRequest.addTeamChecker(teamCheckers);
     // .then((response) => {
     //   console.log('addTeamChecker :', response);
     // });
@@ -183,7 +198,7 @@ function ManageTeam({ teamId, onHandleChange }) {
 
   const deleteTeamChecker = async (checker_id) => {
     try {
-      await adminRequest.deleteTeamChecker(checker_id)
+      await adminRequest.deleteTeamChecker(checker_id);
       // .then((response) => {
       //   console.log('deleteTeamChecker', response);
       // });
@@ -201,8 +216,9 @@ function ManageTeam({ teamId, onHandleChange }) {
     print: false,
     download: false,
     elevation: 0,
-    rowsPerPage: 10,
-    rowsPerPageOptions: [10, 20, 30],
+    rowsPerPage: 30,
+    responsive: 'standard',
+    rowsPerPageOptions: [10, 20, 30, 40, 50],
     customHeader: {
       background: 'linear-gradient(to right, #4b6cb7, #182848)',
       color: '#fff'
@@ -451,11 +467,9 @@ function ManageTeam({ teamId, onHandleChange }) {
           {!loading ? (
             <MainCard>
               <Grid container spacing={1}>
-                <Grid item xs={12} md={4}>
-                  {/* <Grid item sx={{ mb: 1 }}>
-                  <Typography variant="h5"></Typography>
-                </Grid> */}
+                <Grid item xs={12} sm={6} md={4}>
                   <MainCard boxShadow={true} contentSX={{ p: 0 }}>
+                    <ThemeProvider theme={getMuiTheme()}></ThemeProvider>
                     <MUIDataTable
                       title={<Typography variant="h5">ข้อมูลหัวหน้าโกดัง</Typography>}
                       data={allManager}
@@ -465,7 +479,7 @@ function ManageTeam({ teamId, onHandleChange }) {
                   </MainCard>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} sm={6} md={4}>
                   <MainCard boxShadow={true} contentSX={{ p: 0 }}>
                     <MUIDataTable
                       title={<Typography variant="h5">ข้อมูลพนักงานจ่ายสินค้า</Typography>}
@@ -476,7 +490,7 @@ function ManageTeam({ teamId, onHandleChange }) {
                   </MainCard>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} sm={6} md={4}>
                   <MainCard boxShadow={true} contentSX={{ p: 0 }}>
                     <MUIDataTable
                       title={<Typography variant="h5">ข้อมูลพนักงานจ่ายสินค้า</Typography>}

@@ -172,7 +172,16 @@ function AllStations() {
         <>
           {stations.length > 0 &&
             stations.map((row, index) => (
-              <Grid item xs={6} md={2} lg={1} sx={{ minWidth: '10%!important' }} align="center" key={index}>
+              <Grid
+                item
+                xs={3}
+                sm={2}
+                md={2}
+                lg={1}
+                sx={{ minWidth: { sm: '10%!important', lg: '10%!important' }, maxWidth: { sm: '10%!important', lg: '10%!important' } }}
+                align="center"
+                key={index}
+              >
                 {row.time_update && moment(row.time_update).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
                   ? row.time_update.slice(11, 16)
                   : '--:--'}
@@ -187,7 +196,7 @@ function AllStations() {
                       bgcolor: styleStation(row.station_status) + '.light'
                     },
                     '&:active': {
-                      bgcolor:  styleStation(row.station_status) + '.dark'
+                      bgcolor: styleStation(row.station_status) + '.dark'
                     }
                   }}
                   onClick={() => handleClickOpen(row)}

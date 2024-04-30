@@ -33,7 +33,7 @@ const queues = {
     },
     {
       id: 'step0',
-      title: 'Step0-ทีมรับสินค้า',
+      title: 'Step0-ทีมจ่ายสินค้า',
       type: 'item',
       url: '/admin/step0',
       icon: PartitionOutlined

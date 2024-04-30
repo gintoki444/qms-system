@@ -15,6 +15,7 @@ import QueueTab from 'components/@extended/QueueTab';
 import { PlusCircleOutlined } from '@ant-design/icons';
 
 import ProductManagementTable from './ProductManagementTable';
+// import ProductManage from './ProductManage';
 
 function Product() {
   const navigate = useNavigate();
@@ -100,6 +101,7 @@ function Product() {
           <Grid item>
             <MainCard content={false} sx={{ mt: 1.5 }}>
               <Box sx={{ pt: 1 }}>
+                {/* <ProductManage onFilter={valueFilter} /> */}
                 <ProductManagementTable onFilter={valueFilter} />
               </Box>
             </MainCard>

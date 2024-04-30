@@ -797,13 +797,13 @@ function AddQueue() {
                     {(userRoles == 9 || userRoles == 1) && (
                       <Grid item xs={12}>
                         <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography variant="h5">ข้อมูลการเข้ารับสินค้า</Typography>
+                          <Typography variant="h5">ข้อมูลทีมจ่ายสินค้า</Typography>
                         </Grid>
 
                         <Grid container spacing={3} sx={{ mt: 1 }}>
                           <Grid item xs={12} md={6}>
                             <Stack spacing={1}>
-                              <InputLabel>ทีมรับสินค้า</InputLabel>
+                              <InputLabel>ทีมจ่ายสินค้า</InputLabel>
                               <FormControl>
                                 <Select
                                   displayEmpty

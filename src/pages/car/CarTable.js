@@ -1,98 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableContainer,
+  // Table,
+  // TableHead,
+  // TableBody,
+  // TableRow,
+  // TableCell,
+  // TableContainer,
   Box,
   ButtonGroup,
   Button,
   Tooltip,
   Typography,
+  Backdrop,
   CircularProgress
 } from '@mui/material';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from '@ant-design/icons';
 
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 import * as carRequest from '_api/carRequest';
 import axios from '../../../node_modules/axios/index';
 
-// ==============================|| ORDER TABLE - HEADER CELL ||============================== //
-const headCells = [
-  {
-    id: 'carNo',
-    align: 'center',
-    width: '5%',
-    disablePadding: false,
-    label: 'ลำดับ'
-  },
-  {
-    id: 'name',
-    align: 'left',
-    disablePadding: true,
-    label: 'ทะเบียนรถ'
-  },
-  {
-    id: 'province',
-    align: 'left',
-    disablePadding: true,
-    label: 'จังหวัด'
-  },
-  {
-    id: 'typeCar',
-    align: 'left',
-    disablePadding: false,
-    label: 'ประเภทรถ'
-  },
-  // {
-  //   id: 'taxpayer',
-  //   align: 'left',
-  //   disablePadding: false,
-  //   label: 'ยี้ห้อรถ'
-  // },
-  // {
-  //   id: 'tel',
-  //   align: 'left',
-  //   disablePadding: false,
-  //   label: 'สีรถ'
-  // },
-  {
-    id: 'action',
-    align: 'center',
-    width: '10%',
-    disablePadding: false,
-    label: 'Actions'
-  }
-];
-
-function CompantTableHead({ car, carBy }) {
-  return (
-    <TableHead>
-      <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.align}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            sortDirection={carBy === headCell.id ? car : false}
-            width={headCell.width}
-          >
-            {headCell.label}
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
+import MUIDataTable from 'mui-datatables';
 
 function CarTable() {
+  const navigate = useNavigate();
   const [car, setCar] = useState([]);
   const [open, setOpen] = useState(false);
 
+  const userRole = useSelector((state) => state.auth?.roles);
   const userId = localStorage.getItem('user_id');
 
   const [carTypeList, setCarTypeList] = useState([]);
@@ -117,7 +55,13 @@ function CarTable() {
     setOpen(true);
     try {
       carRequest.getAllCars(userId).then((response) => {
-        setCar(response);
+        const newData = response.map((item, index) => {
+          return {
+            ...item,
+            No: index + 1
+          };
+        });
+        setCar(newData);
         setOpen(false);
       });
     } catch (error) {
@@ -125,12 +69,16 @@ function CarTable() {
     }
   };
 
-  const navigate = useNavigate();
   const updateCar = (id) => {
     navigate('/car/update/' + id);
   };
 
+  const addCar = () => {
+    navigate('/car/add');
+  };
+
   const deleteCar = (id) => {
+    setOpen(true);
     let config = {
       method: 'delete',
       maxBodyLength: Infinity,
@@ -145,16 +93,125 @@ function CarTable() {
           alert(result.data.message);
           getCar();
         } else {
+          setOpen(false);
           alert(result.data['message']['sqlMessage']);
         }
       })
       .catch((error) => {
+        setOpen(false);
         console.log(error);
       });
   };
+
+  // =============== Get Company DataTable ===============//
+  const options = {
+    viewColumns: false,
+    print: false,
+    download: false,
+    selectableRows: 'none',
+    elevation: 0,
+    rowsPerPage: 25,
+    responsive: 'standard',
+    sort: false,
+    rowsPerPageOptions: [25, 50, 75, 100],
+    customToolbar: () => {
+      return (
+        <>
+          {userRole && userRole !== 5 && (
+            <Button size="mediam" color="success" variant="outlined" onClick={() => addCar()} startIcon={<PlusCircleOutlined />}>
+              เพิ่มข้อมูล
+            </Button>
+          )}
+        </>
+      );
+    }
+  };
+
+  const columns = [
+    {
+      name: 'No',
+      label: 'ลำดับ',
+      options: {
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'center' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'center' }
+        })
+      }
+    },
+    {
+      name: 'registration_no',
+      label: 'ทะเบียนรถ'
+    },
+    {
+      name: 'province_id',
+      label: 'จังหวัด',
+      options: {
+        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+        // setCellProps: () => ({ style: { color: 'red', textAlign: 'center' } }),
+        // setCellHeaderProps: () => ({ style: { color: 'red', textAlign: 'center' } })
+      }
+    },
+    {
+      name: 'car_type_id',
+      label: 'ประเภทรถ',
+      options: {
+        customBodyRender: (value) => <Typography variant="body">{value ? setCarTypeName(value) : '-'}</Typography>
+      }
+    },
+    {
+      name: 'car_id',
+      label: 'Actions',
+      options: {
+        customBodyRender: (value) => (
+          <ButtonGroup variant="contained" aria-label="Basic button group">
+            <Tooltip title="แก้ไข">
+              <Button
+                variant="contained"
+                size="medium"
+                color="primary"
+                sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                onClick={() => updateCar(value)}
+              >
+                <EditOutlined />
+              </Button>
+            </Tooltip>
+            <Tooltip title="ลบ">
+              <Button
+                variant="contained"
+                size="medium"
+                color="error"
+                sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                onClick={() => deleteCar(value)}
+              >
+                <DeleteOutlined />
+              </Button>
+            </Tooltip>
+          </ButtonGroup>
+        ),
+
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'center' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'center' }
+        })
+      }
+    }
+  ];
   return (
     <Box>
-      <TableContainer
+      {open && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={open}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
+      <MUIDataTable title={<Typography variant="h5">ข้อมูลรถ</Typography>} data={car} columns={columns} options={options} />
+      {/* <TableContainer
         sx={{
           width: '100%',
           overflowX: 'auto',
@@ -186,9 +243,6 @@ function CarTable() {
                     <TableCell align="left">{row.registration_no}</TableCell>
                     <TableCell align="left">{row.province_id ? row.name_th : '-'}</TableCell>
                     <TableCell align="left">{row.car_type_id ? setCarTypeName(row.car_type_id) : '-'}</TableCell>
-                    {/* <TableCell align="left">{row.brand ? row.brand : '-'}</TableCell>
-                    <TableCell align="left">{row.color ? row.color : '-'}</TableCell> */}
-                    {/* {permission.length > 0 &&  */}
                     <TableCell align="center">
                       <ButtonGroup variant="contained" aria-label="Basic button group">
                         <Tooltip title="แก้ไข">
@@ -215,7 +269,6 @@ function CarTable() {
                         </Tooltip>
                       </ButtonGroup>
                     </TableCell>
-                    {/* } */}
                   </TableRow>
                 );
               })}
@@ -238,7 +291,7 @@ function CarTable() {
             </TableBody>
           )}
         </Table>
-      </TableContainer>
+      </TableContainer> */}
     </Box>
   );
 }

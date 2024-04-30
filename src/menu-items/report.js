@@ -47,7 +47,7 @@ const report = {
     },
     {
       id: 'contractorsum',
-      title: 'รายงานสรุปยอดขึ้นสินค้า',
+      title: 'สรุปยอดขึ้นสินค้าสายแรงงาน',
       type: 'item',
       url: '/report/contractorsum',
       icon: FundViewOutlined,

@@ -11,12 +11,6 @@ import * as queueRequest from '_api/queueReques';
 // material-ui
 import {
   Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   ButtonGroup,
   Button,
   Chip,
@@ -27,7 +21,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  CircularProgress
+  CircularProgress,
+  Backdrop
 } from '@mui/material';
 
 import {
@@ -36,108 +31,8 @@ import {
   DeleteOutlined
 } from '@ant-design/icons';
 
-// const currentDate = moment(new Date()).format('YYYY-MM-DD');
-
-// ==============================|| ORDER TABLE - HEADER CELL ||============================== //
-const headCells = [
-  {
-    id: 'queueNo',
-    align: 'center',
-    disablePadding: false,
-    label: 'ลำดับ'
-  },
-  {
-    id: 'reserve_date',
-    align: 'left',
-    disablePadding: false,
-    label: 'วันที่เข้ารับสินค้า'
-  },
-  {
-    id: 'queue_token',
-    align: 'center',
-    disablePadding: false,
-    label: 'หมายเลขคิว'
-  },
-  {
-    id: 'branName',
-    align: 'left',
-    disablePadding: false,
-    label: 'ร้านค้า/บริษัท'
-  },
-  {
-    id: 'registration_no',
-    align: 'center',
-    disablePadding: true,
-    label: 'ทะเบียนรถ'
-  },
-  {
-    id: 'driver',
-    align: 'left',
-    disablePadding: true,
-    label: 'ชื่อผู้ขับ'
-  },
-  {
-    id: 'tel',
-    align: 'left',
-    disablePadding: true,
-    label: 'เบอร์โทรศัพท์'
-  },
-  {
-    id: 'step1',
-    align: 'center',
-    disablePadding: false,
-    label: 'ชั่งเบา(S1)'
-  },
-  {
-    id: 'step2',
-    align: 'center',
-    disablePadding: false,
-    label: ' ขึ้นสินค้า(S2)'
-  },
-  {
-    id: 'step3',
-    align: 'center',
-    disablePadding: false,
-    label: 'ชั่งหนัก(S3)'
-  },
-  {
-    id: 'step4',
-    align: 'center',
-    disablePadding: false,
-    label: 'เสร็จสิ้น(S4)'
-  },
-  {
-    id: 'action',
-    align: 'center',
-    disablePadding: false,
-    label: 'Actions'
-  }
-];
-
-// ==============================|| ORDER TABLE - HEADER ||============================== //
-function QueueTableHead({ order, orderBy }) {
-  return (
-    <TableHead>
-      <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.align}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            {headCell.label}
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
-
-QueueTableHead.propTypes = {
-  order: PropTypes.string,
-  orderBy: PropTypes.string
-};
+import MUIDataTable from 'mui-datatables';
+import CopyLinkButton from 'components/CopyLinkButton';
 
 // ==============================|| ORDER TABLE - STATUS ||============================== //
 const QueueStatus = ({ status }) => {
@@ -184,8 +79,8 @@ export default function QueueTable({ startDate, endDate }) {
 
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
-  const [order] = useState('asc');
-  const [orderBy] = useState('trackingNo');
+  // const [order] = useState('asc');
+  // const [orderBy] = useState('trackingNo');
 
   // const userId = localStorage.getItem('user_id');
 
@@ -199,12 +94,24 @@ export default function QueueTable({ startDate, endDate }) {
       console.log('userID :', userID);
       if (userRoles == 8) {
         queueRequest.getAllqueueUserByDate(userID, startDate, endDate).then((response) => {
-          setItems(response);
+          const newData = response.map((item, index) => {
+            return {
+              ...item,
+              No: index + 1
+            };
+          });
+          setItems(newData);
           setLoading(false);
         });
       } else {
         queueRequest.getAllqueueByDateV2(startDate, endDate).then((response) => {
-          setItems(response);
+          const newData = response.map((item, index) => {
+            return {
+              ...item,
+              No: index + 1
+            };
+          });
+          setItems(newData);
           setLoading(false);
         });
       }
@@ -212,6 +119,157 @@ export default function QueueTable({ startDate, endDate }) {
       console.log(e);
     }
   };
+
+  // =============== Get Company DataTable ===============//
+  const options = {
+    viewColumns: false,
+    print: false,
+    download: false,
+    selectableRows: 'none',
+    elevation: 0,
+    rowsPerPage: 25,
+    responsive: 'standard',
+    sort: false,
+    rowsPerPageOptions: [25, 50, 75, 100]
+  };
+
+  const columns = [
+    {
+      name: 'No',
+      label: 'ลำดับ',
+      options: {
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'center' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'center' }
+        })
+      }
+    },
+    {
+      name: 'queue_date',
+      label: 'วันที่เข้ารับสินค้า',
+      options: {
+        customBodyRender: (value) => <Typography variant="body">{moment(value).format('DD/MM/YYYY')}</Typography>
+      }
+    },
+    {
+      name: 'token',
+      label: 'หมายเลขคิว',
+      options: {
+        customBodyRender: (value) => <Chip color={'primary'} label={value} sx={{ width: 70, border: 1 }} />
+      }
+    },
+    {
+      name: 'company_name',
+      label: 'ร้านค้า/บริษัท',
+      options: { customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography> }
+    },
+    {
+      name: 'registration_no',
+      label: 'ทะเบียนรถ',
+      options: {
+        customBodyRender: (value) => <Chip color={'primary'} label={value} sx={{ width: 122, border: 1 }} />
+      }
+    },
+    {
+      name: 'driver_name',
+      label: 'ชื่อผู้ขับ',
+      options: {
+        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+      }
+    },
+    {
+      name: 'driver_mobile',
+      label: 'เบอร์โทรศัพท์',
+      options: {
+        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+      }
+    },
+    {
+      name: 'step1_status',
+      label: 'ชั่งเบา(S1)',
+      options: {
+        customBodyRender: (value) =>
+          value !== 'none' ? <>{parseFloat(value) <= 0 ? <QueueStatus status={'pending'} /> : <QueueStatus status={value} />}</> : '-'
+      }
+    },
+    {
+      name: 'step2_status',
+      label: 'ขึ้นสินค้า(S2)',
+      options: {
+        customBodyRender: (value) => (value !== 'none' ? <QueueStatus status={value} /> : '-')
+      }
+    },
+    {
+      name: 'step3_status',
+      label: 'ชั่งหนัก(S3)',
+      options: {
+        customBodyRender: (value) => (value !== 'none' ? <QueueStatus status={value} /> : '-')
+      }
+    },
+    {
+      name: 'step4_status',
+      label: 'เสร็จสิ้น(S4)',
+      options: {
+        customBodyRender: (value) => (value !== 'none' ? <QueueStatus status={value} /> : '-')
+      }
+    },
+    {
+      name: 'queue_id',
+      label: 'Actions',
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          const queueDat = items[tableMeta.rowIndex];
+          const prurl = window.location.href + '/detail/' + value;
+          console.log(window.location);
+          return (
+            <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
+              {userRoles && (userRoles === 10 || userRoles === 1) && <CopyLinkButton link={prurl} shortButton={true} />}
+
+              <Tooltip title="รายละเอียด">
+                <span>
+                  <Button
+                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                    variant="contained"
+                    size="medium"
+                    color="info"
+                    onClick={() => updateDrivers(value)}
+                  >
+                    <ProfileOutlined />
+                  </Button>
+                </span>
+              </Tooltip>
+
+              {userRoles && (userRoles === 10 || userRoles === 1 || userRoles === 9) && (
+                <Tooltip title="ลบ">
+                  <span>
+                    <Button
+                      variant="contained"
+                      sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                      size="medium"
+                      disabled={queueDat.step1_status === 'completed'}
+                      color="error"
+                      onClick={() => handleClickOpen(value, queueDat.reserve_id, queueDat.step1_status)}
+                    >
+                      <DeleteOutlined />
+                    </Button>
+                  </span>
+                </Tooltip>
+              )}
+            </ButtonGroup>
+          );
+        },
+
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'center' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'center' }
+        })
+      }
+    }
+  ];
 
   // ยกเลิกข้อมูลการจองคิว
   const [reserve_id, setReserve_id] = useState(false);
@@ -301,7 +359,17 @@ export default function QueueTable({ startDate, endDate }) {
         </DialogActions>
       </Dialog>
 
-      <TableContainer
+      {loading && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={loading}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
+
+      <MUIDataTable title={<Typography variant="h5">ข้อมูลคคิวรับสินค้า</Typography>} data={items} columns={columns} options={options} />
+      {/* <TableContainer
         sx={{
           width: '100%',
           overflowX: 'auto',
@@ -408,11 +476,6 @@ export default function QueueTable({ startDate, endDate }) {
                             </Tooltip>
                           )}
                         </ButtonGroup>
-                        {/* <Button 
-                      sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                      variant="contained" size="medium" color="error" onClick={() => deleteDrivers(row.reserve_id)}>
-                      <DeleteOutlined />
-                    </Button> */}
                       </TableCell>
                     </TableRow>
                   );
@@ -437,7 +500,7 @@ export default function QueueTable({ startDate, endDate }) {
             </TableBody>
           )}
         </Table>
-      </TableContainer>
+      </TableContainer> */}
     </Box>
   );
 }

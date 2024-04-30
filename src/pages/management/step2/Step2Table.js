@@ -546,9 +546,16 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
         response.map((result) => {
           if (result.product_company_id && result.product_brand_id) {
             result.items.map((data) => {
-              const getProductRegis = productList.filter((x) => x.product_id == data.product_id);
+              const getProductRegis = productList.filter(
+                (x) => x.product_id == data.product_id && x.product_brand_id == result.product_brand_id
+              );
               data.productRegis = getProductRegis;
 
+              console.log('response :', getProductRegis);
+              console.log(
+                'result.product_brand_id :',
+                productList.filter((x) => x.product_id == data.product_id && x.product_brand_id == result.product_brand_id)
+              );
               if (data.product_id) {
                 const selectedOption = { id: data.item_id, value: data.product_register_id };
                 setOrderSelect((prevState) => {
@@ -1185,9 +1192,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                           <Grid container spacing={2}>
                             {ordersItems.items.map((orderItem, orderItemId) => (
                               <Grid item xs={12} md={12} key={orderItemId}>
-                                <InputLabel sx={{ mt: 1, mb: 1 }}>
-                                  สูตรสินค้า : {orderItem.name} {orderItem.product_id}
-                                </InputLabel>
+                                <InputLabel sx={{ mt: 1, mb: 1 }}>สูตรสินค้า : {orderItem.name}</InputLabel>
 
                                 {!loadOrders ? (
                                   <FormControl sx={{ width: '100%' }} size="small">

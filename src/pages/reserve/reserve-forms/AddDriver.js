@@ -48,12 +48,12 @@ function AddDriver({ userID, onSaves, driverList }) {
   const valiDationSchema = Yup.object().shape({
     firstname: Yup.string().max(255).required('กรุณาระบุชื่อ'),
     lastname: Yup.string().max(255).required('กรุณาระบุนามสกุล'),
-    license_no: Yup.string()
-      .nullable()
-      .matches(/^[0-9]*$/, 'กรุณาระบุเลขใบขับขี่เป็นตัวเลขเท่านั้น')
-      .min(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
-      .max(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
-      .required('กรุณาระบุเลขใบขับขี่'),
+    // license_no: Yup.string()
+    //   .nullable()
+    //   .matches(/^[0-9]*$/, 'กรุณาระบุเลขใบขับขี่เป็นตัวเลขเท่านั้น')
+    //   .min(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
+    //   .max(13, 'กรุณาระบุเลขใบขับขี่ 13 หลัก')
+    //   .required('กรุณาระบุเลขใบขับขี่'),
     id_card_no: Yup.string()
       .nullable()
       .matches(/^[0-9]*$/, 'กรุณาระบุเลขบัตรประชาชนเป็นตัวเลขเท่านั้น')
@@ -222,7 +222,7 @@ function AddDriver({ userID, onSaves, driverList }) {
                         </Stack>
                       </Grid>
 
-                      <Grid item xs={12} md={12}>
+                      {/* <Grid item xs={12} md={12}>
                         <Stack spacing={1}>
                           <InputLabel htmlFor="license_no-driver">เลขที่ใบขับขี่*</InputLabel>
                           <OutlinedInput
@@ -244,7 +244,7 @@ function AddDriver({ userID, onSaves, driverList }) {
                             </FormHelperText>
                           )}
                         </Stack>
-                      </Grid>
+                      </Grid> */}
 
                       <Grid item xs={12} md={12}>
                         <Stack spacing={1}>

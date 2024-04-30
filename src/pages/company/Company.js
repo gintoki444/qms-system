@@ -1,28 +1,28 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 import {
   Grid,
   Stack,
-  Button,
+  // Button,
   Box,
   Alert
   // Typography
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import CompanyTable from './CompanyTable';
-import { PlusCircleOutlined } from '@ant-design/icons';
+// import { PlusCircleOutlined } from '@ant-design/icons';
 
 const Company = () => {
   const userRole = useSelector((state) => state.auth?.roles);
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  const addCompany = () => {
-    // window.location = '/company/add';
-    navigate('/company/add');
-  };
+  // const addCompany = () => {
+  //   // window.location = '/company/add';
+  //   navigate('/company/add');
+  // };
 
   return (
     <Grid alignItems="center" justifyContent="space-between">
@@ -33,19 +33,10 @@ const Company = () => {
               <Alert severity="warning">กรุณารอการอนุมัติการใช้งานจากผู้ดูแลระบบ</Alert>
             </Stack>
           )}
-          {userRole && userRole !== 5 && (
-            <Grid container alignItems="center" justifyContent="flex-end">
-              <Stack direction="row" alignItems="center" spacing={0}>
-                <Button size="mediam" color="success" variant="outlined" onClick={() => addCompany()} startIcon={<PlusCircleOutlined />}>
-                  เพิ่มข้อมูล
-                </Button>
-              </Stack>
-            </Grid>
-          )}
 
           <Grid item>
             <MainCard content={false} sx={{ mt: 1.5 }}>
-              <Box sx={{ pt: 1, pr: 2 }}>
+              <Box sx={{ pt: 1 }}>
                 <CompanyTable />
               </Box>
             </MainCard>
