@@ -271,9 +271,9 @@ function AddProductReceive() {
       setLoading(true);
       deleteProductReceive(receive_id);
       console.log('receive_id :', receive_id);
+    } else if (flag === 0) {
+      setOpen(false);
     }
-
-    setOpen(false);
   };
 
   const deleteProductReceive = (id) => {

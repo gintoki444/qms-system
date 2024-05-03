@@ -3,6 +3,7 @@ import { UserOutlined, TeamOutlined, FileDoneOutlined, GoldOutlined } from '@ant
 import { ReactComponent as ForkliftIcon } from 'assets/icon/icon-forklift.svg';
 import { ReactComponent as WarehouseIcon } from 'assets/icon/icon-warehouse.svg';
 import { ReactComponent as LaberIcon } from 'assets/icon/icon-labor.svg';
+import { ReactComponent as CompanyContra } from 'assets/icon/icon-company-contrac.svg';
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
 
 const admins = {
@@ -44,6 +45,15 @@ const admins = {
       type: 'item',
       url: '/admin/forklifts',
       icon: ForkliftIcon,
+      target: false
+      // breadcrumbs: false
+    },
+    {
+      id: 'companyContrac',
+      title: 'ข้อมูลสังกัดสายแรงงาน',
+      type: 'item',
+      url: '/admin/company-contractors',
+      icon: CompanyContra,
       target: false
       // breadcrumbs: false
     },

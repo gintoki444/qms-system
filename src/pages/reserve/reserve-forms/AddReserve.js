@@ -187,11 +187,15 @@ function AddReserve() {
     try {
       values.user_id = userId;
       values.pickup_date = moment(values.pickup_date).format('YYYY-MM-DD HH:mm:ss');
-      values.brand_group_id = values.product_company_id;
+      if (values.product_company_id > 7) {
+        values.brand_group_id = 7;
+      } else {
+        values.brand_group_id = values.product_company_id;
+      }
       values.created_at = currentDate;
       values.updated_at = currentDate;
 
-      // console.log(values);
+      console.log(values);
       let config = {
         method: 'post',
         maxBodyLength: Infinity,
@@ -320,25 +324,6 @@ function AddReserve() {
                           />
                         )}
                       />
-                      {/* <Select
-                        displayEmpty
-                        variant="outlined"
-                        name="company_id"
-                        value={values.company_id || ''}
-                        onChange={handleChange}
-                        placeholder="เลือกบริษัท/ร้านค้า"
-                        fullWidth
-                        error={Boolean(touched.company_id && errors.company_id)}
-                      >
-                        <MenuItem disabled value="">
-                          เลือกบริษัท/ร้านค้า
-                        </MenuItem>
-                        {companyList.map((companias) => (
-                          <MenuItem key={companias.company_id} value={companias.company_id}>
-                            {companias.name}
-                          </MenuItem>
-                        ))}
-                      </Select> */}
                     </FormControl>
                     {touched.company_id && errors.company_id && (
                       <FormHelperText error id="helper-text-company-car">

@@ -137,14 +137,17 @@ function ReserveDetail() {
     // setNotifyText('ต้องการสร้างคิวหรือไม่?');
   };
 
+  const [onclickSubmit, setOnClickSubmit] = useState(false);
   const handleClose = (flag) => {
     if (flag === 1) {
+      setOnClickSubmit(true);
       //click มาจากการลบ
       setLoading(true);
       // addQueue(reserve_id, total_quantity);
       addQueue(reserve_id);
+    } else if (flag === 0) {
+      setOpen(false);
     }
-    setOpen(false);
   };
 
   //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
@@ -294,11 +297,9 @@ function ReserveDetail() {
         await getMessageCreateQueue(queue_id_createf, id);
 
         //สร้าง step 1-4
-        //createStep(queue_id_createf)
         await createStepsf(queue_id_createf, id);
-        // } else {
-        //   alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
-        // }
+        setOpen(false);
+        setOnClickSubmit(false);
       } else {
         //alert("สร้างคิวแล้ว")
         updateReserveStatus(reserve_id);
@@ -533,13 +534,21 @@ function ReserveDetail() {
         <DialogContent>
           <DialogContentText>{notifytext}</DialogContentText>
         </DialogContent>
-        <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
-          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
-            ยกเลิก
-          </Button>
-          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
-            ยืนยัน
-          </Button>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2  }}>
+          {onclickSubmit == true ? (
+            <>
+              <CircularProgress color="primary" />
+            </>
+          ) : (
+            <>
+              <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+                ยกเลิก
+              </Button>
+              <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
+                ยืนยัน
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
       <Grid container rowSpacing={1} columnSpacing={1.75}>

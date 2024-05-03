@@ -109,12 +109,12 @@ function ManageTeamLoading() {
       //   setSelectForkliftItems(teamForklift);
       // }
 
-        const teamManager = await adminRequest.getTeamManager(id);
-        setSelectManagerItems(teamManager);
-        const teamChecker = await adminRequest.getTeamChecker(id);
-        setSelectCheckerItems(teamChecker);
-        const teamForklift = await adminRequest.getTeamForklift(id);
-        setSelectForkliftItems(teamForklift);
+      const teamManager = await adminRequest.getTeamManager(id);
+      setSelectManagerItems(teamManager);
+      const teamChecker = await adminRequest.getTeamChecker(id);
+      setSelectCheckerItems(teamChecker);
+      const teamForklift = await adminRequest.getTeamForklift(id);
+      setSelectForkliftItems(teamForklift);
 
       // adminRequest.getLoadingTeamById(id).then((result) => {
       //   setSelectManagerItems(result.team_managers);
@@ -300,6 +300,7 @@ function ManageTeamLoading() {
       if (fr === 'change-manager') {
         if (selectManager) {
           updateWareHouseManager();
+          setOpen(false);
         } else {
           alert('กรุณาเลือกหัวหน้าโกดัง');
           return;
@@ -351,10 +352,9 @@ function ManageTeamLoading() {
         // await getTeamManagers(team_id, 'team-forklift');
         reloading();
       }
+    } else if (flag === 0) {
+      setOpen(false);
     }
-    // await dataGetSelectCheckers(teamload);
-    // dataGetCheckers();
-    setOpen(false);
   };
 
   // const [onUpdates, setOnUpdates] = useState(false);

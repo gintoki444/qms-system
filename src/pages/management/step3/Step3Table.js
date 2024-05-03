@@ -661,6 +661,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
           // handleCallQueue(queues);
           step1Update(id_update, 'processing', selectedStations[id_update]);
           updateStartTime(id_update);
+          setOpen(false);
         } else {
           alert('สถานีบริการเต็ม');
           setLoading(false);
@@ -698,6 +699,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
               updateEndTime(id_update);
               updateWeight2(id_update);
               updateStartTime(id_update_next);
+              setOpen(false);
             }
           }
         } else {
@@ -715,18 +717,18 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
 
           step1Update(id_update, 'waiting', 27);
           updateStartTime(id_update);
+          setOpen(false);
         }
       }
-    } else {
-      setLoading(false);
+    } else if (flag === 0) {
+      setQueuesDetial([]);
+      setreserves([]);
+      setSelectedStations({});
+      setTxtDetail('');
+      setWeight(0);
+      setTypeSelect([]);
+      setOpen(false);
     }
-    setQueuesDetial([]);
-    setreserves([]);
-    setSelectedStations({});
-    setTxtDetail('');
-    setWeight(0);
-    setTypeSelect([]);
-    setOpen(false);
   };
 
   const [typeSelect, setTypeSelect] = useState();

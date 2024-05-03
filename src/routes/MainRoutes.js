@@ -17,6 +17,7 @@ const AddOrder = Loadable(lazy(() => import('pages/order/order-forms/AddOrder'))
 const Queues = Loadable(lazy(() => import('pages/queues/Queues')));
 const QueuesDetail = Loadable(lazy(() => import('pages/queues/QueueDetail')));
 const QueuesCheck = Loadable(lazy(() => import('pages/queues/QueueCheck')));
+const QueueError = Loadable(lazy(() => import('pages/queues/QueueError')));
 
 // render - management
 const Company = Loadable(lazy(() => import('pages/company/Company')));
@@ -72,6 +73,10 @@ const MainRoutes = {
         {
           path: 'detail/:id',
           element: <QueuesDetail />
+        },
+        {
+          path: 'error',
+          element: <QueueError />
         },
         {
           path: 'search',

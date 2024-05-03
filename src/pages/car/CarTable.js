@@ -40,6 +40,13 @@ function CarTable() {
     });
   };
 
+  const [provincesList, setProvincesList] = useState([]);
+  const getProvinces = () => {
+    carRequest.getAllProvinces().then((response) => {
+      setProvincesList(response);
+    });
+  };
+
   const setCarTypeName = (id) => {
     const carType = carTypeList.filter((x) => x.car_type_id == id);
     if (carType.length > 0) return carType[0].car_type_name;
@@ -49,6 +56,7 @@ function CarTable() {
     // getPermission();
     getCar();
     getCarType();
+    getProvinces();
   }, [userId]);
 
   const getCar = async () => {
@@ -148,8 +156,10 @@ function CarTable() {
       name: 'province_id',
       label: 'จังหวัด',
       options: {
-        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
-        // setCellProps: () => ({ style: { color: 'red', textAlign: 'center' } }),
+        customBodyRender: (value) => (
+          <Typography variant="body">{value ? provincesList.find((x) => x.province_id == value)?.name_th : '-'}</Typography>
+        )
+        // setC.;ellProps: () => ({ style: { color: 'red', textAlign: 'center' } }),
         // setCellHeaderProps: () => ({ style: { color: 'red', textAlign: 'center' } })
       }
     },

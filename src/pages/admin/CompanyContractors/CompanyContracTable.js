@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 import {
   Table,
   TableHead,
@@ -28,41 +29,17 @@ import * as adminRequest from '_api/adminRequest';
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
-    id: 'wareHouseNo',
+    id: 'forkliftNo',
     align: 'center',
-    width: '5%',
+    width: '15%',
     disablePadding: false,
     label: 'ลำดับ'
   },
   {
-    id: 'name',
+    id: 'contractor_name',
     align: 'left',
     disablePadding: true,
-    label: 'ชื่อ-นามสกุล'
-  },
-  {
-    id: 'contact_info',
-    align: 'left',
-    disablePadding: false,
-    label: 'ข้อมูลติดต่อ'
-  },
-  // {
-  //   id: 'warehouse_id',
-  //   align: 'left',
-  //   disablePadding: false,
-  //   label: 'โกดัง'
-  // },
-  {
-    id: 'department',
-    align: 'left',
-    disablePadding: false,
-    label: 'แผนก'
-  },
-  {
-    id: 'stetus',
-    align: 'center',
-    disablePadding: false,
-    label: 'สถานะ'
+    label: 'ชื่อสังกัด'
   },
   {
     id: 'action',
@@ -86,23 +63,22 @@ function CompantTableHead() {
     </TableHead>
   );
 }
-
-function WareHouseTable() {
-  //   const [car, setCar] = useState([]);
+function CompanyContracTable({ dataList }) {
+  const { enqueueSnackbar } = useSnackbar();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [wareHouseList, setWareHouseList] = useState([]);
+  const [companyConList, setCompanyCon] = useState([]);
 
   useEffect(() => {
-    // getPermission();
-    getManager();
+    getContractorCon();
   }, []);
 
-  const getManager = async () => {
+  const getContractorCon = async () => {
     setLoading(true);
     try {
-      adminRequest.getAllManager().then((response) => {
-        setWareHouseList(response);
+      adminRequest.getAllCompanyContractors().then((response) => {
+        setCompanyCon(response);
+        dataList(response);
         setLoading(false);
       });
     } catch (error) {
@@ -110,12 +86,12 @@ function WareHouseTable() {
     }
   };
 
-  // ลบข้อมูล Manager
-  const [manager_id, setManager_id] = useState(false);
+  // ลบข้อมูล Forklift
+  const [contract_company_id, setcontract_company_id] = useState(false);
   const [textnotify, setText] = useState('');
 
-  const handleClickOpen = (manager_id) => {
-    setManager_id(manager_id);
+  const handleClickOpen = (contract_company_id) => {
+    setcontract_company_id(contract_company_id);
     setText('ลบข้อมูล');
     setOpen(true);
   };
@@ -123,50 +99,30 @@ function WareHouseTable() {
   const handleClose = (flag) => {
     if (flag === 1) {
       setLoading(true);
-      deteteManager(manager_id);
-      setOpen(false);
+      deteteContractorCon(contract_company_id);
     } else if (flag === 0) {
       setOpen(false);
     }
   };
 
-  const deteteManager = (id) => {
+  const deteteContractorCon = (id) => {
     try {
-      adminRequest.deleteManagerWareHouse(id).then(() => {
-        getManager();
+      adminRequest.deleteCompanyContractors(id).then(() => {
+        enqueueSnackbar('ลบข้อมูลสังกัดสำเร็จ!', { variant: 'success' });
+        getContractorCon();
+        setOpen(false);
       });
     } catch (error) {
+      enqueueSnackbar('ลบข้อมูลสังกัดไม่สำเร็จ!', { variant: 'error' });
       console.log(error);
     }
   };
 
   const navigate = useNavigate();
-  const updateWareHouse = (id) => {
-    navigate('/admin/warehouse/update/' + id);
+  const updateContractorCon = (id) => {
+    navigate('/admin/company-contractors/update/' + id, { state: { companyList: companyConList } });
   };
 
-  //   const deleteCar = (id) => {
-  //     let config = {
-  //       method: 'delete',
-  //       maxBodyLength: Infinity,
-  //       url: apiUrl + '/deletecar/' + id,
-  //       headers: {}
-  //     };
-
-  //     axios
-  //       .request(config)
-  //       .then((result) => {
-  //         if (result.data.status === 'ok') {
-  //           alert(result.data.message);
-  //           getCar();
-  //         } else {
-  //           alert(result.data['message']['sqlMessage']);
-  //         }
-  //       })
-  //       .catch((error) => {
-  //         console.log(error);
-  //       });
-  //   };
   return (
     <Box>
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
@@ -210,26 +166,11 @@ function WareHouseTable() {
           <CompantTableHead />
           {!loading ? (
             <TableBody>
-              {wareHouseList.map((row, index) => {
+              {companyConList.map((row, index) => {
                 return (
                   <TableRow key={index}>
                     <TableCell align="center">{index + 1}</TableCell>
-                    <TableCell align="left">{row.manager_name}</TableCell>
-                    <TableCell align="left">{row.contact_info}</TableCell>
-                    {/* <TableCell align="left">{row.description}</TableCell> */}
-                    <TableCell align="left">{row.department}</TableCell>
-                    <TableCell align="center">
-                      {row.status == 'A' ? (
-                        <Typography color="success" variant="body1" sx={{ color: 'green' }}>
-                          <strong>ใช้งาน</strong>
-                        </Typography>
-                      ) : (
-                        <Typography variant="body1" color="error">
-                          <strong>ไม่ใช้งาน</strong>
-                        </Typography>
-                      )}
-                    </TableCell>
-                    {/* {permission.length > 0 &&  */}
+                    <TableCell align="left">{row.contract_company_name}</TableCell>
                     <TableCell align="center">
                       <ButtonGroup variant="contained" aria-label="Basic button group">
                         <Tooltip title="แก้ไข">
@@ -238,7 +179,7 @@ function WareHouseTable() {
                             size="medium"
                             color="primary"
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => updateWareHouse(row.manager_id)}
+                            onClick={() => updateContractorCon(row.contract_company_id)}
                           >
                             <EditOutlined />
                           </Button>
@@ -249,7 +190,7 @@ function WareHouseTable() {
                             size="medium"
                             color="error"
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => handleClickOpen(row.manager_id)}
+                            onClick={() => handleClickOpen(row.contract_company_id)}
                           >
                             <DeleteOutlined />
                           </Button>
@@ -260,7 +201,7 @@ function WareHouseTable() {
                   </TableRow>
                 );
               })}
-              {wareHouseList.length == 0 && (
+              {companyConList.length == 0 && (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
                     ไม่พบข้อมูล
@@ -284,4 +225,4 @@ function WareHouseTable() {
   );
 }
 
-export default WareHouseTable;
+export default CompanyContracTable;

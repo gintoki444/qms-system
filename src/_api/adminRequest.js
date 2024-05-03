@@ -491,6 +491,7 @@ export const getLoadingTeamById = async (id) => {
   const result = await response.json();
   return result;
 };
+
 // ==============================|| Company contractors: (สำหรับข้อมูล บริษัทสายรายงาน) ||============================== //
 export const getAllCompanyContractors = async () => {
   const requestOptions = {
@@ -503,6 +504,49 @@ export const getAllCompanyContractors = async () => {
   return result;
 };
 
+export const AddCompanyContractors = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/addcontractorcompany/', requestOptions);
+  return await response.json();
+};
+
+export const putCompanyContractors = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/updatecontractorcompany/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const deleteCompanyContractors = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deletecontractorcompany/${id}`, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
 // ==============================|| Contractors: (สำหรับข้อมูล สายรายงาน) ||============================== //
 export const getAllContractors = async () => {
   const requestOptions = {
@@ -583,18 +627,14 @@ export const deleteContractorById = async (id) => {
 };
 // ==============================|| Product Register: (สำหรับข้อมูล จัดการกองสินค้า) ||============================== //
 export const getAllProductRegister = async () => {
-  try {
-    const requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-    const response = await fetch(apiUrl + '/allproductregister/', requestOptions);
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/allproductregister/', requestOptions);
 
-    const result = await response.json();
-    return result;
-  } catch (error) {
-    console.log(error);
-  }
+  const result = await response.json();
+  return result;
 };
 
 export const getAllProducts = async () => {

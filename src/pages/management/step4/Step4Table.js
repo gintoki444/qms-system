@@ -454,10 +454,10 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
           updateStartTime(id_update);
         }
       }
-    } else {
+    } else if (flag === 0) {
       setLoading(false);
+      setOpen(false);
     }
-    setOpen(false);
   };
 
   /* แจ้งเตือน Line Notify */
@@ -608,9 +608,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
           <Grid sx={{ p: 2 }}>
             <Typography variant="h4">
               {title}
-              <span>
-                ( {station_count}/{station_num} สถานี )
-              </span>
+              <span>( {station_count} คัน )</span>
             </Typography>
           </Grid>
         )}

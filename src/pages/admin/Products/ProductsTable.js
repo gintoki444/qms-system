@@ -108,8 +108,10 @@ function ProductsTable() {
     if (flag === 1) {
       setLoading(true);
       deteteProducts(product_id);
+      setOpen(false);
+    } else if (flag === 0) {
+      setOpen(false);
     }
-    setOpen(false);
   };
 
   const deteteProducts = (id) => {
@@ -139,6 +141,7 @@ function ProductsTable() {
           </Button>
         </DialogActions>
       </Dialog>
+      
       <TableContainer
         sx={{
           width: '100%',

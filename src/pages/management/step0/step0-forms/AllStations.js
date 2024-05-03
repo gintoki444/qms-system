@@ -22,7 +22,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 function AllStations() {
   const [loading, setLoading] = useState(true);
@@ -116,6 +116,21 @@ function AllStations() {
     }
   };
 
+  function getDateFormat(end_time) {
+    // แปลงวันที่จาก row.end_time เป็น moment object และกำหนดโซนเวลาเป็น 'Asia/Bangkok'
+    const momentObj = moment(end_time).tz('Asia/Bangkok');
+
+    // ตรวจสอบว่า momentObj อยู่ในวันที่ถัดไปหรือไม่ ถ้าใช่ให้ลบหนึ่งวัน
+    if (momentObj.hours() >= 0 && momentObj.hours() < 12) {
+      momentObj.subtract(1, 'days');
+    }
+
+    // แปลงรูปแบบวันที่ตามที่ต้องการ "18/04/2024"
+    const formattedDate = momentObj.format('DD/MM/YYYY');
+
+    return formattedDate;
+  }
+
   return (
     <Grid container spacing={1}>
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
@@ -182,7 +197,7 @@ function AllStations() {
                 align="center"
                 key={index}
               >
-                {row.time_update && moment(row.time_update).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
+                {row.time_update && getDateFormat(row.time_update) === moment(new Date()).format('DD/MM/YYYY')
                   ? row.time_update.slice(11, 16)
                   : '--:--'}
                 <Paper

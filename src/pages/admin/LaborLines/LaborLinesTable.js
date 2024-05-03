@@ -111,6 +111,7 @@ function LaborLinesTable() {
     if (flag === 1) {
       setLoading(true);
       deteteForklifts(laborLine_id);
+      setOpen(false);
     }
     setOpen(false);
   };

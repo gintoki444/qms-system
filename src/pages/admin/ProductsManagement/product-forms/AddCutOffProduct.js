@@ -269,9 +269,9 @@ function AddCutOffProduct() {
       setLoading(true);
       deleteCutOffProduct(receive_id);
       console.log('receive_id :', receive_id);
+    } else if (flag === 0) {
+      setOpen(false);
     }
-
-    setOpen(false);
   };
 
   const deleteCutOffProduct = (id) => {

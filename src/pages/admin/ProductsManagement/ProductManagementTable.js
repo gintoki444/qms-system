@@ -205,6 +205,10 @@ function ProductManagementTable({ onFilter }) {
       name: 'No',
       label: 'ลำดับ',
       options: {
+        // customBodyRender: (value, tableData) => {
+        //   console.log('value :', value);
+        //   console.log('tableData :', tableData);
+        // },
         setCellHeaderProps: () => ({
           style: { textAlign: 'center' }
         }),
@@ -448,8 +452,10 @@ function ProductManagementTable({ onFilter }) {
     if (flag === 1) {
       setLoading(true);
       deteteProductManagement(product_id);
+      setOpen(false);
+    } else if (flag === 0) {
+      setOpen(false);
     }
-    setOpen(false);
   };
 
   const deteteProductManagement = (id) => {

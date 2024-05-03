@@ -36,6 +36,11 @@ const UpdateForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklif
 // const UpdateForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklift-forms/UpdateForklift')));
 
 // render -  Contractors
+const CompanyContractors = Loadable(lazy(() => import('pages/admin/CompanyContractors/CompanyContrac')));
+const AddCompanyContractors = Loadable(lazy(() => import('pages/admin/CompanyContractors/conpanyCon-forms/AddCompanyCon')));
+const UpdateCompanyContractors = Loadable(lazy(() => import('pages/admin/CompanyContractors/conpanyCon-forms/UpdateCompanyCon')));
+
+// render -  Contractors
 const Contractors = Loadable(lazy(() => import('pages/admin/Contractors/Contractors')));
 const AddContractor = Loadable(lazy(() => import('pages/admin/Contractors/contractor-forms/AddContractor')));
 const UpdateContractor = Loadable(lazy(() => import('pages/admin/Contractors/contractor-forms/UpdateContractor')));
@@ -157,6 +162,23 @@ const AdminsRoutes = {
         {
           path: 'update/:id',
           element: <UpdateForklift />
+        }
+      ]
+    },
+    {
+      path: 'company-contractors',
+      children: [
+        {
+          path: '',
+          element: <CompanyContractors />
+        },
+        {
+          path: 'add',
+          element: <AddCompanyContractors />
+        },
+        {
+          path: 'update/:id',
+          element: <UpdateCompanyContractors />
         }
       ]
     },

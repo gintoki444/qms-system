@@ -5,13 +5,16 @@ import { Button, Tooltip } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { CopyOutlined } from '@ant-design/icons';
 
-const CopyLinkButton = ({ link, shortButton = false }) => {
+const CopyLinkButton = ({ link, data, shortButton = false }) => {
   const { enqueueSnackbar } = useSnackbar();
+
   const handleCopy = () => {
     // Create a temporary input element
     const tempInput = document.createElement('input');
     // Set its value to the link to be copied
-    tempInput.value = link;
+    const encodedLink = encodeURIComponent(link + data);
+
+    tempInput.value = link + encodedLink;
     // Append it to the body
     document.body.appendChild(tempInput);
     // Select its content

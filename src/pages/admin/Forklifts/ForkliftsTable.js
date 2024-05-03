@@ -118,8 +118,10 @@ function ForkliftsTable() {
     if (flag === 1) {
       setLoading(true);
       deteteForklifts(forklift_id);
+      setOpen(false);
+    } else if (flag === 0) {
+      setOpen(false);
     }
-    setOpen(false);
   };
 
   const deteteForklifts = (id) => {

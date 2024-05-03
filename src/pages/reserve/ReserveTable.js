@@ -245,9 +245,11 @@ export default function ReserveTable({ startDate, endDate }) {
         if (response.status == 'ok') {
           getReserve();
           setSaveLoading(false);
+          setOnClickSubmit(false);
         } else {
           alert('ไม่สามารถลบข้อมูลได้ : ' + response.message.sqlMessage);
           setSaveLoading(false);
+          setOnClickSubmit(false);
         }
       });
     } catch (error) {
@@ -288,8 +290,10 @@ export default function ReserveTable({ startDate, endDate }) {
     }
   };
 
+  const [onclickSubmit, setOnClickSubmit] = useState(false);
   const handleClose = (flag) => {
     if (flag === 1) {
+      setOnClickSubmit(true);
       //click มาจากการลบ
       if (onclick == 'add-queue') {
         setSaveLoading(true);
@@ -298,9 +302,11 @@ export default function ReserveTable({ startDate, endDate }) {
       if (onclick == 'delete') {
         setSaveLoading(true);
         deleteReserve(reserve_id);
+        setOpen(false);
       }
+    } else if (flag === 0) {
+      setOpen(false);
     }
-    setOpen(false);
   };
 
   //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
@@ -452,11 +458,14 @@ export default function ReserveTable({ startDate, endDate }) {
         //สร้าง step 1-4
         //createStep(queue_id_createf)
         await createStepsf(queue_id_createf, id);
+        setOnClickSubmit(false);
+        setOpen(false);
         // } else {
         //   alert('reserve_id: ' + id + 'ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
         // }
       } else {
         //alert("สร้างคิวแล้ว")
+        setOpen(false);
         updateReserveStatus(id);
         getQueueIdByReserve(id);
       }
@@ -674,13 +683,21 @@ export default function ReserveTable({ startDate, endDate }) {
         <DialogContent>
           <DialogContentText>{notifytext}</DialogContentText>
         </DialogContent>
-        <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
-          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
-            ยกเลิก
-          </Button>
-          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
-            ยืนยัน
-          </Button>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2 }}>
+          {onclickSubmit == true ? (
+            <>
+              <CircularProgress color="primary" />
+            </>
+          ) : (
+            <>
+              <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+                ยกเลิก
+              </Button>
+              <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
+                ยืนยัน
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
 

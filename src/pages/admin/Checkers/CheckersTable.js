@@ -118,8 +118,9 @@ function CheckersTable() {
     if (flag === 1) {
       setLoading(true);
       deteteCheckers(checker_id);
+    } else if (flag === 0) {
+      setOpen(false);
     }
-    setOpen(false);
   };
 
   const deteteCheckers = (id) => {

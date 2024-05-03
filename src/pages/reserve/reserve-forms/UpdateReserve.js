@@ -363,25 +363,37 @@ function UpdateReserve() {
     }
   };
 
+  const [onclickSubmit, setOnClickSubmit] = useState(false);
   const handleClose = (flag) => {
     if (onClick == 'add-queue') {
       if (flag === 1) {
         //click มาจากการลบ
+        setOnClickSubmit(true);
         setLoading(true);
         addQueue(reserve_id);
+      } else if (flag === 0) {
+        setOpen(false);
       }
     } else if (onClick == 'remain-queue') {
       if (flag === 1) {
+        setOnClickSubmit(true);
         setLoading(true);
         updateQueueRemain(reserve_id);
+        setOpen(false);
+      } else if (flag === 0) {
+        setOpen(false);
+        setOnClickSubmit(false);
       }
     } else {
       if (flag === 1) {
+        setOnClickSubmit(true);
         setLoading(true);
         deleteOrder();
+        setOpen(false);
+      } else if (flag === 0) {
+        setOpen(false);
       }
     }
-    setOpen(false);
   };
 
   //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
@@ -500,11 +512,15 @@ function UpdateReserve() {
         await getMessageCreateQueue(queue_id_createf, id);
         //สร้าง step 1-4
         await createStepsf(queue_id_createf);
+        setOpen(false);
         setLoading(true);
+        setOnClickSubmit(false);
       } else {
         //alert("สร้างคิวแล้ว")
         updateReserveStatus(reserve_id);
         getQueueIdByReserve(id);
+        setOnClickSubmit(false);
+        setOpen(false);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -717,6 +733,7 @@ function UpdateReserve() {
       reserveRequest.putQueueRemainByID(reserve_id, queueRemain).then((response) => {
         console.log(response);
         setLoading(false);
+        setOnClickSubmit(false);
       });
     } catch (error) {
       setOpen(false);
@@ -734,6 +751,7 @@ function UpdateReserve() {
   const deleteOrder = () => {
     reserveRequest.deleteOrderId(orderId).then(() => {
       updateReserveTotal(id);
+      setOnClickSubmit(false);
     });
   };
 
@@ -778,13 +796,21 @@ function UpdateReserve() {
         <DialogContent>
           <DialogContentText>{notifytext}</DialogContentText>
         </DialogContent>
-        <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
-          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
-            ยกเลิก
-          </Button>
-          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
-            ยืนยัน
-          </Button>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2  }}>
+          {onclickSubmit == true ? (
+            <>
+              <CircularProgress color="primary" />
+            </>
+          ) : (
+            <>
+              <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+                ยกเลิก
+              </Button>
+              <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
+                ยืนยัน
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
       <Grid container spacing={3}>

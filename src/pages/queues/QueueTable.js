@@ -221,11 +221,10 @@ export default function QueueTable({ startDate, endDate }) {
       options: {
         customBodyRender: (value, tableMeta) => {
           const queueDat = items[tableMeta.rowIndex];
-          const prurl = window.location.href + '/detail/' + value;
-          console.log(window.location);
+          const prurl = window.location.href + '/detail/';
           return (
             <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
-              {userRoles && (userRoles === 10 || userRoles === 1) && <CopyLinkButton link={prurl} shortButton={true} />}
+              {userRoles && (userRoles === 10 || userRoles === 1) && <CopyLinkButton link={prurl} data={value} shortButton={true} />}
 
               <Tooltip title="รายละเอียด">
                 <span>
@@ -287,15 +286,19 @@ export default function QueueTable({ startDate, endDate }) {
     setOpen(true);
   };
 
+  const [onclickSubmit, setOnClickSubmit] = useState(false);
   const handleClose = (flag) => {
     if (flag === 1) {
+      setOnClickSubmit(true);
       setLoading(true);
 
       deteteQueue(id_del);
       //update = waiting การจองเมื่อลบคิว queue
       updateReserveStatus(reserve_id);
+      setOpen(false);
+    } else if (flag === 0) {
+      setOpen(false);
     }
-    setOpen(false);
   };
 
   const deteteQueue = (queueId) => {
@@ -332,7 +335,10 @@ export default function QueueTable({ startDate, endDate }) {
     };
 
     fetch(apiUrl + '/updatereservestatus/' + reserve_id, requestOptions)
-      .then((response) => response.json())
+      .then((response) => {
+        response.json();
+        setOnClickSubmit(false);
+      })
       .catch((error) => console.log('error', error));
   };
 
@@ -349,13 +355,22 @@ export default function QueueTable({ startDate, endDate }) {
         <DialogContent>
           <DialogContentText style={{ fontFamily: 'kanit' }}>ต้องการ {textnotify} หรือไม่?</DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={() => handleClose(0)} style={{ fontFamily: 'kanit' }}>
-            ยกเลิก
-          </Button>
-          <Button onClick={() => handleClose(1)} autoFocus style={{ fontFamily: 'kanit' }}>
-            ยืนยัน
-          </Button>
+
+        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2  }}>
+          {onclickSubmit == true ? (
+            <>
+              <CircularProgress color="primary" />
+            </>
+          ) : (
+            <>
+              <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+                ยกเลิก
+              </Button>
+              <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
+                ยืนยัน
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
 

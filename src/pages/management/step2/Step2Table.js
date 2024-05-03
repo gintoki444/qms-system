@@ -547,15 +547,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
           if (result.product_company_id && result.product_brand_id) {
             result.items.map((data) => {
               const getProductRegis = productList.filter(
-                (x) => x.product_id == data.product_id && x.product_brand_id == result.product_brand_id
+                (x) =>
+                  x.product_id == data.product_id &&
+                  x.product_brand_id == result.product_brand_id &&
+                  x.product_brand_id == result.product_company_id
               );
               data.productRegis = getProductRegis;
-
-              console.log('response :', getProductRegis);
-              console.log(
-                'result.product_brand_id :',
-                productList.filter((x) => x.product_id == data.product_id && x.product_brand_id == result.product_brand_id)
-              );
               if (data.product_id) {
                 const selectedOption = { id: data.item_id, value: data.product_register_id };
                 setOrderSelect((prevState) => {
@@ -743,6 +740,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
               setStationCount(station_count + 1);
               await step1Update(id_update, 'processing', station_id);
               await updateStartTime(id_update);
+              setOpen(false);
             }
           } else {
             alert('กรุณาเลือกหัวจ่าย');
@@ -873,6 +871,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             await updateEndTime(id_update);
             await updateStartTime(id_update_next);
             await step1Update(id_update, 'completed', station_id);
+            setOpen(false);
           } catch (error) {
             console.error(error);
             // จัดการข้อผิดพลาดตามที่ต้องการ
@@ -895,12 +894,14 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
           setStationCount(station_count - 1);
           step1Update(id_update, 'waiting', 27);
           updateStartTime(id_update);
+          setOpen(false);
           // Trigger the parent to reload the other instance with the common status
         }
       }
+    } else if (flag === 0) {
+      setOrders([]);
+      setOpen(false);
     }
-    setOrders([]);
-    setOpen(false);
   };
 
   // =============== บันทึกข้อมูล ===============//

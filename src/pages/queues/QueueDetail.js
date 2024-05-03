@@ -27,12 +27,12 @@ import {
   Checkbox
 } from '@mui/material';
 
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 import MainCard from 'components/MainCard';
 import PropTypes from 'prop-types';
 import { StepContent } from '../../../node_modules/@mui/material/index';
-import { PrinterOutlined, RollbackOutlined } from '@ant-design/icons';
+import { PrinterOutlined, RollbackOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 
 import CopyLinkButton from 'components/CopyLinkButton';
 
@@ -47,7 +47,7 @@ const padZero = (num) => {
   return num < 10 ? `0${num}` : num;
 };
 
-function QueueDetail() {
+function QueueDetail({ sx }) {
   const userRoles = useSelector((state) => state.auth.roles);
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
@@ -55,7 +55,7 @@ function QueueDetail() {
   const isMobile = useMediaQuery('(max-width:600px)');
   const [activeStep, setActiveStep] = useState(0);
 
-  const prurl = window.location.href;
+  const prurl = window.location.origin + '/queues/detail/';
 
   useEffect(() => {
     getQueueById(id);
@@ -67,16 +67,40 @@ function QueueDetail() {
   const [queues, setQueues] = useState([]);
   const [queueNumber, setQueueNumber] = useState([]);
 
+  function getDateFormat(end_time) {
+    // แปลงวันที่จาก row.end_time เป็น moment object และกำหนดโซนเวลาเป็น 'Asia/Bangkok'
+    const momentObj = moment(end_time).tz('Asia/Bangkok');
+
+    // ตรวจสอบว่า momentObj อยู่ในวันที่ถัดไปหรือไม่ ถ้าใช่ให้ลบหนึ่งวัน
+    if (momentObj.hours() >= 0 && momentObj.hours() < 12) {
+      momentObj.subtract(1, 'days');
+    }
+
+    // แปลงรูปแบบวันที่ตามที่ต้องการ "18/04/2024"
+    const formattedDate = momentObj.format('DD/MM/YYYY');
+
+    return formattedDate;
+  }
+
   const getQueue = (id) => {
     setLoading(true);
     queueRequest.getQueueDetailID(id).then((result) => {
       try {
-        setQueueToken(result[0]['token']);
-        setQueues(result[0]);
-        setQueueNumber(result[0]['queue_number']);
-        getOrder(result[0].reserve_id);
+        if (getDateFormat(result[0]['queue_date'])) {
+          // if (getDateFormat(result[0]['queue_date']) === moment(new Date()).format('DD/MM/YYYY')) {
+          setQueueToken(result[0]['token']);
+          setQueues(result[0]);
+          setQueueNumber(result[0]['queue_number']);
+          getOrder(result[0].reserve_id);
+          setLoading(false);
+        } else {
+          setErrorMessage('ข้อมูลคิวหมดอายุแล้ว');
+          setError(true);
+          setLoading(false);
+        }
       } catch (error) {
         navigate('/queues');
+        console.log(error);
       }
     });
   };
@@ -139,6 +163,8 @@ function QueueDetail() {
   }
 
   const [items, setItems] = useState([]);
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(false);
   const getQueueById = (id) => {
     var requestOptions = {
       method: 'GET',
@@ -150,7 +176,12 @@ function QueueDetail() {
       .then((result) => {
         setItems(result);
       })
-      .catch((error) => console.log('error', error));
+      .catch((error) => {
+        console.log('error', error);
+        setErrorMessage('ไม่พบข้อมูลคิว');
+        setError(true);
+        setLoading(false);
+      });
   };
   //  ==================== [ ปิดคิว ] ====================
   const [open, setOpen] = useState(false);
@@ -230,36 +261,6 @@ function QueueDetail() {
       })
       .catch((error) => console.log('error', error));
   };
-
-  //Update ทีมขึ้นสินค้าสำหรับ Step4
-  // const updateLoadingTeam = (step_id) => {
-  //   const myHeaders = new Headers();
-  //   myHeaders.append('Content-Type', 'application/json');
-
-  //   const raw = JSON.stringify({
-  //     team_id: team_id
-  //   });
-
-  //   console.log(raw);
-
-  //   const requestOptions = {
-  //     method: 'PUT',
-  //     headers: myHeaders,
-  //     body: raw,
-  //     redirect: 'follow'
-  //   };
-
-  //   fetch(apiUrl + '/updateloadigteam/' + step_id, requestOptions)
-  //     .then((response) => response.json())
-  //     .then((result) => {
-  //       if (result['status'] === 'ok') {
-  //         console.log('updateLoadingTeam is ok');
-  //       } else {
-  //         console.log('not update LoadingTeam');
-  //       }
-  //     })
-  //     .catch((error) => console.error(error));
-  // };
 
   const getStepCount = (steps_order, steps_status) => {
     var requestOptions = {
@@ -522,96 +523,124 @@ function QueueDetail() {
         </Dialog>
 
         <Grid container spacing={3} rowSpacing={2} columnSpacing={2.75}>
-          <Grid item xs={12} lg={7}>
+          <Grid item xs={12} lg={8} sx={sx}>
             <MainCard>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  {isMobile ? (
-                    <Grid container>
-                      <Grid item xs={6}>
-                        <Typography variant="h5">
-                          คิวที่ : <span style={{ color: 'red' }}> {padZero(queueNumber)}</span>
-                        </Typography>
-                        <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                      </Grid>
-                      <Grid item xs={6} align="right">
-                        <Typography variant="h5">หมายเลขคิว : {queue_token}</Typography>
-                        <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                      </Grid>
-
-                      <VerticalStepper
-                        activeStep={activeStep}
-                        steps={steps}
-                        queue_token={queue_token}
-                        queues={queues}
-                        orders={orders}
-                        totalItem={totalItem}
-                        stepDetail={items}
-                        stepId={activeStep}
-                      />
-                    </Grid>
-                  ) : (
-                    <div>
-                      <Grid item xs={12}>
-                        <Typography variant="h4">
-                          {' '}
-                          คิวที่ : <span style={{ color: 'red' }}> {padZero(queueNumber)}</span>
-                          {/* <span style={{ color: 'red' }}>{queueNumber}</span> */}
-                        </Typography>
-                        <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                      </Grid>
-
-                      <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} light />
-                      <HorizontalStepper
-                        activeStep={activeStep}
-                        steps={steps}
-                        queue_token={queue_token}
-                        queues={queues}
-                        orders={orders}
-                        totalItem={totalItem}
-                        stepDetail={items}
-                        stepId={activeStep}
-                      />
-                    </div>
-                  )}
-                </Grid>
-                <Grid item xs={12} sx={{ '& button': { m: 1 }, p: '0 -6%!important' }} align="center">
-                  {(userRoles === 4 || userRoles === 1) && activeStep == 3 && (
-                    <Button size="mediam" variant="contained" color="primary" onClick={() => handleClickOpen(stepData.step_id)}>
-                      ปิดคิว
+              {error ? (
+                <Grid container spacing={3}>
+                  <Grid item xs={12} align="center">
+                    <Typography style={{ color: 'red', fontSize: 45 }}>
+                      <ExclamationCircleOutlined />
+                    </Typography>
+                    <Typography variant="h4"> {errorMessage ? errorMessage : 'ไม่พบข้อมูลคิว'}</Typography>
+                  </Grid>
+                  <Grid item xs={12} align="center">
+                    <Button
+                      size="mediam"
+                      variant="contained"
+                      color="error"
+                      onClick={() => {
+                        backToQueues();
+                      }}
+                      startIcon={<RollbackOutlined />}
+                    >
+                      ย้อนกลับ
                     </Button>
-                  )}
-
-                  {(userRoles === 10 || userRoles === 1) && (
-                    <>
-                      <CopyLinkButton link={prurl} />
-                      <Button
-                        size="mediam"
-                        variant="contained"
-                        color="info"
-                        d
-                        onClick={() => {
-                          printQueues();
-                        }}
-                        startIcon={<PrinterOutlined />}
-                      >
-                        ตัวอย่างก่อนพิมพ์
-                      </Button>
-                      <Button
-                        size="mediam"
-                        variant="contained"
-                        color="error"
-                        onClick={() => {
-                          backToQueues();
-                        }}
-                        startIcon={<RollbackOutlined />}
-                      >
-                        ย้อนกลับ
-                      </Button>
-                    </>
-                  )}
+                  </Grid>
                 </Grid>
-              </Grid>
+              ) : (
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    {isMobile ? (
+                      <Grid container>
+                        <Grid item xs={6}>
+                          <Typography variant="h5">
+                            คิวที่ : <span style={{ color: 'red' }}> {padZero(queueNumber)}</span>
+                          </Typography>
+                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                        </Grid>
+                        <Grid item xs={6} align="right">
+                          <Typography variant="h5">หมายเลขคิว : {queue_token}</Typography>
+                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                        </Grid>
+
+                        <VerticalStepper
+                          activeStep={activeStep}
+                          steps={steps}
+                          queue_token={queue_token}
+                          queues={queues}
+                          orders={orders}
+                          totalItem={totalItem}
+                          stepDetail={items}
+                          stepId={activeStep}
+                        />
+                      </Grid>
+                    ) : (
+                      <div>
+                        <Grid item xs={12}>
+                          <Typography variant="h4">
+                            {' '}
+                            คิวที่ : <span style={{ color: 'red' }}> {padZero(queueNumber)}</span>
+                            {/* <span style={{ color: 'red' }}>{queueNumber}</span> */}
+                          </Typography>
+                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                        </Grid>
+
+                        <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} light />
+                        <HorizontalStepper
+                          activeStep={activeStep}
+                          steps={steps}
+                          queue_token={queue_token}
+                          queues={queues}
+                          orders={orders}
+                          totalItem={totalItem}
+                          stepDetail={items}
+                          stepId={activeStep}
+                        />
+                      </div>
+                    )}
+                  </Grid>
+                  <Grid item xs={12} sx={{ '& button': { m: 1 }, p: '0 -6%!important' }} align="center">
+                    {(userRoles === 4 || userRoles === 1) && activeStep == 3 && (
+                      <Button size="mediam" variant="contained" color="primary" onClick={() => handleClickOpen(stepData.step_id)}>
+                        ปิดคิว
+                      </Button>
+                    )}
+
+                    {(userRoles === 10 || userRoles === 1) && (
+                      <>
+                        {getDateFormat(queues.queue_date) !== moment(new Date()).format('DD/MM/YYYY') && (
+                          <>
+                            <CopyLinkButton link={prurl} data={id} />
+                            <Button
+                              size="mediam"
+                              variant="contained"
+                              color="info"
+                              d
+                              onClick={() => {
+                                printQueues();
+                              }}
+                              startIcon={<PrinterOutlined />}
+                            >
+                              ตัวอย่างก่อนพิมพ์
+                            </Button>
+                          </>
+                        )}
+                        <Button
+                          size="mediam"
+                          variant="contained"
+                          color="error"
+                          onClick={() => {
+                            backToQueues();
+                          }}
+                          startIcon={<RollbackOutlined />}
+                        >
+                          ย้อนกลับ
+                        </Button>
+                      </>
+                    )}
+                  </Grid>
+                </Grid>
+              )}
             </MainCard>
           </Grid>
         </Grid>

@@ -62,7 +62,7 @@ function TextSliders({ duration }) {
     </div>
   );
 }
-
+// ===============================================================================================================================
 // import React, { useEffect } from 'react';
 // import { motion } from 'framer-motion';
 // import { Typography } from '../../../node_modules/@mui/material/index';

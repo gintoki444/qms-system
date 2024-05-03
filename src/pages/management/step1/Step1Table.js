@@ -324,6 +324,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
           // handleCallQueue(queues);
           step1Update(id_update, 'processing', selectedStations[id_update]);
           updateStartTime(id_update);
+          setOpen(false);
         } else {
           alert('สถานีบริการเต็ม');
         }
@@ -355,6 +356,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
             await updateEndTime(id_update);
             await updateWeight1(id_update);
             await updateStartTime(id_update_next);
+            setOpen(false);
           } catch (error) {
             console.error(error);
             // จัดการข้อผิดพลาดตามที่ต้องการ
@@ -379,10 +381,12 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
           });
         await step1Update(id_update, 'waiting', 27);
         await updateStartTime(id_update);
+        setOpen(false);
       }
+    } else if (flag === 0) {
+      setSelectedStations({});
+      setOpen(false);
     }
-    setSelectedStations({});
-    setOpen(false);
   };
 
   //Update น้ำหนักชั่งเบา

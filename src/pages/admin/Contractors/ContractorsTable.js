@@ -110,8 +110,10 @@ function ContractorsTable() {
     if (flag === 1) {
       setLoading(true);
       deteteContractor(contractor_id);
+      setOpen(false);
+    } else if (flag === 0) {
+      setOpen(false);
     }
-    setOpen(false);
   };
 
   const deteteContractor = (id) => {
