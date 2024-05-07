@@ -550,8 +550,14 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                 (x) =>
                   x.product_id == data.product_id &&
                   x.product_brand_id == result.product_brand_id &&
-                  x.product_brand_id == result.product_company_id
+                  x.product_company_id == result.product_company_id
               );
+
+              // console.log('data.product_id :', data.product_id);
+              // console.log('result.product_company_id :', result.product_company_id);
+              // console.log('result.product_brand_id :', result.product_brand_id);
+              // console.log('getProductRegis :', getProductRegis);
+              // console.log('productList :', productList);
               data.productRegis = getProductRegis;
               if (data.product_id) {
                 const selectedOption = { id: data.item_id, value: data.product_register_id };
@@ -588,6 +594,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
   const [orderSelect, setOrderSelect] = useState([]);
   const handleChangeProduct = (e, id) => {
     // const { value } = e.target;
+    console.log(' e.target.value :', e.target.value);
+    console.log(' id :', e.target.value);
     const selectedOption = { id: id, value: e.target.value };
 
     setOrderSelect((prevState) => {
@@ -1219,7 +1227,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                                 {'โกดัง : ' + productRegis.warehouse_name + ' '}
                                                 {productRegis.product_register_name}
                                                 {productRegis.product_register_date
-                                                  ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
+                                                  ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format('DD/MM/YY')}) `
                                                   : '-'}
                                                 {productRegis.product_register_date
                                                   ? ` (${calculateAge(productRegis.product_register_date)}) `
@@ -1471,7 +1479,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                                       {'โกดัง : ' + productRegis.warehouse_name + ' '}
                                                       {productRegis.product_register_name}
                                                       {productRegis.product_register_date
-                                                        ? ` (${moment(productRegis.product_register_date).format('DD/MM/YYYY')}) `
+                                                        ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
+                                                            'DD/MM/YY'
+                                                          )}) `
                                                         : '-'}
                                                       {productRegis.product_register_date
                                                         ? ` (${calculateAge(productRegis.product_register_date)}) `
@@ -1481,6 +1491,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                                       ) : (
                                                         ''
                                                       )}
+                                                      <strong> ({productRegis.total_remain} ตัน)</strong>
                                                     </MenuItem>
                                                   )
                                               )}
@@ -1794,12 +1805,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                             </Typography>
                           </TableCell>
                           <TableCell align="left">
-                            {moment(row.queue_date).format('DD/MM/YYYY')}
-                            {row.queue_time ? ' - ' + row.queue_time : ''}
+                            {moment(row.queue_date.slice(0, 10)).format('DD/MM/YY')}
+                            {row.queue_time ? ' - ' + row.queue_time.slice(0, 5) + 'น.' : ''}
                           </TableCell>
                           <TableCell align="center">
                             <QueueTag id={row.product_company_id || ''} token={row.token} />
-                            {moment(row.queue_date).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
+                            {moment(row.queue_date.slice(0, 10)).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
                               <span style={{ color: 'red' }}> (คิวค้าง)</span>
                             )}
                           </TableCell>

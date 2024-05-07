@@ -49,12 +49,12 @@ const headCells = [
     disablePadding: true,
     label: 'ลำดับ'
   },
-  // {
-  //   id: 'dateReserve',
-  //   align: 'center',
-  //   disablePadding: true,
-  //   label: 'วันที่จอง'
-  // },
+  {
+    id: 'dateReserve',
+    align: 'center',
+    disablePadding: true,
+    label: 'วันที่จอง'
+  },
   {
     id: 'dateQueue',
     align: 'center',
@@ -418,26 +418,6 @@ export default function ReserveTable({ startDate, endDate }) {
       .catch((error) => console.log('error', error));
   };
 
-  // const getQueuesCount = () => {
-  //   return new Promise((resolve, reject) => {
-  //     const currentDate = moment(new Date()).format('YYYY-MM-DD');
-
-  //     const requestOptions = {
-  //       method: 'GET',
-  //       redirect: 'follow'
-  //     };
-
-  //     fetch(apiUrl + '/queues/count?start_date=' + currentDate + '&end_date=' + currentDate, requestOptions)
-  //       .then((response) => response.json())
-  //       .then((result) => {
-  //         resolve(result['queue_count']);
-  //       })
-  //       .catch((error) => {
-  //         reject(error);
-  //       });
-  //   });
-  // };
-
   //สร้าง addQueue รับค่า reserve_id ,total_quantity
   const addQueue = async (id) => {
     try {
@@ -740,9 +720,11 @@ export default function ReserveTable({ startDate, endDate }) {
                   return (
                     <TableRow key={index}>
                       <TableCell align="center">{index + 1}</TableCell>
-                      {/* <TableCell align="left">{moment(row.created_date).format('DD/MM/YYYY')}</TableCell> */}
+                      <TableCell align="left">
+                        {moment(row.created_date.slice(0, 10)).format('DD/MM/YY') + ' - ' + row.created_date.slice(11, 16) + 'น.'}
+                      </TableCell>
                       <TableCell align="center">
-                        <Chip color={'primary'} label={moment(row.pickup_date).format('DD/MM/YYYY')} sx={{ minWidth: 95 }} />
+                        <Chip color={'primary'} label={moment(row.pickup_date.slice(0, 10)).format('DD/MM/YY')} sx={{ minWidth: 95 }} />
                       </TableCell>
                       <TableCell align="center">
                         <Chip color={'primary'} label={row.registration_no} sx={{ width: 122, border: 1 }} />
@@ -758,9 +740,9 @@ export default function ReserveTable({ startDate, endDate }) {
                         )}
                       </TableCell> */}
                       <TableCell align="left">{row.company}</TableCell>
-                      <TableCell align="left">{row.contact_person}</TableCell>
-                      <TableCell align="left">{row.contact_number}</TableCell>
-                      <TableCell align="left">{row.driver}</TableCell>
+                      <TableCell align="left">{row.contact_person ? row.contact_person : '-'}</TableCell>
+                      <TableCell align="left">{row.contact_number ? row.contact_number : '-'}</TableCell>
+                      <TableCell align="left">{row.driver ? row.driver : '-'}</TableCell>
                       <TableCell align="right"> {parseFloat((row.total_quantity * 1).toFixed(3))}</TableCell>
                       <TableCell align="center">
                         {row.status == 'completed' && parseFloat(row.total_quantity) == 0 ? (

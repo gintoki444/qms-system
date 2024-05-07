@@ -57,7 +57,7 @@ function Product() {
 
   useEffect(() => {
     getProductCompany();
-  }, [items]);
+  }, []);
   const [valueFilter, setValueFilter] = useState('');
   const handleChange = (newValue) => {
     setValueFilter(newValue);

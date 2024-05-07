@@ -35,6 +35,8 @@ import { StepContent } from '../../../node_modules/@mui/material/index';
 import { PrinterOutlined, RollbackOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 
 import CopyLinkButton from 'components/CopyLinkButton';
+import CryptoJS from 'crypto-js';
+const KeyCode = process.env.REACT_APP_CODE_URL;
 
 // Get api queuesRequest
 import * as queueRequest from '_api/queueReques';
@@ -51,6 +53,7 @@ function QueueDetail({ sx }) {
   const userRoles = useSelector((state) => state.auth.roles);
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
+  const [queueID, setQueueID] = useState('');
 
   const isMobile = useMediaQuery('(max-width:600px)');
   const [activeStep, setActiveStep] = useState(0);
@@ -58,10 +61,39 @@ function QueueDetail({ sx }) {
   const prurl = window.location.origin + '/queues/detail/';
 
   useEffect(() => {
-    getQueueById(id);
-    getQueueCount(id, 'completed');
-    getQueue(id);
-  }, [id, userRoles]);
+    const decryptData = () => {
+      try {
+        // Decode the Base64 string
+        const decodedData = atob(id.toString());
+
+        // Decrypt the data
+        const bytes = CryptoJS.AES.decrypt(decodedData, KeyCode);
+        const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+
+        if (decryptedData) {
+          setQueueID(decryptedData);
+        } else {
+          setQueueID(id);
+        }
+      } catch (error) {
+        setQueueID(id);
+        // console.error('Error decrypting data:', error);
+      }
+    };
+
+    // Call the decryption function
+    decryptData();
+    // Decode the Base64 string
+    // const decodedData = atob(id);
+    // const bytes = CryptoJS.AES.decrypt(decodedData, KeyCode);
+    // const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+
+    if (queueID) {
+      getQueueById(queueID);
+      getQueueCount(queueID, 'completed');
+      getQueue(queueID);
+    }
+  }, [id, userRoles, queueID, KeyCode]);
 
   const [queue_token, setQueueToken] = useState('');
   const [queues, setQueues] = useState([]);
@@ -84,25 +116,47 @@ function QueueDetail({ sx }) {
 
   const getQueue = (id) => {
     setLoading(true);
-    queueRequest.getQueueDetailID(id).then((result) => {
-      try {
-        if (getDateFormat(result[0]['queue_date'])) {
-          // if (getDateFormat(result[0]['queue_date']) === moment(new Date()).format('DD/MM/YYYY')) {
-          setQueueToken(result[0]['token']);
-          setQueues(result[0]);
-          setQueueNumber(result[0]['queue_number']);
-          getOrder(result[0].reserve_id);
-          setLoading(false);
+    try {
+      queueRequest.getQueueDetailID(id).then((result) => {
+        if (result.length > 0) {
+          // const currentDate = moment(new Date()).format('DD/MM/YYYY');
+          const currentDate = moment();
+
+          // สร้างวันที่ก่อนหรือหลังจากวันปัจจุบันไม่เกิน 2 วัน
+          const twoDaysBefore = moment().subtract(2, 'days');
+
+          const targetDate = moment(result[0]['queue_date']);
+          // const targetDate = moment('2024-05-02');
+          // console.log('queue_date:', result[0]['queue_date']);
+          // console.log('targetDate:', targetDate);
+          // console.log('currentDate:', currentDate);
+          // console.log('twoDaysBefore:', twoDaysBefore);
+          // console.log('targetDate.isBetween :', targetDate.isBetween(twoDaysBefore, currentDate, null, '[]'));
+
+          if (targetDate.isBetween(twoDaysBefore, currentDate, null, '[]')) {
+            // if (getDateFormat(result[0]['queue_date']) === moment(new Date()).format('DD/MM/YYYY')) {
+            setQueueToken(result[0]['token']);
+            setQueues(result[0]);
+            setQueueNumber(result[0]['queue_number']);
+            getOrder(result[0].reserve_id);
+            setLoading(false);
+          } else {
+            setErrorMessage('ข้อมูลคิวหมดอายุแล้ว');
+            setError(true);
+            setLoading(false);
+          }
         } else {
-          setErrorMessage('ข้อมูลคิวหมดอายุแล้ว');
           setError(true);
           setLoading(false);
         }
-      } catch (error) {
-        navigate('/queues');
-        console.log(error);
-      }
-    });
+      });
+    } catch (error) {
+      // setErrorMessage('ข้อมูลคิวหมดอายุแล้ว');
+      setError(true);
+      setLoading(false);
+      // navigate('/queues');
+      console.log(error);
+    }
   };
 
   function getQueueCount(queues_id, step_status) {
@@ -433,7 +487,7 @@ function QueueDetail({ sx }) {
 
   const navigate = useNavigate();
   const printQueues = () => {
-    navigate('/prints/queues', { state: { queuesId: id } });
+    navigate('/prints/queues', { state: { queuesId: queueID } });
   };
   const backToQueues = () => {
     navigate('/queues');
@@ -523,7 +577,7 @@ function QueueDetail({ sx }) {
         </Dialog>
 
         <Grid container spacing={3} rowSpacing={2} columnSpacing={2.75}>
-          <Grid item xs={12} lg={8} sx={sx}>
+          <Grid item xs={12} lg={10} sx={sx}>
             <MainCard>
               {error ? (
                 <Grid container spacing={3}>
@@ -533,19 +587,21 @@ function QueueDetail({ sx }) {
                     </Typography>
                     <Typography variant="h4"> {errorMessage ? errorMessage : 'ไม่พบข้อมูลคิว'}</Typography>
                   </Grid>
-                  <Grid item xs={12} align="center">
-                    <Button
-                      size="mediam"
-                      variant="contained"
-                      color="error"
-                      onClick={() => {
-                        backToQueues();
-                      }}
-                      startIcon={<RollbackOutlined />}
-                    >
-                      ย้อนกลับ
-                    </Button>
-                  </Grid>
+                  {userRoles && (
+                    <Grid item xs={12} align="center">
+                      <Button
+                        size="mediam"
+                        variant="contained"
+                        color="error"
+                        onClick={() => {
+                          backToQueues();
+                        }}
+                        startIcon={<RollbackOutlined />}
+                      >
+                        ย้อนกลับ
+                      </Button>
+                    </Grid>
+                  )}
                 </Grid>
               ) : (
                 <Grid container spacing={3}>
@@ -610,7 +666,7 @@ function QueueDetail({ sx }) {
                       <>
                         {getDateFormat(queues.queue_date) !== moment(new Date()).format('DD/MM/YYYY') && (
                           <>
-                            <CopyLinkButton link={prurl} data={id} />
+                            <CopyLinkButton link={prurl} data={queueID} />
                             <Button
                               size="mediam"
                               variant="contained"

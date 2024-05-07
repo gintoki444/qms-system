@@ -270,7 +270,6 @@ function AddProductReceive() {
     if (flag === 1) {
       setLoading(true);
       deleteProductReceive(receive_id);
-      console.log('receive_id :', receive_id);
     } else if (flag === 0) {
       setOpen(false);
     }
@@ -281,8 +280,10 @@ function AddProductReceive() {
       adminRequest.deleteProductReceive(id).then((response) => {
         if (response.status == 'ok') {
           getProductReceives();
+          setOpen(false);
         } else {
           alert(response.message);
+          setOpen(false);
         }
       });
     } catch (error) {
@@ -699,7 +700,9 @@ function AddProductReceive() {
                                 productReceiveList.map((productReceive, index) => (
                                   <TableRow key={index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="left">{moment(productReceive.receive_date).format('DD/MM/YYYY')}</TableCell>
+                                    <TableCell align="left">
+                                      {moment(productReceive.receive_date.slice(0, 10)).format('DD/MM/YYYY')}
+                                    </TableCell>
                                     <TableCell align="right">{productReceive.receive_amount}</TableCell>
                                     <TableCell align="left">{productReceive.receive_remark}</TableCell>
                                     <TableCell align="right">

@@ -199,13 +199,13 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }
                     <TableCell align="left">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
                         {/* {row.start_time ? row.start_time.slice(11, 19) : '-'} */}
-                        {row.start_time ? moment(row.start_time).format('DD/MM/YYYY') : ''}
+                        {row.start_time ? moment(row.start_time.slice(0, 10)).format('DD/MM/YYYY') : ''}
                         {row.start_time ? ' ' + row.start_time.slice(11, 19) : '-'}
                       </div>
                     </TableCell>
                     <TableCell align="left">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
-                        {row.end_time ? moment(row.end_time).format('DD/MM/YYYY') : ''}
+                        {row.end_time ? moment(row.end_time.slice(0, 10)).format('DD/MM/YYYY') : ''}
                         {row.end_time ? ' ' + row.end_time.slice(11, 19) : '-'}
                       </div>
                     </TableCell>

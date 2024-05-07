@@ -268,7 +268,6 @@ function AddCutOffProduct() {
     if (flag === 1) {
       setLoading(true);
       deleteCutOffProduct(receive_id);
-      console.log('receive_id :', receive_id);
     } else if (flag === 0) {
       setOpen(false);
     }
@@ -279,8 +278,10 @@ function AddCutOffProduct() {
       adminRequest.deleteCutOffProduct(id).then((response) => {
         if (response.status == 'ok') {
           getProductReceives();
+          setOpen(false);
         } else {
           alert(response.message);
+          setOpen(false);
         }
       });
     } catch (error) {
@@ -697,7 +698,9 @@ function AddCutOffProduct() {
                                 cutOffProductList.map((cutOffProduct, index) => (
                                   <TableRow key={index}>
                                     <TableCell align="center">{index + 1}</TableCell>
-                                    <TableCell align="left">{moment(cutOffProduct.cutoff_date).format('DD/MM/YYYY')}</TableCell>
+                                    <TableCell align="left">
+                                      {moment(cutOffProduct.cutoff_date.slice(0, 10)).format('DD/MM/YYYY')}
+                                    </TableCell>
                                     <TableCell align="right">{cutOffProduct.cutoff_amount}</TableCell>
                                     <TableCell align="left">{cutOffProduct.cutoff_remark}</TableCell>
                                     <TableCell align="right">

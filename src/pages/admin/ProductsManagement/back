@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  // Table,
+  // TableHead,
+  // TableBody,
+  // TableRow,
+  // TableCell,
+  // TableContainer,
   Box,
   ButtonGroup,
   Button,
@@ -24,8 +30,105 @@ import moment from 'moment/min/moment-with-locales';
 import QueueTag from 'components/@extended/QueueTag';
 import MUIDataTable from 'mui-datatables';
 import { useDownloadExcel } from 'react-export-table-to-excel';
-import ProductExport from './ProductExport';
 
+// ==============================|| ORDER TABLE - HEADER CELL ||============================== //
+// const headCells = [
+//   {
+//     id: 'wareHouseNo',
+//     align: 'center',
+//     width: '5%',
+//     disablePadding: false,
+//     label: 'ลำดับ'
+//   },
+//   {
+//     id: 'name',
+//     align: 'left',
+//     disablePadding: true,
+//     label: 'บริษัท'
+//   },
+//   {
+//     id: 'contact_info',
+//     align: 'left',
+//     disablePadding: false,
+//     label: 'สินค้า'
+//   },
+//   {
+//     id: 'warehouse_id',
+//     align: 'left',
+//     disablePadding: false,
+//     label: 'ทะเบียน'
+//   },
+//   {
+//     id: 'department',
+//     align: 'left',
+//     disablePadding: false,
+//     label: 'วันที่ตั้งกอง'
+//   },
+//   {
+//     id: 'stetus',
+//     align: 'left',
+//     disablePadding: false,
+//     label: 'อายุกอง'
+//   },
+//   {
+//     id: 'product_brand_name',
+//     align: 'left',
+//     disablePadding: false,
+//     label: 'ตรา'
+//   },
+//   {
+//     id: 'warehouse_name',
+//     align: 'left',
+//     disablePadding: false,
+//     label: 'โกดัง'
+//   },
+//   {
+//     id: 'register_beginning_balance',
+//     align: 'right',
+//     disablePadding: false,
+//     label: 'ยอดยกมา'
+//   },
+//   {
+//     id: 'total_receive',
+//     align: 'right',
+//     disablePadding: false,
+//     label: 'รวมรับ'
+//   },
+//   {
+//     id: 'total_sold',
+//     align: 'right',
+//     disablePadding: false,
+//     label: 'รวมจ่าย'
+//   },
+//   {
+//     id: 'total_remain',
+//     align: 'right',
+//     disablePadding: false,
+//     label: 'ยอดคงเหลือ'
+//   },
+//   {
+//     id: 'note',
+//     align: 'left',
+//     disablePadding: false,
+//     label: 'หมายเหตุ'
+//   }
+// ];
+
+// function CompantTableHead() {
+//   return (
+//     <TableHead>
+//       <TableRow>
+//         {headCells.map((headCell) => (
+//           <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'} width={headCell.width}>
+//             {headCell.label}
+//           </TableCell>
+//         ))}
+//       </TableRow>
+//     </TableHead>
+//   );
+// }
+
+console.time('message handler');
 function ProductManagementTable({ onFilter }) {
   //   const [car, setCar] = useState([]);
   // ======= Export file excel =======;
@@ -86,9 +189,6 @@ function ProductManagementTable({ onFilter }) {
     sort: false,
     rowsPerPageOptions: [50, 100, 150, 200],
     download: false,
-    customBodyRender: (value) => {
-      return <div style={{ whiteSpace: 'nowrap' }}>{value}</div>;
-    },
     customToolbar: () => {
       return (
         <Tooltip title="Export Excel">
@@ -102,9 +202,13 @@ function ProductManagementTable({ onFilter }) {
 
   const columns = [
     {
-      name: 'No',
+      name: '',
       label: 'ลำดับ',
       options: {
+        // customBodyRender: (value, tableData) => {
+        //   console.log('value :', value);
+        //   console.log('tableData :', tableData);
+        // },
         setCellHeaderProps: () => ({
           style: { textAlign: 'center' }
         }),
@@ -151,7 +255,7 @@ function ProductManagementTable({ onFilter }) {
       name: 'product_register_date',
       label: 'วันที่ตั้งกอง',
       options: {
-        customBodyRender: (value) => <Typography variant="body">{value ? moment(value.slice(0, 10)).format('DD/MM/YYYY') : '-'}</Typography>
+        customBodyRender: (value) => <Typography variant="body">{value ? moment(value).format('DD/MM/YYYY') : '-'}</Typography>
       }
     },
     {
@@ -203,7 +307,7 @@ function ProductManagementTable({ onFilter }) {
         customBodyRender: (value) =>
           value ? (
             <>
-              {parseFloat(value) <= 0 && <span style={{ color: 'red' }}>{value}</span>}
+              {parseFloat(value) < 0 && <span style={{ color: 'red' }}>{value}</span>}
               {parseFloat(value) > 0 && value}
             </>
           ) : (
@@ -381,13 +485,7 @@ function ProductManagementTable({ onFilter }) {
   };
 
   return (
-    <Box
-      sx={{
-        '& .MuiTableCell-root': {
-          textWrap: 'nowrap'
-        }
-      }}
-    >
+    <Box>
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
         <DialogTitle id="responsive-dialog-title" align="center">
           <Typography variant="h5">{'แจ้งเตือน'}</Typography>
@@ -415,7 +513,77 @@ function ProductManagementTable({ onFilter }) {
       )}
 
       <MUIDataTable title={<Typography variant="h5">ข้อมูลกองสินค้า</Typography>} data={productList} columns={columns} options={options} />
-      <ProductExport data={productList} onClickDownload={tableRef} />
+      {/* <TableContainer
+        sx={{
+          width: '100%',
+          overflowX: 'auto',
+          position: 'relative',
+          display: 'none',
+          maxWidth: '100%',
+          '& td, & th': { whiteSpace: 'nowrap' }
+        }}
+      >
+        <Table
+          aria-labelledby="tableTitle"
+          size="small"
+          sx={{
+            '& .MuiTableCell-root:first-of-type': {
+              pl: 2
+            },
+            '& .MuiTableCell-root:last-of-type': {
+              pr: 3
+            }
+          }}
+          ref={tableRef}
+        >
+          <CompantTableHead />
+          <TableBody>
+            {productList.map((row, index) => {
+              return (
+                <TableRow key={index}>
+                  <TableCell align="center">{index + 1}</TableCell>
+                  <TableCell align="left">
+                    <QueueTag id={row.product_company_id} token={row.product_company_name_th2} />
+                  </TableCell>
+                  <TableCell align="left">
+                    <span>{`'${row.name}`}</span>
+                  </TableCell>
+                  <TableCell align="left">
+                    <span>{row.product_register_name ? row.product_register_name : '-'}</span>
+                  </TableCell>
+                  <TableCell align="left">
+                    {row.product_register_date ? moment(row.product_register_date).format('DD/MM/YYYY') : '-'}
+                  </TableCell>
+                  <TableCell align="left">{row.product_register_date ? calculateAge(row.product_register_date) : '-'}</TableCell>
+                  <TableCell align="left">{row.product_brand_name}</TableCell>
+                  <TableCell align="left">{row.warehouse_name}</TableCell>
+                  <TableCell align="right">{row.register_beginning_balance}</TableCell>
+                  <TableCell align="right">{row.total_receive ? row.total_receive : '-'}</TableCell>
+                  <TableCell align="right">{row.total_sold ? row.total_sold : '-'}</TableCell>
+                  <TableCell align="right">
+                    {row.total_remain ? (
+                      <>
+                        {parseFloat(row.total_remain) < 0 && <span style={{ color: 'red' }}>{row.total_remain}</span>}
+                        {parseFloat(row.total_remain) > 0 && row.total_remain}
+                      </>
+                    ) : (
+                      '-'
+                    )}
+                  </TableCell>
+                  <TableCell align="left">{row.product_register_remark ? row.product_register_remark : '-'}</TableCell>
+                </TableRow>
+              );
+            })}
+            {productList.length == 0 && (
+              <TableRow>
+                <TableCell colSpan={14} align="center">
+                  ไม่พบข้อมูล
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer> */}
     </Box>
   );
 }

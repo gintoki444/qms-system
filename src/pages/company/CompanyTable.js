@@ -1,8 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useSnackbar } from 'notistack';
 
-import { Box, ButtonGroup, Button, Tooltip, Typography, Backdrop, CircularProgress } from '@mui/material';
+import {
+  Box,
+  ButtonGroup,
+  Button,
+  Tooltip,
+  Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Backdrop,
+  CircularProgress
+} from '@mui/material';
 
 // Get api company
 import * as companyRequest from '_api/companyRequest';
@@ -11,7 +25,9 @@ import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from '@ant-design/ic
 import MUIDataTable from 'mui-datatables';
 
 function CompanyTable() {
+  const { enqueueSnackbar } = useSnackbar();
   const [company, setCompany] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const userRole = useSelector((state) => state.auth?.roles);
 
@@ -112,7 +128,7 @@ function CompanyTable() {
                 size="medium"
                 color="error"
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                onClick={() => deleteCompany(value)}
+                onClick={() => handleClickOpen(value)}
               >
                 <DeleteOutlined />
               </Button>
@@ -135,7 +151,7 @@ function CompanyTable() {
   }, [userId]);
 
   const getCompany = () => {
-    setOpen(true);
+    setLoading(true);
 
     companyRequest
       .getAllCompanyByuserId(userId)
@@ -147,7 +163,7 @@ function CompanyTable() {
           };
         });
         setCompany(newData);
-        setOpen(false);
+        setLoading(false);
       })
       .catch((error) => {
         console.log(error);
@@ -161,121 +177,83 @@ function CompanyTable() {
   };
 
   const deleteCompany = (id) => {
-    setOpen(true);
+    setLoading(true);
     try {
-      companyRequest.deleteCompany(id).then(() => {
-        getCompany();
-        setOpen(false);
+      companyRequest.deleteCompany(id).then((response) => {
+        if (response.status != 'error') {
+          enqueueSnackbar('ลบข้อมูลร้านค้า/บริษัทสำเร็จ!', { variant: 'success' });
+          setCompany([]);
+          getCompany();
+        } else {
+          enqueueSnackbar('ลบข้อมูลร้านค้า/บริษัทไม่สำเร็จ! เนื่องจากมีการใช้งานอยู่!', { variant: 'error' });
+          setLoading(false);
+        }
       });
     } catch (e) {
       console.log(e);
-      setOpen(false);
+      enqueueSnackbar('ลบข้อมูลร้านค้า/บริษัทไม่สำเร็จ! เนื่องจากมีการใช้งานอยู่!', { variant: 'error' });
+      setLoading(false);
     }
   };
 
   const addCompany = () => {
-    // window.location = '/company/add';
     navigate('/company/add');
+  };
+
+  // HadleClick Popup
+  const [company_id, setCompany_id] = useState('');
+  const [textnotify, setText] = useState('');
+
+  const handleClickOpen = (company_id) => {
+    setCompany_id(company_id);
+    setText('ลบข้อมูลบริษัท');
+    setOpen(true);
+  };
+
+  const handleClose = (flag) => {
+    if (flag === 1) {
+      setLoading(true);
+      setOpen(false);
+
+      deleteCompany(company_id);
+    } else if (flag === 0) {
+      setOpen(false);
+    }
   };
   return (
     <Box>
-      {open && (
+      <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
+        <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }} align="center">
+          {'แจ้งเตือน'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText style={{ fontFamily: 'kanit' }}>
+            ต้องการ{' '}
+            <strong>
+              <span style={{ color: '#000' }}>{textnotify}</span>
+            </strong>{' '}
+            หรือไม่?
+          </DialogContentText>
+        </DialogContent>
+
+        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2 }}>
+          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+            ยกเลิก
+          </Button>
+          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
+            ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {loading && (
         <Backdrop
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
-          open={open}
+          open={loading}
         >
           <CircularProgress color="primary" />
         </Backdrop>
       )}
-      {/* {!open && userId ? ( */}
       <MUIDataTable title={<Typography variant="h5">ข้อมูลร้านค้า/บริษัท</Typography>} data={company} columns={columns} options={options} />
-      {/* ) : (
-        <CircularProgress />
-      )} */}
-      {/* <TableContainer
-        sx={{
-          width: '100%',
-          overflowX: 'auto',
-          position: 'relative',
-          display: 'block',
-          maxWidth: '100%',
-          '& td, & th': { whiteSpace: 'nowrap' }
-        }}
-      >
-        <Table
-          aria-labelledby="tableTitle"
-          size="small"
-          sx={{
-            '& .MuiTableCell-root:first-of-type': {
-              pl: 2
-            },
-            '& .MuiTableCell-root:last-of-type': {
-              pr: 3
-            }
-          }}
-        >
-          <CompantTableHead company={company} companyBy={company} />
-
-          {!open && userId ? (
-            <TableBody>
-              {company.map((row, index) => {
-                return (
-                  <TableRow key={index}>
-                    <TableCell align="center">{index + 1}</TableCell>
-                    <TableCell align="left">{row.name}</TableCell>
-                    <TableCell align="left">{row.tax_no ? row.tax_no : '-'}</TableCell>
-                    <TableCell align="left">{row.phone ? row.phone : '-'}</TableCell>
-                    <TableCell align="left">{row.contact_person ? row.contact_person : '-'}</TableCell>
-                    <TableCell align="left">{row.contact_number ? row.contact_number : '-'}</TableCell>
-                    <TableCell align="center">
-                      <ButtonGroup variant="contained" aria-label="Basic button group">
-                        <Tooltip title="แก้ไข">
-                          <Button
-                            variant="contained"
-                            size="medium"
-                            color="primary"
-                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => updateCompany(row.company_id)}
-                          >
-                            <EditOutlined />
-                          </Button>
-                        </Tooltip>
-                        <Tooltip title="ลบ">
-                          <Button
-                            variant="contained"
-                            size="medium"
-                            color="error"
-                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => deleteCompany(row.company_id)}
-                          >
-                            <DeleteOutlined />
-                          </Button>
-                        </Tooltip>
-                      </ButtonGroup>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {company.length == 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    ไม่พบข้อมูล
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          ) : (
-            <TableBody>
-              <TableRow>
-                <TableCell colSpan={6} align="center">
-                  <CircularProgress />
-                  <Typography variant="body1">Loading....</Typography>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          )}
-        </Table>
-      </TableContainer> */}
     </Box>
   );
 }

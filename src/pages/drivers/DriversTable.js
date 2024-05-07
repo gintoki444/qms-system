@@ -1,7 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Box, ButtonGroup, Button, Tooltip, Typography, Backdrop, CircularProgress } from '@mui/material';
+import { useSnackbar } from 'notistack';
+
+import {
+  Box,
+  ButtonGroup,
+  Button,
+  Tooltip,
+  Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Backdrop,
+  CircularProgress
+} from '@mui/material';
 
 import axios from '../../../node_modules/axios/index';
 import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from '@ant-design/icons';
@@ -11,63 +26,9 @@ const apiUrl = process.env.REACT_APP_API_URL;
 import * as driverRequest from '_api/driverRequest';
 import MUIDataTable from 'mui-datatables';
 
-// ==============================|| ORDER TABLE - HEADER CELL ||============================== //
-// const headCells = [
-//   {
-//     id: 'driver_No',
-//     align: 'center',
-//     width: '5%',
-//     disablePadding: false,
-//     label: 'ลำดับ'
-//   },
-//   {
-//     id: 'fullName',
-//     align: 'left',
-//     disablePadding: true,
-//     label: 'ชื่อ-นามสกุล'
-//   },
-//   {
-//     id: 'mobile_no',
-//     align: 'left',
-//     disablePadding: false,
-//     label: 'เบอร์โทร'
-//   },
-//   {
-//     id: 'id_no',
-//     align: 'left',
-//     disablePadding: false,
-//     label: 'เลขที่บัตรประชาชน'
-//   },
-//   // {
-//   //   id: 'license_no',
-//   //   align: 'left',
-//   //   disablePadding: false,
-//   //   label: 'เลขที่ใบขับขี่'
-//   // },
-//   {
-//     id: 'action',
-//     align: 'center',
-//     width: '10%',
-//     disablePadding: false,
-//     label: 'Actions'
-//   }
-// ];
-
-// function CompantTableHead() {
-//   return (
-//     <TableHead>
-//       <TableRow>
-//         {headCells.map((headCell) => (
-//           <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'} width={headCell.width}>
-//             {headCell.label}
-//           </TableCell>
-//         ))}
-//       </TableRow>
-//     </TableHead>
-//   );
-// }
-
 function DriverTable() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [driver, setDriver] = useState([]);
 
@@ -79,10 +40,10 @@ function DriverTable() {
   }, []);
 
   const getDrivers = () => {
-    setOpen(true);
+    setLoading(true);
     try {
       driverRequest.getAllDriver(userId).then((response) => {
-        setOpen(false);
+        setLoading(false);
         const newData = response.map((item, index) => {
           return {
             ...item,
@@ -177,7 +138,7 @@ function DriverTable() {
                 size="medium"
                 color="error"
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                onClick={() => deleteDrivers(value)}
+                onClick={() => handleClickOpen(value)}
               >
                 <DeleteOutlined />
               </Button>
@@ -219,22 +180,68 @@ function DriverTable() {
       .then((result) => {
         console.log(result);
         if (result.data.status === 'ok') {
-          alert(result.data.message);
+          enqueueSnackbar('ลบข้อมูลคนขับรถสำเร็จ!', { variant: 'success' });
           getDrivers();
         } else {
-          alert(result.data.message);
+          setLoading(false);
+          enqueueSnackbar('ลบข้อมูลคนขับรถไม่สำเร็จ เนื่องจากมีการใช้งานอยู่!', { variant: 'error' });
+          // alert(result.data.message);
         }
       })
       .catch((error) => {
         console.log(error);
       });
   };
+
+  // HadleClick Popup
+  const [driver_id, setCompany_id] = useState('');
+  const [textnotify, setText] = useState('');
+
+  const handleClickOpen = (driver_id) => {
+    setCompany_id(driver_id);
+    setText('ลบข้อมูลคนขับรถ');
+    setOpen(true);
+  };
+
+  const handleClose = (flag) => {
+    if (flag === 1) {
+      setLoading(true);
+      setOpen(false);
+
+      deleteDrivers(driver_id);
+    } else if (flag === 0) {
+      setOpen(false);
+    }
+  };
   return (
     <Box>
-      {open && (
+      <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
+        <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }} align="center">
+          {'แจ้งเตือน'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText style={{ fontFamily: 'kanit' }}>
+            ต้องการ{' '}
+            <strong>
+              <span style={{ color: '#000' }}>{textnotify}</span>
+            </strong>{' '}
+            หรือไม่?
+          </DialogContentText>
+        </DialogContent>
+
+        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2 }}>
+          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+            ยกเลิก
+          </Button>
+          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
+            ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {loading && (
         <Backdrop
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
-          open={open}
+          open={loading}
         >
           <CircularProgress color="primary" />
         </Backdrop>

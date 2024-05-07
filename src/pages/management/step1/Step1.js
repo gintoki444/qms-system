@@ -126,25 +126,7 @@ function Step1() {
                   </Tabs>
                 </Box>
                 <StepTable status={'waiting'} title={'รอเรียกคิว'} onStatusChange={handleStatusChange} onFilter={valueFilter} />
-
-                {/* <CustomTabPanel value={valueFilter} index={0}>
-                  {'ทั้งหมด'}
-                </CustomTabPanel> */}
-                {/* {companyList.length > 0 &&
-                  companyList.map((company, index) => (
-                    <CustomTabPanel key={index} value={valueFilter} index={company.product_company_id}>
-                      {company.product_company_name_th2}
-                    </CustomTabPanel>
-                  ))} */}
-                {/* <CustomTabPanel value={value} index={1}>
-                  Item Two
-                </CustomTabPanel>
-                <CustomTabPanel value={value} index={2}>
-                  Item Three
-                </CustomTabPanel> */}
               </Box>
-              {/* <Box sx={{ pt: 1, pr: 2 }}>
-              </Box> */}
             </MainCard>
           </Grid>
         </Grid>

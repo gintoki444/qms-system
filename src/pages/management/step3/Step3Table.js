@@ -987,13 +987,13 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                         </TableCell>
 
                         <TableCell align="left">
-                          {moment(row.queue_date).format('DD/MM/YYYY')}
-                          {row.queue_time ? ' - ' + row.queue_time : ''}
+                          {moment(row.queue_date.slice(0, 10)).format('DD/MM/YY')}
+                          {row.queue_time ? ' - ' + row.queue_time.slice(0, 5) + 'น.' : ''}
                         </TableCell>
 
                         <TableCell align="center">
                           <QueueTag id={row.product_company_id || ''} token={row.token} />
-                          {moment(row.queue_date).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
+                          {moment(row.queue_date.slice(0, 10)).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
                             <span style={{ color: 'red' }}> (คิวค้าง)</span>
                           )}
                         </TableCell>

@@ -7,6 +7,7 @@ import moment from 'moment';
 // const apiUrl = process.env.REACT_APP_API_URL;
 // import * as queueRequest from '_api/queueReques';
 import * as stepRequest from '_api/StepRequest';
+import QueueTag from 'components/@extended/QueueTag';
 
 // Get Role use
 import { useSelector } from 'react-redux';
@@ -30,9 +31,6 @@ import {
   CircularProgress
 } from '@mui/material';
 
-// project import
-// import Dot from 'components/@extended/Dot';
-
 import { EditOutlined } from '@ant-design/icons';
 
 // import axios from 'axios';
@@ -44,6 +42,12 @@ const headCells = [
     align: 'center',
     disablePadding: false,
     label: 'ลำดับ'
+  },
+  {
+    id: 'dateReserve',
+    align: 'center',
+    disablePadding: true,
+    label: 'วันที่จอง'
   },
   {
     id: 'reserve_date',
@@ -182,7 +186,7 @@ QueueStatus.propTypes = {
   status: PropTypes.string
 };
 
-function Step0Table({ startDate, endDate }) {
+function Step0Table({ startDate, endDate, onFilter }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const userRoles = useSelector((state) => state.auth.roles);
@@ -193,13 +197,17 @@ function Step0Table({ startDate, endDate }) {
     if (userRoles && userId) {
       getQueue();
     }
-  }, [userId, userRoles, startDate, endDate]);
+  }, [userId, userRoles, startDate, endDate, onFilter]);
 
   const getQueue = () => {
     setLoading(true);
     try {
       stepRequest.getAllStep0ByDate(startDate, endDate).then((response) => {
-        setItems(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0));
+        if (onFilter == 0) {
+          setItems(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0));
+        } else {
+          setItems(response.filter((x) => x.product_company_id == onFilter && x.token !== null && parseFloat(x.total_quantity) > 0) || []);
+        }
         setLoading(false);
       });
     } catch (e) {
@@ -242,9 +250,14 @@ function Step0Table({ startDate, endDate }) {
                   return (
                     <TableRow key={index}>
                       <TableCell align="center">{index + 1}</TableCell>
-                      <TableCell align="left">{moment(row.queue_date).format('DD/MM/YYYY')}</TableCell>
+                      <TableCell align="left">
+                        {moment(row.created_date.slice(0, 10)).format('DD/MM/YY') + ' - ' + row.created_date.slice(11, 16) + 'น.'}
+                      </TableCell>
+                      <TableCell align="left">{moment(row.queue_date.slice(0, 10)).format('DD/MM/YY')}</TableCell>
                       <TableCell align="center">
-                        <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} />
+                        <QueueTag id={row.product_company_id} token={row.token} />
+
+                        {/* <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} /> */}
                         {row.queue_remain == 1 && <span style={{ color: 'red' }}> (คิวค้าง)</span>}
                       </TableCell>
                       <TableCell align="left">{row.company}</TableCell>

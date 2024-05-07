@@ -35,9 +35,7 @@ function ProductPrint() {
 
   const id = location.state?.productId;
   const backLink = location.state?.link;
-
-  console.log('backLink', backLink);
-  console.log('receivedID', id);
+  
   useEffect(() => {
     setLoading(true);
     getProductRegister();
@@ -250,7 +248,7 @@ function ProductPrint() {
                             productReceiveList.map((productReceive, index) => (
                               <TableRow key={index}>
                                 <TableCell align="center">{index + 1}</TableCell>
-                                <TableCell align="center">{moment(productReceive.receive_date).format('DD/MM/YYYY')}</TableCell>
+                                <TableCell align="center">{moment(productReceive.receive_date.slice(0, 10)).format('DD/MM/YYYY')}</TableCell>
                                 <TableCell align="right">{productReceive.receive_amount}</TableCell>
                                 <TableCell align="left">{productReceive.receive_remark}</TableCell>
                               </TableRow>
@@ -305,7 +303,7 @@ function ProductPrint() {
                             orderProductList.map((orderProduct, index) => (
                               <TableRow key={index}>
                                 <TableCell align="center">{index + 1}</TableCell>
-                                <TableCell align="center">{moment(orderProduct.order_date).format('DD/MM/YYYY')}</TableCell>
+                                <TableCell align="center">{moment(orderProduct.order_date.slice(0, 10)).format('DD/MM/YYYY')}</TableCell>
                                 <TableCell align="right">{orderProduct.total_sold}</TableCell>
                                 <TableCell align="left">{orderProduct.description}</TableCell>
                               </TableRow>
@@ -360,7 +358,7 @@ function ProductPrint() {
                             cutOffProductList.map((cutOffProduct, index) => (
                               <TableRow key={index}>
                                 <TableCell align="center">{index + 1}</TableCell>
-                                <TableCell align="center">{moment(cutOffProduct.cutoff_date).format('DD/MM/YYYY')}</TableCell>
+                                <TableCell align="center">{moment(cutOffProduct.cutoff_date.slice(0, 10)).format('DD/MM/YYYY')}</TableCell>
                                 <TableCell align="right">{cutOffProduct.cutoff_amount}</TableCell>
                                 <TableCell align="left">{cutOffProduct.cutoff_remark}</TableCell>
                               </TableRow>

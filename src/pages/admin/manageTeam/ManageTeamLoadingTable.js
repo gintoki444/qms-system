@@ -200,7 +200,7 @@ function ManageTeamLoadingTable() {
                         <Typography variant="body1">{row.team_forklift[0].forklift_name}</Typography>
                         <Typography variant="body1">{row.team_forklift[1].forklift_name}</Typography>
                       </TableCell>
-                      <TableCell align="left">{moment(row.used_date).format('DD/MM/YYYY')}</TableCell>
+                      <TableCell align="left">{moment(row.used_date.slice(0, 10)).format('DD/MM/YYYY')}</TableCell>
 
                       <TableCell align="center">
                         {row.status == 'A' ? (

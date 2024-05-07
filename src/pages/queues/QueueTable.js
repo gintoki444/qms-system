@@ -91,7 +91,6 @@ export default function QueueTable({ startDate, endDate }) {
 
   const getQueue = () => {
     try {
-      console.log('userID :', userID);
       if (userRoles == 8) {
         queueRequest.getAllqueueUserByDate(userID, startDate, endDate).then((response) => {
           const newData = response.map((item, index) => {
@@ -150,7 +149,7 @@ export default function QueueTable({ startDate, endDate }) {
       name: 'queue_date',
       label: 'วันที่เข้ารับสินค้า',
       options: {
-        customBodyRender: (value) => <Typography variant="body">{moment(value).format('DD/MM/YYYY')}</Typography>
+        customBodyRender: (value) => <Typography variant="body">{moment(value.slice(0, 10)).format('DD/MM/YY')}</Typography>
       }
     },
     {
@@ -347,7 +346,13 @@ export default function QueueTable({ startDate, endDate }) {
     navigate('/queues/detail/' + id);
   };
   return (
-    <Box>
+    <Box
+      sx={{
+        '& .MuiTableCell-root': {
+          textWrap: 'nowrap'
+        }
+      }}
+    >
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
         <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }}>
           {'แจ้งเตือน'}
@@ -356,7 +361,7 @@ export default function QueueTable({ startDate, endDate }) {
           <DialogContentText style={{ fontFamily: 'kanit' }}>ต้องการ {textnotify} หรือไม่?</DialogContentText>
         </DialogContent>
 
-        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2  }}>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2 }}>
           {onclickSubmit == true ? (
             <>
               <CircularProgress color="primary" />

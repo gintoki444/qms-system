@@ -631,7 +631,7 @@ export const getAllProductRegister = async () => {
     method: 'GET',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + '/allproductregister/', requestOptions);
+  const response = await fetch(apiUrl + '/allproductregister2/', requestOptions);
 
   const result = await response.json();
   return result;

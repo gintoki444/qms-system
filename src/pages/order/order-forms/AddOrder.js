@@ -352,7 +352,7 @@ function AddOrder() {
             </Grid>
             <Grid item xs={12}>
               <Typography variant="p" sx={{ pt: 2 }}>
-                <strong>วันที่เข้ารับสินค้า</strong>: {moment(reservationData.pickup_date).format('DD/MM/YYYY')}
+                <strong>วันที่เข้ารับสินค้า</strong>: {moment(reservationData.pickup_date).format('DD/MM/YY')}
               </Typography>
             </Grid>
           </Grid>

@@ -202,7 +202,7 @@ function StepRecallsTable({ startDate, endDate, clickDownload }) {
                     <TableCell align="center">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
                         {/* {row.start_time ? row.start_time.slice(11, 19) : '-'} */}
-                        {row.created_date ? moment(row.created_date).format('DD/MM/YYYY') : ''}
+                        {row.created_date ? moment(row.created_date.slice(0, 10)).format('DD/MM/YYYY') : ''}
                         {/* {row.created_date ? ' ' + row.created_date.slice(11, 19) : '-'} */}
                       </div>
                     </TableCell>

@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useSnackbar } from 'notistack';
+
 import {
-  // Table,
-  // TableHead,
-  // TableBody,
-  // TableRow,
-  // TableCell,
-  // TableContainer,
   Box,
   ButtonGroup,
   Button,
   Tooltip,
   Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Backdrop,
   CircularProgress
 } from '@mui/material';
@@ -26,9 +27,11 @@ import axios from '../../../node_modules/axios/index';
 import MUIDataTable from 'mui-datatables';
 
 function CarTable() {
+  const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const [car, setCar] = useState([]);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const userRole = useSelector((state) => state.auth?.roles);
   const userId = localStorage.getItem('user_id');
@@ -60,7 +63,7 @@ function CarTable() {
   }, [userId]);
 
   const getCar = async () => {
-    setOpen(true);
+    setLoading(true);
     try {
       carRequest.getAllCars(userId).then((response) => {
         const newData = response.map((item, index) => {
@@ -70,7 +73,7 @@ function CarTable() {
           };
         });
         setCar(newData);
-        setOpen(false);
+        setLoading(false);
       });
     } catch (error) {
       console.log(error);
@@ -86,7 +89,7 @@ function CarTable() {
   };
 
   const deleteCar = (id) => {
-    setOpen(true);
+    setLoading(true);
     let config = {
       method: 'delete',
       maxBodyLength: Infinity,
@@ -98,15 +101,16 @@ function CarTable() {
       .request(config)
       .then((result) => {
         if (result.data.status === 'ok') {
-          alert(result.data.message);
+          enqueueSnackbar('ลบข้อมูลรถบรรทุกสำเร็จ!', { variant: 'success' });
           getCar();
         } else {
-          setOpen(false);
-          alert(result.data['message']['sqlMessage']);
+          setLoading(false);
+          enqueueSnackbar('ลบข้อมูลรถบรรทุกไม่สำเร็จ! เนื่องจากมีการใช้งานอยู่!', { variant: 'error' });
+          // alert(result.data['message']['sqlMessage']);
         }
       })
       .catch((error) => {
-        setOpen(false);
+        setLoading(false);
         console.log(error);
       });
   };
@@ -193,7 +197,7 @@ function CarTable() {
                 size="medium"
                 color="error"
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                onClick={() => deleteCar(value)}
+                onClick={() => handleClickOpen(value)}
               >
                 <DeleteOutlined />
               </Button>
@@ -210,12 +214,56 @@ function CarTable() {
       }
     }
   ];
+
+  // HadleClick Popup
+  const [car_id, setCompany_id] = useState('');
+  const [textnotify, setText] = useState('');
+
+  const handleClickOpen = (car_id) => {
+    setCompany_id(car_id);
+    setText('ลบข้อมูลรถบรรทุก');
+    setOpen(true);
+  };
+
+  const handleClose = (flag) => {
+    if (flag === 1) {
+      setLoading(true);
+      setOpen(false);
+
+      deleteCar(car_id);
+    } else if (flag === 0) {
+      setOpen(false);
+    }
+  };
   return (
     <Box>
-      {open && (
+      <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
+        <DialogTitle id="responsive-dialog-title" style={{ fontFamily: 'kanit' }} align="center">
+          {'แจ้งเตือน'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText style={{ fontFamily: 'kanit' }}>
+            ต้องการ{' '}
+            <strong>
+              <span style={{ color: '#000' }}>{textnotify}</span>
+            </strong>{' '}
+            หรือไม่?
+          </DialogContentText>
+        </DialogContent>
+
+        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2 }}>
+          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+            ยกเลิก
+          </Button>
+          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
+            ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {loading && (
         <Backdrop
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
-          open={open}
+          open={loading}
         >
           <CircularProgress color="primary" />
         </Backdrop>
@@ -243,7 +291,7 @@ function CarTable() {
             }
           }}
         >
-          <CompantTableHead company={car} companyBy={car} />
+          <CompantTableHead car={car} carBy={car} />
           {!open ? (
             <TableBody>
               {car.map((row, index) => {

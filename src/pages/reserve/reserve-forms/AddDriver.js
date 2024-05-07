@@ -102,8 +102,7 @@ function AddDriver({ userID, onSaves, driverList }) {
           if (response.status === 'ok') {
             driverRequest.getAllDriver(userID).then((response) => {
               const result = response.filter(
-                (x) =>
-                  x.registration_no == values.registration_no && x.province_id == values.province_id && x.car_type_id == values.car_type_id
+                (x) => x.firstname == values.firstname && x.lastname == values.lastname && x.license_no == values.license_no
               );
 
               enqueueSnackbar('เพิ่มข้อมูลคนขับรถสำเร็จ!', { variant: 'success' });

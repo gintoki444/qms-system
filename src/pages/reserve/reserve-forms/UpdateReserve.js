@@ -77,6 +77,8 @@ function UpdateReserve() {
   const currentDate = new Date().toISOString().split('T')[0];
   const dateNow = moment(new Date()).format('YYYY-MM-DD');
   const [user_Id, setUserId] = useState('');
+  const [newCar, setNewCar] = useState([]);
+  const [newDriver, setNewDriver] = useState([]);
   const { enqueueSnackbar } = useSnackbar();
 
   // =============== Get Reserve ID ===============//
@@ -239,7 +241,7 @@ function UpdateReserve() {
     if (user_Id) {
       getCompanyList();
     }
-  }, [user_Id]);
+  }, [user_Id, newCar, newDriver]);
 
   const getReserve = () => {
     setLoading(true);
@@ -250,9 +252,27 @@ function UpdateReserve() {
         if (res) {
           res.data.reserve.map((result) => {
             setUserId(result.user_id);
+
             if (dateNow == moment(result.pickup_date).format('YYYY-MM-DD')) {
               setCheckDate(true);
             }
+
+            if (newCar.length > 0) {
+              newCar.map((x) => {
+                result.car_id = x.car_id;
+              });
+
+              reserveRequest.putReserById(id, result);
+            }
+
+            if (newDriver.length > 0) {
+              newDriver.map((x) => {
+                result.driver_id = x.driver_id;
+              });
+              reserveRequest.putReserById(id, result);
+            }
+
+            result.pickup_date = moment(result.pickup_date).format('YYYY-MM-DD');
 
             setReservationData(result);
             setCompanyId(result.product_company_id);
@@ -266,23 +286,23 @@ function UpdateReserve() {
   };
 
   // =============== InitialValue ===============//
-  let initialValue = {
-    company_id: reservationData.company_id,
-    car_id: reservationData.car_id,
-    brand_group_id: reservationData.brand_group_id,
-    product_company_id: reservationData.product_company_id || '',
-    product_brand_id: reservationData.product_brand_id || '',
-    driver_id: reservationData.driver_id,
-    description: reservationData.reserve_description,
-    pickup_date: moment(reservationData.pickup_date).format('YYYY-MM-DD'),
-    status: reservationData.status,
-    total_quantity: reservationData.total_quantity,
-    reserve_station_id: reservationData.reserve_station_id,
-    warehouse_id: reservationData.warehouse_id,
-    contractor_id: reservationData.contractor_id,
-    team_id: reservationData.team_id,
-    labor_line_id: ''
-  };
+  // const  [initialValue,setInitialValue] = useState({
+  //   company_id: reservationData.company_id,
+  //   car_id: reservationData.car_id,
+  //   brand_group_id: reservationData.brand_group_id,
+  //   product_company_id: reservationData.product_company_id || '',
+  //   product_brand_id: reservationData.product_brand_id || '',
+  //   driver_id: reservationData.driver_id,
+  //   description: reservationData.reserve_description,
+  //   pickup_date: moment(reservationData.pickup_date).format('YYYY-MM-DD'),
+  //   status: reservationData.status,
+  //   total_quantity: reservationData.total_quantity,
+  //   reserve_station_id: reservationData.reserve_station_id,
+  //   warehouse_id: reservationData.warehouse_id,
+  //   contractor_id: reservationData.contractor_id,
+  //   team_id: reservationData.team_id,
+  //   labor_line_id: ''
+  // });
 
   // =============== Validate Forms ===============//
   const validationSchema = Yup.object().shape({
@@ -301,8 +321,6 @@ function UpdateReserve() {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     try {
       values.user_id = user_Id;
-      values.pickup_date = moment(values.pickup_date).format('YYYY-MM-DD HH:mm:ss');
-      values.created_at = currentDate;
       values.updated_at = currentDate;
       values.brand_group_id = values.product_company_id;
 
@@ -768,15 +786,15 @@ function UpdateReserve() {
 
   // =============== เพิ่มข้อมูลรถ ===============//
   const handleSaveForm = (formData) => {
-    // Handle saving the form data
-    console.log('Form data:', formData);
+    setNewCar(formData);
+    getReserve();
     getCarLsit();
   };
 
   // =============== เพิ่มข้อมูลคนขับรถ ===============//
   const handleSaveDriverForm = (formData) => {
-    // Handle saving the form data
-    console.log('handleSaveDriverForm:', formData);
+    setNewDriver(formData);
+    getReserve();
     getDriverLsit();
   };
   return (
@@ -796,7 +814,7 @@ function UpdateReserve() {
         <DialogContent>
           <DialogContentText>{notifytext}</DialogContentText>
         </DialogContent>
-        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2  }}>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2 }}>
           {onclickSubmit == true ? (
             <>
               <CircularProgress color="primary" />
@@ -815,7 +833,7 @@ function UpdateReserve() {
       </Dialog>
       <Grid container spacing={3}>
         <Grid item xs={12} md={10}>
-          <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
+          <Formik initialValues={reservationData} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
             {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors, setFieldValue }) => (
               <form noValidate onSubmit={handleSubmit}>
                 <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
@@ -838,7 +856,7 @@ function UpdateReserve() {
                               const newValue = value ? value.company_id : '';
                               setFieldValue('company_id', newValue);
                             }}
-                            getOptionLabel={(option) => option.name}
+                            getOptionLabel={(option) => (option.name !== undefined ? option.name : '')}
                             sx={{
                               width: '100%',
                               '& .MuiOutlinedInput-root': {
@@ -891,7 +909,7 @@ function UpdateReserve() {
                             displayEmpty
                             variant="outlined"
                             name="product_company_id"
-                            value={values.product_company_id || ''}
+                            value={values.product_company_id ? values.product_company_id : ''}
                             onChange={(e) => {
                               setFieldValue('product_company_id', e.target.value);
                               setFieldValue('product_brand_id', '');
@@ -927,7 +945,7 @@ function UpdateReserve() {
                             displayEmpty
                             variant="outlined"
                             name="product_brand_id"
-                            value={values.product_brand_id}
+                            value={values.product_brand_id ? values.product_brand_id : ''}
                             onChange={handleChange}
                             placeholder="เลือกสายแรงงาน"
                             fullWidth
@@ -985,20 +1003,19 @@ function UpdateReserve() {
                             id="car-list"
                             options={carList}
                             value={carList.length > 0 ? carList.find((item) => item.car_id === values.car_id) : []}
-                            // value={carList.find((item) => {
-                            //   if (item.car_id === values.car_id) {
-                            //     return item.registration_no;
-                            //   }
-                            // })}
                             onChange={(e, value) => {
                               const newValue = value ? value.car_id : '';
                               setFieldValue('car_id', newValue);
                             }}
                             getOptionLabel={(option) => {
-                              if (option.car_id !== 1) {
-                                return option.registration_no ? option.registration_no : '';
+                              if (option.car_id !== undefined) {
+                                if (option.car_id !== 1) {
+                                  return option.registration_no ? option.registration_no : '';
+                                } else {
+                                  return 'ไม่ระบุรถบรรทุก';
+                                }
                               } else {
-                                return 'ไม่ระบุรถบรรทุก';
+                                return '';
                               }
                             }}
                             sx={{
@@ -1048,7 +1065,7 @@ function UpdateReserve() {
                               setFieldValue('driver_id', newValue);
                             }}
                             getOptionLabel={(option) => {
-                              if (option.driver_id !== 1) {
+                              if (option.driver_id !== 1 && option.driver_id !== undefined) {
                                 return option.firstname ? option.firstname + option.lastname : '';
                               } else {
                                 return 'ไม่ระบุคนขับรถ';
@@ -1245,8 +1262,8 @@ function UpdateReserve() {
                         disabled={
                           dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
                           checkDate == false ||
-                          initialValue.car_id == 1 ||
-                          initialValue.driver_id == 1
+                          reservationData.car_id == 1 ||
+                          reservationData.driver_id == 1
                         }
                         onClick={() => handleClickOpen(reservationData.reserve_id, 'add-queue', reservationData.total_quantity)}
                         startIcon={<DiffOutlined />}

@@ -1,44 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import MUIDataTable from 'mui-datatables';
+import * as adminRequest from '_api/adminRequest';
 import {
-  //   Table,
-  //   TableHead,
-  //   TableBody,
-  //   TableRow,
-  //   TableCell,
-  //   TableContainer,
-  Box,
-  //   ButtonGroup,
-  //   Button,
+  Typography,
+  // Table,
+  // TableHead,
+  // TableBody,
+  // TableRow,
+  // TableCell,
+  // TableContainer,
+  // Box,
+  ButtonGroup,
+  Button,
   Tooltip,
-  Typography
-  //   Backdrop,
-  //   CircularProgress,
-  //   Dialog,
-  //   DialogActions,
-  //   DialogContent,
-  //   DialogContentText,
-  //   DialogTitle
+  Backdrop,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
 } from '@mui/material';
 
-import // FileAddOutlined, EditOutlined, DeleteOutlined, SwitcherOutlined, ContainerOutlined, FileExcelOutlined
-'@ant-design/icons';
+import { FileAddOutlined, EditOutlined, DeleteOutlined, SwitcherOutlined, ContainerOutlined, FileExcelOutlined } from '@ant-design/icons';
 
-// Link api url
-import * as adminRequest from '_api/adminRequest';
 import moment from 'moment';
-
 import QueueTag from 'components/@extended/QueueTag';
-import MUIDataTable from 'mui-datatables';
+import { useDownloadExcel } from 'react-export-table-to-excel';
 
 function ProductManage({ onFilter }) {
-  useEffect(() => {
-    // getPermission();
-    getWareHouseManager();
-  }, [onFilter]);
-
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [productList, setProductList] = useState([]);
+
+  // ======= Export file excel =======;
+  const tableRef = useRef(null);
+  const { onDownload } = useDownloadExcel({
+    currentTableRef: tableRef.current,
+    filename: 'product-management',
+    sheet: moment(new Date()).format('DD-MM-YYYY')
+  });
+
   const getWareHouseManager = async () => {
-    //   setLoading(true);
+    setLoading(true);
     try {
       adminRequest.getAllProductRegister().then((response) => {
         if (onFilter) {
@@ -60,12 +66,17 @@ function ProductManage({ onFilter }) {
           });
           setProductList(newData);
         }
-        //   setLoading(false);
+        setLoading(false);
       });
     } catch (error) {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    // getPermission();
+    getWareHouseManager();
+  }, [onFilter]);
 
   // =============== Get Company DataTable ===============//
   const options = {
@@ -76,21 +87,17 @@ function ProductManage({ onFilter }) {
     rowsPerPage: 50,
     responsive: 'standard',
     sort: false,
-    search: {
-      search: true,
-      searchableColumns: ['name', 'product_register_name']
-    },
     rowsPerPageOptions: [50, 100, 150, 200],
-    download: false
-    // customToolbar: () => {
-    //   return (
-    //     <Tooltip title="Export Excel">
-    //       <Button color="success" variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={onDownload}>
-    //         <FileExcelOutlined />
-    //       </Button>
-    //     </Tooltip>
-    //   );
-    // }
+    download: false,
+    customToolbar: () => {
+      return (
+        <Tooltip title="Export Excel">
+          <Button color="success" variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={onDownload}>
+            <FileExcelOutlined />
+          </Button>
+        </Tooltip>
+      );
+    }
   };
 
   const columns = [
@@ -98,6 +105,15 @@ function ProductManage({ onFilter }) {
       name: 'No',
       label: 'ลำดับ',
       options: {
+        // customBodyRender: (value, tableData) => {
+        //   console.log('value :', value);
+        //   console.log('tableData :', tableData);
+        //   return (
+        //     <>
+        //       <span>{tableData.rowIndex + 1}</span>
+        //     </>
+        //   );
+        // },
         setCellHeaderProps: () => ({
           style: { textAlign: 'center' }
         }),
@@ -219,87 +235,88 @@ function ProductManage({ onFilter }) {
           );
         }
       }
-    }
-    // {
-    //   name: 'product_register_id',
-    //   label: 'Actions',
-    //   options: {
-    //     customBodyRender: (value) => {
-    //       // const productData = productList[tableMeta.rowIndex];
-    //       // console.log(productData);
-    //       // console.log(value);
-    //       return (
-    //         <>
-    //           <ButtonGroup variant="contained" aria-label="Basic button group">
-    //             <Tooltip title="รายละเอียดสินค้า">
-    //               <Button
-    //                 variant="contained"
-    //                 size="medium"
-    //                 color="success"
-    //                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
-    //                 onClick={() => productsDetails(value)}
-    //               >
-    //                 <ContainerOutlined />
-    //               </Button>
-    //             </Tooltip>
-    //             <Tooltip title="เบิกสินค้า">
-    //               <Button
-    //                 variant="contained"
-    //                 size="medium"
-    //                 color="warning"
-    //                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
-    //                 onClick={() => addCutOffProduct(value)}
-    //               >
-    //                 <SwitcherOutlined />
-    //               </Button>
-    //             </Tooltip>
-    //             <Tooltip title="รับสินค้า">
-    //               <Button
-    //                 variant="contained"
-    //                 size="medium"
-    //                 color="info"
-    //                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
-    //                 onClick={() => addProductReceives(value)}
-    //               >
-    //                 <FileAddOutlined />
-    //               </Button>
-    //             </Tooltip>
-    //             <Tooltip title="แก้ไข">
-    //               <Button
-    //                 variant="contained"
-    //                 size="medium"
-    //                 color="primary"
-    //                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
-    //                 onClick={() => updateProductManagement(value)}
-    //               >
-    //                 <EditOutlined />
-    //               </Button>
-    //             </Tooltip>
-    //             <Tooltip title="ลบ">
-    //               <Button
-    //                 variant="contained"
-    //                 size="medium"
-    //                 color="error"
-    //                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
-    //                 onClick={() => handleClickOpen(value)}
-    //               >
-    //                 <DeleteOutlined />
-    //               </Button>
-    //             </Tooltip>
-    //           </ButtonGroup>
-    //         </>
-    //       );
-    //     },
+    },
+    {
+      name: 'product_register_id',
+      label: 'Actions',
+      options: {
+        customBodyRender: (value) => {
+          // const productData = productList[tableMeta.rowIndex];
+          // console.log(productData);
+          // console.log(value);
+          return (
+            <>
+              <ButtonGroup variant="contained" aria-label="Basic button group">
+                <Tooltip title="รายละเอียดสินค้า">
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    color="success"
+                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                    onClick={() => productsDetails(value)}
+                  >
+                    <ContainerOutlined />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="เบิกสินค้า">
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    color="warning"
+                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                    onClick={() => addCutOffProduct(value)}
+                  >
+                    <SwitcherOutlined />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="รับสินค้า">
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    color="info"
+                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                    onClick={() => addProductReceives(value)}
+                  >
+                    <FileAddOutlined />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="แก้ไข">
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    color="primary"
+                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                    onClick={() => updateProductManagement(value)}
+                  >
+                    <EditOutlined />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="ลบ">
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    color="error"
+                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                    onClick={() => handleClickOpen(value)}
+                  >
+                    <DeleteOutlined />
+                  </Button>
+                </Tooltip>
+              </ButtonGroup>
+            </>
+          );
+        },
 
-    //     setCellHeaderProps: () => ({
-    //       style: { textAlign: 'center' }
-    //     }),
-    //     setCellProps: () => ({
-    //       style: { textAlign: 'center' }
-    //     })
-    //   }
-    // }
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'center' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'center' }
+        })
+      }
+    }
   ];
+
   // =============== Get calculateAge จำนวนวัน  ===============//
   const calculateAge = (registrationDate) => {
     if (!registrationDate) return '-';
@@ -325,12 +342,82 @@ function ProductManage({ onFilter }) {
     }
 
     return result;
-    //return `${years} ปี ${months} เดือน ${days} วัน`;
+  };
+
+  // ลบข้อมูล Manager
+  const [product_id, setProductId] = useState(false);
+  const [textnotify, setText] = useState('');
+
+  const handleClickOpen = (manager_id) => {
+    setProductId(manager_id);
+    setText('ลบข้อมูล');
+    setOpen(true);
+  };
+
+  const handleClose = (flag) => {
+    if (flag === 1) {
+      setLoading(true);
+      deteteProductManagement(product_id);
+      setOpen(false);
+    } else if (flag === 0) {
+      setOpen(false);
+    }
+  };
+
+  const deteteProductManagement = (id) => {
+    try {
+      adminRequest.deteteProductRegister(id).then(() => {
+        getWareHouseManager();
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const navigate = useNavigate();
+  const updateProductManagement = (id) => {
+    navigate('/admin/product-register/update/' + id);
+  };
+
+  const addProductReceives = (id) => {
+    navigate('/admin/product-register/add-receive/' + id);
+  };
+
+  const addCutOffProduct = (id) => {
+    navigate('/admin/product-register/add-cutoff/' + id);
+  };
+
+  const productsDetails = (id) => {
+    navigate('/admin/product-register/details/' + id);
   };
   return (
-    <Box>
-      <MUIDataTable title={<Typography variant="h5">ข้อมูลกองสินค้า</Typography>} data={productList} columns={columns} options={options} />
-    </Box>
+    <>
+      <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
+        <DialogTitle id="responsive-dialog-title" align="center">
+          <Typography variant="h5">{'แจ้งเตือน'}</Typography>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>ต้องการ {textnotify} หรือไม่?</DialogContentText>
+        </DialogContent>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
+          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+            ยกเลิก
+          </Button>
+          <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
+            ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {loading && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={loading}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
+      <MUIDataTable title={<Typography variant="h5">ข้อมูลกองสินค้า</Typography>} data={productList} columns={columns} options={options} />;
+    </>
   );
 }
 

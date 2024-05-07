@@ -399,7 +399,6 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
 
   const handleClose = (flag) => {
     setLoading(true);
-
     // flag = 1 = ยืนยัน
     if (flag === 1) {
       //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
@@ -418,6 +417,8 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
 
           step1Update(id_update, 'processing', 24);
           updateStartTime(id_update);
+          setLoading(false);
+          setOpen(false);
         } else {
           alert('สถานีบริการเต็ม');
           setLoading(false);
@@ -438,6 +439,8 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
           step1Update(id_update, 'completed', 24);
           updateEndTime(id_update);
           updateHasCover(id_update);
+          setLoading(false);
+          setOpen(false);
         } else {
           //ยกเลิก
           // การใช้งาน Line Notify
@@ -452,6 +455,8 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
 
           step1Update(id_update, 'waiting', 27);
           updateStartTime(id_update);
+          setLoading(false);
+          setOpen(false);
         }
       }
     } else if (flag === 0) {
@@ -662,12 +667,12 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
                           </Typography>
                         </TableCell>
                         <TableCell align="left">
-                          {moment(row.queue_date).format('DD/MM/YYYY')}
-                          {row.queue_time ? ' - ' + row.queue_time : ''}
+                          {moment(row.queue_date.slice(0, 10)).format('DD/MM/YY')}
+                          {row.queue_time ? ' - ' + row.queue_time.slice(0, 5) + 'น.' : ''}
                         </TableCell>
                         <TableCell align="left">
                           <QueueTag id={row.product_company_id || ''} token={row.token} />
-                          {moment(row.queue_date).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
+                          {moment(row.queue_date.slice(0, 10)).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
                             <span style={{ color: 'red' }}> (คิวค้าง)</span>
                           )}
                         </TableCell>

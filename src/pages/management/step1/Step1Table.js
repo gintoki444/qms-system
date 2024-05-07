@@ -62,6 +62,12 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
       label: 'ลำดับ'
     },
     {
+      id: 'dateReserve',
+      align: 'center',
+      disablePadding: true,
+      label: 'วันที่จอง'
+    },
+    {
       id: 'pickerDate',
       align: 'left',
       disablePadding: false,
@@ -144,7 +150,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
         <TableRow>
           {headCells.map((headCell) => (
             <>
-              {(status === 'waiting' && headCell.id === 'soundCall') || (
+              {(status === 'waiting' && headCell.id === 'soundCall') || (status !== 'waiting' && headCell.id == 'dateReserve') || (
                 <TableCell
                   key={headCell.id}
                   align={headCell.align}
@@ -815,13 +821,22 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
                               <strong>{index + 1}</strong>
                             </Typography>
                           </TableCell>
+                          {status == 'waiting' && (
+                            <TableCell align="left">
+                              {row.reserve_datetime &&
+                                moment(row.reserve_datetime.slice(0, 10)).format('DD/MM/YY') +
+                                  ' - ' +
+                                  row.reserve_datetime.slice(11, 16) +
+                                  'น.'}
+                            </TableCell>
+                          )}
                           <TableCell align="left">
-                            {moment(row.queue_date).format('DD/MM/YYYY')}
-                            {row.queue_time ? ' - ' + row.queue_time : ''}
+                            {moment(row.queue_date.slice(0, 10)).format('DD/MM/YY')}
+                            {row.queue_time ? ' - ' + row.queue_time.slice(0, 5) + 'น.' : ''}
                           </TableCell>
                           <TableCell align="left">
                             <QueueTag id={row.product_company_id} token={row.token} />
-                            {moment(row.queue_date).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
+                            {moment(row.queue_date.slice(0, 10)).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
                               <span style={{ color: 'red' }}> (คิวค้าง)</span>
                             )}
                             {/* <Chip color="primary" label={row.token} /> */}
