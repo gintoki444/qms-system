@@ -67,7 +67,7 @@ const queues = {
     },
     {
       id: 'done',
-      title: 'Step4-สำเร็จ',
+      title: 'Step4-รถออกจากโรงงาน',
       type: 'item',
       url: '/admin/step4',
       icon: SafetyOutlined,

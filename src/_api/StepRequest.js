@@ -151,7 +151,46 @@ export const getStepCountByIdStatus = async (id, status) => {
   return result;
 };
 
-// ==============================|| ข้อมูล Step Count  ||============================== //
+// ==============================|| ข้อมูล Step 2  ||============================== //
+// แสดงข้อมูล กองสินค้าทั้งหมด
+export const getAllItemsRegister = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/allitemsregister`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// แสดงข้อมูล กองสินค้าทั้งหมด
+export const getAllItemsRegisterById = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/itemsregister/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// เพิ่มข้อมูล กองสินค้า
+export const addItemRegister = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/additemsregister/', requestOptions);
+  return await response.json();
+};
+
 export const putRegisterItem = async (id, data) => {
   const myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');

@@ -680,6 +680,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
               queues.weight2 = weight;
               updateRecall(id_update, queues.queue_id, queues);
 
+              setOpen(false);
               setLoading(false);
             } else {
               // การใช้งาน Line Notify

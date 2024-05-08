@@ -83,7 +83,7 @@ const report = {
     },
     {
       id: 'step4',
-      title: 'รายงาน Step4-เสร็จสิ้น',
+      title: 'รายงาน Step4-รถออกจากโรงงาน',
       type: 'item',
       url: '/report/step4-completed',
       icon: FundViewOutlined,
