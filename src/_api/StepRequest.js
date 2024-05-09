@@ -179,7 +179,6 @@ export const addItemRegister = async (data) => {
   const myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');
   const raw = JSON.stringify(data);
-
   const requestOptions = {
     method: 'POST',
     headers: myHeaders,
@@ -189,6 +188,35 @@ export const addItemRegister = async (data) => {
 
   const response = await fetch(apiUrl + '/additemsregister/', requestOptions);
   return await response.json();
+};
+
+// ลบข้อมูล กองสินค้า
+export const deleteItemsRegister = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/deleteitemsregister/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// แก้ไขข้อมูล กองสินค้า
+export const putItemsRegister = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/updateitemsregister/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
 };
 
 export const putRegisterItem = async (id, data) => {
