@@ -716,9 +716,21 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
           let totolIsSelect = 0;
           checkStock.map((x) => (totolIsSelect = x.stockQuetity + totolIsSelect));
 
+          // console.log('parseFloat(stockItem)', parseFloat(stockItem));
+          // console.log('totolIsSelect', totolIsSelect);
+          // console.log('totolIsSelect', selectedStock.stockQuetity);
           if (parseFloat(stockItem) < totolIsSelect + selectedStock.stockQuetity) {
             // console.log('check 4.2');
             selectedStock.stockQuetity = parseFloat(stockItem) - totolIsSelect;
+
+            // if (selectedStock.stockQuetity < items.quantity) {
+            //   // console.log('check 4.2.1');
+            // }
+          } else if (parseFloat(stockItem) === totolIsSelect + selectedStock.stockQuetity && checkStockSelect.length > 0) {
+            // console.log('checkStockSelect',checkStockSelect);
+            // console.log('check 4.3');
+            selectedStock.stockQuetity = parseFloat(stockItem) - selectedStock.stockQuetity;
+            // console.log('selectedStock.stockQuetity',selectedStock.stockQuetity);
           }
         } else if (checkStockSelect.length > 0) {
           checkStockSelect.map((x) => {
@@ -809,7 +821,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
           // console.log('check 2.1');
 
           selectedOptionNew.product_register_quantity = parseFloat(items.quantity);
-          // console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
+          console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
           const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
 
           filterRemove.push(selectedOptionNew);
@@ -871,6 +883,35 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
         // console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
         const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
 
+        const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
+        if (checkStock.length > 0) {
+          // console.log('check 3.1');
+          let totolIsSelect = 0;
+          checkStock.map((x) => (totolIsSelect = x.product_register_quantity + totolIsSelect));
+
+          if (parseFloat(stockItem) < totolIsSelect + selectedOptionNew.product_register_quantity) {
+            // console.log('check 3.2');
+            selectedOptionNew.product_register_quantity = parseFloat(stockItem) - totolIsSelect;
+
+            if (orderList.length < 3 && orderList.length < items.productRegis.length) {
+              // console.log('check 1.1');
+              const selectedOption = {
+                id: items.order_id + items.item_id + orderList.length,
+                order_id: items.order_id,
+                item_id: items.item_id,
+                product_register_id: '',
+                quantity: parseFloat(items.quantity),
+                product_register_quantity: 0,
+                sling_hook_quantity: 0,
+                sling_sort_quantity: 0,
+                smash_quantity: 0,
+                jumbo_hook_quantity: 0
+              };
+              filterRemove.push(selectedOption);
+            }
+          }
+        }
+
         filterRemove.push(selectedOptionNew);
         updatedOptions = filterRemove;
       }
@@ -878,7 +919,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
       // console.log('setLoopSelect ', updatedOptions);
       return updatedOptions;
     });
-
 
     setOrderSelect((prevState) => {
       const updatedOptions = [...prevState];
