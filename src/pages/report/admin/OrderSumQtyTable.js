@@ -139,7 +139,7 @@ export default function OrderSumQtyTable({ startDate, endDate, clickDownload, on
         if (onFilter) {
           setItems(result.filter((x) => x.product_company_id == onFilter));
         } else {
-          setItems(result);
+          setItems(result.filter((x) => x.product_register_id));
         }
         setLoading(false);
       })
@@ -148,7 +148,9 @@ export default function OrderSumQtyTable({ startDate, endDate, clickDownload, on
 
   // รวม grand total ของ quantity ของทุกรายการ items
   const grandTotalQuantity = items.reduce((acc, item) => {
-    return acc + parseFloat(item.total_sold);
+    console.log('acc :', acc);
+    console.log('item :', item);
+    return item.total_sold && acc + parseFloat(item.total_sold);
   }, 0);
   return (
     <Box>
@@ -192,7 +194,9 @@ export default function OrderSumQtyTable({ startDate, endDate, clickDownload, on
                     </TableCell>
                     <TableCell align="right">{row.total_smash ? parseFloat(row.total_smash) : 0}</TableCell>
                     <TableCell align="left">{row.warehouse_name}</TableCell>
-                    <TableCell align="left">{row.setup_pile_date ? moment(row.setup_pile_date.slice(0, 10)).format('DD/MM/YYYY') : '-'}</TableCell>
+                    <TableCell align="left">
+                      {row.setup_pile_date ? moment(row.setup_pile_date.slice(0, 10)).format('DD/MM/YYYY') : '-'}
+                    </TableCell>
                   </TableRow>
                 ))}
               <TableRow>

@@ -653,7 +653,8 @@ export const getProductRegisterById = async (id) => {
     method: 'GET',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + '/productregisterbyid/' + id, requestOptions);
+  // const response = await fetch(apiUrl + '/productregisterbyid/' + id, requestOptions);
+  const response = await fetch(apiUrl + '/productregisterbyid2/' + id, requestOptions);
 
   const result = await response.json();
   return result;
@@ -843,7 +844,8 @@ export const getOrdersProductsByIdRegister = async (id) => {
     method: 'GET',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + '/ordersproductsbyregisterid?product_register_id=' + id, requestOptions);
+  // const response = await fetch(apiUrl + '/ordersproductsbyregisterid?product_register_id=' + id, requestOptions);
+  const response = await fetch(apiUrl + '/ordersproductsbyregisterid2?product_register_id=' + id, requestOptions);
 
   const result = await response.json();
   return result;

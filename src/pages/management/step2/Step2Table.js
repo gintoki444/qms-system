@@ -551,14 +551,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
 
         response.map((result) => {
           if (result.product_company_id && result.product_brand_id) {
-            result.items.map((data) => {
+            result.items.map((data, index) => {
               const getProductRegis = productList.filter(
                 (x) =>
                   x.product_id == data.product_id &&
                   x.product_brand_id == result.product_brand_id &&
                   x.product_company_id == result.product_company_id
               );
-              // ####################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
               data.productRegis = getProductRegis;
 
               const getItemsRegisData = allProductRegis.filter(
@@ -568,13 +567,15 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                 getItemsRegisData.map((x) => {
                   setLoopSelect((prevState) => {
                     const updatedOptions = [...prevState];
-                    updatedOptions.push(x);
+
+                    (x.id = data.order_id + data.item_id + index), updatedOptions.push(x);
                     // console.log('updatedOptions getItemsRegisData:', updatedOptions);
                     return updatedOptions;
                   });
                 });
               } else {
                 const selectedOption = {
+                  id: data.order_id + data.item_id + index,
                   order_id: data.order_id,
                   item_id: data.item_id,
                   product_register_id: '',
@@ -626,138 +627,258 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
   };
 
   const [orderSelect, setOrderSelect] = useState([]);
+  const [stockSelect, setStockSelect] = useState([]);
   // const [orderSelectNew, setOrderSelectNew] = useState([]);
-  const handleChangeProduct = (e, id, items) => {
-    // const { value } = e.target;
-    // ####################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
+
+  const handleChangeProduct = (e, id, items, key) => {
     const selectedOption = { id: id, value: e.target.value };
 
     const stockItem = items.productRegis.find((x) => x.product_register_id === e.target.value)?.total_remain;
-    // const orderList = loopSelect.filter(
-    //   (option) => option.item_id === items.item_id && option.order_id === items.order_id && option.product_register_id === e.target.value
-    // );
-    const orderList = loopSelect.filter(
-      (option) => option.item_id === items.item_id && option.order_id === items.order_id && option.product_register_id === e.target.value
-    );
 
-    const selectedOptionNew = {
-      order_id: items.order_id,
-      item_id: items.item_id,
-      product_register_id: e.target.value,
-      quantity: parseFloat(items.quantity),
-      product_register_quantity: parseFloat(stockItem) >= parseFloat(items.quantity) ? parseFloat(items.quantity) : parseFloat(stockItem),
-      sling_hook_quantity: 0,
-      sling_sort_quantity: 0,
-      smash_quantity: 0,
-      jumbo_hook_quantity: 0
-    };
+    // console.log('*************** Stock select  ***************');
+    setStockSelect((prevState) => {
+      let updatedOptions = [...prevState];
 
-    // console.log('loopSelect ', loopSelect);
-    // console.log('e.target.value ', e.target.value);
-    // console.log('indexList ', indexList);
-    // console.log('indexList.length ', indexList.length);
-    // console.log('orderList ', orderList);
-
-    if (
-      parseFloat(stockItem) < parseFloat(items.quantity) &&
-      orderList.length < 3 &&
-      loopSelect.filter((option) => option.item_id === items.item_id && option.order_id === items.order_id).length <
-        items.productRegis.length
-    ) {
-      const selectedOption = {
+      const selectedStock = {
+        id: key,
         order_id: items.order_id,
         item_id: items.item_id,
-        product_register_id: '',
+        product_register_id: e.target.value,
+        stockQuetity: parseFloat(stockItem) >= parseFloat(items.quantity) ? parseFloat(items.quantity) : parseFloat(stockItem)
+      };
+
+      const index = updatedOptions.findIndex((option) => option.order_id === items.order_id && option.item_id === items.item_id);
+      const indexProId = updatedOptions.filter(
+        (option) => option.order_id === items.order_id && option.item_id === items.item_id && option.product_register_id !== e.target.value
+      );
+      const indexKey = updatedOptions.findIndex((option) => option.id === key);
+
+      if (parseFloat(stockItem) <= parseFloat(items.quantity) && indexKey === -1) {
+        // console.log('check 1');
+        updatedOptions.push(selectedStock);
+      } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length === 0) {
+        // console.log('check 2');
+        updatedOptions[index] = selectedStock;
+      } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length !== 0) {
+        // console.log('check 3');
+        // console.log('indexProId.length', indexProId);
+        const filterindex = updatedOptions.filter((option) => option.order_id === items.order_id && option.item_id === items.item_id);
+        // console.log('filterindex', filterindex);
+        filterindex.map(
+          (x) =>
+            (selectedStock.stockQuetity =
+              selectedStock.stockQuetity > x.stockQuetity
+                ? selectedStock.stockQuetity - x.stockQuetity
+                : x.stockQuetity - selectedStock.stockQuetity)
+        );
+        if (selectedStock.stockQuetity <= 0 && indexKey !== -1) {
+          // console.log('check 3.1');
+          // console.log('selectedStock.stockQuetity', selectedStock.stockQuetity);
+          // console.log('indexKey :', indexKey);
+          selectedStock.stockQuetity = parseFloat(items.quantity);
+
+          let filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
+
+          filterRemove.push(selectedStock);
+          updatedOptions = filterRemove;
+          // updatedOptions.push(selectedStock);
+        } else if (indexKey !== -1) {
+          // console.log('check 3.2');
+          selectedStock.stockQuetity = parseFloat(items.quantity);
+
+          const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
+          if (checkStock.length > 0) {
+            // console.log('check 3.3');
+            let totolIsSelect = 0;
+            checkStock.map((x) => (totolIsSelect = x.stockQuetity + totolIsSelect));
+
+            if (parseFloat(stockItem) < totolIsSelect + selectedStock.stockQuetity) {
+              // console.log('check 3.4');
+              selectedStock.stockQuetity = parseFloat(stockItem) - totolIsSelect;
+            }
+          }
+          updatedOptions[index] = selectedStock;
+          // updatedOptions.push(selectedStock);
+        } else {
+          // console.log('check 3.5');
+          updatedOptions.push(selectedStock);
+        }
+      } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey === -1) {
+        // console.log('check 4');
+        // console.log('parseFloat(stockItem)', parseFloat(stockItem));
+        // console.log('parseFloat(items.quantity)', parseFloat(items.quantity));
+        const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
+        const checkStockSelect = updatedOptions.filter((x) => x.order_id === items.order_id && x.item_id === items.item_id);
+        // console.log('checkStock :', checkStock);
+
+        if (checkStock.length > 0) {
+          // console.log('check 4.1');
+          let totolIsSelect = 0;
+          checkStock.map((x) => (totolIsSelect = x.stockQuetity + totolIsSelect));
+
+          if (parseFloat(stockItem) < totolIsSelect + selectedStock.stockQuetity) {
+            // console.log('check 4.2');
+            selectedStock.stockQuetity = parseFloat(stockItem) - totolIsSelect;
+          }
+        } else if (checkStockSelect.length > 0) {
+          checkStockSelect.map((x) => {
+            selectedStock.stockQuetity = selectedStock.stockQuetity - x.stockQuetity;
+          });
+        }
+        updatedOptions.push(selectedStock);
+      } else {
+        // console.log('check 5');
+        const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
+        if (checkStock.length > 0) {
+          // console.log('check 5.1');
+          let totolIsSelect = 0;
+          checkStock.map((x) => (totolIsSelect = x.stockQuetity + totolIsSelect));
+
+          if (parseFloat(stockItem) < totolIsSelect + selectedStock.stockQuetity) {
+            // console.log('check 5.2');
+            selectedStock.stockQuetity = parseFloat(stockItem) - totolIsSelect;
+          }
+        }
+
+        updatedOptions[index] = selectedStock;
+      }
+      // console.log('setStockSelect', updatedOptions);
+      return updatedOptions;
+    });
+
+    // console.log('*************** Loop select  ***************');
+    setLoopSelect((prevState) => {
+      let updatedOptions = [...prevState];
+
+      const selectedOptionNew = {
+        id: key,
+        order_id: items.order_id,
+        item_id: items.item_id,
+        product_register_id: e.target.value,
         quantity: parseFloat(items.quantity),
-        product_register_quantity: 0,
+        product_register_quantity: parseFloat(stockItem) >= parseFloat(items.quantity) ? parseFloat(items.quantity) : parseFloat(stockItem),
         sling_hook_quantity: 0,
         sling_sort_quantity: 0,
         smash_quantity: 0,
         jumbo_hook_quantity: 0
       };
-      setLoopSelect((prevState) => {
-        const updatedOptions = [...prevState];
-        updatedOptions.push(selectedOption);
-        return updatedOptions;
-      });
-    } else {
-      if (orderList.length > 0) {
-        setLoopSelect((prevState) => {
-          const updatedOptions = [...prevState];
 
-          return updatedOptions.filter(
-            (x) =>
-              (x.item_id == id && x.order_id == items.order_id && x.product_register_id !== '' && x.product_register_quantity !== 0) ||
-              x.item_id !== id
-          );
-        });
-      } else {
-        setLoopSelect((prevState) => {
-          const updatedOptions = [...prevState];
-          const index = updatedOptions.findIndex(
-            (option) =>
-              option.item_id == id &&
-              option.order_id == items.order_id &&
-              (option.product_register_id === e.target.value || option.product_register_id == '')
-          );
-          updatedOptions.map((x) => {
-            if (x.item_id == id && x.order_id == items.order_id && x.product_register_id !== e.target.value) {
-              selectedOptionNew.product_register_quantity = selectedOptionNew.product_register_quantity - x.product_register_quantity;
-            }
-          });
-          updatedOptions[index] = selectedOptionNew;
-
-          return updatedOptions;
-        });
-      }
-    }
-    //  else if (orderList.length > 0) {
-    //   setLoopSelect((prevState) => {
-    //     const updatedOptions = [...prevState];
-
-    //     return updatedOptions.filter(
-    //       (x) =>
-    //         (x.item_id == id && x.order_id == items.order_id && x.product_register_id !== '' && x.product_register_quantity !== 0) ||
-    //         x.item_id !== id
-    //     );
-    //   });
-    // }
-
-    setLoopSelect((prevState) => {
-      let updatedOptions = [...prevState];
-      const index = updatedOptions.findIndex(
-        (option) =>
-          option.item_id == id &&
-          option.order_id == items.order_id &&
-          (option.product_register_id == e.target.value || option.product_register_id == '')
+      const indexProId = updatedOptions.filter(
+        (option) => option.order_id === items.order_id && option.item_id === items.item_id && option.product_register_id !== e.target.value
       );
+      const indexKey = updatedOptions.findIndex((option) => option.id === key);
+      const orderList = updatedOptions.filter((option) => option.item_id == items.item_id && option.order_id == items.order_id);
+      // console.log('parseFloat(stockItem) ', parseFloat(stockItem));
+      // console.log('parseFloat(items.quantity) ', parseFloat(items.quantity));
+      // console.log('indexKey ', indexKey);
+      // console.log('indexProId ', indexProId);
 
-      // console.log('updatedOptions filter length:', updatedOptions.filter((x) => x.product_register_id == e.target.value).length);
-      // console.log(
-      //   'updatedOptions filter:',
-      //   updatedOptions.filter((x) => x.product_register_id)
-      // );
+      // console.log('updatedOptionsbefor ', updatedOptions);
+      if (parseFloat(stockItem) < parseFloat(items.quantity) && indexKey !== -1) {
+        // console.log('check 1');
+        if (orderList.length < 3 && orderList.length < items.productRegis.length) {
+          // console.log('check 1.1');
+          const selectedOption = {
+            id: items.order_id + items.item_id + orderList.length,
+            order_id: items.order_id,
+            item_id: items.item_id,
+            product_register_id: '',
+            quantity: parseFloat(items.quantity),
+            product_register_quantity: 0,
+            sling_hook_quantity: 0,
+            sling_sort_quantity: 0,
+            smash_quantity: 0,
+            jumbo_hook_quantity: 0
+          };
+          updatedOptions.push(selectedOption);
+        }
 
-      if (updatedOptions.filter((x) => x.product_register_id === e.target.value).length > 1) {
-        const removeDuplicates = (arr) => {
-          const uniqueIds = {};
-          return arr.filter((obj) => {
-            if (!uniqueIds[obj.product_register_id]) {
-              uniqueIds[obj.product_register_id] = true;
-              return true;
+        updatedOptions[indexKey] = selectedOptionNew;
+      } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length !== 0) {
+        // console.log('check 2');
+        const filterindex = updatedOptions.filter((option) => option.order_id === items.order_id && option.item_id === items.item_id);
+        filterindex.map(
+          (x) =>
+            (selectedOptionNew.product_register_quantity =
+              selectedOptionNew.product_register_quantity > x.product_register_quantity
+                ? selectedOptionNew.product_register_quantity - x.product_register_quantity
+                : x.product_register_quantity - selectedOptionNew.product_register_quantity)
+        );
+
+        if (selectedOptionNew.product_register_quantity <= 0 && indexKey !== -1) {
+          // console.log('check 2.1');
+
+          selectedOptionNew.product_register_quantity = parseFloat(items.quantity);
+          // console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
+          const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
+
+          filterRemove.push(selectedOptionNew);
+          updatedOptions = filterRemove;
+        } else if (indexKey !== -1) {
+          // console.log('check 2.2');
+
+          const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value && x.id !== key);
+          const checkNumSelect = updatedOptions.filter(
+            (option) => option.item_id == items.item_id && option.order_id == items.order_id && option.product_register_id === ''
+          );
+          if (checkStock.length > 0) {
+            // console.log('check 2.2.1');
+            let totolIsSelect = 0;
+            checkStock.map((x) => (totolIsSelect = x.product_register_quantity + totolIsSelect));
+
+            if (parseFloat(stockItem) < totolIsSelect + selectedOptionNew.product_register_quantity) {
+              selectedOptionNew.product_register_quantity = parseFloat(stockItem) - totolIsSelect;
+              // console.log('check 2.2.1.1');
+
+              if (selectedOptionNew.product_register_quantity < selectedOptionNew.quantity && checkNumSelect < 1) {
+                // console.log('check 2.2.1.1.1');
+
+                const selectedOption = {
+                  id: items.order_id + items.item_id + orderList.length,
+                  order_id: items.order_id,
+                  item_id: items.item_id,
+                  product_register_id: '',
+                  quantity: parseFloat(items.quantity),
+                  product_register_quantity: 0,
+                  sling_hook_quantity: 0,
+                  sling_sort_quantity: 0,
+                  smash_quantity: 0,
+                  jumbo_hook_quantity: 0
+                };
+                updatedOptions.push(selectedOption);
+              }
+            } else if (parseFloat(stockItem) === totolIsSelect + selectedOptionNew.product_register_quantity && checkNumSelect.length > 0) {
+              // console.log('check 2.2.1.2');
+              updatedOptions = updatedOptions.filter((x) => x.id !== checkNumSelect[0].id);
+            } else if (totolIsSelect < selectedOptionNew.product_register_quantity) {
+              // console.log('check 2.2.1.3');
+              selectedOptionNew.quantity = selectedOptionNew.product_register_quantity - totolIsSelect;
             }
-            return false;
-          });
-        };
-        updatedOptions = removeDuplicates(updatedOptions);
-        updatedOptions[index] = selectedOptionNew;
+          } else if (checkNumSelect.length > 0) {
+            // console.log('check 2.2.2');
+            updatedOptions = updatedOptions.filter((x) => x.id !== checkNumSelect[0].id);
+          }
+          updatedOptions[indexKey] = selectedOptionNew;
+          // updatedOptions.push(selectedOptionNew);
+        }
+
+        // else {
+        //   updatedOptions.push(selectedOptionNew);
+        // }
+      } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length === 0) {
+        // console.log('check 3');
+        // selectedOptionNew.product_register_quantity = parseFloat(items.quantity);
+        // console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
+        const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
+
+        filterRemove.push(selectedOptionNew);
+        updatedOptions = filterRemove;
       }
 
-      updatedOptions[index] = selectedOptionNew;
-
-      // console.log('updatedOptions New:', updatedOptions);
+      // console.log('setLoopSelect ', updatedOptions);
       return updatedOptions;
     });
+
 
     setOrderSelect((prevState) => {
       const updatedOptions = [...prevState];
@@ -894,6 +1015,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
         setText('ยกเลิก');
       }
     }
+    console.log('queuesData', queues);
 
     //กดปุ่มมาจากไหน
     setFrom(fr);
@@ -921,6 +1043,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
               if (!orderData.product_register_quantity) checkCountItemLoop = checkCountItemLoop + 1;
             });
 
+            // console.log('checkCountItemLoop :', checkCountItemLoop);
+            // console.log('orderSelect.length :', orderSelect.length);
+            // console.log('countItem :', countItem);
             if (checkCountItemLoop > 0) {
               alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
               return;
@@ -931,10 +1056,15 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
               setLoading(true);
               setOpen(false);
 
-              loopSelect.map((x) => {
-                addItemsRegister(x);
-              });
-
+              if (queues.recall_status === 'Y') {
+                loopSelect.map((x) => {
+                  updateItemsRegister(x.item_register_id, x);
+                });
+              } else {
+                loopSelect.map((x) => {
+                  addItemsRegister(x);
+                });
+              }
               orderSelect.map((dataOrder) => {
                 const setData = {
                   product_register_id: dataOrder.value,
@@ -1089,12 +1219,14 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             await step1Update(id_update, 'completed', station_id);
             await getWareHouseManager();
             // }
+            setStockSelect([]);
             setLoopSelect([]);
             setOpen(false);
           } catch (error) {
             console.error(error);
             // จัดการข้อผิดพลาดตามที่ต้องการ
             alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+            setStockSelect([]);
             setLoopSelect([]);
           }
           // }
@@ -1117,6 +1249,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
           setStationCount(station_count - 1);
           step1Update(id_update, 'waiting', 27);
           updateStartTime(id_update);
+          setStockSelect([]);
           setLoopSelect([]);
           setOpen(false);
           // Trigger the parent to reload the other instance with the common status
@@ -1125,6 +1258,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     } else if (flag === 0) {
       setLoopSelect([]);
       setOrders([]);
+      setStockSelect([]);
       setOpen(false);
     }
   };
@@ -1143,7 +1277,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     await adminRequest.putReserveTeamData(queues.reserve_id, teamData);
   };
 
-  // ####################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
   // แสดงข้อมูลกองสินค้าทั้งหมด
   const [allProductRegis, setAllProductRegis] = useState([]);
   const getAllItemsRegis = () => {
@@ -1385,6 +1518,17 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     setLaborLineId(e.target.value);
   };
 
+  const sumStock = (producrReId, onStock) => {
+    const setStock = stockSelect.filter((x) => x.product_register_id === producrReId);
+    let total = 0;
+
+    if (setStock.length > 0) setStock.map((x) => (total = x.stockQuetity + total));
+
+    total = onStock - total;
+
+    return total;
+  };
+
   const handleCallQueue = async (queues) => {
     const cleanedToken = queues.token.split('').join(' ');
     const titleTxt = `ขอเชิญคิวหมายเลขที่ ${cleanedToken}`;
@@ -1447,7 +1591,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                   <Grid item xs={12}>
                     <Grid item xs={12}>
                       <Stack spacing={1}>
-                        <Typography variant="h5">ข้อมูลกองสินค้า:</Typography>
+                        <Typography variant="h5">
+                          ข้อมูลกองสินค้า:
+                          {queues.recall_status == 'Y' && <Chip color="error" sx={{ width: '80px' }} label={'ทวนสอบ'} />}
+                        </Typography>
                         <Typography variant="body1">บริษัท (สินค้า): {queues.product_company_name}</Typography>
                         <Typography variant="body1">ตรา (สินค้า): {queues.product_brand_name}</Typography>
                       </Stack>
@@ -1463,103 +1610,139 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                 <InputLabel sx={{ mt: 1, mb: 1 }}>
                                   จำนวน : <strong>{orderItem.quantity}</strong> (ตัน)
                                 </InputLabel>
-                                {/* #################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################### */}
                                 {!loadOrders ? (
                                   <>
-                                    {/* <FormControl sx={{ width: '100%' }} size="small">
-                                      <Select
-                                        displayEmpty
-                                        variant="outlined"
-                                        // value={orderSelect[orderItem.item_id]}
-                                        value={orderSelect[orderItem.item_id] || orderItem.product_register_id || ''}
-                                        onChange={(e) => {
-                                          handleChangeProduct(e, orderItem.item_id, orderItem);
-                                          orderItem.product_register_id = e.target.value;
-                                        }}
-                                      >
-                                        <MenuItem disabled value="">
-                                          เลือกกองสินค้า
-                                        </MenuItem>
-                                        {orderItem.productRegis &&
-                                          // orderItem.productRegis.length > 0 &&
-                                          orderItem.productRegis.map(
-                                            (productRegis) =>
-                                              productRegis.total_remain > 0 && (
-                                                <MenuItem key={productRegis.product_register_id} value={productRegis.product_register_id}>
-                                                  {'โกดัง : ' + productRegis.warehouse_name + ' '}
-                                                  {productRegis.product_register_name}
-                                                  {productRegis.product_register_date
-                                                    ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format('DD/MM/YY')}) `
-                                                    : '-'}
-                                                  {productRegis.product_register_date
-                                                    ? ` (${calculateAge(productRegis.product_register_date)}) `
-                                                    : '-'}
-                                                  {productRegis.product_register_remark ? (
-                                                    <span style={{ color: 'red' }}> ({productRegis.product_register_remark})</span>
-                                                  ) : (
-                                                    ''
-                                                  )}
-                                                  <strong> ({productRegis.total_remain} ตัน)</strong>
-                                                </MenuItem>
-                                              )
-                                          )}
-                                      </Select>
-                                    </FormControl> */}
-                                    {/* #################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################### */}
-
                                     {loopSelect.length > 0 &&
                                       loopSelect.map(
                                         (onLoop, index) =>
-                                          onLoop.order_id == orderItem.order_id && (
-                                            <FormControl sx={{ width: '100%', mb: 2 }} size="small" key={index}>
-                                              <Select
-                                                displayEmpty
-                                                variant="outlined"
-                                                value={onLoop.product_register_id}
-                                                onChange={(e) => {
-                                                  handleChangeProduct(e, orderItem.item_id, orderItem);
-                                                  onLoop.product_register_id = e.target.value;
+                                          onLoop.order_id == orderItem.order_id &&
+                                          onLoop.item_id == orderItem.item_id && (
+                                            <>
+                                              {queues.recall_status !== 'Y' ? (
+                                                <FormControl sx={{ width: '100%', mb: 2 }} size="small" key={index}>
+                                                  <Select
+                                                    displayEmpty
+                                                    variant="outlined"
+                                                    value={onLoop.product_register_id}
+                                                    onChange={(e) => {
+                                                      handleChangeProduct(e, orderItem.item_id, orderItem, onLoop.id);
+                                                      onLoop.product_register_id = e.target.value;
 
-                                                  // ข้อมูลกองเก่า
-                                                  orderItem.product_register_id = e.target.value;
-                                                }}
-                                              >
-                                                <MenuItem disabled value="">
-                                                  เลือกกองสินค้า
-                                                </MenuItem>
-                                                {orderItem.productRegis &&
-                                                  // orderItem.productRegis.length > 0 &&
-                                                  orderItem.productRegis.map(
-                                                    (productRegis) =>
-                                                      productRegis.total_remain > 0 && (
-                                                        <MenuItem
-                                                          key={productRegis.product_register_id}
-                                                          value={productRegis.product_register_id}
-                                                          disabled={loopSelect.find(
-                                                            (x) => x.product_register_id == productRegis.product_register_id && index > 0
-                                                          )}
-                                                        >
-                                                          {'โกดัง : ' + productRegis.warehouse_name + ' '}
-                                                          {productRegis.product_register_name}
-                                                          {productRegis.product_register_date
-                                                            ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                                'DD/MM/YY'
-                                                              )}) `
-                                                            : '-'}
-                                                          {productRegis.product_register_date
-                                                            ? ` (${calculateAge(productRegis.product_register_date)}) `
-                                                            : '-'}
-                                                          {productRegis.product_register_remark ? (
-                                                            <span style={{ color: 'red' }}> ({productRegis.product_register_remark})</span>
-                                                          ) : (
-                                                            ''
-                                                          )}
-                                                          <strong> ({productRegis.total_remain} ตัน)</strong>
-                                                        </MenuItem>
-                                                      )
-                                                  )}
-                                              </Select>
-                                            </FormControl>
+                                                      // ข้อมูลกองเก่า
+                                                      orderItem.product_register_id = e.target.value;
+                                                    }}
+                                                  >
+                                                    <MenuItem disabled value="">
+                                                      เลือกกองสินค้า
+                                                    </MenuItem>
+                                                    {orderItem.productRegis &&
+                                                      orderItem.productRegis.map(
+                                                        (productRegis) =>
+                                                          productRegis.total_remain > 0 && (
+                                                            <MenuItem
+                                                              key={productRegis.product_register_id}
+                                                              value={productRegis.product_register_id}
+                                                              disabled={
+                                                                loopSelect.find(
+                                                                  (x) =>
+                                                                    x.order_id == onLoop.order_id &&
+                                                                    x.item_id == onLoop.item_id &&
+                                                                    x.product_register_id == productRegis.product_register_id &&
+                                                                    index > 0
+                                                                ) ||
+                                                                sumStock(
+                                                                  productRegis.product_register_id,
+                                                                  parseFloat(productRegis.total_remain)
+                                                                ) <= 0
+                                                              }
+                                                            >
+                                                              {'โกดัง : ' + productRegis.warehouse_name + ' '}
+                                                              {productRegis.product_register_name}
+                                                              {productRegis.product_register_date
+                                                                ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
+                                                                    'DD/MM/YY'
+                                                                  )}) `
+                                                                : '-'}
+                                                              {productRegis.product_register_date
+                                                                ? ` (${calculateAge(productRegis.product_register_date)}) `
+                                                                : '-'}
+                                                              {productRegis.product_register_remark ? (
+                                                                <span style={{ color: 'red' }}>
+                                                                  {' '}
+                                                                  ({productRegis.product_register_remark})
+                                                                </span>
+                                                              ) : (
+                                                                ''
+                                                              )}
+                                                              <strong> ({parseFloat(productRegis.total_remain)} ตัน)</strong>
+                                                              {stockSelect.filter(
+                                                                (x) => x.product_register_id === productRegis.product_register_id
+                                                              ).length > 0 &&
+                                                                ' คงเหลือ ' +
+                                                                  sumStock(
+                                                                    productRegis.product_register_id,
+                                                                    parseFloat(productRegis.total_remain)
+                                                                  )}
+                                                            </MenuItem>
+                                                          )
+                                                      )}
+                                                  </Select>
+                                                </FormControl>
+                                              ) : (
+                                                <FormControl sx={{ width: '100%', mb: 2 }} size="small" key={index}>
+                                                  <Select
+                                                    displayEmpty
+                                                    variant="outlined"
+                                                    value={onLoop.product_register_id}
+                                                    onChange={(e) => {
+                                                      handleChangeProduct(e, orderItem.item_id, orderItem);
+                                                      onLoop.product_register_id = e.target.value;
+
+                                                      // ข้อมูลกองเก่า
+                                                      orderItem.product_register_id = e.target.value;
+                                                    }}
+                                                  >
+                                                    <MenuItem disabled value="">
+                                                      เลือกกองสินค้า
+                                                    </MenuItem>
+                                                    {orderItem.productRegis &&
+                                                      // orderItem.productRegis.length > 0 &&
+                                                      orderItem.productRegis.map(
+                                                        (productRegis) =>
+                                                          productRegis.product_register_id === onLoop.product_register_id && (
+                                                            <MenuItem
+                                                              key={productRegis.product_register_id}
+                                                              value={productRegis.product_register_id}
+                                                              disabled
+                                                            >
+                                                              {'โกดัง : ' + productRegis.warehouse_name + ' '}
+                                                              {productRegis.product_register_name}
+                                                              {productRegis.product_register_date
+                                                                ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
+                                                                    'DD/MM/YY'
+                                                                  )}) `
+                                                                : '-'}
+                                                              {productRegis.product_register_date
+                                                                ? ` (${calculateAge(productRegis.product_register_date)}) `
+                                                                : '-'}
+                                                              {productRegis.product_register_remark ? (
+                                                                <span style={{ color: 'red' }}>
+                                                                  {' '}
+                                                                  ({productRegis.product_register_remark})
+                                                                </span>
+                                                              ) : (
+                                                                ''
+                                                              )}
+                                                              <strong> ({parseFloat(productRegis.total_remain)} ตัน)</strong>
+                                                              <strong> (เลือกแล้ว {onLoop.product_register_quantity} ตัน)</strong>
+                                                              {/* {sumStock(productRegis.product_register_id , parseFloat(productRegis.total_remain))} */}
+                                                            </MenuItem>
+                                                          )
+                                                      )}
+                                                  </Select>
+                                                </FormControl>
+                                              )}
+                                            </>
                                           )
                                       )}
                                   </>
@@ -1577,6 +1760,21 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
               </MainCard>
             </DialogContent>
             <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
+              {stockSelect.length > 0 && (
+                <Button
+                  color="error"
+                  variant="contained"
+                  autoFocus
+                  onClick={() => {
+                    setLoopSelect([]);
+                    setStockSelect([]);
+                    setOrderSelect([]);
+                    getOrderOfReserve(queues.reserve_id);
+                  }}
+                >
+                  รีเซ็ต
+                </Button>
+              )}
               <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
                 ยกเลิก
               </Button>
@@ -1825,7 +2023,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
 
                                         {loopSelect.map(
                                           (onLoop, index) =>
-                                            onLoop.order_id == orderItem.order_id && (
+                                            onLoop.order_id == orderItem.order_id &&
+                                            onLoop.item_id == orderItem.item_id && (
                                               <MainCard key={index} sx={{ mb: 2 }}>
                                                 <FormControl sx={{ width: '100%' }} size="small">
                                                   <Select

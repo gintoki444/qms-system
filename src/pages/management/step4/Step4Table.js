@@ -672,7 +672,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
                         </TableCell>
                         <TableCell align="left">
                           <QueueTag id={row.product_company_id || ''} token={row.token} />
-                          {moment(row.queue_date.slice(0, 10)).format('DD/MM/YYYY') < moment(new Date()).format('DD/MM/YYYY') && (
+                          {moment(row.queue_date.slice(0, 10)).format('DD/MM/YYYY') != moment(new Date()).format('DD/MM/YYYY') && (
                             <span style={{ color: 'red' }}> (คิวค้าง)</span>
                           )}
                         </TableCell>

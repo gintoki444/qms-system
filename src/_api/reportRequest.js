@@ -7,7 +7,8 @@ export const getOrdersProductSummary = async (startDate, endDate) => {
     method: 'GET',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + '/ordersproducts2?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
+  // const response = await fetch(apiUrl + '/ordersproducts2?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
+  const response = await fetch(apiUrl + '/ordersproducts3?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
   const result = await response.json();
   return result;
 };
@@ -18,7 +19,8 @@ export const getOrdersProduct = async (startDate, endDate) => {
     method: 'GET',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + '/ordersproducts?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
+  // const response = await fetch(apiUrl + '/ordersproducts?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
+  const response = await fetch(apiUrl + '/ordersproducts4?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
   const result = await response.json();
   return result;
 };
@@ -40,7 +42,8 @@ export const getOrderSumQty = async (date) => {
     method: 'GET',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + '/ordersproducts?start_date=' + date + '&end_date=' + date, requestOptions);
+  // const response = await fetch(apiUrl + '/ordersproducts?start_date=' + date + '&end_date=' + date, requestOptions);
+  const response = await fetch(apiUrl + '/ordersproducts4?start_date=' + date + '&end_date=' + date, requestOptions);
   const result = await response.json();
   return result;
 };
@@ -84,7 +87,8 @@ export const getOrdersProducts = async (date) => {
     method: 'GET',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + `/ordersproducts?start_date=${date}&end_date=${date}`, requestOptions);
+  // const response = await fetch(apiUrl + `/ordersproducts?start_date=${date}&end_date=${date}`, requestOptions);
+  const response = await fetch(apiUrl + `/ordersproducts4?start_date=${date}&end_date=${date}`, requestOptions);
   const result = await response.json();
   return result;
 };
@@ -127,7 +131,8 @@ export const getContractorSummary = async (startDate, endDate) => {
     method: 'GET',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + '/contractorsum?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
+  // const response = await fetch(apiUrl + '/contractorsum?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
+  const response = await fetch(apiUrl + '/contractorsum2?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
   const result = await response.json();
   return result;
 };

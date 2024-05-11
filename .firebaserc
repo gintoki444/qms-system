@@ -1,7 +1,7 @@
 {
   "projects": {
     "default": "qms-testing-01",
-    "build": "icp-qms"
+    "build": "qms-testing-01"
   },
   "targets": {},
   "etags": {}
