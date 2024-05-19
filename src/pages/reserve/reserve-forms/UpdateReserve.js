@@ -41,7 +41,8 @@ import {
   CircularProgress,
   Tooltip,
   ButtonGroup,
-  Autocomplete
+  Autocomplete,
+  Alert
 } from '@mui/material';
 
 import MenuItem from '@mui/material/MenuItem';
@@ -70,6 +71,10 @@ import AddCar from './AddCar';
 import AddDriver from './AddDriver';
 
 function UpdateReserve() {
+  const pageId = 8;
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+  const [pageDetail, setPageDetail] = useState([]);
+
   const userRoles = useSelector((state) => state.auth.roles);
   const userID = useSelector((state) => state.auth.user_id);
   const [loading, setLoading] = useState(false);
@@ -235,13 +240,21 @@ function UpdateReserve() {
 
   // =============== useEffect ===============//
   useEffect(() => {
-    getReserve();
-    getProductCompany();
+    setLoading(true);
+    if (Object.keys(userPermission).length > 0) {
+      if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
+        setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+        getReserve();
+        getProductCompany();
 
-    if (user_Id) {
-      getCompanyList();
+        if (user_Id) {
+          getCompanyList();
+        }
+      } else {
+        setLoading(false);
+      }
     }
-  }, [user_Id, newCar, newDriver]);
+  }, [user_Id, newCar, newDriver, userPermission]);
 
   const getReserve = () => {
     setLoading(true);
@@ -831,52 +844,76 @@ function UpdateReserve() {
           )}
         </DialogActions>
       </Dialog>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={10}>
-          <Formik initialValues={reservationData} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
-            {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors, setFieldValue }) => (
-              <form noValidate onSubmit={handleSubmit}>
-                <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12}>
-                      <Typography variant="h5">ข้อมูลจองคิวรับสินค้า</Typography>
-                      <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                    </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>บริษัท/ร้านค้า*</InputLabel>
-                        <FormControl fullWidth>
-                          <Autocomplete
-                            disablePortal
-                            id="company-list"
-                            options={companyList}
-                            value={companyList.length > 0 ? companyList.find((item) => item.company_id === values.company_id) : []}
-                            onChange={(e, value) => {
-                              const newValue = value ? value.company_id : '';
-                              setFieldValue('company_id', newValue);
-                            }}
-                            getOptionLabel={(option) => (option.name !== undefined ? option.name : '')}
-                            sx={{
-                              width: '100%',
-                              '& .MuiOutlinedInput-root': {
-                                padding: '3px 8px!important'
-                              },
-                              '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
-                                right: '7px!important',
-                                top: 'calc(50% - 18px)'
-                              }
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                name="company_id"
-                                placeholder="เลือกบริษัท/ร้านค้า"
-                                error={Boolean(touched.company_id && errors.company_id)}
+      {Object.keys(userPermission).length > 0 &&
+        pageDetail.length === 0 &&
+        pageDetail.length !== 0 &&
+        (pageDetail[0].permission_name !== 'view_data' ||
+          pageDetail[0].permission_name !== 'manage_everything' ||
+          pageDetail[0].permission_name !== 'add_edit_delete_data') && (
+          <Grid item xs={12}>
+            <MainCard content={false}>
+              <Stack sx={{ width: '100%' }} spacing={2}>
+                <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+              </Stack>
+            </MainCard>
+          </Grid>
+        )}
+      {pageDetail.length !== 0 &&
+        (pageDetail[0].permission_name === 'view_data' ||
+          pageDetail[0].permission_name === 'manage_everything' ||
+          pageDetail[0].permission_name === 'add_edit_delete_data') && (
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={10}>
+              <Formik
+                initialValues={reservationData}
+                validationSchema={validationSchema}
+                onSubmit={handleSubmits}
+                enableReinitialize={true}
+              >
+                {({ handleBlur, handleChange, handleSubmit, isSubmitting, values, touched, errors, setFieldValue }) => (
+                  <form noValidate onSubmit={handleSubmit}>
+                    <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
+                      <Grid container spacing={3}>
+                        <Grid item xs={12}>
+                          <Typography variant="h5">ข้อมูลจองคิวรับสินค้า</Typography>
+                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                        </Grid>
+
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>บริษัท/ร้านค้า*</InputLabel>
+                            <FormControl fullWidth>
+                              <Autocomplete
+                                disablePortal
+                                id="company-list"
+                                options={companyList}
+                                value={companyList.length > 0 ? companyList.find((item) => item.company_id === values.company_id) : []}
+                                onChange={(e, value) => {
+                                  const newValue = value ? value.company_id : '';
+                                  setFieldValue('company_id', newValue);
+                                }}
+                                getOptionLabel={(option) => (option.name !== undefined ? option.name : '')}
+                                sx={{
+                                  width: '100%',
+                                  '& .MuiOutlinedInput-root': {
+                                    padding: '3px 8px!important'
+                                  },
+                                  '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                                    right: '7px!important',
+                                    top: 'calc(50% - 18px)'
+                                  }
+                                }}
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    name="company_id"
+                                    placeholder="เลือกบริษัท/ร้านค้า"
+                                    error={Boolean(touched.company_id && errors.company_id)}
+                                  />
+                                )}
                               />
-                            )}
-                          />
-                          {/* <Select
+                              {/* <Select
                             labelId="select-label"
                             id="select"
                             name="company_id"
@@ -892,213 +929,223 @@ function UpdateReserve() {
                                 </MenuItem>
                               ))}
                           </Select> */}
-                        </FormControl>
-                        {touched.company_id && errors.company_id && (
-                          <FormHelperText error id="helper-text-company-car">
-                            {errors.company_id}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
+                            </FormControl>
+                            {touched.company_id && errors.company_id && (
+                              <FormHelperText error id="helper-text-company-car">
+                                {errors.company_id}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>บริษัท (สินค้า) *</InputLabel>
-                        <FormControl fullWidth>
-                          <Select
-                            displayEmpty
-                            variant="outlined"
-                            name="product_company_id"
-                            value={values.product_company_id ? values.product_company_id : ''}
-                            onChange={(e) => {
-                              setFieldValue('product_company_id', e.target.value);
-                              setFieldValue('product_brand_id', '');
-                              handleChangeProductCom(e);
-                            }}
-                            fullWidth
-                            error={Boolean(touched.product_company_id && errors.product_company_id)}
-                          >
-                            <MenuItem disabled value="">
-                              เลือกบริษัท
-                            </MenuItem>
-                            {productCompany.length > 0 &&
-                              productCompany.map((companias) => (
-                                <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
-                                  {companias.product_company_name_th}
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>บริษัท (สินค้า) *</InputLabel>
+                            <FormControl fullWidth>
+                              <Select
+                                displayEmpty
+                                variant="outlined"
+                                name="product_company_id"
+                                value={values.product_company_id ? values.product_company_id : ''}
+                                onChange={(e) => {
+                                  setFieldValue('product_company_id', e.target.value);
+                                  setFieldValue('product_brand_id', '');
+                                  handleChangeProductCom(e);
+                                }}
+                                fullWidth
+                                error={Boolean(touched.product_company_id && errors.product_company_id)}
+                              >
+                                <MenuItem disabled value="">
+                                  เลือกบริษัท
                                 </MenuItem>
-                              ))}
-                          </Select>
-                        </FormControl>
-                      </Stack>
-                      {touched.product_company_id && errors.product_company_id && (
-                        <FormHelperText error id="helper-text-product_company_id">
-                          {errors.product_company_id}
-                        </FormHelperText>
-                      )}
-                    </Grid>
+                                {productCompany.length > 0 &&
+                                  productCompany.map((companias) => (
+                                    <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
+                                      {companias.product_company_name_th}
+                                    </MenuItem>
+                                  ))}
+                              </Select>
+                            </FormControl>
+                          </Stack>
+                          {touched.product_company_id && errors.product_company_id && (
+                            <FormHelperText error id="helper-text-product_company_id">
+                              {errors.product_company_id}
+                            </FormHelperText>
+                          )}
+                        </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>ตรา (สินค้า) *</InputLabel>
-                        <FormControl fullWidth>
-                          <Select
-                            displayEmpty
-                            variant="outlined"
-                            name="product_brand_id"
-                            value={values.product_brand_id ? values.product_brand_id : ''}
-                            onChange={handleChange}
-                            placeholder="เลือกสายแรงงาน"
-                            fullWidth
-                            error={Boolean(touched.product_brand_id && errors.product_brand_id)}
-                          >
-                            <MenuItem disabled value="">
-                              เลือกตรา (สินค้า)
-                            </MenuItem>
-                            {productBrand.length > 0 &&
-                              productBrand.map((brands) => (
-                                <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
-                                  {brands.product_brand_name}
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>ตรา (สินค้า) *</InputLabel>
+                            <FormControl fullWidth>
+                              <Select
+                                displayEmpty
+                                variant="outlined"
+                                name="product_brand_id"
+                                value={values.product_brand_id ? values.product_brand_id : ''}
+                                onChange={handleChange}
+                                placeholder="เลือกสายแรงงาน"
+                                fullWidth
+                                error={Boolean(touched.product_brand_id && errors.product_brand_id)}
+                              >
+                                <MenuItem disabled value="">
+                                  เลือกตรา (สินค้า)
                                 </MenuItem>
-                              ))}
-                          </Select>
-                        </FormControl>
-                      </Stack>
-                      {touched.product_brand_id && errors.product_brand_id && (
-                        <FormHelperText error id="helper-text-product_brand_id">
-                          {errors.product_brand_id}
-                        </FormHelperText>
-                      )}
-                    </Grid>
+                                {productBrand.length > 0 &&
+                                  productBrand.map((brands) => (
+                                    <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
+                                      {brands.product_brand_name}
+                                    </MenuItem>
+                                  ))}
+                              </Select>
+                            </FormControl>
+                          </Stack>
+                          {touched.product_brand_id && errors.product_brand_id && (
+                            <FormHelperText error id="helper-text-product_brand_id">
+                              {errors.product_brand_id}
+                            </FormHelperText>
+                          )}
+                        </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>วันที่เข้ารับสินค้า *</InputLabel>
-                        <TextField
-                          required
-                          fullWidth
-                          type="date"
-                          id="pickup_date"
-                          name="pickup_date"
-                          onBlur={handleBlur}
-                          value={values.pickup_date}
-                          onChange={handleChange}
-                          inputProps={{
-                            min: currentDate
-                          }}
-                        />
-                        {touched.pickup_date && errors.pickup_date && (
-                          <FormHelperText error id="helper-text-pickup_date">
-                            {errors.pickup_date}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>วันที่เข้ารับสินค้า *</InputLabel>
+                            <TextField
+                              required
+                              fullWidth
+                              type="date"
+                              id="pickup_date"
+                              name="pickup_date"
+                              onBlur={handleBlur}
+                              value={values.pickup_date}
+                              onChange={handleChange}
+                              inputProps={{
+                                min: currentDate
+                              }}
+                            />
+                            {touched.pickup_date && errors.pickup_date && (
+                              <FormHelperText error id="helper-text-pickup_date">
+                                {errors.pickup_date}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>รถบรรทุก *</InputLabel>
-                        <FormControl fullWidth>
-                          <Autocomplete
-                            disablePortal
-                            id="car-list"
-                            options={carList}
-                            value={carList.length > 0 ? carList.find((item) => item.car_id === values.car_id) : []}
-                            onChange={(e, value) => {
-                              const newValue = value ? value.car_id : '';
-                              setFieldValue('car_id', newValue);
-                            }}
-                            getOptionLabel={(option) => {
-                              if (option.car_id !== undefined) {
-                                if (option.car_id !== 1) {
-                                  return option.registration_no ? option.registration_no : '';
-                                } else {
-                                  return 'ไม่ระบุรถบรรทุก';
-                                }
-                              } else {
-                                return '';
-                              }
-                            }}
-                            sx={{
-                              width: '100%',
-                              '& .MuiOutlinedInput-root': {
-                                padding: '3px 8px!important'
-                              },
-                              '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
-                                right: '7px!important',
-                                top: 'calc(50% - 18px)'
-                              }
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                name="car_id"
-                                placeholder="เลือกรถบรรทุก"
-                                error={Boolean(touched.car_id && errors.car_id)}
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>รถบรรทุก *</InputLabel>
+                            <FormControl fullWidth>
+                              <Autocomplete
+                                disablePortal
+                                id="car-list"
+                                options={carList}
+                                value={carList.length > 0 ? carList.find((item) => item.car_id === values.car_id) : []}
+                                onChange={(e, value) => {
+                                  const newValue = value ? value.car_id : '';
+                                  setFieldValue('car_id', newValue);
+                                }}
+                                getOptionLabel={(option) => {
+                                  if (option.car_id !== undefined) {
+                                    if (option.car_id !== 1) {
+                                      return option.registration_no ? option.registration_no : '';
+                                    } else {
+                                      return 'ไม่ระบุรถบรรทุก';
+                                    }
+                                  } else {
+                                    return '';
+                                  }
+                                }}
+                                sx={{
+                                  width: '100%',
+                                  '& .MuiOutlinedInput-root': {
+                                    padding: '3px 8px!important'
+                                  },
+                                  '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                                    right: '7px!important',
+                                    top: 'calc(50% - 18px)'
+                                  }
+                                }}
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    name="car_id"
+                                    placeholder="เลือกรถบรรทุก"
+                                    error={Boolean(touched.car_id && errors.car_id)}
+                                  />
+                                )}
                               />
+                            </FormControl>
+                            {touched.car_id && errors.car_id && (
+                              <FormHelperText error id="helper-text-company-car">
+                                {errors.car_id}
+                              </FormHelperText>
                             )}
-                          />
-                        </FormControl>
-                        {touched.car_id && errors.car_id && (
-                          <FormHelperText error id="helper-text-company-car">
-                            {errors.car_id}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                      {reservationData.status !== 'completed' && (userRoles === 9 || userRoles === 1) && (
-                        <AddCar userID={user_Id} onSaves={handleSaveForm} carsList={carList} />
-                      )}
-                    </Grid>
-
-                    <Grid item xs={12} md={6} align="left">
-                      <Stack spacing={1}>
-                        <InputLabel>คนขับรถ *</InputLabel>
-                        <FormControl fullWidth>
-                          <Autocomplete
-                            disablePortal
-                            id="driver-list"
-                            options={driverList}
-                            name="driver_id"
-                            value={driverList.length > 0 ? driverList.find((item) => item.driver_id === values.driver_id) : []}
-                            // defaultValue={driverList.find((item) => item.driver_id === values.driver_id)?.driver_id}
-                            onChange={(e, value) => {
-                              const newValue = value ? value.driver_id : '';
-                              setFieldValue('driver_id', newValue);
-                            }}
-                            getOptionLabel={(option) => {
-                              if (option.driver_id !== 1 && option.driver_id !== undefined) {
-                                return option.firstname ? option.firstname + option.lastname : '';
-                              } else {
-                                return 'ไม่ระบุคนขับรถ';
-                              }
-                            }}
-                            sx={{
-                              width: '100%',
-                              '& .MuiOutlinedInput-root': {
-                                padding: '3px 8px!important'
-                              },
-                              '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
-                                right: '7px!important',
-                                top: 'calc(50% - 18px)'
-                              }
-                            }}
-                            error={Boolean(touched.driver_id && errors.driver_id)}
-                            renderInput={(params) => (
-                              <TextField {...params} placeholder="เลือกคนขับรถ" error={Boolean(touched.driver_id && errors.driver_id)} />
+                          </Stack>
+                          {reservationData.status !== 'completed' &&
+                            pageDetail.length > 0 &&
+                            (pageDetail[0].permission_name === 'manage_everything' ||
+                              pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                              <AddCar userID={user_Id} onSaves={handleSaveForm} carsList={carList} />
                             )}
-                          />
-                        </FormControl>
-                        {touched.driver_id && errors.driver_id && (
-                          <FormHelperText error id="helper-text-driver_id-car">
-                            {errors.driver_id}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                      {reservationData.status !== 'completed' && (userRoles === 9 || userRoles === 1) && (
-                        <AddDriver userID={user_Id} onSaves={handleSaveDriverForm} driverList={driverList} />
-                      )}
-                    </Grid>
+                        </Grid>
 
-                    {/* <Grid item xs={12} md={6}>
+                        <Grid item xs={12} md={6} align="left">
+                          <Stack spacing={1}>
+                            <InputLabel>คนขับรถ *</InputLabel>
+                            <FormControl fullWidth>
+                              <Autocomplete
+                                disablePortal
+                                id="driver-list"
+                                options={driverList}
+                                name="driver_id"
+                                value={driverList.length > 0 ? driverList.find((item) => item.driver_id === values.driver_id) : []}
+                                // defaultValue={driverList.find((item) => item.driver_id === values.driver_id)?.driver_id}
+                                onChange={(e, value) => {
+                                  const newValue = value ? value.driver_id : '';
+                                  setFieldValue('driver_id', newValue);
+                                }}
+                                getOptionLabel={(option) => {
+                                  if (option.driver_id !== 1 && option.driver_id !== undefined) {
+                                    return option.firstname ? option.firstname + option.lastname : '';
+                                  } else {
+                                    return 'ไม่ระบุคนขับรถ';
+                                  }
+                                }}
+                                sx={{
+                                  width: '100%',
+                                  '& .MuiOutlinedInput-root': {
+                                    padding: '3px 8px!important'
+                                  },
+                                  '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                                    right: '7px!important',
+                                    top: 'calc(50% - 18px)'
+                                  }
+                                }}
+                                error={Boolean(touched.driver_id && errors.driver_id)}
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    placeholder="เลือกคนขับรถ"
+                                    error={Boolean(touched.driver_id && errors.driver_id)}
+                                  />
+                                )}
+                              />
+                            </FormControl>
+                            {touched.driver_id && errors.driver_id && (
+                              <FormHelperText error id="helper-text-driver_id-car">
+                                {errors.driver_id}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                          {reservationData.status !== 'completed' &&
+                            pageDetail.length > 0 &&
+                            (pageDetail[0].permission_name === 'manage_everything' ||
+                              pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                              <AddDriver userID={user_Id} onSaves={handleSaveDriverForm} driverList={driverList} />
+                            )}
+                        </Grid>
+
+                        {/* <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel>เหตุผลการจอง</InputLabel>
                         <OutlinedInput
@@ -1119,230 +1166,246 @@ function UpdateReserve() {
                       </Stack>
                     </Grid> */}
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>จำนวนสินค้า</InputLabel>
-                        <OutlinedInput
-                          id="total_quantity"
-                          type="text"
-                          sx={{ fontWeight: 600 }}
-                          disabled
-                          value={parseFloat(values.total_quantity).toFixed(4)}
-                          name="color"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="จำนวนสินค้า"
-                          fullWidth
-                          error={Boolean(touched.total_quantity && errors.total_quantity)}
-                        />
-                        {touched.total_quantity && errors.total_quantity && (
-                          <FormHelperText error id="helper-text-total_quantity">
-                            {errors.total_quantity}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
-
-                    <Grid item xs={12}>
-                      <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="h5">ข้อมูลรายการสั่งซื้อสินค้า</Typography>
-                      </Grid>
-                      <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                      {orderList.length === 0 && (
-                        <Grid item xs={6} sx={{ p: 2 }}>
-                          <Typography variant="body1">
-                            <strong>ไม่มีข้อมูลสินค้า</strong>
-                          </Typography>
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>จำนวนสินค้า</InputLabel>
+                            <OutlinedInput
+                              id="total_quantity"
+                              type="text"
+                              sx={{ fontWeight: 600 }}
+                              disabled
+                              value={parseFloat(values.total_quantity).toFixed(4)}
+                              name="color"
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              placeholder="จำนวนสินค้า"
+                              fullWidth
+                              error={Boolean(touched.total_quantity && errors.total_quantity)}
+                            />
+                            {touched.total_quantity && errors.total_quantity && (
+                              <FormHelperText error id="helper-text-total_quantity">
+                                {errors.total_quantity}
+                              </FormHelperText>
+                            )}
+                          </Stack>
                         </Grid>
-                      )}
 
-                      <Grid item xs={12} sx={{ p: 2 }}>
-                        {orderList.length > 0 &&
-                          orderList.map((order, index) => (
-                            <Grid item xs={12} key={index} sx={{ mb: 2 }}>
-                              <Grid container spacing={2} sx={{ mb: '15px' }}>
-                                <Grid item xs={12} md={6}>
-                                  <Typography variant="body1">
-                                    <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
-                                  </Typography>
-                                </Grid>
-                                <Grid item xs={12} md={12}>
-                                  <Typography variant="body1">
-                                    <strong>วันที่สั่งซื้อสินค้า : </strong> {moment(order.order_date).format('DD/MM/YYYY')}
-                                  </Typography>
-                                </Grid>
-                                <Grid item xs={12} md={12}>
-                                  <Typography variant="body1">
-                                    <strong>รายละเอียด : </strong> {order.description}
-                                  </Typography>
-                                </Grid>
-                              </Grid>
-                              <Grid item xs={12} md={12}></Grid>
-                              <Grid item xs={12} md={6}>
-                                <TableContainer>
-                                  <Table
-                                    aria-labelledby="tableTitle"
-                                    size="small"
-                                    sx={{
-                                      '& .MuiTableCell-root:first-of-type': {
-                                        pl: 2
-                                      },
-                                      '& .MuiTableCell-root:last-of-type': {
-                                        pr: 3
-                                      }
-                                    }}
-                                  >
-                                    <TableHead>
-                                      <TableRow>
-                                        <TableCell sx={{ p: '12px' }}>สินค้า</TableCell>
-                                        <TableCell align="right" sx={{ p: '12px' }}>
-                                          จำนวน (ตัน)
-                                        </TableCell>
-                                      </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                      {order.items.map((item, index) => (
-                                        <TableRow key={index}>
-                                          <TableCell width={'50%'}>{item.name}</TableCell>
-                                          <TableCell align="right">{item.quantity} ตัน</TableCell>
-                                        </TableRow>
-                                      ))}
-                                    </TableBody>
-                                  </Table>
-                                </TableContainer>
-                              </Grid>
-                              <Grid item xs={12} md={6} sx={{ mt: 2 }}>
-                                <Stack direction="row" alignItems="center" spacing={0}>
-                                  <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
-                                    <Tooltip title="ลบคำสั่งซื้อ">
-                                      <span>
-                                        <Button
-                                          variant="contained"
-                                          sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                          size="medium"
-                                          disabled={reservationData.status == 'completed' && userRoles === 8}
-                                          color="error"
-                                          // onClick={() => deleteDrivers(row.reserve_id)}
-                                          onClick={() => handleClickOpen(order.order_id, 'delete-queue')}
-                                        >
-                                          <DeleteOutlined />
-                                        </Button>
-                                      </span>
-                                    </Tooltip>
-                                  </ButtonGroup>
-                                </Stack>
-                              </Grid>
-
-                              <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                        <Grid item xs={12}>
+                          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Typography variant="h5">ข้อมูลรายการสั่งซื้อสินค้า</Typography>
+                          </Grid>
+                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                          {orderList.length === 0 && (
+                            <Grid item xs={6} sx={{ p: 2 }}>
+                              <Typography variant="body1">
+                                <strong>ไม่มีข้อมูลสินค้า</strong>
+                              </Typography>
                             </Grid>
-                          ))}
-                        <Stack direction="row" alignItems="center" spacing={0}>
+                          )}
+
+                          <Grid item xs={12} sx={{ p: 2 }}>
+                            {orderList.length > 0 &&
+                              orderList.map((order, index) => (
+                                <Grid item xs={12} key={index} sx={{ mb: 2 }}>
+                                  <Grid container spacing={2} sx={{ mb: '15px' }}>
+                                    <Grid item xs={12} md={6}>
+                                      <Typography variant="body1">
+                                        <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
+                                      </Typography>
+                                    </Grid>
+                                    <Grid item xs={12} md={12}>
+                                      <Typography variant="body1">
+                                        <strong>วันที่สั่งซื้อสินค้า : </strong> {moment(order.order_date).format('DD/MM/YYYY')}
+                                      </Typography>
+                                    </Grid>
+                                    <Grid item xs={12} md={12}>
+                                      <Typography variant="body1">
+                                        <strong>รายละเอียด : </strong> {order.description}
+                                      </Typography>
+                                    </Grid>
+                                  </Grid>
+                                  <Grid item xs={12} md={12}></Grid>
+                                  <Grid item xs={12} md={6}>
+                                    <TableContainer>
+                                      <Table
+                                        aria-labelledby="tableTitle"
+                                        size="small"
+                                        sx={{
+                                          '& .MuiTableCell-root:first-of-type': {
+                                            pl: 2
+                                          },
+                                          '& .MuiTableCell-root:last-of-type': {
+                                            pr: 3
+                                          }
+                                        }}
+                                      >
+                                        <TableHead>
+                                          <TableRow>
+                                            <TableCell sx={{ p: '12px' }}>สินค้า</TableCell>
+                                            <TableCell align="right" sx={{ p: '12px' }}>
+                                              จำนวน (ตัน)
+                                            </TableCell>
+                                          </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                          {order.items.map((item, index) => (
+                                            <TableRow key={index}>
+                                              <TableCell width={'50%'}>{item.name}</TableCell>
+                                              <TableCell align="right">{item.quantity} ตัน</TableCell>
+                                            </TableRow>
+                                          ))}
+                                        </TableBody>
+                                      </Table>
+                                    </TableContainer>
+                                  </Grid>
+                                  <Grid item xs={12} md={6} sx={{ mt: 2 }}>
+                                    <Stack direction="row" alignItems="center" spacing={0}>
+                                      {pageDetail.length > 0 &&
+                                        (pageDetail[0].permission_name === 'manage_everything' ||
+                                          pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                                          <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
+                                            <Tooltip title="ลบคำสั่งซื้อ">
+                                              <span>
+                                                <Button
+                                                  variant="contained"
+                                                  sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                                  size="medium"
+                                                  disabled={reservationData.status == 'completed' && userRoles === 8}
+                                                  color="error"
+                                                  // onClick={() => deleteDrivers(row.reserve_id)}
+                                                  onClick={() => handleClickOpen(order.order_id, 'delete-queue')}
+                                                >
+                                                  <DeleteOutlined />
+                                                </Button>
+                                              </span>
+                                            </Tooltip>
+                                          </ButtonGroup>
+                                        )}
+                                    </Stack>
+                                  </Grid>
+
+                                  <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                                </Grid>
+                              ))}
+                            <Stack direction="row" alignItems="center" spacing={0}>
+                              {pageDetail.length > 0 &&
+                                (pageDetail[0].permission_name === 'manage_everything' ||
+                                  pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                                  <Button
+                                    size="mediam"
+                                    variant="outlined"
+                                    color="success"
+                                    onClick={() => addOrder()}
+                                    startIcon={<PlusCircleOutlined />}
+                                  >
+                                    เพิ่มข้อมูลสินค้า
+                                  </Button>
+                                )}
+                            </Stack>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+
+                      <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
+                        <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+
+                        {reservationData.status !== 'completed' &&
+                          pageDetail.length > 0 &&
+                          (pageDetail[0].permission_name === 'manage_everything' ||
+                            pageDetail[0].permission_name === 'add_edit_delete_data') &&
+                          checkDate == true && (
+                            <Button
+                              size="mediam"
+                              variant="contained"
+                              color="success"
+                              disabled={
+                                dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
+                                checkDate == false ||
+                                reservationData.car_id == 1 ||
+                                reservationData.driver_id == 1
+                              }
+                              onClick={() => handleClickOpen(reservationData.reserve_id, 'add-queue', reservationData.total_quantity)}
+                              startIcon={<DiffOutlined />}
+                            >
+                              สร้างคิว
+                            </Button>
+                          )}
+
+                        {pageDetail.length > 0 &&
+                          (pageDetail[0].permission_name === 'manage_everything' ||
+                            pageDetail[0].permission_name === 'add_edit_delete_data') &&
+                          checkDate == true && (
+                            <Button
+                              size="mediam"
+                              variant="contained"
+                              color="warning"
+                              // disabled={
+                              //   dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
+                              //   checkDate == false ||
+                              //   initialValue.car_id == 1 ||
+                              //   initialValue.driver_id == 1
+                              // }
+                              onClick={() => handleClickOpen(reservationData.reserve_id, 'remain-queue')}
+                              startIcon={<StopOutlined />}
+                            >
+                              คิวค้าง
+                            </Button>
+                          )}
+
+                        {orderList.length > 0 && (
                           <Button
                             size="mediam"
-                            variant="outlined"
-                            color="success"
-                            onClick={() => addOrder()}
-                            startIcon={<PlusCircleOutlined />}
+                            variant="contained"
+                            color="info"
+                            onClick={() => reservePrint(id)}
+                            startIcon={<PrinterOutlined />}
                           >
-                            เพิ่มข้อมูลสินค้า
+                            พิมพ์
                           </Button>
-                        </Stack>
+                        )}
+                        {reservationData.status !== 'completed' && (
+                          <Button
+                            disableElevation
+                            disabled={isSubmitting}
+                            size="mediam"
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            startIcon={<SaveOutlined />}
+                          >
+                            บันทึกข้อมูลการจอง
+                          </Button>
+                        )}
+                        {reservationData.status === 'completed' && (
+                          <Button
+                            size="mediam"
+                            variant="contained"
+                            color="primary"
+                            onClick={() => getQueueIdByReserve(id)}
+                            startIcon={<ContainerOutlined />}
+                          >
+                            ข้อมูลคิว
+                          </Button>
+                        )}
+                        <Button
+                          size="mediam"
+                          variant="contained"
+                          color="error"
+                          onClick={() => {
+                            backToReserce();
+                          }}
+                          startIcon={<RollbackOutlined />}
+                        >
+                          ย้อนกลับ
+                        </Button>
                       </Grid>
-                    </Grid>
-                  </Grid>
-
-                  <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                    <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-
-                    {reservationData.status !== 'completed' && (userRoles === 9 || userRoles === 1) && checkDate == true && (
-                      <Button
-                        size="mediam"
-                        variant="contained"
-                        color="success"
-                        disabled={
-                          dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
-                          checkDate == false ||
-                          reservationData.car_id == 1 ||
-                          reservationData.driver_id == 1
-                        }
-                        onClick={() => handleClickOpen(reservationData.reserve_id, 'add-queue', reservationData.total_quantity)}
-                        startIcon={<DiffOutlined />}
-                      >
-                        สร้างคิว
-                      </Button>
-                    )}
-
-                    {(userRoles === 9 || userRoles === 1) && checkDate == true && (
-                      <Button
-                        size="mediam"
-                        variant="contained"
-                        color="warning"
-                        // disabled={
-                        //   dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
-                        //   checkDate == false ||
-                        //   initialValue.car_id == 1 ||
-                        //   initialValue.driver_id == 1
-                        // }
-                        onClick={() => handleClickOpen(reservationData.reserve_id, 'remain-queue')}
-                        startIcon={<StopOutlined />}
-                      >
-                        คิวค้าง
-                      </Button>
-                    )}
-
-                    {orderList.length > 0 && (
-                      <Button
-                        size="mediam"
-                        variant="contained"
-                        color="info"
-                        onClick={() => reservePrint(id)}
-                        startIcon={<PrinterOutlined />}
-                      >
-                        พิมพ์
-                      </Button>
-                    )}
-                    {reservationData.status !== 'completed' && (
-                      <Button
-                        disableElevation
-                        disabled={isSubmitting}
-                        size="mediam"
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        startIcon={<SaveOutlined />}
-                      >
-                        บันทึกข้อมูลการจอง
-                      </Button>
-                    )}
-                    {reservationData.status === 'completed' && (
-                      <Button
-                        size="mediam"
-                        variant="contained"
-                        color="primary"
-                        onClick={() => getQueueIdByReserve(id)}
-                        startIcon={<ContainerOutlined />}
-                      >
-                        ข้อมูลคิว
-                      </Button>
-                    )}
-                    <Button
-                      size="mediam"
-                      variant="contained"
-                      color="error"
-                      onClick={() => {
-                        backToReserce();
-                      }}
-                      startIcon={<RollbackOutlined />}
-                    >
-                      ย้อนกลับ
-                    </Button>
-                  </Grid>
-                </MainCard>
-              </form>
-            )}
-          </Formik>
-        </Grid>
-      </Grid>
+                    </MainCard>
+                  </form>
+                )}
+              </Formik>
+            </Grid>
+          </Grid>
+        )}
     </Grid>
   );
 }

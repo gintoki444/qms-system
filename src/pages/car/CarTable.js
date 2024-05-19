@@ -26,7 +26,7 @@ import axios from '../../../node_modules/axios/index';
 
 import MUIDataTable from 'mui-datatables';
 
-function CarTable() {
+function CarTable({ permission }) {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const [car, setCar] = useState([]);
@@ -57,10 +57,12 @@ function CarTable() {
 
   useEffect(() => {
     // getPermission();
-    getCar();
-    getCarType();
-    getProvinces();
-  }, [userId]);
+    if (userRole && permission) {
+      getCar();
+      getCarType();
+      getProvinces();
+    }
+  }, [userId, userRole, permission]);
 
   const getCar = async () => {
     setLoading(true);
@@ -129,7 +131,7 @@ function CarTable() {
     customToolbar: () => {
       return (
         <>
-          {userRole && userRole !== 5 && (
+          {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && (
             <Button size="mediam" color="success" variant="outlined" onClick={() => addCar()} startIcon={<PlusCircleOutlined />}>
               เพิ่มข้อมูล
             </Button>
@@ -185,6 +187,7 @@ function CarTable() {
                 variant="contained"
                 size="medium"
                 color="primary"
+                disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                 onClick={() => updateCar(value)}
               >
@@ -196,6 +199,7 @@ function CarTable() {
                 variant="contained"
                 size="medium"
                 color="error"
+                disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                 onClick={() => handleClickOpen(value)}
               >
@@ -206,7 +210,7 @@ function CarTable() {
         ),
 
         setCellHeaderProps: () => ({
-          style: { textAlign: 'center' }
+          style: { textAlign: 'center', display: permission !== 'manage_everything' && permission !== 'add_edit_delete_data' && 'none' }
         }),
         setCellProps: () => ({
           style: { textAlign: 'center' }
@@ -269,87 +273,6 @@ function CarTable() {
         </Backdrop>
       )}
       <MUIDataTable title={<Typography variant="h5">ข้อมูลรถ</Typography>} data={car} columns={columns} options={options} />
-      {/* <TableContainer
-        sx={{
-          width: '100%',
-          overflowX: 'auto',
-          position: 'relative',
-          display: 'block',
-          maxWidth: '100%',
-          '& td, & th': { whiteSpace: 'nowrap' }
-        }}
-      >
-        <Table
-          aria-labelledby="tableTitle"
-          size="small"
-          sx={{
-            '& .MuiTableCell-root:first-of-type': {
-              pl: 2
-            },
-            '& .MuiTableCell-root:last-of-type': {
-              pr: 3
-            }
-          }}
-        >
-          <CompantTableHead car={car} carBy={car} />
-          {!open ? (
-            <TableBody>
-              {car.map((row, index) => {
-                return (
-                  <TableRow key={index}>
-                    <TableCell align="center">{index + 1}</TableCell>
-                    <TableCell align="left">{row.registration_no}</TableCell>
-                    <TableCell align="left">{row.province_id ? row.name_th : '-'}</TableCell>
-                    <TableCell align="left">{row.car_type_id ? setCarTypeName(row.car_type_id) : '-'}</TableCell>
-                    <TableCell align="center">
-                      <ButtonGroup variant="contained" aria-label="Basic button group">
-                        <Tooltip title="แก้ไข">
-                          <Button
-                            variant="contained"
-                            size="medium"
-                            color="primary"
-                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => updateCar(row.car_id)}
-                          >
-                            <EditOutlined />
-                          </Button>
-                        </Tooltip>
-                        <Tooltip title="ลบ">
-                          <Button
-                            variant="contained"
-                            size="medium"
-                            color="error"
-                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => deleteCar(row.car_id)}
-                          >
-                            <DeleteOutlined />
-                          </Button>
-                        </Tooltip>
-                      </ButtonGroup>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {car.length == 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} align="center">
-                    ไม่พบข้อมูล
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          ) : (
-            <TableBody>
-              <TableRow>
-                <TableCell colSpan={4} align="center">
-                  <CircularProgress />
-                  <Typography variant="body1">Loading....</Typography>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          )}
-        </Table>
-      </TableContainer> */}
     </Box>
   );
 }

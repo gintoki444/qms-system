@@ -87,7 +87,7 @@ function CompantTableHead() {
   );
 }
 
-function WareHouseTable() {
+function WareHouseTable({ permission }) {
   //   const [car, setCar] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -96,7 +96,7 @@ function WareHouseTable() {
   useEffect(() => {
     // getPermission();
     getManager();
-  }, []);
+  }, [permission]);
 
   const getManager = async () => {
     setLoading(true);
@@ -237,6 +237,7 @@ function WareHouseTable() {
                             variant="contained"
                             size="medium"
                             color="primary"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => updateWareHouse(row.manager_id)}
                           >
@@ -248,6 +249,7 @@ function WareHouseTable() {
                             variant="contained"
                             size="medium"
                             color="error"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => handleClickOpen(row.manager_id)}
                           >

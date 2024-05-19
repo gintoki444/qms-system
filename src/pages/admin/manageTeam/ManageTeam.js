@@ -15,14 +15,14 @@ import { SelectOutlined, CloseSquareOutlined } from '@ant-design/icons';
 import * as adminRequest from '_api/adminRequest';
 import moment from 'moment';
 
-function ManageTeam({ teamId, onHandleChange }) {
+function ManageTeam({ teamId, onHandleChange, permission }) {
   const [loading, setLoading] = useState(false);
   // =============== useEffect ===============//
   useEffect(() => {
     getAllTeamCheckers();
     getAllTeamForklifts();
     reloading();
-  }, [teamId, onHandleChange]);
+  }, [teamId, onHandleChange, permission]);
 
   const getMuiTheme = () =>
     createTheme({
@@ -120,7 +120,7 @@ function ManageTeam({ teamId, onHandleChange }) {
             <Tooltip title="เลือกพนักงาน">
               <Button
                 sx={{ fontSize: 18 }}
-                disabled={!teamId}
+                disabled={!teamId || (permission !== 'manage_everything' && permission !== 'add_edit_delete_data')}
                 onClick={() => handleClickOpen(selectedRowsChecker, 'selected', 'เลือกพนักงานจ่ายสินค้า')}
               >
                 <SelectOutlined />
@@ -131,7 +131,7 @@ function ManageTeam({ teamId, onHandleChange }) {
                 align="center"
                 color="error"
                 sx={{ fontSize: 18 }}
-                // disabled={!teamId}
+                disabled={!teamId || (permission !== 'manage_everything' && permission !== 'add_edit_delete_data')}
                 onClick={() => handleClickOpen(selectedRowsChecker, 'removed', 'ยกเลิกพนักงาน')}
               >
                 <CloseSquareOutlined />

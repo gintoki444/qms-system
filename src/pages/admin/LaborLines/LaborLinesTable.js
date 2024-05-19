@@ -75,7 +75,7 @@ function CompantTableHead() {
   );
 }
 
-function LaborLinesTable() {
+function LaborLinesTable({ permission }) {
   //   const [car, setCar] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -83,7 +83,7 @@ function LaborLinesTable() {
 
   useEffect(() => {
     getLaborLine();
-  }, []);
+  }, [permission]);
 
   const getLaborLine = async () => {
     setLoading(true);
@@ -199,6 +199,7 @@ function LaborLinesTable() {
                             variant="contained"
                             size="medium"
                             color="primary"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => updateForklift(row.labor_line_id)}
                           >
@@ -210,6 +211,7 @@ function LaborLinesTable() {
                             variant="contained"
                             size="medium"
                             color="error"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => handleClickOpen(row.laborLine_id)}
                           >

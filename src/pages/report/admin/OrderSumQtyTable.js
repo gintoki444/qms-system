@@ -135,7 +135,6 @@ export default function OrderSumQtyTable({ startDate, endDate, clickDownload, on
     reportRequest
       .getOrdersProductSummary(startDate, endDate)
       .then((result) => {
-        console.log(result);
         if (onFilter) {
           setItems(result.filter((x) => x.product_company_id == onFilter));
         } else {

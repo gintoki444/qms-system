@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 
 import {
@@ -24,12 +23,11 @@ import * as companyRequest from '_api/companyRequest';
 import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import MUIDataTable from 'mui-datatables';
 
-function CompanyTable() {
+function CompanyTable({ permission }) {
   const { enqueueSnackbar } = useSnackbar();
   const [company, setCompany] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const userRole = useSelector((state) => state.auth?.roles);
 
   // const userId = useSelector((state) => state.auth.user_id);
   const userId = localStorage.getItem('user_id');
@@ -48,7 +46,7 @@ function CompanyTable() {
     customToolbar: () => {
       return (
         <>
-          {userRole && userRole !== 5 && (
+          {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && (
             <Button size="mediam" color="success" variant="outlined" onClick={() => addCompany()} startIcon={<PlusCircleOutlined />}>
               เพิ่มข้อมูล
             </Button>
@@ -116,6 +114,7 @@ function CompanyTable() {
                 variant="contained"
                 size="medium"
                 color="primary"
+                disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                 onClick={() => updateCompany(value)}
               >
@@ -127,6 +126,7 @@ function CompanyTable() {
                 variant="contained"
                 size="medium"
                 color="error"
+                disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                 onClick={() => handleClickOpen(value)}
               >
@@ -148,7 +148,7 @@ function CompanyTable() {
 
   useEffect(() => {
     getCompany();
-  }, [userId]);
+  }, [userId, permission]);
 
   const getCompany = () => {
     setLoading(true);

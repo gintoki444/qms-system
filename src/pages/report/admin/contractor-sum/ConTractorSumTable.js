@@ -127,12 +127,12 @@ function ConTractorSumTable({ startDate, endDate, clickDownload, onFilter, nameC
   const [items, setItems] = useState([]);
 
   const fetchData = async () => {
+    setLoading(true);
     getOrderSumQty();
   };
 
   const [companyName, setCompanyName] = useState('');
   const getOrderSumQty = () => {
-    setLoading(true);
     try {
       reportRequest.getContractorSummary(startDate, endDate).then((response) => {
         // setCompanyName(response.filter((x) => x.contract_company_id == onFilter + 1)[0]);

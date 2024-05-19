@@ -24,14 +24,14 @@ import FormControl from '@mui/material/FormControl';
 
 import moment from 'moment-timezone';
 
-function AllStations() {
+function AllStations({ permission }) {
   const [loading, setLoading] = useState(true);
   const [stations, setStations] = useState([]);
 
   useEffect(() => {
     getAllStation();
     getWarehouses();
-  }, []);
+  }, [permission]);
 
   const getAllStation = () => {
     setLoading(true);
@@ -171,7 +171,9 @@ function AllStations() {
           <Button
             color="primary"
             variant="contained"
-            disabled={stationsData.station_status == 'working'}
+            disabled={
+              stationsData.station_status == 'working' || (permission !== 'manage_everything' && permission !== 'add_edit_delete_data')
+            }
             onClick={() => handleClose(1)}
             autoFocus
           >

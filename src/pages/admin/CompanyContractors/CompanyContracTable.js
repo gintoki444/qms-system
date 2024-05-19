@@ -63,7 +63,7 @@ function CompantTableHead() {
     </TableHead>
   );
 }
-function CompanyContracTable({ dataList }) {
+function CompanyContracTable({ dataList, permission }) {
   const { enqueueSnackbar } = useSnackbar();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -71,7 +71,7 @@ function CompanyContracTable({ dataList }) {
 
   useEffect(() => {
     getContractorCon();
-  }, []);
+  }, [permission]);
 
   const getContractorCon = async () => {
     setLoading(true);
@@ -178,6 +178,7 @@ function CompanyContracTable({ dataList }) {
                             variant="contained"
                             size="medium"
                             color="primary"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => updateContractorCon(row.contract_company_id)}
                           >
@@ -189,6 +190,7 @@ function CompanyContracTable({ dataList }) {
                             variant="contained"
                             size="medium"
                             color="error"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => handleClickOpen(row.contract_company_id)}
                           >

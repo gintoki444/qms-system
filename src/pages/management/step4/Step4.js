@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 
 // import * as stepRequest from '_api/StepRequest';
 // import * as getQueues from '_api/queueReques';
@@ -8,7 +9,8 @@ import { Step4Table } from './Step4Table';
 import {
   Grid,
   Stack,
-  Box
+  Box,
+  Alert
   // , Typography, Badge
 } from '@mui/material';
 import MainCard from 'components/MainCard';
@@ -18,6 +20,12 @@ import MainCard from 'components/MainCard';
 // import QueueTab from 'components/@extended/QueueTab';
 
 function Step4() {
+  const pageId = 15;
+  const userRole = useSelector((state) => state.auth?.roles);
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+
+  const [pageDetail, setPageDetail] = useState([]);
+
   const [commonStatus, setCommonStatus] = useState('');
   const handleStatusChange = (newStatus) => {
     // Change the common status and trigger a data reload in the other instance
@@ -31,8 +39,11 @@ function Step4() {
   };
 
   useEffect(() => {
-    // getProductCompany();
-  }, []);
+    console.log('userPermission', userPermission);
+    if (Object.keys(userPermission).length > 0) {
+      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+    }
+  }, [commonStatus, userRole, userPermission]);
 
   // const [companyList, setCompanyList] = useState([]);
   // const getProductCompany = () => {
@@ -79,15 +90,31 @@ function Step4() {
           </Grid>
         </Grid>
 
-        <Grid container alignItems="center" justifyContent="flex-end">
+        {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
           <Grid item xs={12}>
-            <MainCard content={false} sx={{ mt: 1.5 }}>
-              <Box sx={{ pt: 1, pr: 2 }}>
-                <Step4Table onStatusChange={handleStatusChange} status={'processing'} title={'กำลังรับบริการ'} />
-              </Box>
+            <MainCard content={false}>
+              <Stack sx={{ width: '100%' }} spacing={2}>
+                <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+              </Stack>
             </MainCard>
           </Grid>
-        </Grid>
+        )}
+        {pageDetail.length !== 0 && (
+          <Grid container alignItems="center" justifyContent="flex-end">
+            <Grid item xs={12}>
+              <MainCard content={false} sx={{ mt: 1.5 }}>
+                <Box sx={{ pt: 1, pr: 2 }}>
+                  <Step4Table
+                    onStatusChange={handleStatusChange}
+                    status={'processing'}
+                    title={'กำลังรับบริการ'}
+                    permission={pageDetail[0].permission_name}
+                  />
+                </Box>
+              </MainCard>
+            </Grid>
+          </Grid>
+        )}
 
         {/* <Grid container alignItems="center" justifyContent="flex-end" sx={{ mt: 3 }}>
           <Grid item xs={12}>

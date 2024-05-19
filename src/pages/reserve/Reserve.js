@@ -13,24 +13,24 @@ const currentDate = moment(new Date()).format('YYYY-MM-DD');
 import ReserveTable from './ReserveTable';
 
 function Reserve() {
+  const pageId = 8;
+  const userRole = useSelector((state) => state.auth?.roles);
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
   let startDate = localStorage.getItem('reserve_startDate');
   let endDate = localStorage.getItem('reserve_endDate');
+  const [pageDetail, setPageDetail] = useState({});
   useEffect(() => {
-    // if (!startDate) {
-    //   startDate = currentDate;
-    // }
-    // if (!endDate) {
-    //   endDate = currentDate;
-    // }
-  }, [startDate, endDate]);
-  
+    if (Object.keys(userPermission).length > 0) {
+      setPageDetail(userPermission.permission.find((x) => x.page_id === pageId));
+    }
+  }, [userRole, userPermission, startDate, endDate]);
+
   if (!startDate) {
     startDate = currentDate;
   }
   if (!endDate) {
     endDate = currentDate;
   }
-  const userRole = useSelector((state) => state.auth?.roles);
   const navigate = useNavigate();
 
   const [selectedDate1, setSelectedDate1] = useState(startDate);
@@ -106,18 +106,35 @@ function Reserve() {
             </Button>
           </Grid>
           <Grid item xs={12} md={3} align="right">
-            {userRole && userRole !== 5 && (
-              <Button size="mediam" color="success" variant="outlined" onClick={() => addReserve()} startIcon={<PlusCircleOutlined />}>
-                เพิ่มข้อมูล
-              </Button>
-            )}
+            {pageDetail &&
+              (pageDetail.permission_name === 'manage_everything' || pageDetail.permission_name === 'add_edit_delete_data') && (
+                <Button size="mediam" color="success" variant="outlined" onClick={() => addReserve()} startIcon={<PlusCircleOutlined />}>
+                  เพิ่มข้อมูล
+                </Button>
+              )}
           </Grid>
         </Grid>
-        <MainCard content={false} sx={{ mt: 1.5 }}>
-          <Box sx={{ pt: 1, pr: 2 }}>
-            <ReserveTable startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} />
-          </Box>
-        </MainCard>
+
+        {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
+          <Grid item xs={12}>
+            <MainCard content={false}>
+              <Stack sx={{ width: '100%' }} spacing={2}>
+                <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+              </Stack>
+            </MainCard>
+          </Grid>
+        )}
+        {pageDetail.length !== 0 && (
+          <MainCard content={false} sx={{ mt: 1.5 }}>
+            <Box sx={{ pt: 1, pr: 2 }}>
+              <ReserveTable
+                startDate={selectedDateRange.startDate}
+                endDate={selectedDateRange.endDate}
+                permission={pageDetail.permission_name}
+              />
+            </Box>
+          </MainCard>
+        )}
       </Grid>
     </Grid>
   );

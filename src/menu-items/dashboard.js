@@ -12,7 +12,7 @@ const dashboard = {
   id: 'group-dashboard',
   title: '',
   type: 'group',
-  roles: [1,9,10],
+  roles: [1, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
   children: [
     {
       id: 'dashboard',

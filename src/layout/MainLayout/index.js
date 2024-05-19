@@ -14,11 +14,12 @@ import Breadcrumbs from 'components/@extended/Breadcrumbs';
 
 // Get api Authen loggin
 import * as authUser from '_api/loginRequest';
+import * as permissionsRequest from '_api/permissionsRequest';
 const token = localStorage.getItem('token');
 
 // types
 import { openDrawer } from 'store/reducers/menu';
-import { setProfile } from 'store/reducers/auth';
+import { setProfile, setPermission } from 'store/reducers/auth';
 
 // ==============================|| MAIN LAYOUT ||============================== //
 
@@ -60,13 +61,52 @@ const MainLayout = () => {
             roles: result.decoded.role_id
           })
         );
+        getPagePermission(result.decoded.role_id);
       } else {
         localStorage.removeItem('token');
         localStorage.removeItem('user_id');
-        // if (result.status == 9999) 
+        // if (result.status == 9999)
         naviage('/login');
       }
     });
+  };
+
+  const getPagePermission = (userRole) => {
+    try {
+      permissionsRequest.getPagesPermissionByRole(userRole).then((response) => {
+        if (response.length > 0) {
+          if (userRole === 11) {
+            const addnew = {
+              page_id: 4,
+              role_id: 11,
+              permission_id: 7,
+              group_id: 4,
+              page_name: 'QueueTV',
+              page_title: 'แสดงรายคิวปัจุบันบน TV',
+              page_url: '/queues-screen',
+              page_icon: 'screenDisploy',
+              page_target: 0,
+              page_type: 'item',
+              group_name: 'ผู้ดูแลระบบ',
+              group_type: 'group',
+              role_name: 'ICP-Administrator',
+              role_description: 'ICP-ผู้ดูแลระบบ Administrator',
+              permission_name: 'manage_everything',
+              permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
+            };
+            response.unshift(addnew);
+          }
+          dispatch(setPermission({ key: 'permission', value: response }));
+        } else {
+          alert('คุณไม่ได้รับสิทธิ์ในการใช้งานระบบนี้ กรุณาติดต่อผู้ดูแลระบบ');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user_id');
+          naviage('/login');
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Box, Button } from '@mui/material';
+import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Box, Button, Typography, CircularProgress } from '@mui/material';
 
 import {
   EditOutlined
@@ -65,17 +65,19 @@ function CompantTableHead() {
   );
 }
 
-function UsersTable() {
+function UsersTable({ permission }) {
   const [user, setUser] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getDrivers();
-  }, []);
+  }, [permission]);
 
   const getDrivers = () => {
+    setLoading(true);
     getuser.getAlluser().then((result) => {
-      console.log(result);
       if (result) setUser(result);
+      setLoading(false);
     });
   };
 
@@ -133,31 +135,42 @@ function UsersTable() {
           }}
         >
           <CompantTableHead />
-
-          <TableBody>
-            {user.map((row, index) => {
-              return (
-                <TableRow key={index}>
-                  <TableCell align="left">{row.user_id}</TableCell>
-                  <TableCell align="left">{row.avatar}</TableCell>
-                  <TableCell align="left">{row.firstname + ' ' + row.lastname}</TableCell>
-                  <TableCell align="left">{row.email}</TableCell>
-                  <TableCell align="left">{row.role ? row.role : '-'}</TableCell>
-                  <TableCell align="center" sx={{ '& button': { m: 1 } }}>
-                    <Button
-                      variant="contained"
-                      sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                      size="medium"
-                      color="primary"
-                      onClick={() => updateDrivers(row.user_id)}
-                    >
-                      <EditOutlined />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
+          {!loading ? (
+            <TableBody>
+              {user.map((row, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell align="left">{row.user_id}</TableCell>
+                    <TableCell align="left">{row.avatar}</TableCell>
+                    <TableCell align="left">{row.firstname + ' ' + row.lastname}</TableCell>
+                    <TableCell align="left">{row.email}</TableCell>
+                    <TableCell align="left">{row.role ? row.role : '-'}</TableCell>
+                    <TableCell align="center" sx={{ '& button': { m: 1 } }}>
+                      <Button
+                        variant="contained"
+                        disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        size="medium"
+                        color="primary"
+                        onClick={() => updateDrivers(row.user_id)}
+                      >
+                        <EditOutlined />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          ) : (
+            <TableBody>
+              <TableRow>
+                <TableCell colSpan={13} align="center">
+                  <CircularProgress />
+                  <Typography variant="body1">Loading....</Typography>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          )}
         </Table>
       </TableContainer>
     </Box>

@@ -182,7 +182,7 @@ OrderStatus.propTypes = {
   status: PropTypes.string
 };
 
-export default function ReserveTable({ startDate, endDate }) {
+export default function ReserveTable({ startDate, endDate, permission }) {
   const [loading, setLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
@@ -195,15 +195,15 @@ export default function ReserveTable({ startDate, endDate }) {
 
   useEffect(() => {
     getCompanys();
-    if (userRoles) {
+    if (userRoles && permission) {
       getReserve();
     }
-  }, [userRoles, startDate, endDate]);
+  }, [userRoles, startDate, endDate, permission]);
 
   const getReserve = () => {
     setLoading(true);
     let urlGet = '';
-    if (userRoles == 1 || userRoles == 10) {
+    if (userRoles == 1 || userRoles == 10 || (permission && permission !== 'no_access_to_view_data')) {
       urlGet = '/allreservesrange?pickup_date1=' + startDate + '&pickup_date2=' + endDate;
     } else {
       urlGet = '/allreservespickup2?user_id=' + userId + '&pickup_date1=' + startDate + '&pickup_date2=' + endDate;
@@ -766,65 +766,67 @@ export default function ReserveTable({ startDate, endDate }) {
                               </Button>
                             </span>
                           </Tooltip>
-                          {(userRoles === 9 || userRoles === 1) && (
-                            <Tooltip title="สร้างคิว">
-                              <span>
-                                <Button
-                                  // disabled
-                                  variant="contained"
-                                  sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                  size="medium"
-                                  disabled={
-                                    row.status === 'completed' ||
-                                    currentDate !== moment(row.pickup_date).format('YYYY-MM-DD') ||
-                                    row.car_id == 1 ||
-                                    row.driver_id == 1
-                                  }
-                                  color="info"
-                                  onClick={() =>
-                                    handleClickOpen(
-                                      row.reserve_id,
-                                      'add-queue',
-                                      row.total_quantity,
-                                      getTokenCompany(row.product_company_id),
-                                      row.product_company_id
-                                    )
-                                  }
-                                >
-                                  <DiffOutlined />
-                                </Button>
-                              </span>
-                            </Tooltip>
+                          {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && (
+                            <>
+                              <Tooltip title="สร้างคิว">
+                                <span>
+                                  <Button
+                                    // disabled
+                                    variant="contained"
+                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                    size="medium"
+                                    disabled={
+                                      row.status === 'completed' ||
+                                      currentDate !== moment(row.pickup_date).format('YYYY-MM-DD') ||
+                                      row.car_id == 1 ||
+                                      row.driver_id == 1
+                                    }
+                                    color="info"
+                                    onClick={() =>
+                                      handleClickOpen(
+                                        row.reserve_id,
+                                        'add-queue',
+                                        row.total_quantity,
+                                        getTokenCompany(row.product_company_id),
+                                        row.product_company_id
+                                      )
+                                    }
+                                  >
+                                    <DiffOutlined />
+                                  </Button>
+                                </span>
+                              </Tooltip>
+                              <Tooltip title="แก้ไข">
+                                <span>
+                                  <Button
+                                    variant="contained"
+                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                    size="medium"
+                                    // disabled={row.status === 'completed'}
+                                    color="primary"
+                                    onClick={() => updateDrivers(row.reserve_id)}
+                                  >
+                                    <EditOutlined />
+                                  </Button>
+                                </span>
+                              </Tooltip>
+                              <Tooltip title="ลบ">
+                                <span>
+                                  <Button
+                                    variant="contained"
+                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                    size="medium"
+                                    disabled={row.status === 'completed' || row.total_quantity > 0}
+                                    color="error"
+                                    // onClick={() => deleteDrivers(row.reserve_id)}
+                                    onClick={() => handleClickOpen(row.reserve_id, 'delete', row.total_quantity, row.brand_code)}
+                                  >
+                                    <DeleteOutlined />
+                                  </Button>
+                                </span>
+                              </Tooltip>
+                            </>
                           )}
-                          <Tooltip title="แก้ไข">
-                            <span>
-                              <Button
-                                variant="contained"
-                                sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                size="medium"
-                                disabled={userRoles !== 1 && row.status === 'completed'}
-                                color="primary"
-                                onClick={() => updateDrivers(row.reserve_id)}
-                              >
-                                <EditOutlined />
-                              </Button>
-                            </span>
-                          </Tooltip>
-                          <Tooltip title="ลบ">
-                            <span>
-                              <Button
-                                variant="contained"
-                                sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                size="medium"
-                                disabled={row.status === 'completed' || row.total_quantity > 0}
-                                color="error"
-                                // onClick={() => deleteDrivers(row.reserve_id)}
-                                onClick={() => handleClickOpen(row.reserve_id, 'delete', row.total_quantity, row.brand_code)}
-                              >
-                                <DeleteOutlined />
-                              </Button>
-                            </span>
-                          </Tooltip>
                         </ButtonGroup>
                       </TableCell>
                     </TableRow>

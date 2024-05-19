@@ -3,6 +3,7 @@ import { UserOutlined, TeamOutlined, FileDoneOutlined, GoldOutlined } from '@ant
 import { ReactComponent as ForkliftIcon } from 'assets/icon/icon-forklift.svg';
 import { ReactComponent as WarehouseIcon } from 'assets/icon/icon-warehouse.svg';
 import { ReactComponent as LaberIcon } from 'assets/icon/icon-labor.svg';
+import { ReactComponent as ScreenIcon } from 'assets/icon/icon-screen.svg';
 import { ReactComponent as CompanyContra } from 'assets/icon/icon-company-contrac.svg';
 // ==============================|| MENU ITEMS - EXTRA PAGES ||============================== //
 
@@ -12,6 +13,15 @@ const admins = {
   type: 'group',
   roles: [1],
   children: [
+    {
+      id: 'screenDisploy',
+      title: 'หน้าจอแสดงคิว',
+      type: 'item',
+      url: '/queues-screen',
+      icon: ScreenIcon,
+      target: true
+      // breadcrumbs: false
+    },
     {
       id: 'users',
       title: 'ข้อมูลผู้ใช้งาน',

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useSelector } from 'react-redux';
 
 import {
   Grid,
@@ -8,7 +9,10 @@ import {
   Stack,
   Divider,
   Badge,
-  Tooltip
+  Tooltip,
+  Alert,
+  Backdrop,
+  CircularProgress
   // Typography
 } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
@@ -29,6 +33,13 @@ import QueueTab from 'components/@extended/QueueTab';
 import OrderSumQtyTable from './OrderSumQtyTable';
 
 const OrderSumQty = () => {
+  const pageId = 26;
+  const userRole = useSelector((state) => state.auth?.roles);
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+
+  const [loading, setLoading] = useState(false);
+  const [pageDetail, setPageDetail] = useState([]);
+
   // ======= Export file excel =======;
   const tableRef = useRef(null);
   const { onDownload } = useDownloadExcel({
@@ -62,8 +73,13 @@ const OrderSumQty = () => {
   };
 
   useEffect(() => {
-    getProductCompany();
-  }, []);
+    setLoading(true);
+    if (Object.keys(userPermission).length > 0) {
+      setLoading(false);
+      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+      getProductCompany();
+    }
+  }, [userRole, userPermission]);
 
   const [companyList, setCompanyList] = useState([]);
   const getProductCompany = () => {
@@ -102,6 +118,14 @@ const OrderSumQty = () => {
   };
   return (
     <Grid alignItems="center" justifyContent="space-between">
+      {loading && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={loading}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <Grid container spacing={2}>
         <Grid item xs={12} md={12} lg={12}>
           <Grid item xs={12} md={12}>
@@ -171,29 +195,53 @@ const OrderSumQty = () => {
             </Tabs>
           </Grid>
           <Grid item>
-            <MainCard
-              title={'ตารางข้อมูลสรุปยอดจ่ายประจำวัน'}
-              content={false}
-              sx={{ mt: 1.5 }}
-              secondary={
-                <Tooltip title="Export Excel">
-                  <Button color="success" variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={onDownload}>
-                    <FileExcelOutlined />
-                  </Button>
-                </Tooltip>
-              }
-            >
-              <Divider></Divider>
-              <Box sx={{ pt: 1, pr: 2 }}>
-                {/* <OrderTable /> */}
-                <OrderSumQtyTable
-                  startDate={selectedDateRange.startDate}
-                  endDate={selectedDateRange.endDate}
-                  clickDownload={tableRef}
-                  onFilter={valueFilter}
-                />
-              </Box>
-            </MainCard>
+            {Object.keys(userPermission).length > 0 &&
+              pageDetail.length === 0 &&
+              pageDetail.length !== 0 &&
+              (pageDetail[0].permission_name !== 'view_data' ||
+                pageDetail[0].permission_name !== 'manage_everything' ||
+                pageDetail[0].permission_name !== 'add_edit_delete_data') && (
+                <Grid item xs={12}>
+                  <MainCard content={false}>
+                    <Stack sx={{ width: '100%' }} spacing={2}>
+                      <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+                    </Stack>
+                  </MainCard>
+                </Grid>
+              )}
+            {pageDetail.length !== 0 &&
+              (pageDetail[0].permission_name !== 'view_data' ||
+                pageDetail[0].permission_name !== 'manage_everything' ||
+                pageDetail[0].permission_name !== 'add_edit_delete_data') && (
+                <MainCard
+                  title={'ตารางข้อมูลสรุปยอดจ่ายประจำวัน'}
+                  content={false}
+                  sx={{ mt: 1.5 }}
+                  secondary={
+                    <Tooltip title="Export Excel">
+                      <Button
+                        color="success"
+                        variant="contained"
+                        sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }}
+                        onClick={onDownload}
+                      >
+                        <FileExcelOutlined />
+                      </Button>
+                    </Tooltip>
+                  }
+                >
+                  <Divider></Divider>
+                  <Box sx={{ pt: 1, pr: 2 }}>
+                    {/* <OrderTable /> */}
+                    <OrderSumQtyTable
+                      startDate={selectedDateRange.startDate}
+                      endDate={selectedDateRange.endDate}
+                      clickDownload={tableRef}
+                      onFilter={valueFilter}
+                    />
+                  </Box>
+                </MainCard>
+              )}
           </Grid>
         </Grid>
       </Grid>

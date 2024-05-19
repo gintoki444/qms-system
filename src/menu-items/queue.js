@@ -15,7 +15,7 @@ const queues = {
   id: 'queues',
   title: 'ข้อมูลคิวรับสินค้า',
   type: 'group',
-  roles: [1, 9],
+  roles: [1, 9,11],
   children: [
     {
       id: 'userQueue',

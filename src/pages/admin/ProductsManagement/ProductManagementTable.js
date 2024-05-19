@@ -26,7 +26,7 @@ import MUIDataTable from 'mui-datatables';
 import { useDownloadExcel } from 'react-export-table-to-excel';
 import ProductExport from './ProductExport';
 
-function ProductManagementTable({ onFilter }) {
+function ProductManagementTable({ onFilter, permission }) {
   //   const [car, setCar] = useState([]);
   // ======= Export file excel =======;
   const tableRef = useRef(null);
@@ -42,7 +42,7 @@ function ProductManagementTable({ onFilter }) {
   useEffect(() => {
     // getPermission();
     getWareHouseManager();
-  }, [onFilter]);
+  }, [onFilter, permission]);
 
   const [productList, setProductList] = useState([]);
   const getWareHouseManager = async () => {
@@ -249,50 +249,58 @@ function ProductManagementTable({ onFilter }) {
                     <ContainerOutlined />
                   </Button>
                 </Tooltip>
-                <Tooltip title="เบิกสินค้า">
-                  <Button
-                    variant="contained"
-                    size="medium"
-                    color="warning"
-                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                    onClick={() => addCutOffProduct(value)}
-                  >
-                    <SwitcherOutlined />
-                  </Button>
-                </Tooltip>
-                <Tooltip title="รับสินค้า">
-                  <Button
-                    variant="contained"
-                    size="medium"
-                    color="info"
-                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                    onClick={() => addProductReceives(value)}
-                  >
-                    <FileAddOutlined />
-                  </Button>
-                </Tooltip>
-                <Tooltip title="แก้ไข">
-                  <Button
-                    variant="contained"
-                    size="medium"
-                    color="primary"
-                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                    onClick={() => updateProductManagement(value)}
-                  >
-                    <EditOutlined />
-                  </Button>
-                </Tooltip>
-                <Tooltip title="ลบ">
-                  <Button
-                    variant="contained"
-                    size="medium"
-                    color="error"
-                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                    onClick={() => handleClickOpen(value)}
-                  >
-                    <DeleteOutlined />
-                  </Button>
-                </Tooltip>
+                {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && (
+                  <>
+                    <Tooltip title="เบิกสินค้า">
+                      <Button
+                        variant="contained"
+                        size="medium"
+                        color="warning"
+                        disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        onClick={() => addCutOffProduct(value)}
+                      >
+                        <SwitcherOutlined />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="รับสินค้า">
+                      <Button
+                        variant="contained"
+                        size="medium"
+                        color="info"
+                        disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        onClick={() => addProductReceives(value)}
+                      >
+                        <FileAddOutlined />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="แก้ไข">
+                      <Button
+                        variant="contained"
+                        size="medium"
+                        color="primary"
+                        disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        onClick={() => updateProductManagement(value)}
+                      >
+                        <EditOutlined />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="ลบ">
+                      <Button
+                        variant="contained"
+                        size="medium"
+                        color="error"
+                        disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        onClick={() => handleClickOpen(value)}
+                      >
+                        <DeleteOutlined />
+                      </Button>
+                    </Tooltip>
+                  </>
+                )}
               </ButtonGroup>
             </>
           );

@@ -70,7 +70,9 @@ const AdminDashboard = () => {
       .then((res) => res.json())
       .then((result) => {
         setTimeout(() => {
-          setItems(result.filter((x) => x.status === 'waiting'));
+          if (result.length > 0) {
+            setItems(result.filter((x) => x.status === 'waiting'));
+          }
           //setLoading(false);
         }, 100);
       });
@@ -101,9 +103,9 @@ const AdminDashboard = () => {
                     title="จำนวนคิวรับสินค้า"
                     count={`${queue_count_completed}/${queue_count}`}
                     // percentage={59.3}
-                    extra={`${parseFloat((queue_average_time * 1).toFixed(0)).toLocaleString('en-US')}`}
+                    extra={`${queue_average_time ? parseFloat((queue_average_time * 1).toFixed(0)).toLocaleString('en-US') : '0'}`}
                     subtitle="เฉลี่ย "
-                    percentage={`${((queue_count_completed / queue_count) * 100).toFixed(0)}`}
+                    percentage={`${queue_count_completed ? ((queue_count_completed / queue_count) * 100).toFixed(0) : '0'}`}
                     color="primary"
                     unit=" นาที/คิว"
                   />

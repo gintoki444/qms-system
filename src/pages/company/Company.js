@@ -1,5 +1,4 @@
-import React from 'react';
-// import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 import {
@@ -7,25 +6,39 @@ import {
   Stack,
   // Button,
   Box,
-  Alert
-  // Typography
+  Alert,
+  Backdrop,
+  CircularProgress
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import CompanyTable from './CompanyTable';
 // import { PlusCircleOutlined } from '@ant-design/icons';
 
 const Company = () => {
+  const pageId = 5;
   const userRole = useSelector((state) => state.auth?.roles);
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
 
-  // const navigate = useNavigate();
-
-  // const addCompany = () => {
-  //   // window.location = '/company/add';
-  //   navigate('/company/add');
-  // };
+  const [loading, setLoading] = useState(false);
+  const [pageDetail, setPageDetail] = useState([]);
+  useEffect(() => {
+    setLoading(true);
+    if (Object.keys(userPermission).length > 0) {
+      setLoading(false);
+      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+    }
+  }, [userRole, userPermission]);
 
   return (
     <Grid alignItems="center" justifyContent="space-between">
+      {loading && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={loading}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <Grid container rowSpacing={1} columnSpacing={1.75}>
         <Grid item xs={12} md={12}>
           {userRole === 5 && (
@@ -34,13 +47,24 @@ const Company = () => {
             </Stack>
           )}
 
-          <Grid item>
-            <MainCard content={false} sx={{ mt: 1.5 }}>
-              <Box sx={{ pt: 1 }}>
-                <CompanyTable />
-              </Box>
-            </MainCard>
-          </Grid>
+          {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
+            <Grid item xs={12}>
+              <MainCard content={false}>
+                <Stack sx={{ width: '100%' }} spacing={2}>
+                  <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+                </Stack>
+              </MainCard>
+            </Grid>
+          )}
+          {pageDetail.length !== 0 && (
+            <Grid item>
+              <MainCard content={false} sx={{ mt: 1.5 }}>
+                <Box sx={{ pt: 1 }}>
+                  <CompanyTable  permission={pageDetail[0].permission_name}/>
+                </Box>
+              </MainCard>
+            </Grid>
+          )}
         </Grid>
       </Grid>
     </Grid>

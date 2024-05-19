@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
+import { useSelector } from 'react-redux';
 
 // third party
 import * as Yup from 'yup';
@@ -24,7 +25,8 @@ import {
   Typography,
   Divider,
   Backdrop,
-  CircularProgress
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 
@@ -32,6 +34,10 @@ import MainCard from 'components/MainCard';
 import moment from 'moment';
 
 function UpdateDrivers() {
+  const pageId = 7;
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+  const [pageDetail, setPageDetail] = useState([]);
+
   const [open, setOpen] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
   let [initialValue, setInitialValue] = useState({
@@ -75,9 +81,16 @@ function UpdateDrivers() {
   };
 
   useEffect(() => {
-    getDriver(id);
-    getDriversList();
-  }, [id]);
+    if (Object.keys(userPermission).length > 0) {
+      if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
+        setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+        getDriver(id);
+        getDriversList();
+      } else {
+        setOpen(false);
+      }
+    }
+  }, [id, userPermission]);
 
   const [driverList, setDriverList] = useState([]);
   const getDriversList = () => {
@@ -192,83 +205,94 @@ function UpdateDrivers() {
           <CircularProgress color="primary" />
         </Backdrop>
       )}
-      <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-        <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
-          {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
-            <form noValidate onSubmit={handleSubmit}>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Typography variant="h5">เพิ่มข้อมูลคนขับรถ</Typography>
-                  <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel htmlFor="firstname-drivers">ชื่อ*</InputLabel>
-                    <OutlinedInput
-                      id="firstname-driver"
-                      type="firstname"
-                      value={values.firstname}
-                      name="firstname"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="ชื่อ"
-                      fullWidth
-                      error={Boolean(touched.firstname && errors.firstname)}
-                    />
-                    {touched.firstname && errors.firstname && (
-                      <FormHelperText error id="helper-text-firstname-driver">
-                        {errors.firstname}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+      {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
+        <Grid item xs={12}>
+          <MainCard content={false}>
+            <Stack sx={{ width: '100%' }} spacing={2}>
+              <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+            </Stack>
+          </MainCard>
+        </Grid>
+      )}
+      {pageDetail.length !== 0 && (
+        <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
+          <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
+            {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
+              <form noValidate onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <Typography variant="h5">เพิ่มข้อมูลคนขับรถ</Typography>
+                    <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                  </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel htmlFor="lastname-driver">นามสกุล*</InputLabel>
-                    <OutlinedInput
-                      id="lastname-driver"
-                      type="lastname"
-                      value={values.lastname}
-                      name="lastname"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="นามสกุล"
-                      fullWidth
-                      error={Boolean(touched.lastname && errors.lastname)}
-                    />
-                    {touched.lastname && errors.lastname && (
-                      <FormHelperText error id="helper-text-lastname-driver">
-                        {errors.lastname}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel htmlFor="firstname-drivers">ชื่อ*</InputLabel>
+                      <OutlinedInput
+                        id="firstname-driver"
+                        type="firstname"
+                        value={values.firstname}
+                        name="firstname"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        placeholder="ชื่อ"
+                        fullWidth
+                        error={Boolean(touched.firstname && errors.firstname)}
+                      />
+                      {touched.firstname && errors.firstname && (
+                        <FormHelperText error id="helper-text-firstname-driver">
+                          {errors.firstname}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel htmlFor="id_card_no-driver">เลขที่บัตรประชาชน*</InputLabel>
-                    <OutlinedInput
-                      id="id_card_no-driver"
-                      type="text"
-                      value={values.id_card_no}
-                      name="id_card_no"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="เลขที่บัตรประชาชน"
-                      fullWidth
-                      error={Boolean(touched.id_card_no && errors.id_card_no)}
-                    />
-                    {touched.id_card_no && Boolean(errors.id_card_no) && (
-                      <FormHelperText error id="helper-text-id_card_no-driver">
-                        {errors.id_card_no}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel htmlFor="lastname-driver">นามสกุล*</InputLabel>
+                      <OutlinedInput
+                        id="lastname-driver"
+                        type="lastname"
+                        value={values.lastname}
+                        name="lastname"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        placeholder="นามสกุล"
+                        fullWidth
+                        error={Boolean(touched.lastname && errors.lastname)}
+                      />
+                      {touched.lastname && errors.lastname && (
+                        <FormHelperText error id="helper-text-lastname-driver">
+                          {errors.lastname}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
 
-                {/* <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel htmlFor="id_card_no-driver">เลขที่บัตรประชาชน*</InputLabel>
+                      <OutlinedInput
+                        id="id_card_no-driver"
+                        type="text"
+                        value={values.id_card_no}
+                        name="id_card_no"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        placeholder="เลขที่บัตรประชาชน"
+                        fullWidth
+                        error={Boolean(touched.id_card_no && errors.id_card_no)}
+                      />
+                      {touched.id_card_no && Boolean(errors.id_card_no) && (
+                        <FormHelperText error id="helper-text-id_card_no-driver">
+                          {errors.id_card_no}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
+
+                  {/* <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
                     <InputLabel htmlFor="license_no-driver">เลขที่ใบขับขี่*</InputLabel>
                     <OutlinedInput
@@ -290,57 +314,63 @@ function UpdateDrivers() {
                   </Stack>
                 </Grid> */}
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel htmlFor="mobile_no-driver">เบอร์โทรศัพท์*</InputLabel>
-                    <OutlinedInput
-                      id="mobile_no-driver"
-                      type="text"
-                      value={values.mobile_no}
-                      name="mobile_no"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="เบอร์โทรศัพท์"
-                      fullWidth
-                      error={Boolean(touched.mobile_no && errors.mobile_no)}
-                    />
-                    {touched.mobile_no && errors.mobile_no && (
-                      <FormHelperText error id="helper-text-mobile_no-driver">
-                        {errors.mobile_no}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel htmlFor="mobile_no-driver">เบอร์โทรศัพท์*</InputLabel>
+                      <OutlinedInput
+                        id="mobile_no-driver"
+                        type="text"
+                        value={values.mobile_no}
+                        name="mobile_no"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        placeholder="เบอร์โทรศัพท์"
+                        fullWidth
+                        error={Boolean(touched.mobile_no && errors.mobile_no)}
+                      />
+                      {touched.mobile_no && errors.mobile_no && (
+                        <FormHelperText error id="helper-text-mobile_no-driver">
+                          {errors.mobile_no}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
 
-                <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                  <Button
-                    disableElevation
-                    disabled={isSubmitting}
-                    size="mediam"
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    startIcon={<SaveOutlined />}
-                  >
-                    บันทึกข้อมูล
-                  </Button>
-                  <Button
-                    size="mediam"
-                    variant="contained"
-                    color="error"
-                    onClick={() => {
-                      backToDrivers();
-                    }}
-                    startIcon={<RollbackOutlined />}
-                  >
-                    ยกเลิก
-                  </Button>
+                  <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
+                    {pageDetail.length > 0 &&
+                      (pageDetail[0].permission_name === 'manage_everything' ||
+                        pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                        <Button
+                          disableElevation
+                          disabled={isSubmitting}
+                          size="mediam"
+                          type="submit"
+                          variant="contained"
+                          color="primary"
+                          startIcon={<SaveOutlined />}
+                        >
+                          บันทึกข้อมูล
+                        </Button>
+                      )}
+
+                    <Button
+                      size="mediam"
+                      variant="contained"
+                      color="error"
+                      onClick={() => {
+                        backToDrivers();
+                      }}
+                      startIcon={<RollbackOutlined />}
+                    >
+                      ยกเลิก
+                    </Button>
+                  </Grid>
                 </Grid>
-              </Grid>
-            </form>
-          )}
-        </Formik>
-      </MainCard>
+              </form>
+            )}
+          </Formik>
+        </MainCard>
+      )}
     </Grid>
   );
 }

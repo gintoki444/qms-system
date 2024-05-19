@@ -35,7 +35,7 @@ import { RightSquareOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import QueueTag from 'components/@extended/QueueTag';
 
-export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
+export const Step4Table = ({ status, title, onStatusChange, onFilter, permission }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
   const headCells = [
     {
@@ -188,7 +188,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter }) => {
 
   useEffect(() => {
     fetchData();
-  }, [status, onStatusChange, onFilter]);
+  }, [status, onStatusChange, onFilter, permission]);
 
   const fetchData = async () => {
     setLoading(true);

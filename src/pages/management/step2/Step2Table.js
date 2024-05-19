@@ -47,7 +47,7 @@ import QueueTag from 'components/@extended/QueueTag';
 import SoundCall from 'components/@extended/SoundCall';
 import { Stack } from '../../../../node_modules/@mui/material/index';
 
-export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
+export const Step2Table = ({ status, title, onStatusChange, onFilter, permission }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
   const headCells = [
     {
@@ -196,7 +196,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
     getAllContractor();
     getWareHouseManager();
     getAllItemsRegis();
-  }, [status, onStatusChange, onFilter, loopSelect]);
+  }, [status, onStatusChange, onFilter, loopSelect, permission]);
 
   const fetchData = async () => {
     try {
@@ -575,7 +575,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                 });
               } else {
                 const selectedOption = {
-                  id: data.order_id + data.item_id + index,
+                  id: `${data.order_id}${data.item_id}${index}`,
                   order_id: data.order_id,
                   item_id: data.item_id,
                   product_register_id: '',
@@ -758,7 +758,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
       return updatedOptions;
     });
 
-    // console.log('*************** Loop select  ***************');
+    console.log('*************** Loop select  ***************');
     setLoopSelect((prevState) => {
       let updatedOptions = [...prevState];
 
@@ -780,34 +780,68 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
       );
       const indexKey = updatedOptions.findIndex((option) => option.id === key);
       const orderList = updatedOptions.filter((option) => option.item_id == items.item_id && option.order_id == items.order_id);
+      const orderListNotSelect = orderList.filter((option) => option.id !== key);
+      console.log('orderListNotSelect ', orderListNotSelect);
+
+      let checkSum = sumSelectProductRegis(orderList);
+      let checkSumNotSelect = sumSelectProductRegis(orderListNotSelect);
+      console.log('checkSum ', checkSum);
+      checkSum = checkSum + selectedOptionNew.product_register_quantity;
+      console.log('checkSum =  ', checkSum);
+
       // console.log('parseFloat(stockItem) ', parseFloat(stockItem));
       // console.log('parseFloat(items.quantity) ', parseFloat(items.quantity));
       // console.log('indexKey ', indexKey);
       // console.log('indexProId ', indexProId);
 
-      // console.log('updatedOptionsbefor ', updatedOptions);
+      console.log('updatedOptionsbefor ', updatedOptions);
       if (parseFloat(stockItem) < parseFloat(items.quantity) && indexKey !== -1) {
-        // console.log('check 1');
-        if (orderList.length < 3 && orderList.length < items.productRegis.length) {
-          // console.log('check 1.1');
-          const selectedOption = {
-            id: items.order_id + items.item_id + orderList.length,
-            order_id: items.order_id,
-            item_id: items.item_id,
-            product_register_id: '',
-            quantity: parseFloat(items.quantity),
-            product_register_quantity: 0,
-            sling_hook_quantity: 0,
-            sling_sort_quantity: 0,
-            smash_quantity: 0,
-            jumbo_hook_quantity: 0
-          };
-          updatedOptions.push(selectedOption);
+        console.log('check 1');
+        const filterList = updatedOptions.filter(
+          (option) => option.item_id == items.item_id && option.order_id == items.order_id && option.product_register_id === ''
+        );
+
+        if (
+          // parseFloat(items.quantity) > checkSum &&
+          orderList.length < 3 &&
+          orderList.length < items.productRegis.length &&
+          filterList.length === 0
+        ) {
+          console.log('check 1.1');
+          if (parseFloat(items.quantity) > checkSum || checkSumNotSelect === 0) {
+            console.log('check 1.2');
+            const selectedOption = {
+              id: `${items.order_id}${items.item_id}${orderList.length + 1}`,
+              order_id: items.order_id,
+              item_id: items.item_id,
+              product_register_id: '',
+              quantity: parseFloat(items.quantity),
+              product_register_quantity: 0,
+              sling_hook_quantity: 0,
+              sling_sort_quantity: 0,
+              smash_quantity: 0,
+              jumbo_hook_quantity: 0
+            };
+            updatedOptions.push(selectedOption);
+          }
+          // else if (checkSumNotSelect) {
+          //   console.log('check checkSumNotSelect', checkSumNotSelect);
+          // }
+        } else if (parseFloat(items.quantity) < checkSum) {
+          console.log('check 1.3');
+          let sumquatity = sumSelectProductRegis(orderList);
+          console.log('newsum = ', sumquatity - parseFloat(items.quantity));
+          console.log('newsum = ', parseFloat(items.quantity) - sumquatity);
         }
 
         updatedOptions[indexKey] = selectedOptionNew;
-      } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length !== 0) {
-        // console.log('check 2');
+      } else if (
+        // parseFloat(items.quantity) > checkSum &&
+        parseFloat(stockItem) >= parseFloat(items.quantity) &&
+        indexKey !== -1 &&
+        indexProId.length !== 0
+      ) {
+        console.log('check 2');
         const filterindex = updatedOptions.filter((option) => option.order_id === items.order_id && option.item_id === items.item_id);
         filterindex.map(
           (x) =>
@@ -818,7 +852,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
         );
 
         if (selectedOptionNew.product_register_quantity <= 0 && indexKey !== -1) {
-          // console.log('check 2.1');
+          console.log('check 2.1');
 
           selectedOptionNew.product_register_quantity = parseFloat(items.quantity);
           console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
@@ -827,23 +861,23 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
           filterRemove.push(selectedOptionNew);
           updatedOptions = filterRemove;
         } else if (indexKey !== -1) {
-          // console.log('check 2.2');
+          console.log('check 2.2');
 
           const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value && x.id !== key);
           const checkNumSelect = updatedOptions.filter(
             (option) => option.item_id == items.item_id && option.order_id == items.order_id && option.product_register_id === ''
           );
           if (checkStock.length > 0) {
-            // console.log('check 2.2.1');
+            console.log('check 2.2.1');
             let totolIsSelect = 0;
             checkStock.map((x) => (totolIsSelect = x.product_register_quantity + totolIsSelect));
 
             if (parseFloat(stockItem) < totolIsSelect + selectedOptionNew.product_register_quantity) {
               selectedOptionNew.product_register_quantity = parseFloat(stockItem) - totolIsSelect;
-              // console.log('check 2.2.1.1');
+              console.log('check 2.2.1.1');
 
               if (selectedOptionNew.product_register_quantity < selectedOptionNew.quantity && checkNumSelect < 1) {
-                // console.log('check 2.2.1.1.1');
+                console.log('check 2.2.1.1.1');
 
                 const selectedOption = {
                   id: items.order_id + items.item_id + orderList.length,
@@ -860,17 +894,26 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                 updatedOptions.push(selectedOption);
               }
             } else if (parseFloat(stockItem) === totolIsSelect + selectedOptionNew.product_register_quantity && checkNumSelect.length > 0) {
-              // console.log('check 2.2.1.2');
+              console.log('check 2.2.1.2');
               updatedOptions = updatedOptions.filter((x) => x.id !== checkNumSelect[0].id);
             } else if (totolIsSelect < selectedOptionNew.product_register_quantity) {
-              // console.log('check 2.2.1.3');
+              console.log('check 2.2.1.3');
               selectedOptionNew.quantity = selectedOptionNew.product_register_quantity - totolIsSelect;
             }
           } else if (checkNumSelect.length > 0) {
-            // console.log('check 2.2.2');
-            updatedOptions = updatedOptions.filter((x) => x.id !== checkNumSelect[0].id);
+            console.log('check 2.2.2');
+
+            const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
+
+            console.log('filterRemove :', filterRemove);
+            console.log('key :', key);
+            console.log('filterRemove :', (updatedOptions = filterRemove));
+            updatedOptions = filterRemove;
+            updatedOptions.push(selectedOptionNew);
           }
-          updatedOptions[indexKey] = selectedOptionNew;
+
+          const idKey = updatedOptions.findIndex((option) => option.id === key);
+          updatedOptions[idKey] = selectedOptionNew;
           // updatedOptions.push(selectedOptionNew);
         }
 
@@ -878,23 +921,27 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
         //   updatedOptions.push(selectedOptionNew);
         // }
       } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length === 0) {
-        // console.log('check 3');
+        console.log('check 3');
         // selectedOptionNew.product_register_quantity = parseFloat(items.quantity);
         // console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
         const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
 
         const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
         if (checkStock.length > 0) {
-          // console.log('check 3.1');
+          console.log('check 3.1');
           let totolIsSelect = 0;
           checkStock.map((x) => (totolIsSelect = x.product_register_quantity + totolIsSelect));
 
           if (parseFloat(stockItem) < totolIsSelect + selectedOptionNew.product_register_quantity) {
-            // console.log('check 3.2');
+            console.log('check 3.2');
             selectedOptionNew.product_register_quantity = parseFloat(stockItem) - totolIsSelect;
 
-            if (orderList.length < 3 && orderList.length < items.productRegis.length) {
-              // console.log('check 1.1');
+            if (
+              parseFloat(stockItem) > parseFloat(items.quantity) &&
+              orderList.length < 3 &&
+              orderList.length < items.productRegis.length
+            ) {
+              console.log('check 1.1');
               const selectedOption = {
                 id: items.order_id + items.item_id + orderList.length,
                 order_id: items.order_id,
@@ -916,7 +963,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
         updatedOptions = filterRemove;
       }
 
-      // console.log('setLoopSelect ', updatedOptions);
+      console.log('setLoopSelect ', updatedOptions);
       return updatedOptions;
     });
 
@@ -956,6 +1003,17 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
       }
       return updatedOptions;
     });
+  };
+
+  const sumSelectProductRegis = (data) => {
+    let sumData = 0;
+    data.map((x) => {
+      if (x.product_register_quantity) {
+        sumData = x.product_register_quantity + sumData;
+      }
+    });
+
+    return sumData;
   };
 
   const [typeNumSelect, setTypeNumSelect] = useState({});
@@ -1283,8 +1341,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
             });
 
           loopSelect.map((x) => {
+            console.log('remove loopSelect', x.item_register_id);
             removeItemsRegister(x.item_register_id);
           });
+
+          await getWareHouseManager();
           updateStation(station_id, 'waiting');
           setStationCount(station_count - 1);
           step1Update(id_update, 'waiting', 27);
@@ -2356,186 +2417,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                             )
                                         )}
                                       </Grid>
-                                      {/* 
-                                      <Grid>
-                                        <InputLabel sx={{ mt: 1, mb: 1 }}>ประเภท</InputLabel>
-                                        <FormControlLabel
-                                          control={
-                                            <Checkbox
-                                              checked={typeSelect.some(
-                                                (item) => item.id == orderItem.item_id && item.name === 'checked1' && item.value === 'on'
-                                              )}
-                                              onChange={handleChangeSelect(orderItem.item_id, 'checked1')}
-                                              name="checked1"
-                                            />
-                                          }
-                                          label="ทุบปุ๋ย"
-                                        />
-                                        <FormControlLabel
-                                          control={
-                                            <Checkbox
-                                              // checked={typeSelect[orderItem.item_id]?.checked2 || false}
-                                              checked={typeSelect.some(
-                                                (item) => item.id == orderItem.item_id && item.name === 'checked2' && item.value === 'on'
-                                              )}
-                                              onChange={handleChangeSelect(orderItem.item_id, 'checked2')}
-                                              name="checked2"
-                                            />
-                                          }
-                                          label="เกี่ยวสลิง"
-                                        />
-                                        <FormControlLabel
-                                          control={
-                                            <Checkbox
-                                              // checked={typeSelect[orderItem.item_id]?.checked3 || false}
-                                              checked={typeSelect.some(
-                                                (item) => item.id == orderItem.item_id && item.name === 'checked3' && item.value === 'on'
-                                              )}
-                                              onChange={handleChangeSelect(orderItem.item_id, 'checked3')}
-                                              name="checked3"
-                                            />
-                                          }
-                                          label="เรียงสลิง"
-                                        />
-                                        <FormControlLabel
-                                          control={
-                                            <Checkbox
-                                              // checked={typeSelect[orderItem.item_id]?.checked4 || false}
-                                              checked={typeSelect.some(
-                                                (item) => item.id == orderItem.item_id && item.name === 'checked4' && item.value === 'on'
-                                              )}
-                                              onChange={handleChangeSelect(orderItem.item_id, 'checked4')}
-                                              name="checked4"
-                                            />
-                                          }
-                                          label="เกี่ยวจัมโบ้"
-                                        />
-                                      </Grid>
-                                      {typeSelect.some(
-                                        (item) => item.id == orderItem.item_id && item.name === 'checked1' && item.value === 'on'
-                                      ) && (
-                                        <Grid item xs={12} md={12}>
-                                          <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                            จำนวนทุบปุ๋ย : (สูงสุด {parseFloat((orderItem.quantity * 1).toFixed(3)) + ' ตัน'})
-                                          </InputLabel>
-                                          <FormControl sx={{ width: '100%' }} size="small">
-                                            <OutlinedInput
-                                              size="small"
-                                              id={typeNumSelect[orderItem.item_id]}
-                                              type="number"
-                                              value={
-                                                typeNumSelect.find((item) => item.id == orderItem.item_id && item.name === 'checked1')
-                                                  ?.value || ''
-                                              }
-                                              onChange={(e) => {
-                                                handleChangeTypeNum(
-                                                  orderItem.item_id,
-                                                  'checked1',
-                                                  e,
-                                                  parseFloat((orderItem.quantity * 1).toFixed(3))
-                                                );
-                                              }}
-                                              placeholder="จำนวน"
-                                            />
-                                          </FormControl>
-                                        </Grid>
-                                      )}
-                                      {typeSelect.some(
-                                        (item) => item.id == orderItem.item_id && item.name === 'checked2' && item.value === 'on'
-                                      ) && (
-                                        <Grid item xs={12} md={12}>
-                                          <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                            จำนวนเกี่ยวสลิง : (สูงสุด {parseFloat((orderItem.quantity * 1).toFixed(3)) + ' ตัน'})
-                                          </InputLabel>
-                                          <FormControl sx={{ width: '100%' }} size="small">
-                                            <OutlinedInput
-                                              size="small"
-                                              id={typeNumSelect[orderItem.item_id]}
-                                              type="number"
-                                              value={
-                                                typeNumSelect.find((item) => item.id == orderItem.item_id && item.name === 'checked2')
-                                                  ?.value || ''
-                                              }
-                                              // onChange={(e) => {
-                                              //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
-                                              // }}
-                                              onChange={(e) => {
-                                                handleChangeTypeNum(
-                                                  orderItem.item_id,
-                                                  'checked2',
-                                                  e,
-                                                  parseFloat((orderItem.quantity * 1).toFixed(3))
-                                                );
-                                              }}
-                                              placeholder="จำนวน"
-                                            />
-                                          </FormControl>
-                                        </Grid>
-                                      )}
-                                      {typeSelect.some(
-                                        (item) => item.id == orderItem.item_id && item.name === 'checked3' && item.value === 'on'
-                                      ) && (
-                                        <Grid item xs={12} md={12}>
-                                          <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                            จำนวนเรียงสลิง : (สูงสุด {parseFloat((orderItem.quantity * 1).toFixed(3)) + ' ตัน'})
-                                          </InputLabel>
-                                          <FormControl sx={{ width: '100%' }} size="small">
-                                            <OutlinedInput
-                                              size="small"
-                                              id={typeNumSelect[orderItem.item_id]}
-                                              type="number"
-                                              value={
-                                                typeNumSelect.find((item) => item.id == orderItem.item_id && item.name === 'checked3')
-                                                  ?.value || ''
-                                              }
-                                              // onChange={(e) => {
-                                              //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
-                                              // }}
-                                              onChange={(e) => {
-                                                handleChangeTypeNum(
-                                                  orderItem.item_id,
-                                                  'checked3',
-                                                  e,
-                                                  parseFloat((orderItem.quantity * 1).toFixed(3))
-                                                );
-                                              }}
-                                              placeholder="จำนวน"
-                                            />
-                                          </FormControl>
-                                        </Grid>
-                                      )}
-                                      {typeSelect.some(
-                                        (item) => item.id == orderItem.item_id && item.name === 'checked4' && item.value === 'on'
-                                      ) && (
-                                        <Grid item xs={12} md={12}>
-                                          <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                            จำนวนเกี่ยวจัมโบ้ : (สูงสุด {parseFloat((orderItem.quantity * 1).toFixed(3)) + ' ตัน'})
-                                          </InputLabel>
-                                          <FormControl sx={{ width: '100%' }} size="small">
-                                            <OutlinedInput
-                                              size="small"
-                                              id={typeNumSelect[orderItem.item_id]}
-                                              type="number"
-                                              value={
-                                                typeNumSelect.find((item) => item.id == orderItem.item_id && item.name === 'checked4')
-                                                  ?.value || ''
-                                              }
-                                              // onChange={(e) => {
-                                              //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
-                                              // }}
-                                              onChange={(e) => {
-                                                handleChangeTypeNum(
-                                                  orderItem.item_id,
-                                                  'checked4',
-                                                  e,
-                                                  parseFloat((orderItem.quantity * 1).toFixed(3))
-                                                );
-                                              }}
-                                              placeholder="จำนวน"
-                                            />
-                                          </FormControl>
-                                        </Grid>
-                                      )} */}
                                     </>
                                   ))}
                                 </Grid>
@@ -2706,6 +2587,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                     size="small"
                                     align="center"
                                     color="info"
+                                    disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                                     onClick={() => handleCallQueue(row)}
                                   >
                                     <SoundOutlined />
@@ -2744,6 +2626,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                     variant="contained"
                                     size="small"
                                     color="info"
+                                    disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                                     onClick={() =>
                                       handleClickOpen(
                                         row.step_id,
@@ -2767,6 +2650,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                       // startIcon={<ArrowBackIosIcon />}
                                       variant="contained"
                                       size="small"
+                                      disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                                       onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.station_id, row)}
                                       color="error"
                                     >
@@ -2778,6 +2662,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter }) => {
                                       <Button
                                         size="small"
                                         variant="contained"
+                                        disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                                         onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row.station_id, row)}
                                       >
                                         ปิดคิว

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 
 import {
@@ -26,18 +25,17 @@ const apiUrl = process.env.REACT_APP_API_URL;
 import * as driverRequest from '_api/driverRequest';
 import MUIDataTable from 'mui-datatables';
 
-function DriverTable() {
+function DriverTable({ permission }) {
   const { enqueueSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [driver, setDriver] = useState([]);
 
   const userId = localStorage.getItem('user_id');
-  const userRole = useSelector((state) => state.auth?.roles);
 
   useEffect(() => {
     getDrivers();
-  }, []);
+  }, [permission]);
 
   const getDrivers = () => {
     setLoading(true);
@@ -71,7 +69,7 @@ function DriverTable() {
     customToolbar: () => {
       return (
         <>
-          {userRole && userRole !== 5 && (
+          {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && (
             <Button size="mediam" color="success" variant="outlined" onClick={() => addDrivers()} startIcon={<PlusCircleOutlined />}>
               เพิ่มข้อมูล
             </Button>
@@ -126,6 +124,7 @@ function DriverTable() {
                 variant="contained"
                 size="medium"
                 color="primary"
+                disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                 onClick={() => updateDrivers(value)}
               >
@@ -137,6 +136,7 @@ function DriverTable() {
                 variant="contained"
                 size="medium"
                 color="error"
+                disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                 onClick={() => handleClickOpen(value)}
               >

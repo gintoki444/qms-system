@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 // third party
 import * as Yup from 'yup';
@@ -10,20 +11,7 @@ import * as adminRequest from '_api/adminRequest';
 // import * as reserveRequest from '_api/reserveRequest';
 
 // material-ui
-import {
-  Button,
-  FormHelperText,
-  Grid,
-  InputLabel,
-  OutlinedInput,
-  Stack,
-  Typography,
-  Divider
-  //   FormControl,
-  //   Select,
-  //   MenuItem,
-  //   TextField
-} from '@mui/material';
+import { Button, FormHelperText, Grid, InputLabel, OutlinedInput, Stack, Typography, Divider, Alert } from '@mui/material';
 import MainCard from 'components/MainCard';
 import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 
@@ -31,6 +19,18 @@ import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 function UpdateProducts() {
+  const pageId = 24;
+  const userRole = useSelector((state) => state.auth?.roles);
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+
+  const [pageDetail, setPageDetail] = useState([]);
+
+  useEffect(() => {
+    if (Object.keys(userPermission).length > 0) {
+      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+    }
+  }, [userRole, userPermission]);
+
   const { id } = useParams();
 
   useEffect(() => {
@@ -109,93 +109,108 @@ function UpdateProducts() {
   return (
     <Grid alignItems="center" justifyContent="space-between">
       <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-            <Formik initialValues={initialValue} validationSchema={valiDationSchema} enableReinitialize={true} onSubmit={handleSubmits}>
-              {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
-                <form noValidate onSubmit={handleSubmit}>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12}>
-                      <Typography variant="h5">เพิ่มข้อมูลสินค้า (สูตร)</Typography>
-                      <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                    </Grid>
+        {(Object.keys(userPermission).length > 0 && pageDetail.length === 0) ||
+          (pageDetail.length !== 0 &&
+            pageDetail[0].permission_name !== 'manage_everything' &&
+            pageDetail[0].permission_name !== 'add_edit_delete_data' && (
+              <Grid item xs={12}>
+                <MainCard content={false}>
+                  <Stack sx={{ width: '100%' }} spacing={2}>
+                    <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+                  </Stack>
+                </MainCard>
+              </Grid>
+            ))}
+        {pageDetail.length > 0 &&
+          (pageDetail[0].permission_name === 'manage_everything' || pageDetail[0].permission_name === 'add_edit_delete_data') && (
+            <Grid item xs={12} md={8}>
+              <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
+                <Formik initialValues={initialValue} validationSchema={valiDationSchema} enableReinitialize={true} onSubmit={handleSubmits}>
+                  {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
+                    <form noValidate onSubmit={handleSubmit}>
+                      <Grid container spacing={3}>
+                        <Grid item xs={12}>
+                          <Typography variant="h5">เพิ่มข้อมูลสินค้า (สูตร)</Typography>
+                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                        </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel htmlFor="name">ชื่อสินค้า *</InputLabel>
-                        <OutlinedInput
-                          id="name"
-                          type="name"
-                          value={values.name}
-                          name="name"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="ทะเบียน"
-                          fullWidth
-                          error={Boolean(touched.name && errors.name)}
-                        />
-                        {touched.name && errors.name && (
-                          <FormHelperText error id="helper-text-name">
-                            {errors.name}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel htmlFor="name">ชื่อสินค้า *</InputLabel>
+                            <OutlinedInput
+                              id="name"
+                              type="name"
+                              value={values.name}
+                              name="name"
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              placeholder="ทะเบียน"
+                              fullWidth
+                              error={Boolean(touched.name && errors.name)}
+                            />
+                            {touched.name && errors.name && (
+                              <FormHelperText error id="helper-text-name">
+                                {errors.name}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel htmlFor="stock_quantity">สินค้างเหลือ *</InputLabel>
-                        <OutlinedInput
-                          id="stock_quantity"
-                          type="number"
-                          value={values.stock_quantity}
-                          name="stock_quantity"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="ยอดยกมา"
-                          fullWidth
-                          error={Boolean(touched.stock_quantity && errors.stock_quantity)}
-                        />
-                        {touched.stock_quantity && errors.stock_quantity && (
-                          <FormHelperText error id="helper-text-stock_quantity">
-                            {errors.stock_quantity}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel htmlFor="stock_quantity">สินค้างเหลือ *</InputLabel>
+                            <OutlinedInput
+                              id="stock_quantity"
+                              type="number"
+                              value={values.stock_quantity}
+                              name="stock_quantity"
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              placeholder="ยอดยกมา"
+                              fullWidth
+                              error={Boolean(touched.stock_quantity && errors.stock_quantity)}
+                            />
+                            {touched.stock_quantity && errors.stock_quantity && (
+                              <FormHelperText error id="helper-text-stock_quantity">
+                                {errors.stock_quantity}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
 
-                    <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                      <Button
-                        disableElevation
-                        disabled={isSubmitting}
-                        size="mediam"
-                        type="submit"
-                        variant="contained"
-                        color="success"
-                        startIcon={<SaveOutlined />}
-                      >
-                        บันทึกข้อมูลสินค้า
-                      </Button>
+                        <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
+                          <Button
+                            disableElevation
+                            disabled={isSubmitting}
+                            size="mediam"
+                            type="submit"
+                            variant="contained"
+                            color="success"
+                            startIcon={<SaveOutlined />}
+                          >
+                            บันทึกข้อมูลสินค้า
+                          </Button>
 
-                      <Button
-                        size="mediam"
-                        variant="contained"
-                        color="error"
-                        onClick={() => {
-                          backToPage();
-                        }}
-                        startIcon={<RollbackOutlined />}
-                      >
-                        ยกเลิก
-                      </Button>
-                    </Grid>
-                    {/* )} */}
-                  </Grid>
-                </form>
-              )}
-            </Formik>
-          </MainCard>
-        </Grid>
+                          <Button
+                            size="mediam"
+                            variant="contained"
+                            color="error"
+                            onClick={() => {
+                              backToPage();
+                            }}
+                            startIcon={<RollbackOutlined />}
+                          >
+                            ยกเลิก
+                          </Button>
+                        </Grid>
+                        {/* )} */}
+                      </Grid>
+                    </form>
+                  )}
+                </Formik>
+              </MainCard>
+            </Grid>
+          )}
       </Grid>
     </Grid>
   );

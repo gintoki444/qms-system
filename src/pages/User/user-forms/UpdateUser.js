@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 // material-ui
 import {
@@ -38,6 +39,11 @@ import moment from 'moment';
 import * as getUsers from '_api/userRequest';
 
 function UpdateUser() {
+  const pageId = 16;
+  const userRole = useSelector((state) => state.auth?.roles);
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+
+  const [pageDetail, setPageDetail] = useState([]);
   // const [level, setLevel] = useState();
 
   // const [massageErrors, setMassageErrors] = useState('');
@@ -92,9 +98,13 @@ function UpdateUser() {
   };
 
   useEffect(() => {
-    getUser(id);
-    getRole();
-  }, [id]);
+    if (Object.keys(userPermission).length > 0) {
+      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+
+      getUser(id);
+      getRole();
+    }
+  }, [id, userRole, userPermission]);
 
   // =============== Submit ข้อมูล User ===============//
 
@@ -121,7 +131,7 @@ function UpdateUser() {
         updated_at: currentDate
       };
 
-      getUsers.putUsers(values.user_id,jsonData).then((responst) => {
+      getUsers.putUsers(values.user_id, jsonData).then((responst) => {
         console.log('responst:', responst);
         if (responst.status === 'ok') {
           navigate('/admin/users/');
@@ -139,139 +149,160 @@ function UpdateUser() {
   return (
     <>
       <Grid alignItems="center" justifyContent="space-between">
-        <Grid container spacing={3}>
-          <Grid item xs={12} lg={8}>
-            <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-              {popupErrors == true && (
-                <Stack sx={{ width: '100%', mb: '18px' }} spacing={2}>
-                  <Alert severity="error">{massageErrors}</Alert>
-                </Stack>
-              )}
-              <Formik
-                initialValues={initialValue}
-                validationSchema={Yup.object().shape({
-                  firstname: Yup.string().max(255).required('กรุณาระบุชื่อ'),
-                  lastname: Yup.string().max(255).required('กรุณาระบุนามสกุล'),
-                  email: Yup.string().email('รูปแบบอีเมลไม่ถูกต้อง').max(255).required('กรุณาระบุอีเมล')
-                })}
-                onSubmit={handleSubmits}
-                enableReinitialize={true}
-              >
-                {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
-                  <form noValidate onSubmit={handleSubmit}>
-                    <Grid container spacing={3}>
-                      <Grid item xs={12} md={6}>
-                        <Stack spacing={1}>
-                          <InputLabel htmlFor="firstname-signup">ชื่อ*</InputLabel>
-                          <OutlinedInput
-                            id="firstname-login"
-                            type="firstname"
-                            value={values.firstname}
-                            name="firstname"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            placeholder="ชื่อ"
-                            fullWidth
-                            error={Boolean(touched.firstname && errors.firstname)}
-                          />
-                          {touched.firstname && errors.firstname && (
-                            <FormHelperText error id="helper-text-firstname-signup">
-                              {errors.firstname}
-                            </FormHelperText>
-                          )}
-                        </Stack>
-                      </Grid>
-                      <Grid item xs={12} md={6}>
-                        <Stack spacing={1}>
-                          <InputLabel htmlFor="lastname-signup">นามสกุล*</InputLabel>
-                          <OutlinedInput
-                            fullWidth
-                            error={Boolean(touched.lastname && errors.lastname)}
-                            id="lastname-signup"
-                            type="lastname"
-                            value={values.lastname}
-                            name="lastname"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            placeholder="นามสกุล"
-                            inputProps={{}}
-                          />
-                          {touched.lastname && errors.lastname && (
-                            <FormHelperText error id="helper-text-lastname-signup">
-                              {errors.lastname}
-                            </FormHelperText>
-                          )}
-                        </Stack>
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <Stack spacing={1}>
-                          <InputLabel htmlFor="email-signup">อีเมล*</InputLabel>
-                          <OutlinedInput
-                            fullWidth
-                            error={Boolean(touched.email && errors.email)}
-                            id="email-login"
-                            type="email"
-                            value={values.email}
-                            name="email"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            placeholder="demo@company.com"
-                            inputProps={{}}
-                          />
-                          {touched.email && errors.email && (
-                            <FormHelperText error id="helper-text-email-signup">
-                              {errors.email}
-                            </FormHelperText>
-                          )}
-                        </Stack>
-                      </Grid>
-
-                      <Grid item xs={12} md={6}>
-                        <Stack spacing={1}>
-                          <InputLabel>ประเภทผู้ใช้งาน*</InputLabel>
-                          <TextField
-                            select
-                            variant="outlined"
-                            name="role_id"
-                            value={values.role_id}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            fullWidth
-                          >
-                            {rolesuser.map((roles) => (
-                              <MenuItem key={roles.role_id} value={roles.role_id}>
-                                {roles.role_name}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                          {touched.role_id && errors.role_id && (
-                            <FormHelperText error id="helper-text-company-car">
-                              {errors.role_id}
-                            </FormHelperText>
-                          )}
-                        </Stack>
-                      </Grid>
-
-                      {errors.submit && (
-                        <Grid item xs={12}>
-                          <FormHelperText error>{errors.submit}</FormHelperText>
-                        </Grid>
-                      )}
-                      <Grid item xs={12}>
-                        <AnimateButton>
-                          <Button disabled={isSubmitting} size="large" type="submit" variant="contained" color="primary">
-                            บันทึกข้อมูล
-                          </Button>
-                        </AnimateButton>
-                      </Grid>
-                    </Grid>
-                  </form>
-                )}
-              </Formik>
+        {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
+          <Grid item xs={12}>
+            <MainCard content={false}>
+              <Stack sx={{ width: '100%' }} spacing={2}>
+                <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+              </Stack>
             </MainCard>
           </Grid>
-        </Grid>
+        )}
+        {pageDetail.length !== 0 && (
+          <Grid container spacing={3}>
+            <Grid item xs={12} lg={8}>
+              <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
+                {popupErrors == true && (
+                  <Stack sx={{ width: '100%', mb: '18px' }} spacing={2}>
+                    <Alert severity="error">{massageErrors}</Alert>
+                  </Stack>
+                )}
+                <Formik
+                  initialValues={initialValue}
+                  validationSchema={Yup.object().shape({
+                    firstname: Yup.string().max(255).required('กรุณาระบุชื่อ'),
+                    lastname: Yup.string().max(255).required('กรุณาระบุนามสกุล'),
+                    email: Yup.string().email('รูปแบบอีเมลไม่ถูกต้อง').max(255).required('กรุณาระบุอีเมล')
+                  })}
+                  onSubmit={handleSubmits}
+                  enableReinitialize={true}
+                >
+                  {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
+                    <form noValidate onSubmit={handleSubmit}>
+                      <Grid container spacing={3}>
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel htmlFor="firstname-signup">ชื่อ*</InputLabel>
+                            <OutlinedInput
+                              id="firstname-login"
+                              type="firstname"
+                              value={values.firstname}
+                              name="firstname"
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              placeholder="ชื่อ"
+                              fullWidth
+                              error={Boolean(touched.firstname && errors.firstname)}
+                            />
+                            {touched.firstname && errors.firstname && (
+                              <FormHelperText error id="helper-text-firstname-signup">
+                                {errors.firstname}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel htmlFor="lastname-signup">นามสกุล*</InputLabel>
+                            <OutlinedInput
+                              fullWidth
+                              error={Boolean(touched.lastname && errors.lastname)}
+                              id="lastname-signup"
+                              type="lastname"
+                              value={values.lastname}
+                              name="lastname"
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              placeholder="นามสกุล"
+                              inputProps={{}}
+                            />
+                            {touched.lastname && errors.lastname && (
+                              <FormHelperText error id="helper-text-lastname-signup">
+                                {errors.lastname}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                          <Stack spacing={1}>
+                            <InputLabel htmlFor="email-signup">อีเมล*</InputLabel>
+                            <OutlinedInput
+                              fullWidth
+                              error={Boolean(touched.email && errors.email)}
+                              id="email-login"
+                              type="email"
+                              value={values.email}
+                              name="email"
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              placeholder="demo@company.com"
+                              inputProps={{}}
+                            />
+                            {touched.email && errors.email && (
+                              <FormHelperText error id="helper-text-email-signup">
+                                {errors.email}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
+
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>ประเภทผู้ใช้งาน*</InputLabel>
+                            <TextField
+                              select
+                              variant="outlined"
+                              name="role_id"
+                              value={values.role_id}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              fullWidth
+                            >
+                              {rolesuser.map((roles) => (
+                                <MenuItem key={roles.role_id} value={roles.role_id}>
+                                  {roles.role_name}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                            {touched.role_id && errors.role_id && (
+                              <FormHelperText error id="helper-text-company-car">
+                                {errors.role_id}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
+
+                        {errors.submit && (
+                          <Grid item xs={12}>
+                            <FormHelperText error>{errors.submit}</FormHelperText>
+                          </Grid>
+                        )}
+                        <Grid item xs={12}>
+                          <AnimateButton>
+                            <Button
+                              disabled={
+                                isSubmitting ||
+                                (pageDetail[0].permission_name !== 'manage_everything' &&
+                                  pageDetail[0].permission_name !== 'add_edit_delete_data')
+                              }
+                              size="large"
+                              type="submit"
+                              variant="contained"
+                              color="primary"
+                            >
+                              บันทึกข้อมูล
+                            </Button>
+                          </AnimateButton>
+                        </Grid>
+                      </Grid>
+                    </form>
+                  )}
+                </Formik>
+              </MainCard>
+            </Grid>
+          </Grid>
+        )}
       </Grid>
     </>
   );

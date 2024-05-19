@@ -23,7 +23,11 @@ import QueueTab from 'components/@extended/QueueTab';
 import * as stepRequest from '_api/StepRequest';
 
 function Step0() {
+  const pageId = 11;
   const userRole = useSelector((state) => state.auth?.roles);
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+
+  const [pageDetail, setPageDetail] = useState([]);
   // const navigate = useNavigate();
 
   const [selectedDate1, setSelectedDate1] = useState(currentDate);
@@ -50,8 +54,11 @@ function Step0() {
   };
 
   useEffect(() => {
-    getProductCompany();
-  }, []);
+    if (Object.keys(userPermission).length > 0) {
+      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+      getProductCompany();
+    }
+  }, [userRole, userPermission]);
 
   const [companyList, setCompanyList] = useState([]);
   const getProductCompany = () => {
@@ -121,90 +128,101 @@ function Step0() {
         </Stack>
       )}
 
-      <Grid item xs={12} md={7} lg={8}>
-        <Grid container alignItems="center" justifyContent="flex-end" spacing={2}>
-          <Grid item xs={12} md={3}>
-            <Stack spacing={1}>
-              <TextField
-                required
-                fullWidth
-                type="date"
-                id="pickup_date"
-                name="pickup_date"
-                value={selectedDate1}
-                onChange={handleDateChange1}
-                // inputProps={{
-                //   min: currentDate
-                // }}
-              />
+      {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
+        <Grid item xs={12}>
+          <MainCard content={false}>
+            <Stack sx={{ width: '100%' }} spacing={2}>
+              <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
             </Stack>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Stack spacing={1}>
-              <TextField
-                required
-                fullWidth
-                type="date"
-                id="pickup_date"
-                name="pickup_date"
-                value={selectedDate2}
-                onChange={handleDateChange2}
-                // inputProps={{
-                //   min: currentDate
-                // }}
-              />
-            </Stack>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Button size="mediam" color="primary" variant="contained" onClick={() => handleSearch()} startIcon={<SearchOutlined />}>
-              ค้นหา
-            </Button>
-          </Grid>
-          <Grid item xs={12} md={3} align="right"></Grid>
-        </Grid>
-
-        <Grid item xs={12} sx={{ mt: 1.5 }}>
-          <MainCard content={true} title="สถานีทั้งหมด">
-            <Divider sx={{ mt: -2, mb: 1 }} />
-            <AllStations />
           </MainCard>
         </Grid>
-        <MainCard content={false} sx={{ mt: 1.5 }}>
-          <Box sx={{ pt: 1, pr: 2 }}>
-            <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
-              {companyList.length > 0 && (
-                <Tab
-                  label={
-                    <Badge badgeContent={countAllQueue > 0 ? countAllQueue : '0'} color="error">
-                      ทั้งหมด
-                    </Badge>
-                  }
-                  color="primary"
-                  onClick={() => handleChange(0)}
+      )}
+      {pageDetail.length !== 0 && (
+        <Grid item xs={12} md={7} lg={8}>
+          <Grid container alignItems="center" justifyContent="flex-end" spacing={2}>
+            <Grid item xs={12} md={3}>
+              <Stack spacing={1}>
+                <TextField
+                  required
+                  fullWidth
+                  type="date"
+                  id="pickup_date"
+                  name="pickup_date"
+                  value={selectedDate1}
+                  onChange={handleDateChange1}
+                  // inputProps={{
+                  //   min: currentDate
+                  // }}
                 />
-              )}
+              </Stack>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Stack spacing={1}>
+                <TextField
+                  required
+                  fullWidth
+                  type="date"
+                  id="pickup_date"
+                  name="pickup_date"
+                  value={selectedDate2}
+                  onChange={handleDateChange2}
+                  // inputProps={{
+                  //   min: currentDate
+                  // }}
+                />
+              </Stack>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Button size="mediam" color="primary" variant="contained" onClick={() => handleSearch()} startIcon={<SearchOutlined />}>
+                ค้นหา
+              </Button>
+            </Grid>
+            <Grid item xs={12} md={3} align="right"></Grid>
+          </Grid>
 
-              {companyList.length > 0 &&
-                companyList.map((company, index) => (
-                  <QueueTab
-                    key={index}
-                    id={company.product_company_id}
-                    numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
-                    txtLabel={company.product_company_name_th2}
-                    onSelect={() => handleChange(company.product_company_id)}
-                    // {...a11yProps(company.product_company_id)}
+          <Grid item xs={12} sx={{ mt: 1.5 }}>
+            <MainCard content={true} title="สถานีทั้งหมด">
+              <Divider sx={{ mt: -2, mb: 1 }} />
+              <AllStations permission={pageDetail[0].permission_name}/>
+            </MainCard>
+          </Grid>
+          <MainCard content={false} sx={{ mt: 1.5 }}>
+            <Box sx={{ pt: 1, pr: 2 }}>
+              <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
+                {companyList.length > 0 && (
+                  <Tab
+                    label={
+                      <Badge badgeContent={countAllQueue > 0 ? countAllQueue : '0'} color="error">
+                        ทั้งหมด
+                      </Badge>
+                    }
+                    color="primary"
+                    onClick={() => handleChange(0)}
                   />
-                ))}
-            </Tabs>
-          </Box>
-        </MainCard>
+                )}
 
-        <MainCard content={false} sx={{ mt: 1.5 }}>
-          <Box sx={{ pt: 1, pr: 2 }}>
-            <Step0Table startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} onFilter={valueFilter} />
-          </Box>
-        </MainCard>
-      </Grid>
+                {companyList.length > 0 &&
+                  companyList.map((company, index) => (
+                    <QueueTab
+                      key={index}
+                      id={company.product_company_id}
+                      numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
+                      txtLabel={company.product_company_name_th2}
+                      onSelect={() => handleChange(company.product_company_id)}
+                      // {...a11yProps(company.product_company_id)}
+                    />
+                  ))}
+              </Tabs>
+            </Box>
+          </MainCard>
+
+          <MainCard content={false} sx={{ mt: 1.5 }}>
+            <Box sx={{ pt: 1, pr: 2 }}>
+              <Step0Table startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} onFilter={valueFilter} permission={pageDetail[0].permission_name} />
+            </Box>
+          </MainCard>
+        </Grid>
+      )}
     </Grid>
   );
 }

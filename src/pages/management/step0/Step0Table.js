@@ -186,7 +186,7 @@ QueueStatus.propTypes = {
   status: PropTypes.string
 };
 
-function Step0Table({ startDate, endDate, onFilter }) {
+function Step0Table({ startDate, endDate, onFilter, permission }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const userRoles = useSelector((state) => state.auth.roles);
@@ -197,7 +197,7 @@ function Step0Table({ startDate, endDate, onFilter }) {
     if (userRoles && userId) {
       getQueue();
     }
-  }, [userId, userRoles, startDate, endDate, onFilter]);
+  }, [userId, userRoles, startDate, endDate, onFilter, permission]);
 
   const getQueue = () => {
     setLoading(true);
@@ -285,6 +285,7 @@ function Step0Table({ startDate, endDate, onFilter }) {
                                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                 size="medium"
                                 color="primary"
+                                disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                                 onClick={() => updateDrivers(row.reserve_id)}
                               >
                                 <EditOutlined />

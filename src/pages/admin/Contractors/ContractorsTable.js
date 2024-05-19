@@ -74,7 +74,7 @@ function CompantTableHead() {
     </TableHead>
   );
 }
-function ContractorsTable() {
+function ContractorsTable({ permission }) {
   //   const [car, setCar] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -82,7 +82,7 @@ function ContractorsTable() {
 
   useEffect(() => {
     getContractor();
-  }, []);
+  }, [permission]);
 
   const getContractor = async () => {
     setLoading(true);
@@ -199,6 +199,7 @@ function ContractorsTable() {
                             variant="contained"
                             size="medium"
                             color="primary"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => updateContractor(row.contractor_id)}
                           >
@@ -210,6 +211,7 @@ function ContractorsTable() {
                             variant="contained"
                             size="medium"
                             color="error"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => handleClickOpen(row.contractor_id)}
                           >

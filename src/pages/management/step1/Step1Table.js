@@ -46,7 +46,7 @@ import SoundCall from 'components/@extended/SoundCall';
 
 import QueueTag from 'components/@extended/QueueTag';
 
-export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
+export const StepTable = ({ status, title, onStatusChange, onFilter, permission }) => {
   const [loading, setLoading] = useState(true); // สร้าง state เพื่อติดตามสถานะการโหลด
 
   const station_count = useSelector((state) => state.station.station_count);
@@ -170,7 +170,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
   useEffect(() => {
     getStation();
     fetchData();
-  }, [status, onStatusChange, onFilter]);
+  }, [status, onStatusChange, onFilter, permission]);
 
   const fetchData = async () => {
     //ข้อมูล รอเรียกคิว step1
@@ -251,8 +251,9 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
     });
   };
 
-  const initialData = 0;
+  const initialData = '';
   const [weight, setWeight] = useState(initialData);
+
   const handleChange = (value) => {
     setWeight(parseFloat(value));
   };
@@ -337,7 +338,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
       }
 
       if (fr === 'close') {
-        if (weight === 0 || weight === '') {
+        if (weight <= 0 || weight === '') {
           alert('กรุณาใสน้ำหนักจากการชั่งเบา');
           return;
         } else {
@@ -393,6 +394,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
       setSelectedStations({});
       setOpen(false);
     }
+    setWeight('');
   };
 
   //Update น้ำหนักชั่งเบา
@@ -416,7 +418,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
         .then((response) => response.json())
         .then((result) => {
           if (result['status'] === 'ok') {
-            setWeight(0);
+            setWeight('');
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
@@ -727,7 +729,8 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
                           type: 'number',
                           'aria-label': 'weight'
                         }}
-                        value={weight}
+                        placeholder="ระบุน้ำหนัก"
+                        value={weight || ''}
                         onChange={(e) => handleChange(e.target.value)}
                       />
                     </FormControl>
@@ -877,11 +880,20 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
                               <Tooltip title="เรียกคิว">
                                 <span>
                                   <Button
+                                  
                                     sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                     variant="contained"
                                     size="small"
                                     align="center"
                                     color="info"
+                                    disabled={
+                                      ((row.station_id === 23 || row.station_id === 30) &&
+                                        permission !== 'manage_everything' &&
+                                        permission !== 'add_edit_delete_data') ||
+                                      (permission !== 'manage_everything' && permission !== 'add_edit_delete_data') ||
+                                      row.station_id === 23 ||
+                                      row.station_id === 30
+                                    }
                                     onClick={() => handleCallQueue(row)}
                                   >
                                     <SoundOutlined />
@@ -896,10 +908,10 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
                                 <span>
                                   {status == 'waiting' && (
                                     <Button
-                                      // sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                       variant="contained"
                                       size="small"
                                       color="info"
+                                      disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                                       onClick={() => handleClickOpen(row.step_id, 'call', row.queue_id, row)}
                                       endIcon={<RightSquareOutlined />}
                                     >
@@ -911,11 +923,17 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
 
                               {status == 'processing' && (
                                 <div>
-                                  <Tooltip title="เรียกคิว">
+                                  <Tooltip title="ยกเลิก">
                                     <span>
                                       <Button
-                                        // sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                        disabled={row.station_id == 23 || row.station_id == 30}
+                                        disabled={
+                                          ((row.station_id === 23 || row.station_id === 30) &&
+                                            permission !== 'manage_everything' &&
+                                            permission !== 'add_edit_delete_data') ||
+                                          (permission !== 'manage_everything' && permission !== 'add_edit_delete_data') ||
+                                          row.station_id === 23 ||
+                                          row.station_id === 30
+                                        }
                                         variant="contained"
                                         size="small"
                                         color="error"
@@ -926,14 +944,21 @@ export const StepTable = ({ status, title, onStatusChange, onFilter }) => {
                                     </span>
                                   </Tooltip>
 
-                                  <Tooltip title="เรียกคิว">
+                                  <Tooltip title="ปิดคิว">
                                     <span>
                                       <Button
                                         // sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                         variant="contained"
                                         size="small"
                                         color="primary"
-                                        disabled={row.station_id == 23 || row.station_id == 30}
+                                        disabled={
+                                          ((row.station_id === 23 || row.station_id === 30) &&
+                                            permission !== 'manage_everything' &&
+                                            permission !== 'add_edit_delete_data') ||
+                                          (permission !== 'manage_everything' && permission !== 'add_edit_delete_data') ||
+                                          row.station_id === 23 ||
+                                          row.station_id === 30
+                                        }
                                         onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row)}
                                         // endIcon={<RightSquareOutlined />}
                                       >

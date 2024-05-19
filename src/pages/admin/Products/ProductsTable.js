@@ -67,7 +67,7 @@ function CompantTableHead() {
   );
 }
 
-function ProductsTable() {
+function ProductsTable({ permission }) {
   const [product, setProducts] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -75,7 +75,7 @@ function ProductsTable() {
   useEffect(() => {
     // getPermission();
     getProducts();
-  }, []);
+  }, [permission]);
 
   const getProducts = async () => {
     try {
@@ -141,7 +141,7 @@ function ProductsTable() {
           </Button>
         </DialogActions>
       </Dialog>
-      
+
       <TableContainer
         sx={{
           width: '100%',
@@ -181,6 +181,7 @@ function ProductsTable() {
                             variant="contained"
                             size="medium"
                             color="primary"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => updateProducts(row.product_id)}
                           >
@@ -192,6 +193,7 @@ function ProductsTable() {
                             variant="contained"
                             size="medium"
                             color="error"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => handleClickOpen(row.product_id)}
                           >

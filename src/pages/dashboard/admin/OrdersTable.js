@@ -64,6 +64,18 @@ const headCells = [
     label: 'ยอดยกมา (ตัน)'
   },
   {
+    id: 'total_receive',
+    align: 'right',
+    disablePadding: true,
+    label: 'ยอดรับ (ตัน)'
+  },
+  {
+    id: 'total_cutoff',
+    align: 'right',
+    disablePadding: true,
+    label: 'ยอดเบิก (ตัน)'
+  },
+  {
     id: 'remaining_total',
     align: 'center',
     disablePadding: false,
@@ -195,6 +207,8 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
                  {(parseFloat(row.total_sold) + parseFloat(row.remaining_quantity)).toLocaleString()}
                  */}
                     </TableCell>
+                    <TableCell align="right">{parseFloat(row.total_receive)}</TableCell>
+                    <TableCell align="right">{parseFloat(row.total_cutoff)}</TableCell>
                     <TableCell align="center">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px' }}>
                         <div>
@@ -232,7 +246,7 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
                   </TableRow>
                 ))}
               <TableRow>
-                <TableCell colSpan={8} align="right" sx={{ p: 3 }}>
+                <TableCell colSpan={10} align="right" sx={{ p: 3 }}>
                   <Typography variant="h5">ยอดรวมจ่าย: </Typography>
                 </TableCell>
                 <TableCell align="right">

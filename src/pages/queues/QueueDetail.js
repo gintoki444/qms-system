@@ -50,6 +50,10 @@ const padZero = (num) => {
 };
 
 function QueueDetail({ sx }) {
+  const pageId = 6;
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+  const [pageDetail, setPageDetail] = useState([]);
+
   const userRoles = useSelector((state) => state.auth.roles);
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
@@ -88,12 +92,20 @@ function QueueDetail({ sx }) {
     // const bytes = CryptoJS.AES.decrypt(decodedData, KeyCode);
     // const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
 
+    if (Object.keys(userPermission).length > 0) {
+      if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
+        setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+      } else {
+        setOpen(false);
+      }
+    }
+
     if (queueID) {
       getQueueById(queueID);
       getQueueCount(queueID, 'completed');
       getQueue(queueID);
     }
-  }, [id, userRoles, queueID, KeyCode]);
+  }, [id, userRoles, queueID, KeyCode, userPermission]);
 
   const [queue_token, setQueueToken] = useState('');
   const [queues, setQueues] = useState([]);
@@ -125,13 +137,13 @@ function QueueDetail({ sx }) {
           // สร้างวันที่ก่อนหรือหลังจากวันปัจจุบันไม่เกิน 2 วัน
           const twoDaysBefore = moment().subtract(2, 'days');
 
-          const targetDate = moment(result[0]['queue_date']);
+          const targetDate = moment(result[0]['queue_date'].slice(0, 10));
           // const targetDate = moment('2024-05-02');
           // console.log('queue_date:', result[0]['queue_date']);
-          // console.log('targetDate:', targetDate);
+          console.log('targetDate:', targetDate);
           // console.log('currentDate:', currentDate);
-          // console.log('twoDaysBefore:', twoDaysBefore);
-          // console.log('targetDate.isBetween :', targetDate.isBetween(twoDaysBefore, currentDate, null, '[]'));
+          console.log('twoDaysBefore:', twoDaysBefore);
+          console.log('targetDate.isBetween :', targetDate.isBetween(twoDaysBefore, currentDate, null, '[]'));
 
           if (targetDate.isBetween(twoDaysBefore, currentDate, null, '[]')) {
             // if (getDateFormat(result[0]['queue_date']) === moment(new Date()).format('DD/MM/YYYY')) {
@@ -656,44 +668,48 @@ function QueueDetail({ sx }) {
                     )}
                   </Grid>
                   <Grid item xs={12} sx={{ '& button': { m: 1 }, p: '0 -6%!important' }} align="center">
-                    {(userRoles === 4 || userRoles === 1) && activeStep == 3 && (
-                      <Button size="mediam" variant="contained" color="primary" onClick={() => handleClickOpen(stepData.step_id)}>
-                        ปิดคิว
-                      </Button>
-                    )}
-
-                    {(userRoles === 10 || userRoles === 1) && (
-                      <>
-                        {getDateFormat(queues.queue_date) !== moment(new Date()).format('DD/MM/YYYY') && (
-                          <>
-                            <CopyLinkButton link={prurl} data={queueID} />
-                            <Button
-                              size="mediam"
-                              variant="contained"
-                              color="info"
-                              d
-                              onClick={() => {
-                                printQueues();
-                              }}
-                              startIcon={<PrinterOutlined />}
-                            >
-                              ตัวอย่างก่อนพิมพ์
-                            </Button>
-                          </>
-                        )}
-                        <Button
-                          size="mediam"
-                          variant="contained"
-                          color="error"
-                          onClick={() => {
-                            backToQueues();
-                          }}
-                          startIcon={<RollbackOutlined />}
-                        >
-                          ย้อนกลับ
+                    {pageDetail.length > 0 &&
+                      (pageDetail[0].permission_name === 'manage_everything' || pageDetail[0].permission_name === 'add_edit_delete_data') &&
+                      activeStep == 3 && (
+                        <Button size="mediam" variant="contained" color="primary" onClick={() => handleClickOpen(stepData.step_id)}>
+                          ปิดคิว
                         </Button>
-                      </>
-                    )}
+                      )}
+
+                    {pageDetail.length > 0 &&
+                      (pageDetail[0].permission_name === 'manage_everything' ||
+                        pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                        <>
+                          {getDateFormat(queues.queue_date) !== moment(new Date()).format('DD/MM/YYYY') && (
+                            <>
+                              <CopyLinkButton link={prurl} data={queueID} />
+                              <Button
+                                size="mediam"
+                                variant="contained"
+                                color="info"
+                                d
+                                onClick={() => {
+                                  printQueues();
+                                }}
+                                startIcon={<PrinterOutlined />}
+                              >
+                                ตัวอย่างก่อนพิมพ์
+                              </Button>
+                            </>
+                          )}
+                          <Button
+                            size="mediam"
+                            variant="contained"
+                            color="error"
+                            onClick={() => {
+                              backToQueues();
+                            }}
+                            startIcon={<RollbackOutlined />}
+                          >
+                            ย้อนกลับ
+                          </Button>
+                        </>
+                      )}
                   </Grid>
                 </Grid>
               )}

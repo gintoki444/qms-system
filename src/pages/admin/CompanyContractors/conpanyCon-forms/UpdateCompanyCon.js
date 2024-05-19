@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
+import { useSelector } from 'react-redux';
 
 // third party
 import * as Yup from 'yup';
@@ -20,7 +21,8 @@ import {
   Typography,
   Divider,
   Backdrop,
-  CircularProgress
+  CircularProgress,
+  Alert
 } from '@mui/material';
 // import MenuItem from '@mui/material/MenuItem';
 // import FormControl from '@mui/material/FormControl';
@@ -33,6 +35,18 @@ import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 function UpdateCompanyCon() {
+  const pageId = 20;
+  const userRole = useSelector((state) => state.auth?.roles);
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+
+  const [pageDetail, setPageDetail] = useState([]);
+
+  useEffect(() => {
+    if (Object.keys(userPermission).length > 0) {
+      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+    }
+  }, [userRole, userPermission]);
+
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -106,70 +120,85 @@ function UpdateCompanyCon() {
         </Backdrop>
       )}
       <Grid container>
-        <Grid item xs={8}>
-          <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-            <Formik initialValues={initialValue} validationSchema={validations} enableReinitialize={true} onSubmit={handleSubmits}>
-              {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
-                <form noValidate onSubmit={handleSubmit}>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12}>
-                      <Typography variant="h5">แก้ไขข้อมูลสังกัด</Typography>
-                      <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                    </Grid>
+        {(Object.keys(userPermission).length > 0 && pageDetail.length === 0) ||
+          (pageDetail.length !== 0 &&
+            pageDetail[0].permission_name !== 'manage_everything' &&
+            pageDetail[0].permission_name !== 'add_edit_delete_data' && (
+              <Grid item xs={12}>
+                <MainCard content={false}>
+                  <Stack sx={{ width: '100%' }} spacing={2}>
+                    <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+                  </Stack>
+                </MainCard>
+              </Grid>
+            ))}
+        {pageDetail.length > 0 &&
+          (pageDetail[0].permission_name === 'manage_everything' || pageDetail[0].permission_name === 'add_edit_delete_data') && (
+            <Grid item xs={8}>
+              <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
+                <Formik initialValues={initialValue} validationSchema={validations} enableReinitialize={true} onSubmit={handleSubmits}>
+                  {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
+                    <form noValidate onSubmit={handleSubmit}>
+                      <Grid container spacing={3}>
+                        <Grid item xs={12}>
+                          <Typography variant="h5">แก้ไขข้อมูลสังกัด</Typography>
+                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                        </Grid>
 
-                    <Grid item xs={12} md={12}>
-                      <Stack spacing={1}>
-                        <InputLabel htmlFor="contract_company_name">ชื่อสังกัด*</InputLabel>
-                        <OutlinedInput
-                          id="contract_company_name"
-                          type="text"
-                          value={values.contract_company_name}
-                          name="contract_company_name"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="ชื่อสังกัด"
-                          fullWidth
-                          error={Boolean(touched.contract_company_name && errors.contract_company_name)}
-                        />
-                        {touched.contract_company_name && errors.contract_company_name && (
-                          <FormHelperText error id="helper-text-name-company">
-                            {errors.contract_company_name}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
+                        <Grid item xs={12} md={12}>
+                          <Stack spacing={1}>
+                            <InputLabel htmlFor="contract_company_name">ชื่อสังกัด*</InputLabel>
+                            <OutlinedInput
+                              id="contract_company_name"
+                              type="text"
+                              value={values.contract_company_name}
+                              name="contract_company_name"
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              placeholder="ชื่อสังกัด"
+                              fullWidth
+                              error={Boolean(touched.contract_company_name && errors.contract_company_name)}
+                            />
+                            {touched.contract_company_name && errors.contract_company_name && (
+                              <FormHelperText error id="helper-text-name-company">
+                                {errors.contract_company_name}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
 
-                    <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                      <Button
-                        disableElevation
-                        disabled={isSubmitting}
-                        size="mediam"
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        startIcon={<SaveOutlined />}
-                      >
-                        บันทึกข้อมูล
-                      </Button>
+                        <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
+                          <Button
+                            disableElevation
+                            disabled={isSubmitting}
+                            size="mediam"
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            startIcon={<SaveOutlined />}
+                          >
+                            บันทึกข้อมูล
+                          </Button>
 
-                      <Button
-                        size="mediam"
-                        variant="contained"
-                        color="error"
-                        onClick={() => {
-                          backToPage();
-                        }}
-                        startIcon={<RollbackOutlined />}
-                      >
-                        ยกเลิก
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </form>
-              )}
-            </Formik>
-          </MainCard>
-        </Grid>
+                          <Button
+                            size="mediam"
+                            variant="contained"
+                            color="error"
+                            onClick={() => {
+                              backToPage();
+                            }}
+                            startIcon={<RollbackOutlined />}
+                          >
+                            ยกเลิก
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </form>
+                  )}
+                </Formik>
+              </MainCard>
+            </Grid>
+          )}
       </Grid>
     </Grid>
   );

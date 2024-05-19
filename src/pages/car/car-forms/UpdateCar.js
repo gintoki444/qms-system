@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
@@ -28,7 +29,8 @@ import {
   Select,
   MenuItem,
   Autocomplete,
-  TextField
+  TextField,
+  Alert
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 
@@ -36,6 +38,10 @@ import MainCard from 'components/MainCard';
 import moment from 'moment';
 
 function UpdateCar() {
+  const pageId = 6;
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+  const [pageDetail, setPageDetail] = useState([]);
+
   const { enqueueSnackbar } = useSnackbar();
   const [open, setOpen] = useState(false);
   let [initialValue, setInitialValue] = useState({
@@ -116,11 +122,19 @@ function UpdateCar() {
   };
 
   useEffect(() => {
-    getCar(id);
-    getCarList();
-    getCarType();
-    getProvinces();
-  }, [id]);
+    setOpen(true);
+    if (Object.keys(userPermission).length > 0) {
+      if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
+        setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+        getCar(id);
+        getCarList();
+        getCarType();
+        getProvinces();
+      } else {
+        setOpen(false);
+      }
+    }
+  }, [id, userPermission]);
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
@@ -194,72 +208,83 @@ function UpdateCar() {
           <CircularProgress color="primary" />
         </Backdrop>
       )}
-      <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-        <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
-          {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
-            <form noValidate onSubmit={handleSubmit}>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Typography variant="h5">แก้ไขข้อมูลรถ</Typography>
-                  <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel htmlFor="registration_no-car">ทะเบียนรถ*</InputLabel>
-                    <OutlinedInput
-                      id="registration_no-car"
-                      type="registration_no"
-                      value={values.registration_no}
-                      name="registration_no"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="ทะเบียนรถ"
-                      fullWidth
-                      error={Boolean(touched.registration_no && errors.registration_no)}
-                    />
-                    {touched.registration_no && errors.registration_no && (
-                      <FormHelperText error id="helper-text-name-company">
-                        {errors.registration_no}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+      {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
+        <Grid item xs={12}>
+          <MainCard content={false}>
+            <Stack sx={{ width: '100%' }} spacing={2}>
+              <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+            </Stack>
+          </MainCard>
+        </Grid>
+      )}
+      {pageDetail.length !== 0 && (
+        <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
+          <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
+            {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
+              <form noValidate onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <Typography variant="h5">แก้ไขข้อมูลรถ</Typography>
+                    <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                  </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>จังหวัด *</InputLabel>
-                    <FormControl>
-                      <Autocomplete
-                        disablePortal
-                        id="province-list"
-                        options={provincesList}
-                        onChange={(e, value) => {
-                          const newValue = value ? value.province_id : null;
-                          setFieldValue('province_id', newValue);
-                        }}
-                        value={provincesList.length > 0 ? provincesList.find((item) => item.province_id === values.province_id) : []}
-                        getOptionLabel={(option) => (option.name_th ? option.name_th : '')}
-                        sx={{
-                          width: '100%',
-                          '& .MuiOutlinedInput-root': {
-                            padding: '3px 8px!important'
-                          },
-                          '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
-                            right: '7px!important',
-                            top: 'calc(50% - 18px)'
-                          }
-                        }}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            name="province_id"
-                            placeholder="เลือกจังหวัด"
-                            error={Boolean(touched.province_id && errors.province_id)}
-                          />
-                        )}
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel htmlFor="registration_no-car">ทะเบียนรถ*</InputLabel>
+                      <OutlinedInput
+                        id="registration_no-car"
+                        type="registration_no"
+                        value={values.registration_no}
+                        name="registration_no"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        placeholder="ทะเบียนรถ"
+                        fullWidth
+                        error={Boolean(touched.registration_no && errors.registration_no)}
                       />
-                      {/* <Select
+                      {touched.registration_no && errors.registration_no && (
+                        <FormHelperText error id="helper-text-name-company">
+                          {errors.registration_no}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>จังหวัด *</InputLabel>
+                      <FormControl>
+                        <Autocomplete
+                          disablePortal
+                          id="province-list"
+                          options={provincesList}
+                          onChange={(e, value) => {
+                            const newValue = value ? value.province_id : null;
+                            setFieldValue('province_id', newValue);
+                          }}
+                          value={provincesList.length > 0 ? provincesList.find((item) => item.province_id === values.province_id) : []}
+                          getOptionLabel={(option) => (option.name_th ? option.name_th : '')}
+                          sx={{
+                            width: '100%',
+                            '& .MuiOutlinedInput-root': {
+                              padding: '3px 8px!important'
+                            },
+                            '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                              right: '7px!important',
+                              top: 'calc(50% - 18px)'
+                            }
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              name="province_id"
+                              placeholder="เลือกจังหวัด"
+                              error={Boolean(touched.province_id && errors.province_id)}
+                            />
+                          )}
+                        />
+                        {/* <Select
                         displayEmpty
                         variant="outlined"
                         name="province_id"
@@ -279,77 +304,82 @@ function UpdateCar() {
                             </MenuItem>
                           ))}
                       </Select> */}
-                    </FormControl>
-                    {touched.province_id && errors.province_id && (
-                      <FormHelperText error id="helper-province_id">
-                        {errors.province_id}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+                      </FormControl>
+                      {touched.province_id && errors.province_id && (
+                        <FormHelperText error id="helper-province_id">
+                          {errors.province_id}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>ประเภทรถ *</InputLabel>
-                    <FormControl>
-                      <Select
-                        displayEmpty
-                        variant="outlined"
-                        name="car_type_id"
-                        value={values.car_type_id}
-                        onChange={handleChange}
-                        placeholder="เลือกประเภทรถ"
-                        fullWidth
-                        error={Boolean(touched.car_type_id && errors.car_type_id)}
-                      >
-                        <MenuItem disabled value="">
-                          เลือกประเภทรถ
-                        </MenuItem>
-                        {carTypeList &&
-                          carTypeList.map((carType) => (
-                            <MenuItem key={carType.car_type_id} value={carType.car_type_id}>
-                              {carType.car_type_name}
-                            </MenuItem>
-                          ))}
-                      </Select>
-                    </FormControl>
-                    {touched.car_type_id && errors.car_type_id && (
-                      <FormHelperText error id="helper-car_type_id">
-                        {errors.car_type_id}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>ประเภทรถ *</InputLabel>
+                      <FormControl>
+                        <Select
+                          displayEmpty
+                          variant="outlined"
+                          name="car_type_id"
+                          value={values.car_type_id}
+                          onChange={handleChange}
+                          placeholder="เลือกประเภทรถ"
+                          fullWidth
+                          error={Boolean(touched.car_type_id && errors.car_type_id)}
+                        >
+                          <MenuItem disabled value="">
+                            เลือกประเภทรถ
+                          </MenuItem>
+                          {carTypeList &&
+                            carTypeList.map((carType) => (
+                              <MenuItem key={carType.car_type_id} value={carType.car_type_id}>
+                                {carType.car_type_name}
+                              </MenuItem>
+                            ))}
+                        </Select>
+                      </FormControl>
+                      {touched.car_type_id && errors.car_type_id && (
+                        <FormHelperText error id="helper-car_type_id">
+                          {errors.car_type_id}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
 
-                <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                  <Button
-                    disableElevation
-                    disabled={isSubmitting}
-                    size="mediam"
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    startIcon={<SaveOutlined />}
-                  >
-                    บันทึกข้อมูล
-                  </Button>
-                  <Button
-                    size="mediam"
-                    variant="contained"
-                    color="error"
-                    onClick={() => {
-                      backToCar();
-                    }}
-                    startIcon={<RollbackOutlined />}
-                  >
-                    ยกเลิก
-                  </Button>
+                  <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
+                    {pageDetail.length > 0 &&
+                      (pageDetail[0].permission_name === 'manage_everything' ||
+                        pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                        <Button
+                          disableElevation
+                          disabled={isSubmitting}
+                          size="mediam"
+                          type="submit"
+                          variant="contained"
+                          color="primary"
+                          startIcon={<SaveOutlined />}
+                        >
+                          บันทึกข้อมูล
+                        </Button>
+                      )}
+                    <Button
+                      size="mediam"
+                      variant="contained"
+                      color="error"
+                      onClick={() => {
+                        backToCar();
+                      }}
+                      startIcon={<RollbackOutlined />}
+                    >
+                      ยกเลิก
+                    </Button>
+                  </Grid>
                 </Grid>
-              </Grid>
-            </form>
-          )}
-        </Formik>
-      </MainCard>
+              </form>
+            )}
+          </Formik>
+        </MainCard>
+      )}
     </Grid>
   );
 }

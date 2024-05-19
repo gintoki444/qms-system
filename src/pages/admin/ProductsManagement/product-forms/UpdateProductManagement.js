@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 // third party
 import * as Yup from 'yup';
@@ -27,7 +28,8 @@ import {
   CircularProgress,
   FormControlLabel,
   Checkbox,
-  Autocomplete
+  Autocomplete,
+  Alert
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
@@ -36,6 +38,18 @@ import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 function UpdateProductManagement() {
+  const pageId = 23;
+  const userRole = useSelector((state) => state.auth?.roles);
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+
+  const [pageDetail, setPageDetail] = useState([]);
+
+  useEffect(() => {
+    if (Object.keys(userPermission).length > 0) {
+      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+    }
+  }, [userRole, userPermission]);
+
   const userId = localStorage.getItem('user_id');
   const [open, setOpen] = useState(false);
   const { id } = useParams();
@@ -234,116 +248,134 @@ function UpdateProductManagement() {
         </Backdrop>
       )}
       <Grid container spacing={3}>
-        <Grid item xs={12} lg={12} md={10}>
-          <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-            <Formik initialValues={initialValue} validationSchema={valiDationSchema} enableReinitialize={true} onSubmit={handleSubmits}>
-              {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
-                <form noValidate onSubmit={handleSubmit}>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12}>
-                      <Typography variant="h5">แก้ไขข้อมูลกองสินค้า</Typography>
-                      <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                    </Grid>
+        {(Object.keys(userPermission).length > 0 && pageDetail.length === 0) ||
+          (pageDetail.length !== 0 &&
+            pageDetail[0].permission_name !== 'manage_everything' &&
+            pageDetail[0].permission_name !== 'add_edit_delete_data' && (
+              <Grid item xs={12}>
+                <MainCard content={false}>
+                  <Stack sx={{ width: '100%' }} spacing={2}>
+                    <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+                  </Stack>
+                </MainCard>
+              </Grid>
+            ))}
+        {pageDetail.length > 0 &&
+          (pageDetail[0].permission_name === 'manage_everything' || pageDetail[0].permission_name === 'add_edit_delete_data') && (
+            <Grid item xs={12} lg={12} md={10}>
+              <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
+                <Formik initialValues={initialValue} validationSchema={valiDationSchema} enableReinitialize={true} onSubmit={handleSubmits}>
+                  {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
+                    <form noValidate onSubmit={handleSubmit}>
+                      <Grid container spacing={3}>
+                        <Grid item xs={12}>
+                          <Typography variant="h5">แก้ไขข้อมูลกองสินค้า</Typography>
+                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                        </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>บริษัท (สินค้า) *</InputLabel>
-                        <FormControl>
-                          <Select
-                            displayEmpty
-                            variant="outlined"
-                            name="product_company_id"
-                            value={values.product_company_id || ''}
-                            onChange={(e) => {
-                              setFieldValue('product_company_id', e.target.value);
-                              setFieldValue('product_brand_id', '');
-                              handleChangeProductCom(e.target.value);
-                            }}
-                            placeholder="เลือกประเภทรถ"
-                            fullWidth
-                            error={Boolean(touched.product_company_id && errors.product_company_id)}
-                          >
-                            <MenuItem disabled value="">
-                              เลือกบริษัท (สินค้า)
-                            </MenuItem>
-                            {companyList.length > 0 &&
-                              companyList.map((companias) => (
-                                <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
-                                  {companias.product_company_name_th}
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>บริษัท (สินค้า) *</InputLabel>
+                            <FormControl>
+                              <Select
+                                displayEmpty
+                                variant="outlined"
+                                name="product_company_id"
+                                value={values.product_company_id || ''}
+                                onChange={(e) => {
+                                  setFieldValue('product_company_id', e.target.value);
+                                  setFieldValue('product_brand_id', '');
+                                  handleChangeProductCom(e.target.value);
+                                }}
+                                placeholder="เลือกประเภทรถ"
+                                fullWidth
+                                error={Boolean(touched.product_company_id && errors.product_company_id)}
+                              >
+                                <MenuItem disabled value="">
+                                  เลือกบริษัท (สินค้า)
                                 </MenuItem>
-                              ))}
-                          </Select>
-                        </FormControl>
-                        {touched.product_company_id && errors.product_company_id && (
-                          <FormHelperText error id="helper-product_company_id">
-                            {errors.product_company_id}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>เบรนสินค้า (ตรา) *</InputLabel>
-                        <FormControl>
-                          <Select
-                            displayEmpty
-                            variant="outlined"
-                            name="product_brand_id"
-                            value={values.product_brand_id}
-                            onChange={handleChange}
-                            placeholder="เลือกเบรนสินค้า (ตรา)"
-                            fullWidth
-                            error={Boolean(touched.product_brand_id && errors.product_brand_id)}
-                          >
-                            <MenuItem disabled value="">
-                              เลือกเบรนสินค้า (ตรา)
-                            </MenuItem>
-                            {productBrand.map((brands) => (
-                              <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
-                                {brands.product_brand_name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                        {touched.product_brand_id && errors.product_brand_id && (
-                          <FormHelperText error id="helper-product_brand_id">
-                            {errors.product_brand_id}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>สินค้า *</InputLabel>
-                        <FormControl>
-                          <Autocomplete
-                            id="product-list"
-                            options={productList}
-                            name="product_id"
-                            value={productList.length > 0 ? productList.find((item) => item.product_id === values.product_id) : []}
-                            onChange={(e, value) => {
-                              const newValue = value ? value.product_id : '';
-                              setFieldValue('product_id', newValue);
-                            }}
-                            getOptionLabel={(option) => (option.name ? option.name : '')}
-                            sx={{
-                              width: '100%',
-                              '& .MuiOutlinedInput-root': {
-                                padding: '3px 8px!important'
-                              },
-                              '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
-                                right: '7px!important',
-                                top: 'calc(50% - 18px)'
-                              }
-                            }}
-                            error={Boolean(touched.product_id && errors.product_id)}
-                            renderInput={(params) => (
-                              <TextField {...params} placeholder="เลือกสินค้า" error={Boolean(touched.product_id && errors.product_id)} />
+                                {companyList.length > 0 &&
+                                  companyList.map((companias) => (
+                                    <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
+                                      {companias.product_company_name_th}
+                                    </MenuItem>
+                                  ))}
+                              </Select>
+                            </FormControl>
+                            {touched.product_company_id && errors.product_company_id && (
+                              <FormHelperText error id="helper-product_company_id">
+                                {errors.product_company_id}
+                              </FormHelperText>
                             )}
-                          />
-                          {/* <Select
+                          </Stack>
+                        </Grid>
+
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>เบรนสินค้า (ตรา) *</InputLabel>
+                            <FormControl>
+                              <Select
+                                displayEmpty
+                                variant="outlined"
+                                name="product_brand_id"
+                                value={values.product_brand_id}
+                                onChange={handleChange}
+                                placeholder="เลือกเบรนสินค้า (ตรา)"
+                                fullWidth
+                                error={Boolean(touched.product_brand_id && errors.product_brand_id)}
+                              >
+                                <MenuItem disabled value="">
+                                  เลือกเบรนสินค้า (ตรา)
+                                </MenuItem>
+                                {productBrand.map((brands) => (
+                                  <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
+                                    {brands.product_brand_name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                            {touched.product_brand_id && errors.product_brand_id && (
+                              <FormHelperText error id="helper-product_brand_id">
+                                {errors.product_brand_id}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
+
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>สินค้า *</InputLabel>
+                            <FormControl>
+                              <Autocomplete
+                                id="product-list"
+                                options={productList}
+                                name="product_id"
+                                value={productList.length > 0 ? productList.find((item) => item.product_id === values.product_id) : []}
+                                onChange={(e, value) => {
+                                  const newValue = value ? value.product_id : '';
+                                  setFieldValue('product_id', newValue);
+                                }}
+                                getOptionLabel={(option) => (option.name ? option.name : '')}
+                                sx={{
+                                  width: '100%',
+                                  '& .MuiOutlinedInput-root': {
+                                    padding: '3px 8px!important'
+                                  },
+                                  '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                                    right: '7px!important',
+                                    top: 'calc(50% - 18px)'
+                                  }
+                                }}
+                                error={Boolean(touched.product_id && errors.product_id)}
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    placeholder="เลือกสินค้า"
+                                    error={Boolean(touched.product_id && errors.product_id)}
+                                  />
+                                )}
+                              />
+                              {/* <Select
                             displayEmpty
                             variant="outlined"
                             name="product_id"
@@ -363,114 +395,114 @@ function UpdateProductManagement() {
                                 </MenuItem>
                               ))}
                           </Select> */}
-                        </FormControl>
-                        {touched.product_brand_id && errors.product_brand_id && (
-                          <FormHelperText error id="helper-product_brand_id">
-                            {errors.product_brand_id}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
+                            </FormControl>
+                            {touched.product_brand_id && errors.product_brand_id && (
+                              <FormHelperText error id="helper-product_brand_id">
+                                {errors.product_brand_id}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>คลังสินค้า *</InputLabel>
-                        <FormControl>
-                          <Select
-                            displayEmpty
-                            variant="outlined"
-                            name="warehouse_id"
-                            value={values.warehouse_id}
-                            onChange={handleChange}
-                            placeholder="เลือกคลังสินค้า"
-                            fullWidth
-                            error={Boolean(touched.warehouse_id && errors.warehouse_id)}
-                          >
-                            <MenuItem disabled value="">
-                              เลือกคลังสินค้า
-                            </MenuItem>
-                            {warehouseList.length > 0 &&
-                              warehouseList.map((warehouses) => (
-                                <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
-                                  {warehouses.description}
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>คลังสินค้า *</InputLabel>
+                            <FormControl>
+                              <Select
+                                displayEmpty
+                                variant="outlined"
+                                name="warehouse_id"
+                                value={values.warehouse_id}
+                                onChange={handleChange}
+                                placeholder="เลือกคลังสินค้า"
+                                fullWidth
+                                error={Boolean(touched.warehouse_id && errors.warehouse_id)}
+                              >
+                                <MenuItem disabled value="">
+                                  เลือกคลังสินค้า
                                 </MenuItem>
-                              ))}
-                          </Select>
-                        </FormControl>
-                        {touched.product_brand_id && errors.product_brand_id && (
-                          <FormHelperText error id="helper-product_brand_id">
-                            {errors.product_brand_id}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
+                                {warehouseList.length > 0 &&
+                                  warehouseList.map((warehouses) => (
+                                    <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
+                                      {warehouses.description}
+                                    </MenuItem>
+                                  ))}
+                              </Select>
+                            </FormControl>
+                            {touched.product_brand_id && errors.product_brand_id && (
+                              <FormHelperText error id="helper-product_brand_id">
+                                {errors.product_brand_id}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel htmlFor="product_register_name">ทะเบียน *</InputLabel>
-                        <OutlinedInput
-                          id="product_register_name"
-                          type="product_register_name"
-                          value={values.product_register_name}
-                          name="product_register_name"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="ทะเบียน"
-                          fullWidth
-                          error={Boolean(touched.product_register_name && errors.product_register_name)}
-                        />
-                        {touched.product_register_name && errors.product_register_name && (
-                          <FormHelperText error id="helper-text-product_register_name">
-                            {errors.product_register_name}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel htmlFor="product_register_name">ทะเบียน *</InputLabel>
+                            <OutlinedInput
+                              id="product_register_name"
+                              type="product_register_name"
+                              value={values.product_register_name}
+                              name="product_register_name"
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              placeholder="ทะเบียน"
+                              fullWidth
+                              error={Boolean(touched.product_register_name && errors.product_register_name)}
+                            />
+                            {touched.product_register_name && errors.product_register_name && (
+                              <FormHelperText error id="helper-text-product_register_name">
+                                {errors.product_register_name}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>วันที่ตั้งกอง *</InputLabel>
-                        <TextField
-                          required
-                          fullWidth
-                          type="date"
-                          id="product_register_date"
-                          name="product_register_date"
-                          onBlur={handleBlur}
-                          value={values.product_register_date}
-                          onChange={handleChange}
-                        />
-                        {touched.product_register_date && errors.product_register_date && (
-                          <FormHelperText error id="helper-text-product_register_date">
-                            {errors.product_register_date}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>วันที่ตั้งกอง *</InputLabel>
+                            <TextField
+                              required
+                              fullWidth
+                              type="date"
+                              id="product_register_date"
+                              name="product_register_date"
+                              onBlur={handleBlur}
+                              value={values.product_register_date}
+                              onChange={handleChange}
+                            />
+                            {touched.product_register_date && errors.product_register_date && (
+                              <FormHelperText error id="helper-text-product_register_date">
+                                {errors.product_register_date}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel htmlFor="register_beginning_balance">ยอดยกมา *</InputLabel>
-                        <OutlinedInput
-                          id="register_beginning_balance"
-                          type="number"
-                          value={values.register_beginning_balance}
-                          name="register_beginning_balance"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="ยอดยกมา"
-                          fullWidth
-                          error={Boolean(touched.register_beginning_balance && errors.register_beginning_balance)}
-                        />
-                        {touched.register_beginning_balance && errors.register_beginning_balance && (
-                          <FormHelperText error id="helper-text-register_beginning_balance">
-                            {errors.register_beginning_balance}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel htmlFor="register_beginning_balance">ยอดยกมา *</InputLabel>
+                            <OutlinedInput
+                              id="register_beginning_balance"
+                              type="number"
+                              value={values.register_beginning_balance}
+                              name="register_beginning_balance"
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              placeholder="ยอดยกมา"
+                              fullWidth
+                              error={Boolean(touched.register_beginning_balance && errors.register_beginning_balance)}
+                            />
+                            {touched.register_beginning_balance && errors.register_beginning_balance && (
+                              <FormHelperText error id="helper-text-register_beginning_balance">
+                                {errors.register_beginning_balance}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
 
-                    {/* <Grid item xs={12} md={6}>
+                        {/* <Grid item xs={12} md={6}>
                       <Stack spacing={1}>
                         <InputLabel htmlFor="product_register_remark">หมายเหตุ</InputLabel>
                         <OutlinedInput
@@ -492,99 +524,100 @@ function UpdateProductManagement() {
                       </Stack>
                     </Grid> */}
 
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel htmlFor="product_register_remark">หมายเหตุ</InputLabel>
-                      </Stack>
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel htmlFor="product_register_remark">หมายเหตุ</InputLabel>
+                          </Stack>
 
-                      <Stack spacing={1} direction="flex-direction">
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={values.checkbox1}
-                              // onChange={handleChange}
-                              onChange={(e) => {
-                                if (values.checkbox1) {
-                                  setFieldValue('checkbox1', '');
-                                } else {
-                                  setFieldValue('checkbox1', e.target.value);
-                                }
-                              }}
-                              name="checkbox1"
-                              value="*ทุบก่อนจ่าย"
+                          <Stack spacing={1} direction="flex-direction">
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={values.checkbox1}
+                                  // onChange={handleChange}
+                                  onChange={(e) => {
+                                    if (values.checkbox1) {
+                                      setFieldValue('checkbox1', '');
+                                    } else {
+                                      setFieldValue('checkbox1', e.target.value);
+                                    }
+                                  }}
+                                  name="checkbox1"
+                                  value="*ทุบก่อนจ่าย"
+                                />
+                              }
+                              label="ทุบก่อนจ่าย"
                             />
-                          }
-                          label="ทุบก่อนจ่าย"
-                        />
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={values.checkbox2}
-                              // checked={typeSelect[orderItem.item_id]?.checked1 || false}
-                              onChange={(e) => {
-                                if (values.checkbox2) {
-                                  setFieldValue('checkbox2', '');
-                                } else {
-                                  setFieldValue('checkbox2', e.target.value);
-                                }
-                              }}
-                              // onChange={handleChange}
-                              value="*ระงับจ่าย"
-                              name="checkbox2"
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={values.checkbox2}
+                                  // checked={typeSelect[orderItem.item_id]?.checked1 || false}
+                                  onChange={(e) => {
+                                    if (values.checkbox2) {
+                                      setFieldValue('checkbox2', '');
+                                    } else {
+                                      setFieldValue('checkbox2', e.target.value);
+                                    }
+                                  }}
+                                  // onChange={handleChange}
+                                  value="*ระงับจ่าย"
+                                  name="checkbox2"
+                                />
+                              }
+                              label="ระงับจ่าย"
                             />
-                          }
-                          label="ระงับจ่าย"
-                        />
 
-                        <OutlinedInput
-                          id="other"
-                          type="text"
-                          value={values.other}
-                          name="other"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          // onChange={(e) => {
-                          //   setFieldValue('other', e.target.value);
-                          // }}
-                          placeholder="อื่นๆ"
-                          sx={{ width: { xs: '100%', md: '33.333%' }, ml: '12px!important' }}
-                          error={Boolean(touched.other && errors.other)}
-                        />
-                      </Stack>
-                    </Grid>
-                    {/* {permission.length > 0 && permission.add_data && ( */}
-                    <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
-                      <Button
-                        disableElevation
-                        disabled={isSubmitting}
-                        size="mediam"
-                        type="submit"
-                        variant="contained"
-                        color="success"
-                        startIcon={<SaveOutlined />}
-                      >
-                        บันทึกข้อมูล
-                      </Button>
+                            <OutlinedInput
+                              id="other"
+                              type="text"
+                              value={values.other}
+                              name="other"
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              // onChange={(e) => {
+                              //   setFieldValue('other', e.target.value);
+                              // }}
+                              placeholder="อื่นๆ"
+                              sx={{ width: { xs: '100%', md: '33.333%' }, ml: '12px!important' }}
+                              error={Boolean(touched.other && errors.other)}
+                            />
+                          </Stack>
+                        </Grid>
+                        {/* {permission.length > 0 && permission.add_data && ( */}
+                        <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
+                          <Button
+                            disableElevation
+                            disabled={isSubmitting}
+                            size="mediam"
+                            type="submit"
+                            variant="contained"
+                            color="success"
+                            startIcon={<SaveOutlined />}
+                          >
+                            บันทึกข้อมูล
+                          </Button>
 
-                      <Button
-                        size="mediam"
-                        variant="contained"
-                        color="error"
-                        onClick={() => {
-                          backToPage();
-                        }}
-                        startIcon={<RollbackOutlined />}
-                      >
-                        ยกเลิก
-                      </Button>
-                    </Grid>
-                    {/* )} */}
-                  </Grid>
-                </form>
-              )}
-            </Formik>
-          </MainCard>
-        </Grid>
+                          <Button
+                            size="mediam"
+                            variant="contained"
+                            color="error"
+                            onClick={() => {
+                              backToPage();
+                            }}
+                            startIcon={<RollbackOutlined />}
+                          >
+                            ยกเลิก
+                          </Button>
+                        </Grid>
+                        {/* )} */}
+                      </Grid>
+                    </form>
+                  )}
+                </Formik>
+              </MainCard>
+            </Grid>
+          )}
       </Grid>
     </Grid>
   );

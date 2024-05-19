@@ -293,6 +293,11 @@ function ProductDetails() {
   const backToPrintPage = () => {
     navigate('/prints/product-manager', { state: { productId: id, link: '/admin/product-register/details/' + id } });
   };
+
+  // รวม grand total ของ quantity ของทุกรายการ items
+  const totalReceiveAmount = productReceiveList.reduce((sum, item) => sum + parseFloat(item.receive_amount) || 0, 0);
+  const totalCutoffAmount = cutOffProductList.reduce((sum, item) => sum + parseFloat(item.cutoff_amount) || 0, 0);
+  const totalSoldAmount = orderProductList.reduce((sum, item) => sum + parseFloat(item.total_sold) || 0, 0);
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -622,15 +627,23 @@ function ProductDetails() {
                                             <TableCell align="center">{index + 1}</TableCell>
                                             <TableCell align="center">{moment(productReceive.receive_date).format('DD/MM/YYYY')}</TableCell>
                                             <TableCell align="right">{productReceive.receive_amount}</TableCell>
-                                            <TableCell align="left">{productReceive.receive_remark}</TableCell>
+                                            <TableCell align="left">
+                                              {productReceive.receive_remark ? productReceive.receive_remark : '-'}
+                                            </TableCell>
                                           </TableRow>
                                         ))}
-                                      {/* {order.items.map((item, index) => (
-                                <TableRow key={index}>
-                                  <TableCell width={'50%'}>{item.name}</TableCell>
-                                  <TableCell align="right">{item.quantity} ตัน</TableCell>
-                                </TableRow>
-                              ))} */}
+
+                                      <TableRow>
+                                        <TableCell colSpan={2} align="right" sx={{ p: 2 }}>
+                                          <Typography variant="h5">รวมทั้งสิ้น: </Typography>
+                                        </TableCell>
+                                        <TableCell align="right">
+                                          <Typography variant="h5">
+                                            <span style={{ color: 'red' }}>{parseFloat(totalReceiveAmount.toFixed(3))}</span> ตัน{' '}
+                                          </Typography>
+                                        </TableCell>
+                                        <TableCell align="right"></TableCell>
+                                      </TableRow>
                                     </TableBody>
                                   </Table>
                                 </TableContainer>
@@ -677,11 +690,23 @@ function ProductDetails() {
                                             <TableCell align="center">{index + 1}</TableCell>
                                             <TableCell align="center">{moment(orderProduct.order_date).format('DD/MM/YYYY')}</TableCell>
                                             <TableCell align="right">{orderProduct.total_sold}</TableCell>
-                                            <TableCell align="left">{orderProduct.description}</TableCell>
+                                            <TableCell align="left">{orderProduct.description ? orderProduct.description : '-'}</TableCell>
                                           </TableRow>
                                         ))}
+
+                                      <TableRow>
+                                        <TableCell colSpan={2} align="right" sx={{ p: 2 }}>
+                                          <Typography variant="h5">รวมทั้งสิ้น: </Typography>
+                                        </TableCell>
+                                        <TableCell align="right">
+                                          <Typography variant="h5">
+                                            <span style={{ color: 'red' }}>{parseFloat(totalSoldAmount.toFixed(3))}</span> ตัน{' '}
+                                          </Typography>
+                                        </TableCell>
+                                        <TableCell align="right"></TableCell>
+                                      </TableRow>
                                       {/* {order.items.map((item, index) => (
-                                    <TableRow key={index}>
+                                    <TableRow key={index}> 
                                       <TableCell width={'50%'}>{item.name}</TableCell>
                                       <TableCell align="right">{item.quantity} ตัน</TableCell>
                                     </TableRow>
@@ -732,15 +757,23 @@ function ProductDetails() {
                                             <TableCell align="center">{index + 1}</TableCell>
                                             <TableCell align="center">{moment(cutOffProduct.cutoff_date).format('DD/MM/YYYY')}</TableCell>
                                             <TableCell align="right">{cutOffProduct.cutoff_amount}</TableCell>
-                                            <TableCell align="left">{cutOffProduct.cutoff_remark}</TableCell>
+                                            <TableCell align="left">
+                                              {cutOffProduct.cutoff_remark ? cutOffProduct.cutoff_remark : '-'}
+                                            </TableCell>
                                           </TableRow>
                                         ))}
-                                      {/* {order.items.map((item, index) => (
-                                    <TableRow key={index}>
-                                      <TableCell width={'50%'}>{item.name}</TableCell>
-                                      <TableCell align="right">{item.quantity} ตัน</TableCell>
-                                    </TableRow>
-                                  ))} */}
+
+                                      <TableRow>
+                                        <TableCell colSpan={2} align="right" sx={{ p: 2 }}>
+                                          <Typography variant="h5">รวมทั้งสิ้น: </Typography>
+                                        </TableCell>
+                                        <TableCell align="right">
+                                          <Typography variant="h5">
+                                            <span style={{ color: 'red' }}>{parseFloat(totalCutoffAmount.toFixed(3))}</span> ตัน{' '}
+                                          </Typography>
+                                        </TableCell>
+                                        <TableCell align="right"></TableCell>
+                                      </TableRow>
                                     </TableBody>
                                   </Table>
                                 </TableContainer>

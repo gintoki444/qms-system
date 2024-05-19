@@ -81,7 +81,7 @@ function CompantTableHead() {
   );
 }
 
-function CheckersTable() {
+function CheckersTable({ permission }) {
   //   const [car, setCar] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -90,7 +90,7 @@ function CheckersTable() {
   useEffect(() => {
     // getPermission();
     getCheckers();
-  }, []);
+  }, [permission]);
 
   const getCheckers = async () => {
     setLoading(true);
@@ -229,6 +229,7 @@ function CheckersTable() {
                             variant="contained"
                             size="medium"
                             color="primary"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => updateChecker(row.checker_id)}
                           >
@@ -240,6 +241,7 @@ function CheckersTable() {
                             variant="contained"
                             size="medium"
                             color="error"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => handleClickOpen(row.checker_id)}
                           >

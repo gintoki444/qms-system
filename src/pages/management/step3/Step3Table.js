@@ -49,7 +49,7 @@ import SoundCall from 'components/@extended/SoundCall';
 
 import QueueTag from 'components/@extended/QueueTag';
 
-export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
+export const Step3Table = ({ status, title, onStatusChange, onFilter, permission }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
   const headCells = [
     {
@@ -182,7 +182,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
   useEffect(() => {
     getStation();
     fetchData();
-  }, [status, onStatusChange, onFilter]);
+  }, [status, onStatusChange, onFilter, permission]);
 
   const fetchData = async () => {
     try {
@@ -236,7 +236,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
     }
   };
 
-  const initialData = 0;
+  const initialData = '';
   const [weight, setWeight] = useState(initialData);
 
   const handleChange = (value) => {
@@ -475,7 +475,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
         .then((result) => {
           //console.log(result)
           if (result['status'] === 'ok') {
-            setWeight(0);
+            setWeight('');
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
@@ -644,7 +644,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
           return;
         }
 
-        setWeight(0);
+        setWeight('');
         if (station_count < station_num) {
           setLoading(true);
 
@@ -667,10 +667,17 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
           setLoading(false);
         }
       } else {
+        console.log(
+          'reserves[0].total_quantity + queuesDetial[0].weight1 ',
+          parseFloat(reserves[0].total_quantity) + parseFloat(queuesDetial[0].weight1)
+        );
         if (fr === 'close') {
           //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว
-          if (weight === 0 || weight === '') {
+          if (weight <= 0 || weight === '') {
             alert('กรุณาใสน้ำหนักจากการชั่งหนัก');
+            return;
+          } else if (weight < parseFloat(reserves[0].total_quantity) + parseFloat(queuesDetial[0].weight1)) {
+            alert('น้ำหนักจากการชั่งหนักต้องไม่น้อยกว่า น้ำหนักชั่งเบา + น้ำหนักสินค้า');
             return;
           } else if (typeSelect && typeSelect.checked1 == true && txtDetail == '') {
             alert('กรุณาใสรายละเอียดการทวนสอบ');
@@ -683,6 +690,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
               setOpen(false);
               setLoading(false);
             } else {
+              // if (weight === 99999) {
               // การใช้งาน Line Notify
               getStepToken(id_update)
                 .then(({ queue_id, token }) => {
@@ -701,11 +709,12 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
               updateWeight2(id_update);
               updateStartTime(id_update_next);
               setOpen(false);
+              // }
             }
           }
         } else {
           //ยกเลิก
-          setWeight(0);
+          setWeight('');
           // การใช้งาน Line Notify
           getStepToken(id_update)
             .then(({ queue_id, token }) => {
@@ -726,10 +735,10 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
       setreserves([]);
       setSelectedStations({});
       setTxtDetail('');
-      setWeight(0);
       setTypeSelect([]);
       setOpen(false);
     }
+    setWeight('');
   };
 
   const [typeSelect, setTypeSelect] = useState();
@@ -847,7 +856,8 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                           type: 'number',
                           'aria-label': 'weight'
                         }}
-                        value={weight}
+                        placeholder="ระบุน้ำหนัก"
+                        value={weight || ''}
                         onChange={(e) => handleChange(e.target.value)}
                       />
                       {/* <FormHelperText id="standard-weight-helper-text">น้ำหนักชั่งหนัก</FormHelperText> */}
@@ -1040,6 +1050,14 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                                   variant="contained"
                                   size="small"
                                   align="center"
+                                  disabled={
+                                    ((row.station_id === 2 || row.station_id === 29) &&
+                                      permission !== 'manage_everything' &&
+                                      permission !== 'add_edit_delete_data') ||
+                                    (permission !== 'manage_everything' && permission !== 'add_edit_delete_data') ||
+                                    row.station_id === 2 ||
+                                    row.station_id === 29
+                                  }
                                   color="info"
                                   onClick={() => handleCallQueue(row)}
                                 >
@@ -1057,6 +1075,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                                 variant="contained"
                                 size="small"
                                 color="info"
+                                disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                                 onClick={() => handleClickOpen(row.step_id, 'call', row.queue_id, row.team_id, row)}
                                 endIcon={<RightSquareOutlined />}
                               >
@@ -1066,7 +1085,14 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                             {status == 'processing' && (
                               <div>
                                 <Button
-                                  disabled={row.station_id == 2 || row.station_id == 29}
+                                  disabled={
+                                    ((row.station_id === 2 || row.station_id === 29) &&
+                                      permission !== 'manage_everything' &&
+                                      permission !== 'add_edit_delete_data') ||
+                                    (permission !== 'manage_everything' && permission !== 'add_edit_delete_data') ||
+                                    row.station_id === 2 ||
+                                    row.station_id === 29
+                                  }
                                   variant="contained"
                                   size="small"
                                   onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.team_id, row)}
@@ -1075,7 +1101,14 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter }) => {
                                   ยกเลิก
                                 </Button>
                                 <Button
-                                  disabled={row.station_id == 2 || row.station_id == 29}
+                                  disabled={
+                                    ((row.station_id === 2 || row.station_id === 29) &&
+                                      permission !== 'manage_everything' &&
+                                      permission !== 'add_edit_delete_data') ||
+                                    (permission !== 'manage_everything' && permission !== 'add_edit_delete_data') ||
+                                    row.station_id === 2 ||
+                                    row.station_id === 29
+                                  }
                                   size="small"
                                   variant="contained"
                                   onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row.team_id, row)}

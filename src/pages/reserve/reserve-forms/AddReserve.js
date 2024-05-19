@@ -26,7 +26,8 @@ import {
   CircularProgress,
   FormControl,
   Select,
-  Autocomplete
+  Autocomplete,
+  Alert
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import MenuItem from '@mui/material/MenuItem';
@@ -38,6 +39,10 @@ import { useSnackbar } from 'notistack';
 import moment from 'moment';
 
 function AddReserve() {
+  const pageId = 8;
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+  const [pageDetail, setPageDetail] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const currentDate = new Date().toISOString().split('T')[0];
   const userRoles = useSelector((state) => state.auth.roles);
@@ -142,13 +147,20 @@ function AddReserve() {
 
   // =============== useEffect ===============//
   useEffect(() => {
-    if (userRoles) {
-      getCompanyLsit();
-      getCarLsit();
-      getDriverLsit();
-      getProductCompany();
+    setLoading(true);
+    if (userRoles && Object.keys(userPermission).length > 0) {
+      if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
+        setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+        getCompanyLsit();
+        getCarLsit();
+        getDriverLsit();
+        getProductCompany();
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
     }
-  }, [userRoles]);
+  }, [userRoles, userPermission]);
 
   const initialValue = {
     company_id: '',
@@ -282,187 +294,198 @@ function AddReserve() {
           <CircularProgress color="primary" />
         </Backdrop>
       )}
-      <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-        <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits}>
-          {({ handleBlur, handleChange, setFieldValue, handleSubmit, isSubmitting, values, touched, errors }) => (
-            <form noValidate onSubmit={handleSubmit}>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Typography variant="h5">เพิ่มข้อมูลจองคิวรับสินค้า</Typography>
-                  <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
-                </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>บริษัท/ร้านค้า *</InputLabel>
-                    <FormControl fullWidth>
-                      <Autocomplete
-                        disablePortal
-                        id="company-list"
-                        options={companyList}
-                        onChange={(e, value) => {
-                          const newValue = value ? value.company_id : null;
-                          setFieldValue('company_id', newValue);
-                        }}
-                        getOptionLabel={(option) => option.name}
-                        sx={{
-                          width: '100%',
-                          '& .MuiOutlinedInput-root': {
-                            padding: '3px 8px!important'
-                          },
-                          '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
-                            right: '7px!important',
-                            top: 'calc(50% - 18px)'
-                          }
-                        }}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            name="company_id"
-                            placeholder="เลือกบริษัท/ร้านค้า"
-                            error={Boolean(touched.company_id && errors.company_id)}
-                          />
-                        )}
-                      />
-                    </FormControl>
-                    {touched.company_id && errors.company_id && (
-                      <FormHelperText error id="helper-text-company-car">
-                        {errors.company_id}
+      {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
+        <Grid item xs={12}>
+          <MainCard content={false}>
+            <Stack sx={{ width: '100%' }} spacing={2}>
+              <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+            </Stack>
+          </MainCard>
+        </Grid>
+      )}
+      {pageDetail.length !== 0 && (
+        <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
+          <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits}>
+            {({ handleBlur, handleChange, setFieldValue, handleSubmit, isSubmitting, values, touched, errors }) => (
+              <form noValidate onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <Typography variant="h5">เพิ่มข้อมูลจองคิวรับสินค้า</Typography>
+                    <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>บริษัท/ร้านค้า *</InputLabel>
+                      <FormControl fullWidth>
+                        <Autocomplete
+                          disablePortal
+                          id="company-list"
+                          options={companyList}
+                          onChange={(e, value) => {
+                            const newValue = value ? value.company_id : null;
+                            setFieldValue('company_id', newValue);
+                          }}
+                          getOptionLabel={(option) => option.name}
+                          sx={{
+                            width: '100%',
+                            '& .MuiOutlinedInput-root': {
+                              padding: '3px 8px!important'
+                            },
+                            '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                              right: '7px!important',
+                              top: 'calc(50% - 18px)'
+                            }
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              name="company_id"
+                              placeholder="เลือกบริษัท/ร้านค้า"
+                              error={Boolean(touched.company_id && errors.company_id)}
+                            />
+                          )}
+                        />
+                      </FormControl>
+                      {touched.company_id && errors.company_id && (
+                        <FormHelperText error id="helper-text-company-car">
+                          {errors.company_id}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>บริษัท (สินค้า) *</InputLabel>
+                      <FormControl fullWidth>
+                        <Select
+                          displayEmpty
+                          variant="outlined"
+                          name="product_company_id"
+                          value={values.product_company_id || ''}
+                          onChange={(e) => {
+                            setFieldValue('product_company_id', e.target.value);
+                            setFieldValue('product_brand_id', '');
+                            handleChangeProductCom(e);
+                          }}
+                          fullWidth
+                          error={Boolean(touched.product_company_id && errors.product_company_id)}
+                        >
+                          <MenuItem disabled value="">
+                            เลือกบริษัท
+                          </MenuItem>
+                          {productCompany.map((companias) => (
+                            <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
+                              {companias.product_company_name_th}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Stack>
+                    {touched.product_company_id && errors.product_company_id && (
+                      <FormHelperText error id="helper-text-product_company_id">
+                        {errors.product_company_id}
                       </FormHelperText>
                     )}
-                  </Stack>
-                </Grid>
+                  </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>บริษัท (สินค้า) *</InputLabel>
-                    <FormControl fullWidth>
-                      <Select
-                        displayEmpty
-                        variant="outlined"
-                        name="product_company_id"
-                        value={values.product_company_id || ''}
-                        onChange={(e) => {
-                          setFieldValue('product_company_id', e.target.value);
-                          setFieldValue('product_brand_id', '');
-                          handleChangeProductCom(e);
-                        }}
-                        fullWidth
-                        error={Boolean(touched.product_company_id && errors.product_company_id)}
-                      >
-                        <MenuItem disabled value="">
-                          เลือกบริษัท
-                        </MenuItem>
-                        {productCompany.map((companias) => (
-                          <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
-                            {companias.product_company_name_th}
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>ตรา (สินค้า) *</InputLabel>
+                      <FormControl fullWidth>
+                        <Select
+                          displayEmpty
+                          variant="outlined"
+                          name="product_brand_id"
+                          value={values.product_brand_id}
+                          onChange={handleChange}
+                          placeholder="เลือกสายแรงงาน"
+                          fullWidth
+                          error={Boolean(touched.product_brand_id && errors.product_brand_id)}
+                        >
+                          <MenuItem disabled value="">
+                            เลือกตรา (สินค้า)
                           </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                  {touched.product_company_id && errors.product_company_id && (
-                    <FormHelperText error id="helper-text-product_company_id">
-                      {errors.product_company_id}
-                    </FormHelperText>
-                  )}
-                </Grid>
+                          {productBrand.map((brands) => (
+                            <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
+                              {brands.product_brand_name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Stack>
+                    {touched.product_brand_id && errors.product_brand_id && (
+                      <FormHelperText error id="helper-text-product_brand_id">
+                        {errors.product_brand_id}
+                      </FormHelperText>
+                    )}
+                  </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>ตรา (สินค้า) *</InputLabel>
-                    <FormControl fullWidth>
-                      <Select
-                        displayEmpty
-                        variant="outlined"
-                        name="product_brand_id"
-                        value={values.product_brand_id}
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>วันที่เข้ารับสินค้า *</InputLabel>
+                      <TextField
+                        required
+                        fullWidth
+                        type="date"
+                        id="pickup_date"
+                        name="pickup_date"
+                        onBlur={handleBlur}
+                        value={values.pickup_date}
                         onChange={handleChange}
-                        placeholder="เลือกสายแรงงาน"
-                        fullWidth
-                        error={Boolean(touched.product_brand_id && errors.product_brand_id)}
-                      >
-                        <MenuItem disabled value="">
-                          เลือกตรา (สินค้า)
-                        </MenuItem>
-                        {productBrand.map((brands) => (
-                          <MenuItem key={brands.product_brand_id} value={brands.product_brand_id}>
-                            {brands.product_brand_name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                  {touched.product_brand_id && errors.product_brand_id && (
-                    <FormHelperText error id="helper-text-product_brand_id">
-                      {errors.product_brand_id}
-                    </FormHelperText>
-                  )}
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>วันที่เข้ารับสินค้า *</InputLabel>
-                    <TextField
-                      required
-                      fullWidth
-                      type="date"
-                      id="pickup_date"
-                      name="pickup_date"
-                      onBlur={handleBlur}
-                      value={values.pickup_date}
-                      onChange={handleChange}
-                      inputProps={{
-                        min: currentDate
-                      }}
-                    />
-                    {touched.pickup_date && errors.pickup_date && (
-                      <FormHelperText error id="helper-text-pickup_date">
-                        {errors.pickup_date}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>รถบรรทุก *</InputLabel>
-                    <FormControl fullWidth>
-                      <Autocomplete
-                        disablePortal
-                        id="car-list"
-                        options={carList}
-                        onChange={(e, value) => {
-                          const newValue = value ? value.car_id : '';
-                          setFieldValue('car_id', newValue);
+                        inputProps={{
+                          min: currentDate
                         }}
-                        getOptionLabel={(option) => {
-                          if (option.car_id !== 1) {
-                            return option.registration_no;
-                          } else {
-                            return 'ไม่ระบุรถบรรทุก';
-                          }
-                        }}
-                        sx={{
-                          width: '100%',
-                          '& .MuiOutlinedInput-root': {
-                            padding: '3px 8px!important'
-                          },
-                          '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
-                            right: '7px!important',
-                            top: 'calc(50% - 18px)'
-                          }
-                        }}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            name="car_id"
-                            placeholder="เลือกรถบรรทุก"
-                            error={Boolean(touched.car_id && errors.car_id)}
-                          />
-                        )}
                       />
-                      {/* <Select
+                      {touched.pickup_date && errors.pickup_date && (
+                        <FormHelperText error id="helper-text-pickup_date">
+                          {errors.pickup_date}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>รถบรรทุก *</InputLabel>
+                      <FormControl fullWidth>
+                        <Autocomplete
+                          disablePortal
+                          id="car-list"
+                          options={carList}
+                          onChange={(e, value) => {
+                            const newValue = value ? value.car_id : '';
+                            setFieldValue('car_id', newValue);
+                          }}
+                          getOptionLabel={(option) => {
+                            if (option.car_id !== 1) {
+                              return option.registration_no;
+                            } else {
+                              return 'ไม่ระบุรถบรรทุก';
+                            }
+                          }}
+                          sx={{
+                            width: '100%',
+                            '& .MuiOutlinedInput-root': {
+                              padding: '3px 8px!important'
+                            },
+                            '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                              right: '7px!important',
+                              top: 'calc(50% - 18px)'
+                            }
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              name="car_id"
+                              placeholder="เลือกรถบรรทุก"
+                              error={Boolean(touched.car_id && errors.car_id)}
+                            />
+                          )}
+                        />
+                        {/* <Select
                         displayEmpty
                         variant="outlined"
                         name="car_id"
@@ -481,55 +504,55 @@ function AddReserve() {
                           </MenuItem>
                         ))}
                       </Select> */}
-                    </FormControl>
-                    {touched.car_id && errors.car_id && (
-                      <FormHelperText error id="helper-text-company-car">
-                        {errors.car_id}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+                      </FormControl>
+                      {touched.car_id && errors.car_id && (
+                        <FormHelperText error id="helper-text-company-car">
+                          {errors.car_id}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>คนขับรถ *</InputLabel>
-                    <FormControl fullWidth>
-                      <Autocomplete
-                        disablePortal
-                        id="driver-list"
-                        options={driverList}
-                        name="driver_id"
-                        // onChange={(e, value) => setFieldValue('driver_id', value.driver_id)}
-                        onChange={(e, value) => {
-                          const newValue = value ? value.driver_id : '';
-                          setFieldValue('driver_id', newValue);
-                        }}
-                        getOptionLabel={(option) => option.firstname + ' ' + option.lastname}
-                        sx={{
-                          width: '100%',
-                          '& .MuiOutlinedInput-root': {
-                            padding: '3px 8px!important'
-                          },
-                          '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
-                            right: '7px!important',
-                            top: 'calc(50% - 18px)'
-                          }
-                        }}
-                        error={Boolean(touched.driver_id && errors.driver_id)}
-                        renderInput={(params) => (
-                          <TextField {...params} placeholder="เลือกคนขับรถ" error={Boolean(touched.driver_id && errors.driver_id)} />
-                        )}
-                      />
-                    </FormControl>
-                    {touched.driver_id && errors.driver_id && (
-                      <FormHelperText error id="helper-text-driver_id-car">
-                        {errors.driver_id}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>คนขับรถ *</InputLabel>
+                      <FormControl fullWidth>
+                        <Autocomplete
+                          disablePortal
+                          id="driver-list"
+                          options={driverList}
+                          name="driver_id"
+                          // onChange={(e, value) => setFieldValue('driver_id', value.driver_id)}
+                          onChange={(e, value) => {
+                            const newValue = value ? value.driver_id : '';
+                            setFieldValue('driver_id', newValue);
+                          }}
+                          getOptionLabel={(option) => option.firstname + ' ' + option.lastname}
+                          sx={{
+                            width: '100%',
+                            '& .MuiOutlinedInput-root': {
+                              padding: '3px 8px!important'
+                            },
+                            '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
+                              right: '7px!important',
+                              top: 'calc(50% - 18px)'
+                            }
+                          }}
+                          error={Boolean(touched.driver_id && errors.driver_id)}
+                          renderInput={(params) => (
+                            <TextField {...params} placeholder="เลือกคนขับรถ" error={Boolean(touched.driver_id && errors.driver_id)} />
+                          )}
+                        />
+                      </FormControl>
+                      {touched.driver_id && errors.driver_id && (
+                        <FormHelperText error id="helper-text-driver_id-car">
+                          {errors.driver_id}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
 
-                {/* <Grid item xs={12} md={6}>
+                  {/* <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
                     <InputLabel>เหตุผลการจอง</InputLabel>
                     <OutlinedInput
@@ -550,47 +573,52 @@ function AddReserve() {
                   </Stack>
                 </Grid> */}
 
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>จำนวนสินค้า</InputLabel>
-                    <OutlinedInput
-                      id="total_quantity"
-                      type="text"
-                      disabled
-                      value={values.total_quantity}
-                      name="color"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="จำนวนสินค้า"
-                      fullWidth
-                      error={Boolean(touched.total_quantity && errors.total_quantity)}
-                    />
-                    {touched.total_quantity && errors.total_quantity && (
-                      <FormHelperText error id="helper-text-total_quantity">
-                        {errors.total_quantity}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>จำนวนสินค้า</InputLabel>
+                      <OutlinedInput
+                        id="total_quantity"
+                        type="text"
+                        disabled
+                        value={values.total_quantity}
+                        name="color"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        placeholder="จำนวนสินค้า"
+                        fullWidth
+                        error={Boolean(touched.total_quantity && errors.total_quantity)}
+                      />
+                      {touched.total_quantity && errors.total_quantity && (
+                        <FormHelperText error id="helper-text-total_quantity">
+                          {errors.total_quantity}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
 
-                <Grid item xs={12}>
-                  <Button
-                    disableElevation
-                    disabled={isSubmitting}
-                    size="mediam"
-                    type="submit"
-                    variant="contained"
-                    color="success"
-                    startIcon={<SaveOutlined />}
-                  >
-                    เพิ่มข้อมูลจองคิว
-                  </Button>
+                  <Grid item xs={12}>
+                    {pageDetail.length > 0 &&
+                      (pageDetail[0].permission_name === 'manage_everything' ||
+                        pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                        <Button
+                          disableElevation
+                          disabled={isSubmitting}
+                          size="mediam"
+                          type="submit"
+                          variant="contained"
+                          color="success"
+                          startIcon={<SaveOutlined />}
+                        >
+                          เพิ่มข้อมูลจองคิว
+                        </Button>
+                      )}
+                  </Grid>
                 </Grid>
-              </Grid>
-            </form>
-          )}
-        </Formik>
-      </MainCard>
+              </form>
+            )}
+          </Formik>
+        </MainCard>
+      )}
     </Grid>
   );
 }

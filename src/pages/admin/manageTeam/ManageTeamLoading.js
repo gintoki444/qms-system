@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// import { useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import {
   Grid,
@@ -16,7 +16,8 @@ import {
   Tooltip,
   Button,
   CircularProgress,
-  ButtonGroup
+  ButtonGroup,
+  Alert
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import MenuItem from '@mui/material/MenuItem';
@@ -37,6 +38,18 @@ import * as adminRequest from '_api/adminRequest';
 import ManageTeam from './ManageTeam';
 
 function ManageTeamLoading() {
+  const pageId = 22;
+  const userRole = useSelector((state) => state.auth?.roles);
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+
+  const [pageDetail, setPageDetail] = useState([]);
+
+  useEffect(() => {
+    if (Object.keys(userPermission).length > 0) {
+      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+    }
+  }, [userRole, userPermission]);
+
   const [loading, setLoading] = useState(false);
   // =============== useEffect ===============//
   useEffect(() => {
@@ -430,211 +443,226 @@ function ManageTeamLoading() {
           </Button>
         </DialogActions>
       </Dialog>
-      <Grid container rowSpacing={1} columnSpacing={1.75}>
-        <Grid item xs={12} lg={12}>
-          <MainCard>
-            <Grid container spacing={1}>
-              <Grid item xs={12} md={4}>
-                <Stack spacing={1}>
-                  <InputLabel>ทีมขึ้นสินค้า</InputLabel>
-                  <FormControl>
-                    <Select
-                      id="team_id"
-                      displayEmpty
-                      value={team_id || ''}
-                      onChange={(e) => {
-                        handleChangeTeam(e.target.value);
-                      }}
-                      input={<OutlinedInput />}
-                      inputProps={{ 'aria-label': 'Without label' }}
-                    >
-                      <MenuItem disabled value="">
-                        เลือกทีมขึ้นสินค้า
-                      </MenuItem>
-                      {teamloadingList.map((teamload) => (
-                        <MenuItem key={teamload.team_id} value={teamload.team_id}>
-                          {teamload.team_name} (โกดัง: {teamload.warehouse_name}) {teamload.station_description} ({teamload.manager_name})
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Stack>
-              </Grid>
 
-              <Grid item xs={12} md={4}>
-                <Stack spacing={1}>
-                  <InputLabel>โกดังสินค้า</InputLabel>
-                  <FormControl>
-                    <Select
-                      displayEmpty
-                      variant="outlined"
-                      value={warehouse}
-                      onChange={(e) => {
-                        handleChangeWarehouse(e);
-                      }}
-                      placeholder="เลือกโกดังสินค้า"
-                      fullWidth
-                    >
-                      <MenuItem disabled value="">
-                        โกดังสินค้า
-                      </MenuItem>
-                      {warehousesList &&
-                        warehousesList.map((warehouses) => (
-                          <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
-                            {warehouses.description}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                </Stack>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Stack spacing={1}>
-                  <InputLabel>หัวจ่าย</InputLabel>
-                  <FormControl>
-                    <Select
-                      displayEmpty
-                      variant="outlined"
-                      // name="reserve_station_id"
-                      value={selectedStation}
-                      onChange={(e) => {
-                        handleChangeStation(e);
-                      }}
-                      placeholder="เลือกคลังสินค้า"
-                      fullWidth
-                    >
-                      <MenuItem disabled value="">
-                        เลือกหัวจ่าย
-                      </MenuItem>
-                      {stationsList.map((station) => (
-                        <MenuItem key={station.station_id} value={station.station_id}>
-                          {station.station_description}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Stack>
-              </Grid>
-            </Grid>
+      {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
+        <Grid item xs={12}>
+          <MainCard content={false}>
+            <Stack sx={{ width: '100%' }} spacing={2}>
+              <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+            </Stack>
           </MainCard>
         </Grid>
-      </Grid>
+      )}
+      {pageDetail.length !== 0 && (
+        <>
+          {pageDetail.length > 0 &&
+            (pageDetail[0].permission_name === 'manage_everything' || pageDetail[0].permission_name === 'add_edit_delete_data') && (
+              <>
+                <Grid container rowSpacing={1} columnSpacing={1.75}>
+                  <Grid item xs={12} lg={12}>
+                    <MainCard>
+                      <Grid container spacing={1}>
+                        <Grid item xs={12} md={4}>
+                          <Stack spacing={1}>
+                            <InputLabel>ทีมขึ้นสินค้า</InputLabel>
+                            <FormControl>
+                              <Select
+                                id="team_id"
+                                displayEmpty
+                                value={team_id || ''}
+                                onChange={(e) => {
+                                  handleChangeTeam(e.target.value);
+                                }}
+                                input={<OutlinedInput />}
+                                inputProps={{ 'aria-label': 'Without label' }}
+                              >
+                                <MenuItem disabled value="">
+                                  เลือกทีมขึ้นสินค้า
+                                </MenuItem>
+                                {teamloadingList.map((teamload) => (
+                                  <MenuItem key={teamload.team_id} value={teamload.team_id}>
+                                    {teamload.team_name} (โกดัง: {teamload.warehouse_name}) {teamload.station_description} (
+                                    {teamload.manager_name})
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Stack>
+                        </Grid>
 
-      {/* ========== Row Selected Team ==========*/}
-      <Grid container rowSpacing={1} columnSpacing={1.75} sx={{ mt: 2 }}>
-        <Grid item xs={12} lg={12}>
-          <MainCard>
-            <Grid container spacing={1}>
-              <Grid item xs={12} md={4}>
-                <Grid item sx={{ mb: 1 }}>
-                  <Typography variant="h5">เลือกแล้ว: หัวหน้าโกดัง</Typography>
-                </Grid>
-                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
-                  <TableContainer
-                    sx={{
-                      width: '100%',
-                      overflowX: 'auto',
-                      position: 'relative',
-                      display: 'block',
-                      maxWidth: '100%',
-                      '& td, & th': { whiteSpace: 'nowrap' }
-                    }}
-                  >
-                    <Table
-                      aria-labelledby="tableTitle"
-                      size="small"
-                      sx={{
-                        '& .MuiTableCell-root:first-of-type': {
-                          pl: 2
-                        },
-                        '& .MuiTableCell-root:last-of-type': {
-                          pr: 3
-                        }
-                      }}
-                    >
-                      <WareHouseTableHead status="selected" />
-                      {!loading ? (
-                        <TableBody>
-                          {select_manager_items.map((row, index) => (
-                            <TableRow key={row.manager_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                              <TableCell align="center">{index + 1}</TableCell>
-                              <TableCell align="left">{row.manager_name}</TableCell>
-                              <TableCell align="left">{row.team_name}</TableCell>
-                              <TableCell align="left">{row.warehouse_name}</TableCell>
-                              <TableCell align="right">
-                                <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
-                                  <Tooltip title="เปลี่ยน">
-                                    <Button
-                                      sx={{ fontSize: '18px' }}
-                                      onClick={() => handleClickOpen(team_id, 'change-manager', '', row.warehouse_name)}
-                                    >
-                                      <SelectOutlined />
-                                    </Button>
-                                  </Tooltip>
-                                </ButtonGroup>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                          {select_manager_items.length == 0 && (
-                            <TableRow>
-                              <TableCell colSpan={4} align="center">
-                                ไม่พบข้อมูล
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      ) : (
-                        <TableBody>
-                          <TableRow>
-                            <TableCell colSpan={7} align="center">
-                              <CircularProgress />
-                              <Typography variant="body1">Loading....</Typography>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      )}
-                    </Table>
-                  </TableContainer>
-                </MainCard>
-              </Grid>
+                        <Grid item xs={12} md={4}>
+                          <Stack spacing={1}>
+                            <InputLabel>โกดังสินค้า</InputLabel>
+                            <FormControl>
+                              <Select
+                                displayEmpty
+                                variant="outlined"
+                                value={warehouse}
+                                onChange={(e) => {
+                                  handleChangeWarehouse(e);
+                                }}
+                                placeholder="เลือกโกดังสินค้า"
+                                fullWidth
+                              >
+                                <MenuItem disabled value="">
+                                  โกดังสินค้า
+                                </MenuItem>
+                                {warehousesList &&
+                                  warehousesList.map((warehouses) => (
+                                    <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
+                                      {warehouses.description}
+                                    </MenuItem>
+                                  ))}
+                              </Select>
+                            </FormControl>
+                          </Stack>
+                        </Grid>
 
-              <Grid item xs={12} md={4}>
-                <Grid item sx={{ mb: 1 }}>
-                  <Typography variant="h5">เลือกแล้ว: พนักงานจ่ายสินค้า</Typography>
+                        <Grid item xs={12} md={4}>
+                          <Stack spacing={1}>
+                            <InputLabel>หัวจ่าย</InputLabel>
+                            <FormControl>
+                              <Select
+                                displayEmpty
+                                variant="outlined"
+                                // name="reserve_station_id"
+                                value={selectedStation}
+                                onChange={(e) => {
+                                  handleChangeStation(e);
+                                }}
+                                placeholder="เลือกคลังสินค้า"
+                                fullWidth
+                              >
+                                <MenuItem disabled value="">
+                                  เลือกหัวจ่าย
+                                </MenuItem>
+                                {stationsList.map((station) => (
+                                  <MenuItem key={station.station_id} value={station.station_id}>
+                                    {station.station_description}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Stack>
+                        </Grid>
+                      </Grid>
+                    </MainCard>
+                  </Grid>
                 </Grid>
-                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
-                  <TableContainer
-                    sx={{
-                      width: '100%',
-                      overflowX: 'auto',
-                      position: 'relative',
-                      display: 'block',
-                      maxWidth: '100%',
-                      '& td, & th': { whiteSpace: 'nowrap' }
-                    }}
-                  >
-                    <Table
-                      aria-labelledby="tableTitle"
-                      size="small"
-                      sx={{
-                        '& .MuiTableCell-root:first-of-type': {
-                          pl: 2
-                        },
-                        '& .MuiTableCell-root:last-of-type': {
-                          pr: 3
-                        }
-                      }}
-                    >
-                      <CheckerTableHead status="selected" />
-                      {!loading ? (
-                        <TableBody>
-                          {select_checker_items.map((row, index) => (
-                            <TableRow key={row.team_checker_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                              <TableCell align="center">{index + 1}</TableCell>
-                              <TableCell align="left">{row.checker_name}</TableCell>
-                              <TableCell align="left">{row.team_name}</TableCell>
-                              {/* <TableCell align="right">
+                {/* ========== Row Selected Team ==========*/}
+                <Grid container rowSpacing={1} columnSpacing={1.75} sx={{ mt: 2 }}>
+                  <Grid item xs={12} lg={12}>
+                    <MainCard>
+                      <Grid container spacing={1}>
+                        <Grid item xs={12} md={4}>
+                          <Grid item sx={{ mb: 1 }}>
+                            <Typography variant="h5">เลือกแล้ว: หัวหน้าโกดัง</Typography>
+                          </Grid>
+                          <MainCard boxShadow={true} contentSX={{ p: 0 }}>
+                            <TableContainer
+                              sx={{
+                                width: '100%',
+                                overflowX: 'auto',
+                                position: 'relative',
+                                display: 'block',
+                                maxWidth: '100%',
+                                '& td, & th': { whiteSpace: 'nowrap' }
+                              }}
+                            >
+                              <Table
+                                aria-labelledby="tableTitle"
+                                size="small"
+                                sx={{
+                                  '& .MuiTableCell-root:first-of-type': {
+                                    pl: 2
+                                  },
+                                  '& .MuiTableCell-root:last-of-type': {
+                                    pr: 3
+                                  }
+                                }}
+                              >
+                                <WareHouseTableHead status="selected" />
+                                {!loading ? (
+                                  <TableBody>
+                                    {select_manager_items.map((row, index) => (
+                                      <TableRow key={row.manager_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                        <TableCell align="center">{index + 1}</TableCell>
+                                        <TableCell align="left">{row.manager_name}</TableCell>
+                                        <TableCell align="left">{row.team_name}</TableCell>
+                                        <TableCell align="left">{row.warehouse_name}</TableCell>
+                                        <TableCell align="right">
+                                          <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
+                                            <Tooltip title="เปลี่ยน">
+                                              <Button
+                                                sx={{ fontSize: '18px' }}
+                                                onClick={() => handleClickOpen(team_id, 'change-manager', '', row.warehouse_name)}
+                                              >
+                                                <SelectOutlined />
+                                              </Button>
+                                            </Tooltip>
+                                          </ButtonGroup>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                    {select_manager_items.length == 0 && (
+                                      <TableRow>
+                                        <TableCell colSpan={4} align="center">
+                                          ไม่พบข้อมูล
+                                        </TableCell>
+                                      </TableRow>
+                                    )}
+                                  </TableBody>
+                                ) : (
+                                  <TableBody>
+                                    <TableRow>
+                                      <TableCell colSpan={7} align="center">
+                                        <CircularProgress />
+                                        <Typography variant="body1">Loading....</Typography>
+                                      </TableCell>
+                                    </TableRow>
+                                  </TableBody>
+                                )}
+                              </Table>
+                            </TableContainer>
+                          </MainCard>
+                        </Grid>
+
+                        <Grid item xs={12} md={4}>
+                          <Grid item sx={{ mb: 1 }}>
+                            <Typography variant="h5">เลือกแล้ว: พนักงานจ่ายสินค้า</Typography>
+                          </Grid>
+                          <MainCard boxShadow={true} contentSX={{ p: 0 }}>
+                            <TableContainer
+                              sx={{
+                                width: '100%',
+                                overflowX: 'auto',
+                                position: 'relative',
+                                display: 'block',
+                                maxWidth: '100%',
+                                '& td, & th': { whiteSpace: 'nowrap' }
+                              }}
+                            >
+                              <Table
+                                aria-labelledby="tableTitle"
+                                size="small"
+                                sx={{
+                                  '& .MuiTableCell-root:first-of-type': {
+                                    pl: 2
+                                  },
+                                  '& .MuiTableCell-root:last-of-type': {
+                                    pr: 3
+                                  }
+                                }}
+                              >
+                                <CheckerTableHead status="selected" />
+                                {!loading ? (
+                                  <TableBody>
+                                    {select_checker_items.map((row, index) => (
+                                      <TableRow key={row.team_checker_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                        <TableCell align="center">{index + 1}</TableCell>
+                                        <TableCell align="left">{row.checker_name}</TableCell>
+                                        <TableCell align="left">{row.team_name}</TableCell>
+                                        {/* <TableCell align="right">
                                 <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
                                   <Button
                                     color="error"
@@ -645,67 +673,67 @@ function ManageTeamLoading() {
                                   </Button>
                                 </ButtonGroup>
                               </TableCell> */}
-                            </TableRow>
-                          ))}
-                          {select_checker_items.length == 0 && (
-                            <TableRow>
-                              <TableCell colSpan={4} align="center">
-                                ไม่พบข้อมูล
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      ) : (
-                        <TableBody>
-                          <TableRow>
-                            <TableCell colSpan={7} align="center">
-                              <CircularProgress />
-                              <Typography variant="body1">Loading....</Typography>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      )}
-                    </Table>
-                  </TableContainer>
-                </MainCard>
-              </Grid>
+                                      </TableRow>
+                                    ))}
+                                    {select_checker_items.length == 0 && (
+                                      <TableRow>
+                                        <TableCell colSpan={4} align="center">
+                                          ไม่พบข้อมูล
+                                        </TableCell>
+                                      </TableRow>
+                                    )}
+                                  </TableBody>
+                                ) : (
+                                  <TableBody>
+                                    <TableRow>
+                                      <TableCell colSpan={7} align="center">
+                                        <CircularProgress />
+                                        <Typography variant="body1">Loading....</Typography>
+                                      </TableCell>
+                                    </TableRow>
+                                  </TableBody>
+                                )}
+                              </Table>
+                            </TableContainer>
+                          </MainCard>
+                        </Grid>
 
-              <Grid item xs={12} md={4}>
-                <Grid item sx={{ mb: 1 }}>
-                  <Typography variant="h5">เลือกแล้ว: พนักงานโฟล์คลิฟท์</Typography>
-                </Grid>
-                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
-                  <TableContainer
-                    sx={{
-                      width: '100%',
-                      overflowX: 'auto',
-                      position: 'relative',
-                      display: 'block',
-                      maxWidth: '100%',
-                      '& td, & th': { whiteSpace: 'nowrap' }
-                    }}
-                  >
-                    <Table
-                      aria-labelledby="tableTitle"
-                      size="small"
-                      sx={{
-                        '& .MuiTableCell-root:first-of-type': {
-                          pl: 2
-                        },
-                        '& .MuiTableCell-root:last-of-type': {
-                          pr: 3
-                        }
-                      }}
-                    >
-                      <ForkliftTableHead status="selected" />
-                      {!loading ? (
-                        <TableBody>
-                          {select_forklift_items.map((row, index) => (
-                            <TableRow key={row.index}>
-                              <TableCell align="center">{index + 1}</TableCell>
-                              <TableCell align="left">{row.forklift_name}</TableCell>
-                              <TableCell align="left">{row.team_name}</TableCell>
-                              {/* <TableCell align="right">
+                        <Grid item xs={12} md={4}>
+                          <Grid item sx={{ mb: 1 }}>
+                            <Typography variant="h5">เลือกแล้ว: พนักงานโฟล์คลิฟท์</Typography>
+                          </Grid>
+                          <MainCard boxShadow={true} contentSX={{ p: 0 }}>
+                            <TableContainer
+                              sx={{
+                                width: '100%',
+                                overflowX: 'auto',
+                                position: 'relative',
+                                display: 'block',
+                                maxWidth: '100%',
+                                '& td, & th': { whiteSpace: 'nowrap' }
+                              }}
+                            >
+                              <Table
+                                aria-labelledby="tableTitle"
+                                size="small"
+                                sx={{
+                                  '& .MuiTableCell-root:first-of-type': {
+                                    pl: 2
+                                  },
+                                  '& .MuiTableCell-root:last-of-type': {
+                                    pr: 3
+                                  }
+                                }}
+                              >
+                                <ForkliftTableHead status="selected" />
+                                {!loading ? (
+                                  <TableBody>
+                                    {select_forklift_items.map((row, index) => (
+                                      <TableRow key={row.index}>
+                                        <TableCell align="center">{index + 1}</TableCell>
+                                        <TableCell align="left">{row.forklift_name}</TableCell>
+                                        <TableCell align="left">{row.team_name}</TableCell>
+                                        {/* <TableCell align="right">
                                 <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
                                   <Button
                                     color="error"
@@ -716,227 +744,42 @@ function ManageTeamLoading() {
                                   </Button>
                                 </ButtonGroup>
                               </TableCell> */}
-                            </TableRow>
-                          ))}
-                          {select_forklift_items.length == 0 && (
-                            <TableRow>
-                              <TableCell colSpan={4} align="center">
-                                ไม่พบข้อมูล
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      ) : (
-                        <TableBody>
-                          <TableRow>
-                            <TableCell colSpan={7} align="center">
-                              <CircularProgress />
-                              <Typography variant="body1">Loading....</Typography>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      )}
-                    </Table>
-                  </TableContainer>
-                </MainCard>
-              </Grid>
-            </Grid>
-          </MainCard>
-        </Grid>
-      </Grid>
-
-      {/* ========== Row Select Team ==========*/}
-      <Grid>
-        <ManageTeam teamId={team_id} onHandleChange={handleUpdate} />
-      </Grid>
-      {/* <Grid container rowSpacing={1} columnSpacing={1.75} sx={{ mt: 2 }}>
-        <Grid item xs={12} lg={12}>
-          <MainCard>
-            <Grid container spacing={1}>
-              <Grid item xs={12} md={4}>
-                <Grid item sx={{ mb: 1 }}>
-                  <Typography variant="h5">เลือก: หัวหน้าโกดัง</Typography>
+                                      </TableRow>
+                                    ))}
+                                    {select_forklift_items.length == 0 && (
+                                      <TableRow>
+                                        <TableCell colSpan={4} align="center">
+                                          ไม่พบข้อมูล
+                                        </TableCell>
+                                      </TableRow>
+                                    )}
+                                  </TableBody>
+                                ) : (
+                                  <TableBody>
+                                    <TableRow>
+                                      <TableCell colSpan={7} align="center">
+                                        <CircularProgress />
+                                        <Typography variant="body1">Loading....</Typography>
+                                      </TableCell>
+                                    </TableRow>
+                                  </TableBody>
+                                )}
+                              </Table>
+                            </TableContainer>
+                          </MainCard>
+                        </Grid>
+                      </Grid>
+                    </MainCard>
+                  </Grid>
                 </Grid>
-                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
-                  <TableContainer
-                    sx={{
-                      width: '100%',
-                      overflowX: 'auto',
-                      position: 'relative',
-                      display: 'block',
-                      maxWidth: '100%',
-                      '& td, & th': { whiteSpace: 'nowrap' }
-                    }}
-                  >
-                    <Table
-                      aria-labelledby="tableTitle"
-                      size="small"
-                      sx={{
-                        '& .MuiTableCell-root:first-of-type': {
-                          pl: 2
-                        },
-                        '& .MuiTableCell-root:last-of-type': {
-                          pr: 3
-                        }
-                      }}
-                    >
-                      <WareHouseTableHead status="select" />
-
-                      {!loading ? (
-                        <TableBody>
-                          {allManager.map((row, index) => (
-                            <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                              <TableCell align="center">{index + 1}</TableCell>
-                              <TableCell align="left">{row.manager_name}</TableCell>
-                              <TableCell align="left">{row.team_name}</TableCell>
-                              <TableCell align="left">{row.warehouse_name}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      ) : (
-                        <TableBody>
-                          <TableRow>
-                            <TableCell colSpan={7} align="center">
-                              <CircularProgress />
-                              <Typography variant="body1">Loading....</Typography>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      )}
-                    </Table>
-                  </TableContainer>
-                </MainCard>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Grid item sx={{ mb: 1 }}>
-                  <Typography variant="h5">เลือก: พนักงานจ่ายสินค้า</Typography>
-                </Grid>
-                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
-                  <TableContainer
-                    sx={{
-                      width: '100%',
-                      overflowX: 'auto',
-                      position: 'relative',
-                      display: 'block',
-                      maxWidth: '100%',
-                      '& td, & th': { whiteSpace: 'nowrap' }
-                    }}
-                  >
-                    <Table
-                      aria-labelledby="tableTitle"
-                      size="small"
-                      sx={{
-                        '& .MuiTableCell-root:first-of-type': {
-                          pl: 2
-                        },
-                        '& .MuiTableCell-root:last-of-type': {
-                          pr: 3
-                        }
-                      }}
-                    >
-                      <CheckerTableHead />
-                      {!loading ? (
-                        <TableBody>
-                          {checker_items.map((row, index) => (
-                            <TableRow key={index}>
-                              <TableCell align="center">{index + 1}</TableCell>
-                              <TableCell align="left">{row.checker_name}</TableCell>
-                              <TableCell align="left">{row.team_name}</TableCell>
-                              <TableCell align="right">
-                                <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
-                                  <Button
-                                    endIcon={<SelectOutlined />}
-                                    onClick={() => handleClickOpen(row.checker_id, 'selected', row.team_name, 'เลือกพนักงาน')}
-                                  >
-                                    เลือก
-                                  </Button>
-                                </ButtonGroup>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      ) : (
-                        <TableBody>
-                          <TableRow>
-                            <TableCell colSpan={7} align="center">
-                              <CircularProgress />
-                              <Typography variant="body1">Loading....</Typography>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      )}
-                    </Table>
-                  </TableContainer>
-                </MainCard>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Grid item sx={{ mb: 1 }}>
-                  <Typography variant="h5">เลือก: พนักงานโฟล์คลิฟท์</Typography>
-                </Grid>
-                <MainCard boxShadow={true} contentSX={{ p: 0 }}>
-                  <TableContainer
-                    sx={{
-                      width: '100%',
-                      overflowX: 'auto',
-                      position: 'relative',
-                      display: 'block',
-                      maxWidth: '100%',
-                      '& td, & th': { whiteSpace: 'nowrap' }
-                    }}
-                  >
-                    <Table
-                      aria-labelledby="tableTitle"
-                      size="small"
-                      sx={{
-                        '& .MuiTableCell-root:first-of-type': {
-                          pl: 2
-                        },
-                        '& .MuiTableCell-root:last-of-type': {
-                          pr: 3
-                        }
-                      }}
-                    >
-                      <ForkliftTableHead />
-                      {!loading ? (
-                        <TableBody>
-                          {forklift_items.map((row, index) => (
-                            <TableRow key={index}>
-                              <TableCell align="center">{index + 1}</TableCell>
-                              <TableCell align="left">{row.forklift_name}</TableCell>
-                              <TableCell align="left">{row.team_name}</TableCell>
-                              <TableCell align="right">
-                                <ButtonGroup variant="outlined" aria-label="outlined button group" size="small">
-                                  <Button
-                                    endIcon={<SelectOutlined />}
-                                    onClick={() => handleClickOpen(row.forklift_id, 'selected_forklift', row.team_name, 'เลือกโฟล์คลิฟท์')}
-                                  >
-                                    เลือก
-                                  </Button>
-                                </ButtonGroup>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      ) : (
-                        <TableBody>
-                          <TableRow>
-                            <TableCell colSpan={7} align="center">
-                              <CircularProgress />
-                              <Typography variant="body1">Loading....</Typography>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      )}
-                    </Table>
-                  </TableContainer>
-                </MainCard>
-              </Grid>
-            </Grid>
-          </MainCard>
-        </Grid>
-      </Grid> */}
+              </>
+            )}
+          {/* ========== Row Select Team ==========*/}
+          <Grid>
+            <ManageTeam teamId={team_id} onHandleChange={handleUpdate} permission={pageDetail[0].permission_name} />
+          </Grid>
+        </>
+      )}
     </Grid>
   );
 }

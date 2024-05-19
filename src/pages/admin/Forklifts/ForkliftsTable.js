@@ -81,7 +81,7 @@ function CompantTableHead() {
   );
 }
 
-function ForkliftsTable() {
+function ForkliftsTable({ permission }) {
   //   const [car, setCar] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -90,7 +90,7 @@ function ForkliftsTable() {
   useEffect(() => {
     // getPermission();
     getForklift();
-  }, []);
+  }, [permission]);
 
   const getForklift = async () => {
     setLoading(true);
@@ -208,6 +208,7 @@ function ForkliftsTable() {
                             variant="contained"
                             size="medium"
                             color="primary"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => updateForklift(row.forklift_id)}
                           >
@@ -219,6 +220,7 @@ function ForkliftsTable() {
                             variant="contained"
                             size="medium"
                             color="error"
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => handleClickOpen(row.forklift_id)}
                           >

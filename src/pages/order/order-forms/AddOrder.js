@@ -166,7 +166,7 @@ function AddOrder() {
   // );
   const validationSchema = Yup.object().shape({
     ref_order_id: Yup.string().required('กรุณาระบุหมายเลขคำสั่งซื้อ'),
-    description: Yup.string().required('กรุณาระบุรายละเอียด'),
+    // description: Yup.string().required('กรุณาระบุรายละเอียด'),
     order_date: Yup.string().required('กรุณาระบุวันที่สั่งซื้อสินค้า'),
     product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
     product_brand_id: Yup.string().required('กรุณาระบุตรา(สินค้า)')
@@ -479,7 +479,7 @@ function AddOrder() {
 
                     <Grid item xs={12} md={12}>
                       <Stack spacing={1}>
-                        <InputLabel>รายละเอียดการสั่งซื้อสินค้า *</InputLabel>
+                        <InputLabel>รายละเอียดการสั่งซื้อสินค้า </InputLabel>
                         <OutlinedInput
                           id="description"
                           type="description"
