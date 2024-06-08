@@ -74,17 +74,36 @@ const MainLayout = () => {
   const getPagePermission = (userRole) => {
     try {
       permissionsRequest.getPagesPermissionByRole(userRole).then((response) => {
+        response = response.filter((x) => x.permission_name !== 'no_access_to_view_data');
         if (response.length > 0) {
           if (userRole === 11) {
-            const addnew = {
-              page_id: 4,
+            // const addnew = {
+            //   page_id: 4,
+            //   role_id: 11,
+            //   permission_id: 7,
+            //   group_id: 4,
+            //   page_name: 'QueueTV',
+            //   page_title: 'แสดงรายคิวปัจุบันบน TV',
+            //   page_url: '/queues-screen',
+            //   page_icon: 'screenDisploy',
+            //   page_target: 1,
+            //   page_type: 'item',
+            //   group_name: 'ผู้ดูแลระบบ',
+            //   group_type: 'group',
+            //   role_name: 'ICP-Administrator',
+            //   role_description: 'ICP-ผู้ดูแลระบบ Administrator',
+            //   permission_name: 'manage_everything',
+            //   permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
+            // };
+            const addnew2 = {
+              page_id: 34,
               role_id: 11,
               permission_id: 7,
               group_id: 4,
-              page_name: 'QueueTV',
-              page_title: 'แสดงรายคิวปัจุบันบน TV',
-              page_url: '/queues-screen',
-              page_icon: 'screenDisploy',
+              page_name: 'Permission',
+              page_title: 'จัดการสิทธิ์การใช้งาน',
+              page_url: '/admin/permission',
+              page_icon: 'permission',
               page_target: 0,
               page_type: 'item',
               group_name: 'ผู้ดูแลระบบ',
@@ -94,7 +113,8 @@ const MainLayout = () => {
               permission_name: 'manage_everything',
               permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
             };
-            response.unshift(addnew);
+            // response.unshift(addnew);
+            response.unshift(addnew2);
           }
           dispatch(setPermission({ key: 'permission', value: response }));
         } else {

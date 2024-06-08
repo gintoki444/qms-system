@@ -41,8 +41,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { RightSquareOutlined, SoundOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
-// import { useDispatch, useSelector } from 'react-redux';
-// import { setStation } from 'store/reducers/station';
+import { useDispatch, useSelector } from 'react-redux';
+import { setStation } from 'store/reducers/station';
 
 // Sound Call
 import SoundCall from 'components/@extended/SoundCall';
@@ -72,6 +72,13 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
       disablePadding: false,
       width: '5%',
       label: 'หมายเลขคิว'
+    },
+    {
+      id: 'remarkQueue',
+      align: 'center',
+      disablePadding: false,
+      // width: '5%',
+      label: 'รหัสคิวเดิม'
     },
     {
       id: 'registration_no',
@@ -172,12 +179,14 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
   const [id_update_next, setUpdateNext] = useState(0);
   const [fr, setFrom] = useState('');
   const [textnotify, setText] = useState('');
-  const [station_count, setStationCount] = useState(0);
   const [loading, setLoading] = useState(true); // สร้าง state เพื่อติดตามสถานะการโหลด
   const [team_id, setTeamId] = useState(0);
   const [message, setMessage] = useState('');
   //เพิ่ม function get จำนวนสถานีของ step 1
   const station_num = 2;
+
+  const station_count = useSelector((state) => state.station.station_count);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     getStation();
@@ -226,8 +235,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
             });
           }
           setItems(step3);
-          setStationCount(step3.length);
-          // dispatch(setStation({ station_count: step3.length }));
+          dispatch(setStation({ station_count: step3.length }));
         });
         // setItems(response);
       });
@@ -280,7 +288,8 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
           // await waitingGet();
           // await processingGet();
           //3=Step ชั่งหนัก
-          await getStepCount(3, 'processing');
+          // await getStepCount(3, 'processing');
+          resolve(); // ส่งคืนเมื่อการอัปเดตสำเร็จ
         }
       })
       .catch((error) => console.log('error', error));
@@ -314,29 +323,29 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
       .catch((error) => console.log('error', error));
   };
 
-  const getStepCount = (steps_order, steps_status) => {
-    return new Promise((resolve, reject) => {
-      var requestOptions = {
-        method: 'GET',
-        redirect: 'follow'
-      };
+  // const getStepCount = (steps_order, steps_status) => {
+  //   return new Promise((resolve, reject) => {
+  //     var requestOptions = {
+  //       method: 'GET',
+  //       redirect: 'follow'
+  //     };
 
-      fetch(apiUrl + '/stepcount/' + steps_order + '/' + steps_status, requestOptions)
-        .then((response) => response.json())
-        .then((result) => {
-          if (result.length > 0) {
-            setStationCount(result[0]['step_count']);
-          } else {
-            setStationCount(0);
-          }
-          resolve(); // ส่งคืนเมื่อการเรียก API เสร็จสมบูรณ์
-        })
-        .catch((error) => {
-          console.error('error', error);
-          reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
-        });
-    });
-  };
+  //     fetch(apiUrl + '/stepcount/' + steps_order + '/' + steps_status, requestOptions)
+  //       .then((response) => response.json())
+  //       .then((result) => {
+  //         if (result.length > 0) {
+  //           setStationCount(result[0]['step_count']);
+  //         } else {
+  //           setStationCount(0);
+  //         }
+  //         resolve(); // ส่งคืนเมื่อการเรียก API เสร็จสมบูรณ์
+  //       })
+  //       .catch((error) => {
+  //         console.error('error', error);
+  //         reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
+  //       });
+  //   });
+  // };
 
   const getStepId = (steps_order, queues_id) => {
     var requestOptions = {
@@ -634,6 +643,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
     // flag = 1 = ยืนยัน
     if (flag === 1) {
       if (fr === 'call') {
+        setLoading(true);
         const checkstation = await checkStations(selectedStations[id_update]);
         if (checkstation > 0) {
           alert('สถานีบริการนี้กำลังใช้งานอยู่');
@@ -646,7 +656,8 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
 
         setWeight('');
         if (station_count < station_num) {
-          setLoading(true);
+          setItems([]);
+          setOpen(false);
 
           // การใช้งาน Line Notify
           getStepToken(id_update)
@@ -661,35 +672,37 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
           // handleCallQueue(queues);
           step1Update(id_update, 'processing', selectedStations[id_update]);
           updateStartTime(id_update);
-          setOpen(false);
         } else {
           alert('สถานีบริการเต็ม');
           setLoading(false);
         }
       } else {
-        console.log(
-          'reserves[0].total_quantity + queuesDetial[0].weight1 ',
-          parseFloat(reserves[0].total_quantity) + parseFloat(queuesDetial[0].weight1)
-        );
         if (fr === 'close') {
+          setLoading(true);
           //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว
           if (weight <= 0 || weight === '') {
             alert('กรุณาใสน้ำหนักจากการชั่งหนัก');
+            setLoading(false);
             return;
           } else if (weight < parseFloat(reserves[0].total_quantity) + parseFloat(queuesDetial[0].weight1)) {
             alert('น้ำหนักจากการชั่งหนักต้องไม่น้อยกว่า น้ำหนักชั่งเบา + น้ำหนักสินค้า');
+            setLoading(false);
             return;
           } else if (typeSelect && typeSelect.checked1 == true && txtDetail == '') {
             alert('กรุณาใสรายละเอียดการทวนสอบ');
+            setLoading(false);
             return;
           } else {
             if (typeSelect && typeSelect.checked1 == true) {
-              queues.weight2 = weight;
+              // const queu = weight;
               updateRecall(id_update, queues.queue_id, queues);
 
               setOpen(false);
               setLoading(false);
             } else {
+              setLoading(true);
+              setItems([]);
+              setOpen(false);
               // if (weight === 99999) {
               // การใช้งาน Line Notify
               getStepToken(id_update)
@@ -708,12 +721,16 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
               updateEndTime(id_update);
               updateWeight2(id_update);
               updateStartTime(id_update_next);
-              setOpen(false);
+              // setStationCount(0);
+
               // }
             }
           }
         } else {
           //ยกเลิก
+          setLoading(true);
+          setItems([]);
+          setOpen(false);
           setWeight('');
           // การใช้งาน Line Notify
           getStepToken(id_update)
@@ -727,17 +744,18 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
 
           step1Update(id_update, 'waiting', 27);
           updateStartTime(id_update);
-          setOpen(false);
         }
       }
     } else if (flag === 0) {
-      setQueuesDetial([]);
-      setreserves([]);
-      setSelectedStations({});
-      setTxtDetail('');
-      setTypeSelect([]);
+      setLoading(false);
       setOpen(false);
     }
+    setQueuesDetial([]);
+    setreserves([]);
+    setSelectedStations({});
+    setTxtDetail('');
+    setTypeSelect([]);
+    // setStationCount(0);
     setWeight('');
   };
 
@@ -854,7 +872,8 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
                         aria-describedby="standard-weight-helper-text"
                         inputProps={{
                           type: 'number',
-                          'aria-label': 'weight'
+                          'aria-label': 'weight',
+                          min: 0.1
                         }}
                         placeholder="ระบุน้ำหนัก"
                         value={weight || ''}
@@ -1008,6 +1027,9 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
                             <span style={{ color: 'red' }}> (คิวค้าง)</span>
                           )}
                         </TableCell>
+                        <TableCell align="left">
+                          {row.description ? <strong style={{ color: 'red' }}>{row.description}</strong> : '-'}
+                        </TableCell>
 
                         <TableCell align="center">
                           <Chip color="primary" sx={{ width: '122px' }} label={row.registration_no} />
@@ -1029,7 +1051,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
 
                         <TableCell align="left">
                           {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
-                          {row.start_datetime ? row.start_datetime.slice(11, 19) : row.start_time.slice(11, 19)}
+                          {row.start_time ? row.start_time.slice(11, 19) : '-'}
                         </TableCell>
 
                         <TableCell align="center">

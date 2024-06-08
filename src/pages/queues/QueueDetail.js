@@ -93,6 +93,7 @@ function QueueDetail({ sx }) {
     // const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
 
     if (Object.keys(userPermission).length > 0) {
+      console.log('userRoles :', userRoles)
       if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
         setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
       } else {
@@ -131,19 +132,13 @@ function QueueDetail({ sx }) {
     try {
       queueRequest.getQueueDetailID(id).then((result) => {
         if (result.length > 0) {
+          console.log('getQueueDetailID :', result)
           // const currentDate = moment(new Date()).format('DD/MM/YYYY');
           const currentDate = moment();
 
           // สร้างวันที่ก่อนหรือหลังจากวันปัจจุบันไม่เกิน 2 วัน
           const twoDaysBefore = moment().subtract(2, 'days');
-
           const targetDate = moment(result[0]['queue_date'].slice(0, 10));
-          // const targetDate = moment('2024-05-02');
-          // console.log('queue_date:', result[0]['queue_date']);
-          console.log('targetDate:', targetDate);
-          // console.log('currentDate:', currentDate);
-          console.log('twoDaysBefore:', twoDaysBefore);
-          console.log('targetDate.isBetween :', targetDate.isBetween(twoDaysBefore, currentDate, null, '[]'));
 
           if (targetDate.isBetween(twoDaysBefore, currentDate, null, '[]')) {
             // if (getDateFormat(result[0]['queue_date']) === moment(new Date()).format('DD/MM/YYYY')) {
@@ -177,7 +172,6 @@ function QueueDetail({ sx }) {
         result.map((data) => {
           setActiveStep(data.queues_count);
           if (data.queues_count == 3) {
-            console.log(data.queues_count);
             getQueueStep(4, queues_id);
           }
         });
@@ -367,10 +361,8 @@ function QueueDetail({ sx }) {
         .then((result) => {
           //console.log(result)
           if (result['status'] === 'ok') {
-            console.log('updateEndTime is ok');
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
-            console.log('not update updateEndTime');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
           }
         })
@@ -624,11 +616,15 @@ function QueueDetail({ sx }) {
                           <Typography variant="h5">
                             คิวที่ : <span style={{ color: 'red' }}> {padZero(queueNumber)}</span>
                           </Typography>
-                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                          <Typography variant="h5">
+                            หมายเลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>
+                          </Typography>
                         </Grid>
                         <Grid item xs={6} align="right">
                           <Typography variant="h5">หมายเลขคิว : {queue_token}</Typography>
-                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                        </Grid>
+                        <Grid item xs={12} align="right">
+                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 1 }} />
                         </Grid>
 
                         <VerticalStepper
@@ -650,6 +646,9 @@ function QueueDetail({ sx }) {
                             คิวที่ : <span style={{ color: 'red' }}> {padZero(queueNumber)}</span>
                             {/* <span style={{ color: 'red' }}>{queueNumber}</span> */}
                           </Typography>
+                          <Typography variant="h5">
+                            หมายเลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>
+                          </Typography>
                           <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                         </Grid>
 
@@ -668,8 +667,8 @@ function QueueDetail({ sx }) {
                     )}
                   </Grid>
                   <Grid item xs={12} sx={{ '& button': { m: 1 }, p: '0 -6%!important' }} align="center">
-                    {pageDetail.length > 0 &&
-                      (pageDetail[0].permission_name === 'manage_everything' || pageDetail[0].permission_name === 'add_edit_delete_data') &&
+                    {(pageDetail.length > 0 &&
+                      (pageDetail[0].permission_name === 'manage_everything' || pageDetail[0].permission_name === 'add_edit_delete_data') || userRoles === 19) &&
                       activeStep == 3 && (
                         <Button size="mediam" variant="contained" color="primary" onClick={() => handleClickOpen(stepData.step_id)}>
                           ปิดคิว
@@ -1041,6 +1040,16 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Typography variant="body" sx={{ pl: 1 }}>
+                <strong>น้ำหนักก่อนรับสินค้า :</strong> {queues.weight1 && queues.weight1 !== null ? parseFloat(queues.weight1) + ' ตัน' : '-'}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="body" sx={{ pl: 1 }}>
+                <strong>น้ำหนักหลังรับสินค้า :</strong> {queues.weight2 && queues.weight2 !== null ? parseFloat(queues.weight2) + ' ตัน' : '-'}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="body" sx={{ pl: 1 }}>
                 <strong>โกดัง :</strong> {queues.warehouse_name || '-'}
               </Typography>
             </Grid>
@@ -1053,7 +1062,7 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
           </Grid>
         </Grid>
       </Grid>
-    </Grid>
+    </Grid >
   );
 };
 

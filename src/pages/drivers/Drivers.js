@@ -52,7 +52,7 @@ function Drivers() {
           )}
           {pageDetail.length !== 0 && (
             <MainCard content={false} sx={{ mt: 1.5 }}>
-              <Box sx={{ pt: 1, pr: 2 }}>
+              <Box>
                 <DriverTable permission={pageDetail[0].permission_name} />
               </Box>
             </MainCard>

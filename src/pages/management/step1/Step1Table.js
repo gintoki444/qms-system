@@ -82,6 +82,13 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
       label: 'หมายเลขคิว'
     },
     {
+      id: 'remarkQueue',
+      align: 'center',
+      disablePadding: false,
+      // width: '5%',
+      label: 'รหัสคิวเดิม'
+    },
+    {
       id: 'registration_no',
       align: 'center',
       disablePadding: true,
@@ -727,7 +734,8 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
                         aria-describedby="standard-weight-helper-text"
                         inputProps={{
                           type: 'number',
-                          'aria-label': 'weight'
+                          'aria-label': 'weight',
+                          min: 0.1
                         }}
                         placeholder="ระบุน้ำหนัก"
                         value={weight || ''}
@@ -844,6 +852,9 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
                             )}
                             {/* <Chip color="primary" label={row.token} /> */}
                           </TableCell>
+                          <TableCell align="left">
+                            {row.description ? <strong style={{ color: 'red' }}>{row.description}</strong> : '-'}
+                          </TableCell>
                           <TableCell align="center">
                             <Chip color="primary" sx={{ width: '122px' }} label={row.registration_no} />
                           </TableCell>
@@ -864,7 +875,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
                           <TableCell align="left">{row.driver_mobile}</TableCell>
                           <TableCell align="left">
                             {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
-                            {row.start_datetime ? row.start_datetime.slice(11, 19) : row.start_time.slice(11, 19)}
+                            {row.start_time ? row.start_time.slice(11, 19) : '-'}
                           </TableCell>
                           <TableCell align="center">
                             {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอคิวชั่งเบา'} />}
@@ -880,7 +891,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
                               <Tooltip title="เรียกคิว">
                                 <span>
                                   <Button
-                                  
                                     sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                     variant="contained"
                                     size="small"

@@ -62,6 +62,13 @@ const headCells = [
     label: 'หมายเลขคิว'
   },
   {
+    id: 'remarkQueue',
+    align: 'center',
+    disablePadding: false,
+    // width: '5%',
+    label: 'รหัสคิวเดิม'
+  },
+  {
     id: 'branName',
     align: 'left',
     disablePadding: false,
@@ -260,6 +267,7 @@ function Step0Table({ startDate, endDate, onFilter, permission }) {
                         {/* <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} /> */}
                         {row.queue_remain == 1 && <span style={{ color: 'red' }}> (คิวค้าง)</span>}
                       </TableCell>
+                      <TableCell align="left">-</TableCell>
                       <TableCell align="left">{row.company}</TableCell>
                       <TableCell align="left">{row.registration_no}</TableCell>
                       <TableCell align="left">{row.driver}</TableCell>

@@ -195,9 +195,12 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
             <TableBody>
               {items.length > 0 &&
                 items.map((row, index) => (
-                  <TableRow key={row.step_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                     <TableCell align="center">{index + 1}</TableCell>
-                    <TableCell align="left">{row.name}</TableCell>
+                    <TableCell align="left">
+                      <span style={{ display: 'none' }}>{`'`}</span>
+                      {row.name}
+                    </TableCell>
                     <TableCell align="left">{row.product_register ? row.product_register : '-'}</TableCell>
                     <TableCell align="left">{row.setup_pile_date ? moment(row.setup_pile_date).format('DD/MM/yyyy') : '-'}</TableCell>
                     <TableCell align="right">{parseFloat((row.stock_quantity * 1).toFixed(3)).toLocaleString('en-US')}</TableCell>

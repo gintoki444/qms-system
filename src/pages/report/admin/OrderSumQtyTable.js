@@ -122,7 +122,7 @@ export default function OrderSumQtyTable({ startDate, endDate, clickDownload, on
     // const intervalId = setInterval(fetchData, 6000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิลลิวินาที)
 
     // return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
-  }, [startDate, endDate, onFilter]);
+  }, [startDate, endDate, onFilter, clickDownload]);
 
   const [items, setItems] = useState([]);
   const fetchData = async () => {
@@ -147,8 +147,6 @@ export default function OrderSumQtyTable({ startDate, endDate, clickDownload, on
 
   // รวม grand total ของ quantity ของทุกรายการ items
   const grandTotalQuantity = items.reduce((acc, item) => {
-    console.log('acc :', acc);
-    console.log('item :', item);
     return item.total_sold && acc + parseFloat(item.total_sold);
   }, 0);
   return (
@@ -182,7 +180,10 @@ export default function OrderSumQtyTable({ startDate, endDate, clickDownload, on
                 items.map((row, index) => (
                   <TableRow key={row.step_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                     <TableCell align="center">{index + 1}</TableCell>
-                    <TableCell align="left">{row.name}</TableCell>
+                    <TableCell align="left">
+                      <span style={{ display: 'none' }}>{`'`}</span>
+                      {row.name}
+                    </TableCell>
                     <TableCell align="left">{row.product_register ? row.product_register : '-'}</TableCell>
                     <TableCell align="left">{row.brand_group}</TableCell>
                     <TableCell align="right">{parseFloat((row.total_sold * 20).toFixed(0))}</TableCell>

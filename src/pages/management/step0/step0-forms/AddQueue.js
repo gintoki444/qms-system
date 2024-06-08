@@ -328,14 +328,15 @@ function AddQueue() {
       setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
       getReserve();
       getProductCompany();
+      getAllContractor();
     }
     // if (user_Id) {
     //   getBrandList();
     // }
 
-    if ((userRole && userRole === 9) || userRole === 1) {
-      getAllContractor();
-    }
+    // if ((userRole && userRole === 9) || userRole === 1) {
+    //   getAllContractor();
+    // }
   }, [user_Id, userRole, userPermission]);
 
   const getReserve = () => {
@@ -351,11 +352,11 @@ function AddQueue() {
             getCompanyList();
             getProductBrand(result.product_company_id);
 
-            if (userRole === 9 || userRole === 1) {
-              getTeamloading(result.warehouse_id);
-              getTeamManagers(result.team_id);
-              getLaborLine(result.contractor_id);
-            }
+            // if (userRole === 9 || userRole === 1) {
+            getTeamloading(result.warehouse_id);
+            getTeamManagers(result.team_id);
+            getLaborLine(result.contractor_id);
+            // }
           });
         }
       })
@@ -822,232 +823,236 @@ function AddQueue() {
                         </Grid>
 
                         {/* ======= Operation ======= */}
-                        {(userRole == 9 || userRole == 1) && (
-                          <Grid item xs={12}>
-                            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <Typography variant="h5">ข้อมูลทีมจ่ายสินค้า</Typography>
-                            </Grid>
 
-                            <Grid container spacing={3} sx={{ mt: 1 }}>
-                              <Grid item xs={12} md={6}>
-                                <Stack spacing={1}>
-                                  <InputLabel>ทีมจ่ายสินค้า</InputLabel>
-                                  <FormControl>
-                                    <Select
-                                      displayEmpty
-                                      id="team_id"
-                                      name="team_id"
-                                      value={values.team_id || ''}
-                                      onChange={(e) => {
-                                        const filterTeam = teamloadingList.filter((x) => x.team_id == e.target.value);
-                                        setFieldValue('team_id', e.target.value);
-                                        setFieldValue('warehouse_id', filterTeam[0].warehouse_id);
-                                        setFieldValue('reserve_station_id', filterTeam[0].station_id);
-                                        handleChangeTeam(e.target.value);
-                                      }}
-                                      input={<OutlinedInput />}
-                                      inputProps={{ 'aria-label': 'Without label' }}
-                                      error={Boolean(touched.team_id && errors.team_id)}
-                                    >
-                                      <MenuItem disabled value="">
-                                        เลือกทีมรับสินค้า
-                                      </MenuItem>
-                                      {teamloadingList.length > 0 &&
-                                        teamloadingList.map((teamload) => (
-                                          <MenuItem key={teamload.team_id} value={teamload.team_id}>
-                                            {teamload.team_name} (โกดัง: {teamload.warehouse_name}) {teamload.station_description} (
-                                            {teamload.manager_name})
+                        {pageDetail.length !== 0 &&
+                          (pageDetail[0].permission_name === 'view_data' ||
+                            pageDetail[0].permission_name === 'manage_everything' ||
+                            pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                            <Grid item xs={12}>
+                              <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography variant="h5">ข้อมูลทีมจ่ายสินค้า</Typography>
+                              </Grid>
+
+                              <Grid container spacing={3} sx={{ mt: 1 }}>
+                                <Grid item xs={12} md={6}>
+                                  <Stack spacing={1}>
+                                    <InputLabel>ทีมจ่ายสินค้า</InputLabel>
+                                    <FormControl>
+                                      <Select
+                                        displayEmpty
+                                        id="team_id"
+                                        name="team_id"
+                                        value={values.team_id || ''}
+                                        onChange={(e) => {
+                                          const filterTeam = teamloadingList.filter((x) => x.team_id == e.target.value);
+                                          setFieldValue('team_id', e.target.value);
+                                          setFieldValue('warehouse_id', filterTeam[0].warehouse_id);
+                                          setFieldValue('reserve_station_id', filterTeam[0].station_id);
+                                          handleChangeTeam(e.target.value);
+                                        }}
+                                        input={<OutlinedInput />}
+                                        inputProps={{ 'aria-label': 'Without label' }}
+                                        error={Boolean(touched.team_id && errors.team_id)}
+                                      >
+                                        <MenuItem disabled value="">
+                                          เลือกทีมรับสินค้า
+                                        </MenuItem>
+                                        {teamloadingList.length > 0 &&
+                                          teamloadingList.map((teamload) => (
+                                            <MenuItem key={teamload.team_id} value={teamload.team_id}>
+                                              {teamload.team_name} (โกดัง: {teamload.warehouse_name}) {teamload.station_description} (
+                                              {teamload.manager_name})
+                                            </MenuItem>
+                                          ))}
+                                      </Select>
+                                    </FormControl>
+                                    {touched.team_id && errors.team_id && (
+                                      <FormHelperText error id="helper-text-company-car">
+                                        {errors.team_id}
+                                      </FormHelperText>
+                                    )}
+                                  </Stack>
+                                </Grid>
+
+                                <Grid item xs={12} md={6}>
+                                  <Stack spacing={1}>
+                                    <InputLabel>โกดังสินค้า</InputLabel>
+                                    <FormControl>
+                                      <Select
+                                        displayEmpty
+                                        variant="outlined"
+                                        name="warehouse_id"
+                                        value={values.warehouse_id || ''}
+                                        onChange={(e) => {
+                                          setFieldValue('warehouse_id', e.target.value);
+                                          handleChangeWarehouse(e);
+                                        }}
+                                        placeholder="เลือกโกดังสินค้า"
+                                        fullWidth
+                                        error={Boolean(touched.warehouse_id && errors.warehouse_id)}
+                                      >
+                                        <MenuItem disabled value="">
+                                          เลือกโกดังสินค้า
+                                        </MenuItem>
+                                        {warehousesList &&
+                                          warehousesList.map((warehouses) => (
+                                            <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
+                                              {warehouses.description}
+                                            </MenuItem>
+                                          ))}
+                                      </Select>
+                                    </FormControl>
+                                    {touched.warehouse_id && errors.warehouse_id && (
+                                      <FormHelperText error id="helper-text-warehouse_id">
+                                        {errors.warehouse_id}
+                                      </FormHelperText>
+                                    )}
+                                  </Stack>
+                                </Grid>
+
+                                <Grid item xs={12} md={6}>
+                                  <Stack spacing={1}>
+                                    <InputLabel>หัวจ่าย</InputLabel>
+                                    <FormControl>
+                                      <Select
+                                        displayEmpty
+                                        variant="outlined"
+                                        name="reserve_station_id"
+                                        value={values.reserve_station_id || ''}
+                                        onChange={handleChange}
+                                        placeholder="เลือกหัวจ่ายสินค้า"
+                                        fullWidth
+                                        error={Boolean(touched.reserve_station_id && errors.reserve_station_id)}
+                                      >
+                                        <MenuItem disabled value="">
+                                          เลือกหัวจ่ายสินค้า
+                                        </MenuItem>
+                                        {stationsList.map((station) => (
+                                          <MenuItem key={station.station_id} value={station.station_id}>
+                                            {station.station_description}
                                           </MenuItem>
                                         ))}
-                                    </Select>
-                                  </FormControl>
-                                  {touched.team_id && errors.team_id && (
-                                    <FormHelperText error id="helper-text-company-car">
-                                      {errors.team_id}
-                                    </FormHelperText>
-                                  )}
-                                </Stack>
-                              </Grid>
+                                      </Select>
+                                    </FormControl>
+                                    {touched.reserve_station_id && errors.reserve_station_id && (
+                                      <FormHelperText error id="helper-text-reserve_station_id">
+                                        {errors.reserve_station_id}
+                                      </FormHelperText>
+                                    )}
+                                  </Stack>
+                                </Grid>
 
-                              <Grid item xs={12} md={6}>
-                                <Stack spacing={1}>
-                                  <InputLabel>โกดังสินค้า</InputLabel>
-                                  <FormControl>
-                                    <Select
-                                      displayEmpty
-                                      variant="outlined"
-                                      name="warehouse_id"
-                                      value={values.warehouse_id || ''}
-                                      onChange={(e) => {
-                                        setFieldValue('warehouse_id', e.target.value);
-                                        handleChangeWarehouse(e);
-                                      }}
-                                      placeholder="เลือกโกดังสินค้า"
-                                      fullWidth
-                                      error={Boolean(touched.warehouse_id && errors.warehouse_id)}
-                                    >
-                                      <MenuItem disabled value="">
-                                        เลือกโกดังสินค้า
-                                      </MenuItem>
-                                      {warehousesList &&
-                                        warehousesList.map((warehouses) => (
-                                          <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
-                                            {warehouses.description}
+                                <Grid item xs={12} md={6}>
+                                  <Stack spacing={1}>
+                                    <InputLabel>สายแรงงาน</InputLabel>
+                                    <FormControl>
+                                      <Select
+                                        displayEmpty
+                                        variant="outlined"
+                                        name="contractor_id"
+                                        value={values.contractor_id || ''}
+                                        onChange={(e) => {
+                                          setFieldValue('contractor_id', e.target.value);
+                                          handleChangeContractor(e);
+                                        }}
+                                        placeholder="สายแรงงาน"
+                                        fullWidth
+                                        error={Boolean(touched.contractor_id && errors.contractor_id)}
+                                      >
+                                        <MenuItem disabled value="">
+                                          เลือกสายแรงงาน
+                                        </MenuItem>
+                                        {contractorList.map((contractorList) => (
+                                          <MenuItem key={contractorList.contractor_id} value={contractorList.contractor_id}>
+                                            {contractorList.contractor_name}
                                           </MenuItem>
                                         ))}
-                                    </Select>
-                                  </FormControl>
-                                  {touched.warehouse_id && errors.warehouse_id && (
-                                    <FormHelperText error id="helper-text-warehouse_id">
-                                      {errors.warehouse_id}
-                                    </FormHelperText>
-                                  )}
-                                </Stack>
-                              </Grid>
+                                      </Select>
+                                    </FormControl>
+                                    {touched.contractor_id && errors.contractor_id && (
+                                      <FormHelperText error id="helper-text-contractor_id">
+                                        {errors.contractor_id}
+                                      </FormHelperText>
+                                    )}
+                                  </Stack>
+                                </Grid>
 
-                              <Grid item xs={12} md={6}>
-                                <Stack spacing={1}>
-                                  <InputLabel>หัวจ่าย</InputLabel>
-                                  <FormControl>
-                                    <Select
-                                      displayEmpty
-                                      variant="outlined"
-                                      name="reserve_station_id"
-                                      value={values.reserve_station_id || ''}
-                                      onChange={handleChange}
-                                      placeholder="เลือกหัวจ่ายสินค้า"
-                                      fullWidth
-                                      error={Boolean(touched.reserve_station_id && errors.reserve_station_id)}
-                                    >
-                                      <MenuItem disabled value="">
-                                        เลือกหัวจ่ายสินค้า
-                                      </MenuItem>
-                                      {stationsList.map((station) => (
-                                        <MenuItem key={station.station_id} value={station.station_id}>
-                                          {station.station_description}
+                                <Grid item xs={12} md={6} sx={{ display: 'none' }}>
+                                  <Stack spacing={1}>
+                                    <InputLabel>หมายเลขสาย</InputLabel>
+                                    <FormControl>
+                                      <Select
+                                        displayEmpty
+                                        variant="outlined"
+                                        name="labor_line_id"
+                                        value={values.labor_line_id || ''}
+                                        onChange={handleChange}
+                                        fullWidth
+                                      >
+                                        <MenuItem disabled value="">
+                                          เลือกหมายเลขสาย
                                         </MenuItem>
-                                      ))}
-                                    </Select>
-                                  </FormControl>
-                                  {touched.reserve_station_id && errors.reserve_station_id && (
-                                    <FormHelperText error id="helper-text-reserve_station_id">
-                                      {errors.reserve_station_id}
-                                    </FormHelperText>
-                                  )}
-                                </Stack>
+                                        {layborLineList.map((layborLine) => (
+                                          <MenuItem key={layborLine.labor_line_id} value={layborLine.labor_line_id}>
+                                            {layborLine.labor_line_name}
+                                          </MenuItem>
+                                        ))}
+                                      </Select>
+                                    </FormControl>
+                                  </Stack>
+                                </Grid>
                               </Grid>
-
-                              <Grid item xs={12} md={6}>
-                                <Stack spacing={1}>
-                                  <InputLabel>สายแรงงาน</InputLabel>
-                                  <FormControl>
-                                    <Select
-                                      displayEmpty
-                                      variant="outlined"
-                                      name="contractor_id"
-                                      value={values.contractor_id || ''}
-                                      onChange={(e) => {
-                                        setFieldValue('contractor_id', e.target.value);
-                                        handleChangeContractor(e);
-                                      }}
-                                      placeholder="สายแรงงาน"
-                                      fullWidth
-                                      error={Boolean(touched.contractor_id && errors.contractor_id)}
-                                    >
-                                      <MenuItem disabled value="">
-                                        เลือกสายแรงงาน
-                                      </MenuItem>
-                                      {contractorList.map((contractorList) => (
-                                        <MenuItem key={contractorList.contractor_id} value={contractorList.contractor_id}>
-                                          {contractorList.contractor_name}
-                                        </MenuItem>
-                                      ))}
-                                    </Select>
-                                  </FormControl>
-                                  {touched.contractor_id && errors.contractor_id && (
-                                    <FormHelperText error id="helper-text-contractor_id">
-                                      {errors.contractor_id}
-                                    </FormHelperText>
-                                  )}
-                                </Stack>
-                              </Grid>
-
-                              <Grid item xs={12} md={6} sx={{ display: 'none' }}>
-                                <Stack spacing={1}>
-                                  <InputLabel>หมายเลขสาย</InputLabel>
-                                  <FormControl>
-                                    <Select
-                                      displayEmpty
-                                      variant="outlined"
-                                      name="labor_line_id"
-                                      value={values.labor_line_id || ''}
-                                      onChange={handleChange}
-                                      fullWidth
-                                    >
-                                      <MenuItem disabled value="">
-                                        เลือกหมายเลขสาย
-                                      </MenuItem>
-                                      {layborLineList.map((layborLine) => (
-                                        <MenuItem key={layborLine.labor_line_id} value={layborLine.labor_line_id}>
-                                          {layborLine.labor_line_name}
-                                        </MenuItem>
-                                      ))}
-                                    </Select>
-                                  </FormControl>
-                                </Stack>
+                              <Grid item xs={6}>
+                                <TableContainer sx={{ m: 'auto' }}>
+                                  <Table
+                                    aria-labelledby="tableTitle"
+                                    size="small"
+                                    sx={{
+                                      '& .MuiTableCell-root:first-of-type': {
+                                        pl: 2
+                                      },
+                                      '& .MuiTableCell-root:last-of-type': {
+                                        pr: 3
+                                      }
+                                    }}
+                                  >
+                                    <TableHead>
+                                      <TableRow>
+                                        <TableCell align="center">ลำดับ</TableCell>
+                                        <TableCell align="left">รายชื่อ</TableCell>
+                                        <TableCell align="left">ตำแหน่ง</TableCell>
+                                      </TableRow>
+                                    </TableHead>
+                                    {teamLoading ? (
+                                      <TableBody>
+                                        {teamLoading.map((item, index) => (
+                                          <TableRow key={index}>
+                                            <TableCell align="center">{index + 1}</TableCell>
+                                            <TableCell align="left">
+                                              {item.manager_name && item.manager_name}
+                                              {item.checker_name && item.checker_name}
+                                              {item.forklift_name && item.forklift_name}
+                                            </TableCell>
+                                            <TableCell align="left">
+                                              {item.manager_name && 'หัวหน้าโกดัง'}
+                                              {item.checker_name && 'พนักงานจ่ายสินค้า'}
+                                              {item.forklift_name && 'โฟล์คลิฟท์'}
+                                            </TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    ) : (
+                                      <TableRow>
+                                        <TableCell colSpan={13} align="center">
+                                          ไม่พบข้อมูล
+                                        </TableCell>
+                                      </TableRow>
+                                    )}
+                                  </Table>
+                                </TableContainer>
                               </Grid>
                             </Grid>
-                            <Grid item xs={6}>
-                              <TableContainer sx={{ m: 'auto' }}>
-                                <Table
-                                  aria-labelledby="tableTitle"
-                                  size="small"
-                                  sx={{
-                                    '& .MuiTableCell-root:first-of-type': {
-                                      pl: 2
-                                    },
-                                    '& .MuiTableCell-root:last-of-type': {
-                                      pr: 3
-                                    }
-                                  }}
-                                >
-                                  <TableHead>
-                                    <TableRow>
-                                      <TableCell align="center">ลำดับ</TableCell>
-                                      <TableCell align="left">รายชื่อ</TableCell>
-                                      <TableCell align="left">ตำแหน่ง</TableCell>
-                                    </TableRow>
-                                  </TableHead>
-                                  {teamLoading ? (
-                                    <TableBody>
-                                      {teamLoading.map((item, index) => (
-                                        <TableRow key={index}>
-                                          <TableCell align="center">{index + 1}</TableCell>
-                                          <TableCell align="left">
-                                            {item.manager_name && item.manager_name}
-                                            {item.checker_name && item.checker_name}
-                                            {item.forklift_name && item.forklift_name}
-                                          </TableCell>
-                                          <TableCell align="left">
-                                            {item.manager_name && 'หัวหน้าโกดัง'}
-                                            {item.checker_name && 'พนักงานจ่ายสินค้า'}
-                                            {item.forklift_name && 'โฟล์คลิฟท์'}
-                                          </TableCell>
-                                        </TableRow>
-                                      ))}
-                                    </TableBody>
-                                  ) : (
-                                    <TableRow>
-                                      <TableCell colSpan={13} align="center">
-                                        ไม่พบข้อมูล
-                                      </TableCell>
-                                    </TableRow>
-                                  )}
-                                </Table>
-                              </TableContainer>
-                            </Grid>
-                          </Grid>
-                        )}
+                          )}
                       </Grid>
 
                       <Grid item xs={12} sx={{ '& button': { m: 1 }, pl: '8px' }}>

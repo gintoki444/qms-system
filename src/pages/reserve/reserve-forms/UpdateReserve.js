@@ -326,7 +326,8 @@ function UpdateReserve() {
     reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
     car_id: Yup.string().required('กรุณาเลือกรถบรรทุก'),
-    driver_id: Yup.string().required('กรุณาเลือกคนขับรถ')
+    driver_id: Yup.string().required('กรุณาเลือกคนขับรถ'),
+    reserve_description: Yup.string().required('กรุณาระบุรหัวคิวเดิม')
   });
 
   // =============== บันทึกข้อมูล ===============//
@@ -373,6 +374,7 @@ function UpdateReserve() {
   const [onClick, setOnClick] = useState([]);
   const handleClickOpen = (id, onClick) => {
     try {
+
       if (onClick == 'add-queue') {
         setOnClick(onClick);
         setNotifyText('ต้องการอนุมัติการจองคิวหรือไม่?');
@@ -670,7 +672,7 @@ function UpdateReserve() {
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
 
-        var raw = JSON.stringify({
+        let newTran = {
           transactions: [
             {
               order: 1,
@@ -713,7 +715,58 @@ function UpdateReserve() {
               updated_at: currentDate
             }
           ]
-        });
+        }
+        if (reservationData.product_brand_id === 45 || reservationData.product_brand_id === 46) {
+          newTran.transactions[1].status = 'completed'
+        }
+        var raw = JSON.stringify(newTran);
+        console.log('newTran :', newTran)
+        console.log('raw :', raw)
+
+        // var raw = JSON.stringify({
+        //   transactions: [
+        //     {
+        //       order: 1,
+        //       description: 'ชั่งเบา',
+        //       queue_id: queue_id,
+        //       status: 'waiting',
+        //       station_id: 27,
+        //       remark: 'ทดสอบ-ชั่งเบา',
+        //       created_at: currentDate,
+        //       updated_at: currentDate
+        //     },
+        //     {
+        //       order: 2,
+        //       description: 'ขึ้นสินค้า',
+        //       queue_id: queue_id,
+        //       status: 'none',
+        //       station_id: 27,
+        //       remark: 'ทดสอบ-ขึ้นสินค้า',
+        //       created_at: currentDate,
+        //       updated_at: currentDate
+        //     },
+        //     {
+        //       order: 3,
+        //       description: 'ชั่งหนัก',
+        //       queue_id: queue_id,
+        //       status: 'none',
+        //       station_id: 27,
+        //       remark: 'ทดสอบ-ชั่งหนัก ',
+        //       created_at: currentDate,
+        //       updated_at: currentDate
+        //     },
+        //     {
+        //       order: 4,
+        //       description: 'เสร็จสิ้น',
+        //       queue_id: queue_id,
+        //       status: 'none',
+        //       station_id: 27,
+        //       remark: 'ทดสอบ-เสร็จสิ้น',
+        //       created_at: currentDate,
+        //       updated_at: currentDate
+        //     }
+        //   ]
+        // });
 
         var requestOptions = {
           method: 'POST',
@@ -1145,26 +1198,26 @@ function UpdateReserve() {
                             )}
                         </Grid>
 
-                        {/* <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>เหตุผลการจอง</InputLabel>
-                        <OutlinedInput
-                          id="description"
-                          type="description"
-                          value={values.description}
-                          name="description"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="เหตุผลการจอง"
-                          error={Boolean(touched.description && errors.description)}
-                        />
-                        {touched.description && errors.description && (
-                          <FormHelperText error id="helper-text-description">
-                            {errors.description}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid> */}
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>หมายเหตุ (รหัสคิวเดิม)</InputLabel>
+                            <OutlinedInput
+                              id="reserve_description"
+                              type="reserve_description"
+                              value={values.reserve_description}
+                              name="reserve_description"
+                              onBlur={handleBlur}
+                              onChange={handleChange}
+                              placeholder="หมายเหตุ (รหัสคิวเดิม)"
+                              error={Boolean(touched.reserve_description && errors.reserve_description)}
+                            />
+                            {touched.reserve_description && errors.reserve_description && (
+                              <FormHelperText error id="helper-text-reserve_description">
+                                {errors.reserve_description}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
 
                         <Grid item xs={12} md={6}>
                           <Stack spacing={1}>
@@ -1322,7 +1375,8 @@ function UpdateReserve() {
                                 dateNow !== moment(values.pickup_date).format('YYYY-MM-DD') ||
                                 checkDate == false ||
                                 reservationData.car_id == 1 ||
-                                reservationData.driver_id == 1
+                                reservationData.driver_id == 1 ||
+                                ((reservationData.product_brand_id === 45 || reservationData.product_brand_id === 46) && parseFloat(reservationData.total_quantity) === 0)
                               }
                               onClick={() => handleClickOpen(reservationData.reserve_id, 'add-queue', reservationData.total_quantity)}
                               startIcon={<DiffOutlined />}

@@ -72,7 +72,7 @@ QueueStatus.propTypes = {
   status: PropTypes.string
 };
 
-export default function QueueTable({ startDate, endDate }) {
+export default function QueueTable({ startDate, endDate, permission }) {
   const [open, setOpen] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
   const userID = useSelector((state) => state.auth.user_id);
@@ -87,7 +87,8 @@ export default function QueueTable({ startDate, endDate }) {
   useEffect(() => {
     setLoading(true);
     if (userRoles) getQueue();
-  }, [startDate, endDate, userRoles]);
+
+  }, [startDate, endDate, userRoles, permission]);
 
   const getQueue = () => {
     try {
@@ -223,7 +224,7 @@ export default function QueueTable({ startDate, endDate }) {
           const prurl = window.location.href + '/detail/';
           return (
             <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
-              {userRoles && (userRoles === 10 || userRoles === 1) && <CopyLinkButton link={prurl} data={value} shortButton={true} />}
+              {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && <CopyLinkButton link={prurl} data={value} shortButton={true} />}
 
               <Tooltip title="รายละเอียด">
                 <span>
@@ -239,7 +240,7 @@ export default function QueueTable({ startDate, endDate }) {
                 </span>
               </Tooltip>
 
-              {userRoles && (userRoles === 10 || userRoles === 1 || userRoles === 9) && (
+              {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && (
                 <Tooltip title="ลบ">
                   <span>
                     <Button

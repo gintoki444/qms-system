@@ -18,10 +18,10 @@ function Reserve() {
   const userPermission = useSelector((state) => state.auth?.user_permissions);
   let startDate = localStorage.getItem('reserve_startDate');
   let endDate = localStorage.getItem('reserve_endDate');
-  const [pageDetail, setPageDetail] = useState({});
+  const [pageDetail, setPageDetail] = useState([]);
   useEffect(() => {
     if (Object.keys(userPermission).length > 0) {
-      setPageDetail(userPermission.permission.find((x) => x.page_id === pageId));
+      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
     }
   }, [userRole, userPermission, startDate, endDate]);
 
@@ -106,8 +106,8 @@ function Reserve() {
             </Button>
           </Grid>
           <Grid item xs={12} md={3} align="right">
-            {pageDetail &&
-              (pageDetail.permission_name === 'manage_everything' || pageDetail.permission_name === 'add_edit_delete_data') && (
+            {pageDetail.length > 0 &&
+              (pageDetail[0].permission_name === 'manage_everything' || pageDetail[0].permission_name === 'add_edit_delete_data') && (
                 <Button size="mediam" color="success" variant="outlined" onClick={() => addReserve()} startIcon={<PlusCircleOutlined />}>
                   เพิ่มข้อมูล
                 </Button>
@@ -116,7 +116,7 @@ function Reserve() {
         </Grid>
 
         {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
-          <Grid item xs={12}>
+          <Grid item xs={12} sx={{ mt: 1.5 }}>
             <MainCard content={false}>
               <Stack sx={{ width: '100%' }} spacing={2}>
                 <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
@@ -126,11 +126,11 @@ function Reserve() {
         )}
         {pageDetail.length !== 0 && (
           <MainCard content={false} sx={{ mt: 1.5 }}>
-            <Box sx={{ pt: 1, pr: 2 }}>
+            <Box>
               <ReserveTable
                 startDate={selectedDateRange.startDate}
                 endDate={selectedDateRange.endDate}
-                permission={pageDetail.permission_name}
+                permission={pageDetail[0].permission_name}
               />
             </Box>
           </MainCard>

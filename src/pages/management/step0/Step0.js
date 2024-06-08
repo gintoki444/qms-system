@@ -217,7 +217,7 @@ function Step0() {
           </MainCard>
 
           <MainCard content={false} sx={{ mt: 1.5 }}>
-            <Box sx={{ pt: 1, pr: 2 }}>
+            <Box>
               <Step0Table startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} onFilter={valueFilter} permission={pageDetail[0].permission_name} />
             </Box>
           </MainCard>

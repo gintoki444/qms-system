@@ -103,7 +103,7 @@ function Step1() {
             <Grid container alignItems="center" justifyContent="flex-end">
               <Grid item xs={12}>
                 <MainCard content={false} sx={{ mt: 1.5 }}>
-                  <Box sx={{ pt: 1, pr: 2 }}>
+                  <Box>
                     <StepTable
                       status={'processing'}
                       title={'กำลังรับบริการ'}

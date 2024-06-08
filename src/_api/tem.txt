@@ -1,0 +1,83 @@
+ตัวอย่างการสลับ API 2 urls กรณี apiurl1 มีปัญหาจะสลับไปใ apiurl2
+
+.env
+====
+REACT_APP_API_URL1=https://us-central1-queuesystemapi.cloudfunctions.net/api
+REACT_APP_API_URL2=https://us-central1-queuesystemapi.cloudfunctions.net/apirds 
+
+
+function testApiUrl:
+===================
+const apiUrl1 = process.env.REACT_APP_API_URL1;
+const apiUrl2 = process.env.REACT_APP_API_URL2;
+
+let apiUrl = apiUrl1; // ใช้ URL หลักเป็นค่าเริ่มต้น
+
+async function testApiUrl() {
+  try {
+    console.log("Current apiUrl:", apiUrl);
+
+    // เรียกใช้งาน API โดยไม่ส่งข้อมูล ในที่นี้จะใช้ method 'GET'
+    const response = await fetch(`${apiUrl}/user/0`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const responseData = await response.json();
+
+    // ตรวจสอบการตอบกลับว่าเป็น error หรือไม่
+    if (responseData && responseData.status === 'error' && responseData.message && responseData.message.fatal) {
+      throw new Error('Fatal API error');
+    }
+
+    console.log("ApiUrl test successful:", apiUrl);
+    return apiUrl;
+  } catch (error) {
+    console.error(`Error from ${apiUrl}:`, error);
+
+    // เปลี่ยนไปใช้ URL สำรอง
+    if (apiUrl === apiUrl1) {
+      apiUrl = apiUrl2;
+    } else {
+      // ทั้ง URL หลักและสำรองล้มเหลว
+      console.error('Both API URLs failed:', error);
+      throw error;
+    }
+
+    console.log("Trying backup apiUrl:", apiUrl);
+    // ลองเรียกใช้งาน API อีกครั้งด้วย apiUrl ที่เปลี่ยนแล้ว
+    return testApiUrl();
+  }
+}
+
+export default testApiUrl;
+
+เรียกใช้งาน Endpoint:
+=================
+import testApiUrl from './testApiUrl';
+
+const [apiUrl, setApiUrl] = useState(null);
+
+useEffect(() => {
+    getApiUrl();
+  }, []);
+
+async function getApiUrl() {
+    try {
+     // เรียกใช้ testApiUrl เมื่อ component ถูกโหลด
+     testApiUrl()
+     .then((result) => {
+       // เมื่อ testApiUrl เรียก API สำเร็จและคืนค่า apiUrl มา
+       setApiUrl(result);
+     })
+     .catch((error) => {
+       // ถ้ามีข้อผิดพลาดในการเรียก API
+       console.error('Error testing API URL:', error);
+     });
+
+    } catch (error) {
+      console.error('Error API Test:', error);
+    }
+  }

@@ -187,8 +187,8 @@ function AddReserve() {
     pickup_date: Yup.string().required('กรุณาเลือกวันที่เข้ารับสินค้า'),
     reserve_station_id: Yup.string().required('กรุณาเลือกหัวจ่าย'),
     car_id: Yup.string().required('กรุณาเลือกรถบรรทุก'),
-    driver_id: Yup.string().required('กรุณาเลือกคนขับรถ')
-    // description: Yup.string().required('กรุณากรอกหัวข้อการจอง')
+    driver_id: Yup.string().required('กรุณาเลือกคนขับรถ'),
+    description: Yup.string().required('กรุณากรอกรหัสคิวเดิม')
   });
 
   // =============== บันทึกข้อมูล ===============//
@@ -552,9 +552,9 @@ function AddReserve() {
                     </Stack>
                   </Grid>
 
-                  {/* <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={6}>
                   <Stack spacing={1}>
-                    <InputLabel>เหตุผลการจอง</InputLabel>
+                    <InputLabel>หมายเหตุ (รหัสคิวเดิม)</InputLabel>
                     <OutlinedInput
                       id="description"
                       type="description"
@@ -562,7 +562,7 @@ function AddReserve() {
                       name="description"
                       onBlur={handleBlur}
                       onChange={handleChange}
-                      placeholder="เหตุผลการจอง"
+                      placeholder="หมายเหตุ (รหัสคิวเดิม)"
                       error={Boolean(touched.description && errors.description)}
                     />
                     {touched.description && errors.description && (
@@ -571,7 +571,7 @@ function AddReserve() {
                       </FormHelperText>
                     )}
                   </Stack>
-                </Grid> */}
+                </Grid>
 
                   <Grid item xs={12} md={6}>
                     <Stack spacing={1}>

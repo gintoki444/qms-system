@@ -201,11 +201,7 @@ function ConTractorSum() {
           </Grid>
           <Grid item>
             {Object.keys(userPermission).length > 0 &&
-              pageDetail.length === 0 &&
-              pageDetail.length !== 0 &&
-              (pageDetail[0].permission_name !== 'view_data' ||
-                pageDetail[0].permission_name !== 'manage_everything' ||
-                pageDetail[0].permission_name !== 'add_edit_delete_data') && (
+              (pageDetail.length === 0 || (pageDetail.length !== 0 && pageDetail[0].permission_name === 'no_access_to_view_data')) && (
                 <Grid item xs={12}>
                   <MainCard content={false}>
                     <Stack sx={{ width: '100%' }} spacing={2}>

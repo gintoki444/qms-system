@@ -59,7 +59,7 @@ const Company = () => {
           {pageDetail.length !== 0 && (
             <Grid item>
               <MainCard content={false} sx={{ mt: 1.5 }}>
-                <Box sx={{ pt: 1 }}>
+                <Box>
                   <CompanyTable  permission={pageDetail[0].permission_name}/>
                 </Box>
               </MainCard>

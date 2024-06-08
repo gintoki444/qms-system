@@ -32,6 +32,15 @@ const admins = {
       // breadcrumbs: false
     },
     {
+      id: 'permission',
+      title: 'ข้อมูลสิทธิ์การใช้งาน',
+      type: 'item',
+      url: '/admin/permission',
+      icon: UserOutlined,
+      target: false
+      // breadcrumbs: false
+    },
+    {
       id: 'warehouse',
       title: 'ข้อมูลหัวหน้าโกดัง',
       type: 'item',

@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
+
 import { useDownloadExcel } from 'react-export-table-to-excel';
+// import ExportDailyProductout from './export/ExportDailyProductout';
 
 import { Grid, Box, Divider, TextField, Stack, Button, Badge, Tooltip, Alert, Backdrop, CircularProgress } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
@@ -58,11 +60,11 @@ const DailyProductOut = () => {
   };
 
   useEffect(() => {
+    getProductCompany();
     setLoading(true);
     if (Object.keys(userPermission).length > 0) {
       setLoading(false);
       setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
-      getProductCompany();
     }
   }, [userRole, userPermission]);
 
@@ -76,6 +78,7 @@ const DailyProductOut = () => {
 
   const [items, setItems] = useState([]);
   const [countAllQueue, setCountAllQueue] = useState(0);
+  const [itemList, setItemList] = useState([]);
   const waitingGet = async (company) => {
     try {
       await reportRequest.getOrdersProduct(selectedDate1, selectedDate2).then((response) => {
@@ -91,6 +94,7 @@ const DailyProductOut = () => {
         }
 
         setCountAllQueue(response.length);
+        setItemList(response);
       });
     } catch (e) {
       console.log(e);
@@ -101,6 +105,13 @@ const DailyProductOut = () => {
   const handleChange = (newValue) => {
     setValueFilter(newValue);
   };
+
+  // const handleExport = (data, filter) => {
+  //   if (filter !== '') {
+  //     data = data.filter((x) => x.product_company_id === filter);
+  //   }
+  //   ExportDailyProductout(data);
+  // };
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -179,11 +190,7 @@ const DailyProductOut = () => {
         </Grid>
         <Grid item xs={12}>
           {Object.keys(userPermission).length > 0 &&
-            pageDetail.length === 0 &&
-            pageDetail.length !== 0 &&
-            (pageDetail[0].permission_name !== 'view_data' ||
-              pageDetail[0].permission_name !== 'manage_everything' ||
-              pageDetail[0].permission_name !== 'add_edit_delete_data') && (
+            (pageDetail.length === 0 || (pageDetail.length !== 0 && pageDetail[0].permission_name === 'no_access_to_view_data')) && (
               <Grid item xs={12}>
                 <MainCard content={false}>
                   <Stack sx={{ width: '100%' }} spacing={2}>
@@ -203,7 +210,14 @@ const DailyProductOut = () => {
                 sx={{ mt: 1.5 }}
                 secondary={
                   <Tooltip title="Export Excel">
-                    <Button color="success" variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={onDownload}>
+                    <Button
+                      color="success"
+                      disabled={itemList.length === 0}
+                      variant="contained"
+                      sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }}
+                      onClick={onDownload}
+                      // onClick={() => handleExport(itemList, valueFilter)}
+                    >
                       <FileExcelOutlined />
                     </Button>
                   </Tooltip>
@@ -214,8 +228,8 @@ const DailyProductOut = () => {
                   <OrderTable
                     startDate={selectedDateRange.startDate}
                     endDate={selectedDateRange.endDate}
-                    clickDownload={tableRef}
                     onFilter={valueFilter}
+                    clickDownload={tableRef}
                   />
                 </Box>
               </MainCard>

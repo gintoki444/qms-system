@@ -93,6 +93,18 @@ const headCells = [
     label: 'เวลาที่ใช้'
   },
   {
+    id: 'weight1',
+    align: 'center',
+    disablePadding: false,
+    label: 'น้ำหนักชั่งเบา'
+  },
+  {
+    id: 'weight2',
+    align: 'center',
+    disablePadding: false,
+    label: 'น้ำหนักชั่งหนัก'
+  },
+  {
     id: 'status',
     align: 'center',
     disablePadding: false,
@@ -101,25 +113,6 @@ const headCells = [
 ];
 
 // ==============================|| ORDER TABLE - HEADER ||============================== //
-
-function OrderTableHead() {
-  return (
-    <TableHead>
-      <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.align}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            // sortDirection={orderBy === headCell.id ? order : false}
-          >
-            {headCell.label}
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
 
 // OrderTableHead.propTypes = {
 //   order: PropTypes.string,
@@ -132,6 +125,7 @@ function StepCompletedForm({ stepId, startDate, endDate }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    console.log('stepId :', stepId);
     fetchData();
   }, [stepId, startDate, endDate]);
 
@@ -141,11 +135,37 @@ function StepCompletedForm({ stepId, startDate, endDate }) {
     getStepCompleted();
   };
 
+  function OrderTableHead() {
+    return (
+      <TableHead>
+        <TableRow>
+          {headCells.map((headCell) => (
+            <>
+              {(stepId === 1 && headCell.id === 'weight2') ||
+                (stepId === 3 && headCell.id === 'weight1') ||
+                ((stepId === 2 || stepId === 4) && (headCell.id === 'weight1' || headCell.id === 'weight2')) || (
+                  <TableCell
+                    key={headCell.id}
+                    align={headCell.align}
+                    padding={headCell.disablePadding ? 'none' : 'normal'}
+                    // sortDirection={orderBy === headCell.id ? order : false}
+                  >
+                    {headCell.label}
+                  </TableCell>
+                )}
+            </>
+          ))}
+        </TableRow>
+      </TableHead>
+    );
+  }
+
   const getStepCompleted = () => {
     try {
       reportRequest.getStepCompleted(stepId, startDate, endDate).then((response) => {
         if (response.length > 0) {
           setItems(response);
+          console.log(response);
           getStepCompletedAvg();
         } else {
           setItems([]);
@@ -247,13 +267,9 @@ function StepCompletedForm({ stepId, startDate, endDate }) {
                     <TableCell align="center">{row.start_time ? row.start_time.slice(11, 19) : '-'}</TableCell>
                     <TableCell align="center">{row.end_time ? row.end_time.slice(11, 19) : '-'}</TableCell>
                     <TableCell align="center">{row.elapsed_time ? row.elapsed_time : '-'}</TableCell>
+                    {(stepId === 1 || stepId === 3) && <TableCell align="center">{stepId === 1 ? row.weight1 : row.weight2}</TableCell>}
                     <TableCell align="center">
                       <Chip color={'success'} label={'สำเร็จ'} sx={{ minWidth: '78.7px!important' }} />
-                      {/* 
-             <div style={{ backgroundColor: getColor(row.status), borderRadius: '10px', padding:'7px'}}>
-                 {row.status}
-               </div>
-             */}
                     </TableCell>
                   </TableRow>
                 ))}

@@ -60,14 +60,14 @@ function Step4Completed() {
   }, [userRole, userPermission]);
   return (
     <Grid alignItems="center" justifyContent="space-between">
-    {loading && (
-      <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
-        open={loading}
-      >
-        <CircularProgress color="primary" />
-      </Backdrop>
-    )}
+      {loading && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={loading}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <Grid container rowSpacing={1} columnSpacing={1.75}>
         <Grid item xs={12} md={12} lg={12}>
           <Grid container rowSpacing={1} columnSpacing={1.75}>
@@ -111,11 +111,7 @@ function Step4Completed() {
           </Grid>
           <Grid item>
             {Object.keys(userPermission).length > 0 &&
-              pageDetail.length === 0 &&
-              pageDetail.length !== 0 &&
-              (pageDetail[0].permission_name !== 'view_data' ||
-                pageDetail[0].permission_name !== 'manage_everything' ||
-                pageDetail[0].permission_name !== 'add_edit_delete_data') && (
+              (pageDetail.length === 0 || (pageDetail.length !== 0 && pageDetail[0].permission_name === 'no_access_to_view_data')) && (
                 <Grid item xs={12}>
                   <MainCard content={false}>
                     <Stack sx={{ width: '100%' }} spacing={2}>
@@ -128,13 +124,13 @@ function Step4Completed() {
               (pageDetail[0].permission_name !== 'view_data' ||
                 pageDetail[0].permission_name !== 'manage_everything' ||
                 pageDetail[0].permission_name !== 'add_edit_delete_data') && (
-            <MainCard content={false} sx={{ mt: 1.5 }}>
-              <Box sx={{ pt: 1, pr: 2 }}>
-                <StepCompletedForm stepId={4} startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} />
-              </Box>
-            </MainCard>
+                <MainCard content={false} sx={{ mt: 1.5 }}>
+                  <Box sx={{ pt: 1, pr: 2 }}>
+                    <StepCompletedForm stepId={4} startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} />
+                  </Box>
+                </MainCard>
               )}
-              </Grid>
+          </Grid>
         </Grid>
       </Grid>
     </Grid>

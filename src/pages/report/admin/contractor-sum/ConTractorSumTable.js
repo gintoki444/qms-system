@@ -112,7 +112,13 @@ OrderTableHead.propTypes = {
   order: PropTypes.string,
   orderBy: PropTypes.string
 };
-function ConTractorSumTable({ startDate, endDate, clickDownload, onFilter, nameCompany }) {
+function ConTractorSumTable({
+  startDate,
+  endDate,
+  // , clickDownload
+  onFilter,
+  nameCompany
+}) {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [loading, setLoading] = useState(true);
@@ -192,7 +198,7 @@ function ConTractorSumTable({ startDate, endDate, clickDownload, onFilter, nameC
               pr: 3
             }
           }}
-          ref={clickDownload}
+          // ref={clickDownload}
         >
           <TableHead>
             <TableRow>
@@ -220,7 +226,10 @@ function ConTractorSumTable({ startDate, endDate, clickDownload, onFilter, nameC
                     <TableCell align="center">{index + 1}</TableCell>
                     <TableCell align="left">{row.ref_order_id ? row.ref_order_id : '-'}</TableCell>
                     <TableCell align="left">{row.registration_no}</TableCell>
-                    <TableCell align="left">{row.name}</TableCell>
+                    <TableCell align="left">
+                      <span style={{ display: 'none' }}>{`'`}</span>
+                      {row.name}
+                    </TableCell>
                     <TableCell align="right" sx={{ p: '0!important' }}>
                       <Table sx={{ backgroundColor: '#efefef' }}>
                         <TableRow>
@@ -261,19 +270,19 @@ function ConTractorSumTable({ startDate, endDate, clickDownload, onFilter, nameC
                   <Table sx={{ backgroundColor: '#efefef' }}>
                     <TableRow>
                       <TableCell align="right" sx={{ width: '20%' }}>
-                        <strong style={{ color: 'red' }}> {totalSold ? totalSold + ' ตัน' : '-'}</strong>
+                        <strong style={{ color: 'red' }}> {totalSold ? parseFloat(totalSold).toFixed(3) + ' ตัน' : '-'}</strong>
                       </TableCell>
                       <TableCell align="right" sx={{ width: '20%' }}>
-                        <strong style={{ color: 'red' }}>{totalSmash ? totalSmash + ' ตัน' : '-'}</strong>
+                        <strong style={{ color: 'red' }}>{totalSmash ? parseFloat(totalSmash).toFixed(3) + ' ตัน' : '-'}</strong>
                       </TableCell>
                       <TableCell align="right" sx={{ width: '20%' }}>
-                        <strong style={{ color: 'red' }}>{totalslingHook ? totalslingHook + ' ตัน' : '-'}</strong>
+                        <strong style={{ color: 'red' }}>{totalslingHook ? parseFloat(totalslingHook).toFixed(3) + ' ตัน' : '-'}</strong>
                       </TableCell>
                       <TableCell align="right" sx={{ width: '20%' }}>
-                        <strong style={{ color: 'red' }}> {totalSlingSort ? totalSlingSort + ' ตัน' : '-'}</strong>
+                        <strong style={{ color: 'red' }}> {totalSlingSort ? parseFloat(totalSlingSort).toFixed(3) + ' ตัน' : '-'}</strong>
                       </TableCell>
                       <TableCell align="right" sx={{ width: '20%' }}>
-                        <strong style={{ color: 'red' }}> {totalJumboHook ? totalJumboHook + ' ตัน' : '-'}</strong>
+                        <strong style={{ color: 'red' }}> {totalJumboHook ? parseFloat(totalJumboHook).toFixed(3) + ' ตัน' : '-'}</strong>
                       </TableCell>
                     </TableRow>
                   </Table>

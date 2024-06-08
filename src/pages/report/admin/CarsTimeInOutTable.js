@@ -132,6 +132,7 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }
   };
   useEffect(() => {
     fetchData();
+    console.log('clickDownload', clickDownload);
 
     // const intervalId = setInterval(fetchData, 6000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิลลิวินาที)
 
@@ -192,7 +193,7 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }
             <TableBody>
               {items.length > 0 &&
                 items.map((row, index) => (
-                  <TableRow key={row.step_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                     <TableCell align="center">{index + 1}</TableCell>
                     <TableCell align="center">{padZero(row.queue_number)}</TableCell>
                     <TableCell align="center">{row.token}</TableCell>

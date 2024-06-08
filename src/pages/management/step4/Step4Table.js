@@ -60,6 +60,13 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       label: 'หมายเลขคิว'
     },
     {
+      id: 'remarkQueue',
+      align: 'center',
+      disablePadding: false,
+      // width: '5%',
+      label: 'รหัสคิวเดิม'
+    },
+    {
       id: 'registration_no',
       align: 'center',
       disablePadding: true,
@@ -676,6 +683,9 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                             <span style={{ color: 'red' }}> (คิวค้าง)</span>
                           )}
                         </TableCell>
+                        <TableCell align="left">
+                          {row.description ? <strong style={{ color: 'red' }}>{row.description}</strong> : '-'}
+                        </TableCell>
                         <TableCell align="center">
                           <Chip color="primary" sx={{ width: '90px' }} label={row.registration_no} />
                         </TableCell>
@@ -698,7 +708,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                         <TableCell align="left">{row.team_name ? row.team_name : '-'}</TableCell>
                         <TableCell align="left" width="10%">
                           {/* {row.start_time ? moment(row.start_time).format('LT') : '-'} */}
-                          {row.start_datetime ? row.start_datetime.slice(11, 19) : row.start_time.slice(11, 19)}
+                          {row.start_time ? row.start_time.slice(11, 19) : '-'}
                         </TableCell>
                         <TableCell align="center">
                           {status == 'waiting' && <Chip color="warning" sx={{ width: '110px' }} label={'รอคิวตรวจสอบ'} />}

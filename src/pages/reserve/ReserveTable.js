@@ -264,13 +264,15 @@ export default function ReserveTable({ startDate, endDate, permission }) {
   const [brand_code, setBrandCode] = useState('');
   const [conpany_id, setCompanyId] = useState('');
   const [onclick, setOnClick] = useState('');
+  const [reserveData, setReserveData] = useState([]);
 
   // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
   const padZero = (num) => {
     return num < 10 ? `0${num}` : num;
   };
 
-  const handleClickOpen = (id, click, total_quantity, brand_code, conpany_id) => {
+  const handleClickOpen = (id, click, total_quantity, brand_code, conpany_id, reserveData) => {
+
     if (total_quantity === '0') {
       alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
       return;
@@ -281,6 +283,7 @@ export default function ReserveTable({ startDate, endDate, permission }) {
         setNotifyText('ต้องการสร้างคิวหรือไม่?');
       }
 
+      setReserveData(reserveData)
       setOnClick(click);
       setReserveId(id);
       // setTotalQuantity(total_quantity);
@@ -414,7 +417,7 @@ export default function ReserveTable({ startDate, endDate, permission }) {
 
     fetch(apiUrl + '/updatereservestatus/' + reserve_id, requestOptions)
       .then((response) => response.json())
-      .then(() => {})
+      .then(() => { })
       .catch((error) => console.log('error', error));
   };
 
@@ -565,7 +568,8 @@ export default function ReserveTable({ startDate, endDate, permission }) {
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
 
-        var raw = JSON.stringify({
+        console.log('reserveData :', reserveData)
+        let newTran = {
           transactions: [
             {
               order: 1,
@@ -608,7 +612,55 @@ export default function ReserveTable({ startDate, endDate, permission }) {
               updated_at: currentDate
             }
           ]
-        });
+        }
+        if (reserveData.product_brand_id === 45 || reserveData.product_brand_id === 46) {
+          newTran.transactions[1].status = 'completed'
+        }
+        var raw = JSON.stringify(newTran);
+        // var raw = JSON.stringify({
+        //   transactions: [
+        //     {
+        //       order: 1,
+        //       description: 'ชั่งเบา',
+        //       queue_id: queue_id,
+        //       status: 'waiting',
+        //       station_id: 27,
+        //       remark: 'ทดสอบ-ชั่งเบา',
+        //       created_at: currentDate,
+        //       updated_at: currentDate
+        //     },
+        //     {
+        //       order: 2,
+        //       description: 'ขึ้นสินค้า',
+        //       queue_id: queue_id,
+        //       status: 'none',
+        //       station_id: 27,
+        //       remark: 'ทดสอบ-ขึ้นสินค้า',
+        //       created_at: currentDate,
+        //       updated_at: currentDate
+        //     },
+        //     {
+        //       order: 3,
+        //       description: 'ชั่งหนัก',
+        //       queue_id: queue_id,
+        //       status: 'none',
+        //       station_id: 27,
+        //       remark: 'ทดสอบ-ชั่งหนัก ',
+        //       created_at: currentDate,
+        //       updated_at: currentDate
+        //     },
+        //     {
+        //       order: 4,
+        //       description: 'เสร็จสิ้น',
+        //       queue_id: queue_id,
+        //       status: 'none',
+        //       station_id: 27,
+        //       remark: 'ทดสอบ-เสร็จสิ้น',
+        //       created_at: currentDate,
+        //       updated_at: currentDate
+        //     }
+        //   ]
+        // });
 
         var requestOptions = {
           method: 'POST',
@@ -779,7 +831,8 @@ export default function ReserveTable({ startDate, endDate, permission }) {
                                       row.status === 'completed' ||
                                       currentDate !== moment(row.pickup_date).format('YYYY-MM-DD') ||
                                       row.car_id == 1 ||
-                                      row.driver_id == 1
+                                      row.driver_id == 1 ||
+                                      ((row.product_brand_id === 45 || row.product_brand_id === 46) && parseFloat(row.total_quantity) === 0)
                                     }
                                     color="info"
                                     onClick={() =>
@@ -788,7 +841,8 @@ export default function ReserveTable({ startDate, endDate, permission }) {
                                         'add-queue',
                                         row.total_quantity,
                                         getTokenCompany(row.product_company_id),
-                                        row.product_company_id
+                                        row.product_company_id,
+                                        row
                                       )
                                     }
                                   >

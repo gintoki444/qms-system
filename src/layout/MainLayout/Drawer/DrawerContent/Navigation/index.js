@@ -27,7 +27,8 @@ import {
   TeamOutlined,
   FileDoneOutlined,
   GoldOutlined,
-  FundViewOutlined
+  FundViewOutlined,
+  KeyOutlined
 } from '@ant-design/icons';
 import { ReactComponent as ForkliftIcon } from 'assets/icon/icon-forklift.svg';
 import { ReactComponent as WarehouseIcon } from 'assets/icon/icon-warehouse.svg';
@@ -58,7 +59,8 @@ const icons = {
   manageTeamloading: TeamOutlined,
   productsManagement: GoldOutlined,
   products: GoldOutlined,
-  report: FundViewOutlined
+  report: FundViewOutlined,
+  permission: KeyOutlined
 };
 
 // ==============================|| DRAWER CONTENT - NAVIGATION ||============================== //
@@ -90,7 +92,9 @@ const Navigation = () => {
                 children: []
               };
 
-              const listPage = userPermissions.permission.filter((option) => option.group_id === x.group_id);
+              const listPage = userPermissions.permission.filter(
+                (option) => option.group_id === x.group_id && option.page_id !== 1 && option.page_id !== 2
+              );
 
               listPage.map((result) => {
                 let dataListPage = {

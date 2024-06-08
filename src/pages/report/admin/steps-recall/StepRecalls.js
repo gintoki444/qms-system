@@ -1,4 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {
+  useState,
+  useEffect
+  // , useRef
+} from 'react';
 import { useSelector } from 'react-redux';
 
 import { Grid, Box, TextField, Button, Stack, Divider, Tooltip, Alert, Backdrop, CircularProgress } from '@mui/material';
@@ -8,7 +12,8 @@ import MainCard from 'components/MainCard';
 import moment from 'moment';
 import { SearchOutlined, FileExcelOutlined } from '@ant-design/icons';
 
-import { useDownloadExcel } from 'react-export-table-to-excel';
+// import { useDownloadExcel } from 'react-export-table-to-excel';
+import ExportStepRecall from '../export/ExportStepRecall';
 
 // import CarsTimeInOutTable from './CarsTimeInOutTable';
 import StepRecallsTable from './StepRecallsTable';
@@ -21,14 +26,6 @@ function StepRecalls() {
 
   const [loading, setLoading] = useState(false);
   const [pageDetail, setPageDetail] = useState([]);
-
-  // ======= Export file excel =======;
-  const tableRef = useRef(null);
-  const { onDownload } = useDownloadExcel({
-    currentTableRef: tableRef.current,
-    filename: 'report-step-recall',
-    sheet: moment(new Date()).format('DD-MM-YYYY')
-  });
 
   const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
@@ -60,6 +57,23 @@ function StepRecalls() {
       setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
     }
   }, [userRole, userPermission]);
+
+  // ======= Export file excel =======;
+  const [itemList, setItemList] = useState([]);
+  const handleDataList = (data) => {
+    if (data.length > 0) {
+      setItemList(data);
+    }
+  };
+  // const tableRef = useRef(null);
+  // const { onDownload } = useDownloadExcel({
+  //   currentTableRef: tableRef.current,
+  //   filename: 'report-step-recall',
+  //   sheet: moment(new Date()).format('DD-MM-YYYY')
+  // });
+  const handleExport = (data) => {
+    ExportStepRecall(data);
+  };
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -113,11 +127,7 @@ function StepRecalls() {
           </Grid>
           <Grid item>
             {Object.keys(userPermission).length > 0 &&
-              pageDetail.length === 0 &&
-              pageDetail.length !== 0 &&
-              (pageDetail[0].permission_name !== 'view_data' ||
-                pageDetail[0].permission_name !== 'manage_everything' ||
-                pageDetail[0].permission_name !== 'add_edit_delete_data') && (
+              (pageDetail.length === 0 || (pageDetail.length !== 0 && pageDetail[0].permission_name === 'no_access_to_view_data')) && (
                 <Grid item xs={12}>
                   <MainCard content={false}>
                     <Stack sx={{ width: '100%' }} spacing={2}>
@@ -139,8 +149,10 @@ function StepRecalls() {
                       <Button
                         color="success"
                         variant="contained"
+                        disabled={itemList.length <= 0}
                         sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }}
-                        onClick={onDownload}
+                        // onClick={onDownload}
+                        onClick={() => handleExport(itemList)}
                       >
                         <FileExcelOutlined />
                       </Button>
@@ -152,7 +164,8 @@ function StepRecalls() {
                     <StepRecallsTable
                       startDate={selectedDateRange.startDate}
                       endDate={selectedDateRange.endDate}
-                      clickDownload={tableRef}
+                      dataList={handleDataList}
+                      // clickDownload={tableRef}
                     />
                   </Box>
                 </MainCard>

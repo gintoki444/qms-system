@@ -66,6 +66,9 @@ const Step2 = Loadable(lazy(() => import('pages/management/step2/Step2')));
 const Step3 = Loadable(lazy(() => import('pages/management/step3/Step3')));
 const Step4 = Loadable(lazy(() => import('pages/management/step4/Step4')));
 
+// render -  Permission management
+const Permission = Loadable(lazy(() => import('pages/admin/Permission/Permission')));
+
 // ==============================|| AUTH ROUTING ||============================== //
 
 const AdminsRoutes = {
@@ -278,6 +281,10 @@ const AdminsRoutes = {
           element: <Step4 />
         }
       ]
+    },
+    {
+      path: 'permission',
+      element: <Permission />
     }
   ]
 };

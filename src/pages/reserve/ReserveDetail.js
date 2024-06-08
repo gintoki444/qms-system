@@ -39,8 +39,11 @@ import { DiffOutlined, PrinterOutlined, EditOutlined, RollbackOutlined, Containe
 import moment from 'moment';
 
 function ReserveDetail() {
+  const pageId = 8;
   const [loading, setLoading] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+  const [pageDetail, setPageDetail] = useState([]);
   const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
   // =============== Get Reserve ID ===============//
@@ -80,9 +83,17 @@ function ReserveDetail() {
       .catch((err) => console.log(err));
   };
   useEffect(() => {
-    getReserve();
-    getOrders();
-  }, [id, userRoles]);
+
+    if (Object.keys(userPermission).length > 0) {
+      if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
+        setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+        getReserve();
+        getOrders();
+      } else {
+        setLoading(false);
+      }
+    }
+  }, [id, userRoles, userPermission]);
 
   // ==============================|| Create Queue ||============================== //
   const [open, setOpen] = useState(false);
@@ -255,7 +266,7 @@ function ReserveDetail() {
 
     fetch(apiUrl + '/updatereservestatus/' + reserve_id, requestOptions)
       .then((response) => response.json())
-      .then(() => {})
+      .then(() => { })
       .catch((error) => console.log('error', error));
   };
 
@@ -421,7 +432,7 @@ function ReserveDetail() {
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
 
-        var raw = JSON.stringify({
+        let newTran = {
           transactions: [
             {
               order: 1,
@@ -464,7 +475,55 @@ function ReserveDetail() {
               updated_at: currentDate
             }
           ]
-        });
+        }
+        if (reserveData.product_brand_id === 45 || reserveData.product_brand_id === 46) {
+          newTran.transactions[1].status = 'completed'
+        }
+        var raw = JSON.stringify(newTran);
+        // var raw = JSON.stringify({
+        //   transactions: [
+        //     {
+        //       order: 1,
+        //       description: 'ชั่งเบา',
+        //       queue_id: queue_id,
+        //       status: 'waiting',
+        //       station_id: 27,
+        //       remark: 'ทดสอบ-ชั่งเบา',
+        //       created_at: currentDate,
+        //       updated_at: currentDate
+        //     },
+        //     {
+        //       order: 2,
+        //       description: 'ขึ้นสินค้า',
+        //       queue_id: queue_id,
+        //       status: 'none',
+        //       station_id: 27,
+        //       remark: 'ทดสอบ-ขึ้นสินค้า',
+        //       created_at: currentDate,
+        //       updated_at: currentDate
+        //     },
+        //     {
+        //       order: 3,
+        //       description: 'ชั่งหนัก',
+        //       queue_id: queue_id,
+        //       status: 'none',
+        //       station_id: 27,
+        //       remark: 'ทดสอบ-ชั่งหนัก ',
+        //       created_at: currentDate,
+        //       updated_at: currentDate
+        //     },
+        //     {
+        //       order: 4,
+        //       description: 'เสร็จสิ้น',
+        //       queue_id: queue_id,
+        //       status: 'none',
+        //       station_id: 27,
+        //       remark: 'ทดสอบ-เสร็จสิ้น',
+        //       created_at: currentDate,
+        //       updated_at: currentDate
+        //     }
+        //   ]
+        // });
 
         var requestOptions = {
           method: 'POST',
@@ -534,7 +593,7 @@ function ReserveDetail() {
         <DialogContent>
           <DialogContentText>{notifytext}</DialogContentText>
         </DialogContent>
-        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2  }}>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2 }}>
           {onclickSubmit == true ? (
             <>
               <CircularProgress color="primary" />
@@ -711,23 +770,28 @@ function ReserveDetail() {
           </MainCard>
 
           <Grid item xs={12} sx={{ '& button': { m: 1, mt: 2 } }} align="center">
-            {(userRoles === 9 || userRoles === 1) && reserveData.status !== 'completed' && (
-              <Button
-                size="mediam"
-                variant="outlined"
-                color="success"
-                disabled={
-                  reserveData.status === 'completed' ||
-                  currentDate !== moment(reserveData.pickup_date).format('YYYY-MM-DD') ||
-                  reserveData.car_id == 1 ||
-                  reserveData.driver_id == 1
-                }
-                onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity)}
-                startIcon={<DiffOutlined />}
-              >
-                สร้างคิว
-              </Button>
-            )}
+            {reserveData.status !== 'completed' &&
+              pageDetail.length > 0 &&
+              (pageDetail[0].permission_name === 'manage_everything' ||
+                pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                // {(userRoles === 9 || userRoles === 1) && reserveData.status !== 'completed' && (
+                <Button
+                  size="mediam"
+                  variant="outlined"
+                  color="success"
+                  disabled={
+                    reserveData.status === 'completed' ||
+                    currentDate !== moment(reserveData.pickup_date).format('YYYY-MM-DD') ||
+                    reserveData.car_id == 1 ||
+                    reserveData.driver_id == 1 ||
+                    ((reserveData.product_brand_id === 45 || reserveData.product_brand_id === 46) && parseFloat(reserveData.total_quantity) === 0)
+                  }
+                  onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity)}
+                  startIcon={<DiffOutlined />}
+                >
+                  สร้างคิว
+                </Button>
+              )}
 
             {orderList.length > 0 && (
               <Button

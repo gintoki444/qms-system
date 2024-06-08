@@ -101,7 +101,7 @@ function Step3() {
 
               <Grid item xs={12}>
                 <MainCard content={false} sx={{ mt: 1.5 }}>
-                  <Box sx={{ pt: 1, pr: 2 }}>
+                  <Box>
                     <Step3Table
                       onStatusChange={handleStatusChange}
                       status={'processing'}

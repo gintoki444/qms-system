@@ -68,9 +68,9 @@ function Queues() {
                 name="pickup_date"
                 value={selectedDate1}
                 onChange={handleDateChange1}
-                // inputProps={{
-                //   min: currentDate
-                // }}
+              // inputProps={{
+              //   min: currentDate
+              // }}
               />
             </Stack>
           </Grid>
@@ -105,8 +105,8 @@ function Queues() {
         )}
         {pageDetail.length !== 0 && (
           <MainCard content={false} sx={{ mt: 1.5 }}>
-            <Box sx={{ pt: 1, pr: 2 }}>
-              <QueueTable startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} />
+            <Box>
+              <QueueTable startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} permission={pageDetail[0].permission_name} />
             </Box>
           </MainCard>
         )}

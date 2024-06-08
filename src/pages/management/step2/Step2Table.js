@@ -72,6 +72,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       label: 'หมายเลขคิว'
     },
     {
+      id: 'remarkQueue',
+      align: 'center',
+      disablePadding: false,
+      // width: '5%',
+      label: 'รหัสคิวเดิม'
+    },
+    {
       id: 'registration_no',
       align: 'center',
       disablePadding: true,
@@ -181,7 +188,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   const [loading, setLoading] = useState(true);
   const [stations, setStations] = useState([]);
   const [saveLoading, setSaveLoading] = useState(false);
-  saveLoading;
+  const [onclickSubmit, setOnClickSubmit] = useState(false);
   const [message, setMessage] = useState('');
 
   //เพิ่ม function get จำนวนสถานีของ step 1
@@ -290,21 +297,53 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       })
       .catch((error) => console.log('error', error));
   };
-  //Update ทีมขึ้นสินค้าสำหรับ step2
 
-  const updateLoadingTeam = (step_id) => {
+  //Update ทีมขึ้นสินค้าสำหรับ step2
+  // const updateLoadingTeam = (step_id) => {
+  //   return new Promise((resolve, reject) => {
+  //     const myHeaders = new Headers();
+  //     myHeaders.append('Content-Type', 'application/json');
+
+  //     const raw = JSON.stringify({
+  //       team_id: teamId,
+  //       contractor_id: contractorId,
+  //       labor_line_id: labor_line_id
+  //     });
+
+  //     // updateTeamLoading(queues.reserve_id, teamValue);
+  //     // updateTeamData(queues.reserve_id, teamData);
+
+  //     const requestOptions = {
+  //       method: 'PUT',
+  //       headers: myHeaders,
+  //       body: raw,
+  //       redirect: 'follow'
+  //     };
+
+  //     fetch(apiUrl + '/updateloadigteam/' + step_id, requestOptions)
+  //       .then((response) => response.json())
+  //       .then((result) => {
+  //         if (result['status'] === 'ok') {
+  //           resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
+  //         } else {
+  //           reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
+  //         }
+  //       })
+  //       .catch((error) => {
+  //         console.error(error);
+  //         reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
+  //       });
+  //   });
+  // };
+  const updateLoadingTeams = (step_ids) => {
     return new Promise((resolve, reject) => {
       const myHeaders = new Headers();
       myHeaders.append('Content-Type', 'application/json');
 
       const raw = JSON.stringify({
         team_id: teamId,
-        contractor_id: contractorId,
-        labor_line_id: labor_line_id
+        step_ids: step_ids
       });
-
-      // updateTeamLoading(queues.reserve_id, teamValue);
-      // updateTeamData(queues.reserve_id, teamData);
 
       const requestOptions = {
         method: 'PUT',
@@ -313,12 +352,14 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         redirect: 'follow'
       };
 
-      fetch(apiUrl + '/updateloadigteam/' + step_id, requestOptions)
+      fetch(apiUrl + '/updateloadingteams', requestOptions)
         .then((response) => response.json())
         .then((result) => {
           if (result['status'] === 'ok') {
+            console.log('updateLoadingTeam is ok');
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
+            console.log('not update LoadingTeam');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
           }
         })
@@ -393,37 +434,78 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   };
 
   //Update ข้อมูลรอเรียกคิวสถานีถัดไป
-  const step2Update = (step_id, statusupdate, station_id) => {
-    return new Promise((resolve, reject) => {
-      const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+  // const step2Update = (step_id, statusupdate, station_id) => {
+  //   return new Promise((resolve, reject) => {
+  //     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
-      var myHeaders = new Headers();
+  //     var myHeaders = new Headers();
+  //     myHeaders.append('Content-Type', 'application/json');
+
+  //     var raw = JSON.stringify({
+  //       status: statusupdate,
+  //       station_id: station_id,
+  //       updated_at: currentDate
+  //     });
+
+  //     var requestOptions = {
+  //       method: 'PUT',
+  //       headers: myHeaders,
+  //       body: raw,
+  //       redirect: 'follow'
+  //     };
+
+  //     fetch(apiUrl + '/updatestepstatus/' + step_id, requestOptions)
+  //       .then((response) => response.json())
+  //       .then((result) => {
+  //         if (result['status'] === 'ok') {
+  //           resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
+  //         } else {
+  //           reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
+  //         }
+  //       })
+  //       .catch((error) => {
+  //         console.error('error', error);
+  //         reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
+  //       });
+  //   });
+  // };
+
+  const updateMultipleStepStatus = (updates) => {
+    return new Promise((resolve, reject) => {
+      const myHeaders = new Headers();
       myHeaders.append('Content-Type', 'application/json');
 
-      var raw = JSON.stringify({
-        status: statusupdate,
-        station_id: station_id,
-        updated_at: currentDate
-      });
+      const raw = JSON.stringify({ updates });
 
-      var requestOptions = {
+      console.log(raw);
+
+      const requestOptions = {
         method: 'PUT',
         headers: myHeaders,
         body: raw,
         redirect: 'follow'
       };
 
-      fetch(apiUrl + '/updatestepstatus/' + step_id, requestOptions)
+      fetch(apiUrl + '/updatemultiplestepstatus', requestOptions)
         .then((response) => response.json())
         .then((result) => {
           if (result['status'] === 'ok') {
+            console.log('updateMultipleStepStatus is ok');
+
+            //alert("Update multiplestepstatus");
+            waitingGet();
+            processingGet();
+            getStepCount(2, 'processing');
+            setLoading(false);
+
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
+            console.log('not update MultipleStepStatus');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
           }
         })
         .catch((error) => {
-          console.error('error', error);
+          console.error(error);
           reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
         });
     });
@@ -516,15 +598,19 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               getTeamloadingByIds(result.team_id);
             } else if (result.team_data.team_data && result.team_data.team_data.team_id === null) {
               getTeamloadingByIds(result.team_id);
-            } else if (result.team_data.length > 0 || result.team_data) {
+            } else if (result.team_data.length > 0) {
               setTeamData(result.team_data);
 
+              console.log('result.team_data :', result.team_data);
+
+              // if (result.team_data === 999) {
               const combinedData = [
                 ...result.team_data.team_managers,
                 ...result.team_data.team_checkers,
                 ...result.team_data.team_forklifts
               ];
               setTeamLoading(combinedData);
+              // }
             }
           }
 
@@ -542,13 +628,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   const [orders, setOrders] = useState([]);
   const [loadOrders, setLoadOrder] = useState(false);
 
-  // const [productRegister, setProductRegister] = useState([]);
   const getOrderOfReserve = async (id) => {
     setLoadOrder(true);
     await reserveRequest.getOrderByReserveId(id).then((response) => {
       if (response.length > 0) {
-        // console.log('getOrderByReserveId :', response);
-
         response.map((result) => {
           if (result.product_company_id && result.product_brand_id) {
             result.items.map((data, index) => {
@@ -563,13 +646,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               const getItemsRegisData = allProductRegis.filter(
                 (option) => option.order_id === data.order_id && option.item_id === data.item_id
               );
+
               if (getItemsRegisData.length > 0) {
                 getItemsRegisData.map((x) => {
                   setLoopSelect((prevState) => {
                     const updatedOptions = [...prevState];
 
                     (x.id = data.order_id + data.item_id + index), updatedOptions.push(x);
-                    // console.log('updatedOptions getItemsRegisData:', updatedOptions);
                     return updatedOptions;
                   });
                 });
@@ -589,7 +672,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 setLoopSelect((prevState) => {
                   const updatedOptions = [...prevState];
                   updatedOptions.push(selectedOption);
-                  // console.log('updatedOptions selectedOption:', updatedOptions);
                   return updatedOptions;
                 });
               }
@@ -605,6 +687,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
             });
           }
         });
+
         setOrders(response);
         setLoadOrder(false);
       }
@@ -620,6 +703,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         } else {
           setProductList(response);
         }
+        setOnClickSubmit(false);
       });
     } catch (error) {
       console.log(error);
@@ -628,7 +712,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
   const [orderSelect, setOrderSelect] = useState([]);
   const [stockSelect, setStockSelect] = useState([]);
-  // const [orderSelectNew, setOrderSelectNew] = useState([]);
 
   const handleChangeProduct = (e, id, items, key) => {
     const selectedOption = { id: id, value: e.target.value };
@@ -654,16 +737,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       const indexKey = updatedOptions.findIndex((option) => option.id === key);
 
       if (parseFloat(stockItem) <= parseFloat(items.quantity) && indexKey === -1) {
-        // console.log('check 1');
         updatedOptions.push(selectedStock);
       } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length === 0) {
-        // console.log('check 2');
         updatedOptions[index] = selectedStock;
       } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length !== 0) {
-        // console.log('check 3');
-        // console.log('indexProId.length', indexProId);
         const filterindex = updatedOptions.filter((option) => option.order_id === items.order_id && option.item_id === items.item_id);
-        // console.log('filterindex', filterindex);
         filterindex.map(
           (x) =>
             (selectedStock.stockQuetity =
@@ -672,9 +750,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 : x.stockQuetity - selectedStock.stockQuetity)
         );
         if (selectedStock.stockQuetity <= 0 && indexKey !== -1) {
-          // console.log('check 3.1');
-          // console.log('selectedStock.stockQuetity', selectedStock.stockQuetity);
-          // console.log('indexKey :', indexKey);
           selectedStock.stockQuetity = parseFloat(items.quantity);
 
           let filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
@@ -698,15 +773,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
             }
           }
           updatedOptions[index] = selectedStock;
-          // updatedOptions.push(selectedStock);
         } else {
-          // console.log('check 3.5');
           updatedOptions.push(selectedStock);
         }
       } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey === -1) {
-        // console.log('check 4');
-        // console.log('parseFloat(stockItem)', parseFloat(stockItem));
-        // console.log('parseFloat(items.quantity)', parseFloat(items.quantity));
         const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
         const checkStockSelect = updatedOptions.filter((x) => x.order_id === items.order_id && x.item_id === items.item_id);
         // console.log('checkStock :', checkStock);
@@ -758,7 +828,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       return updatedOptions;
     });
 
-    console.log('*************** Loop select  ***************');
+    // console.log('*************** Loop select  ***************');
     setLoopSelect((prevState) => {
       let updatedOptions = [...prevState];
 
@@ -942,6 +1012,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               orderList.length < items.productRegis.length
             ) {
               console.log('check 1.1');
+              console.log('parseFloat(stockItem) > parseFloat(items.quantity)', parseFloat(stockItem) > parseFloat(items.quantity));
+              console.log('orderList.length < 3 :', orderList.length < 3);
+              console.log('orderList.length < items.productRegis.length :', orderList.length < items.productRegis.length);
               const selectedOption = {
                 id: items.order_id + items.item_id + orderList.length,
                 order_id: items.order_id,
@@ -1113,7 +1186,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         setText('ยกเลิก');
       }
     }
-    console.log('queuesData', queues);
 
     //กดปุ่มมาจากไหน
     setFrom(fr);
@@ -1124,11 +1196,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     setOpen(true);
   };
 
-  // ####################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
   const handleClose = async (flag) => {
+    setOnClickSubmit(true);
     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
     if (flag === 1) {
       if (fr === 'call') {
+        setLoading(true);
         if (station_count < station_num) {
           if (station_id) {
             let countItem = 0;
@@ -1140,29 +1213,30 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
             loopSelect.map((orderData) => {
               if (!orderData.product_register_quantity) checkCountItemLoop = checkCountItemLoop + 1;
             });
-
-            // console.log('checkCountItemLoop :', checkCountItemLoop);
-            // console.log('orderSelect.length :', orderSelect.length);
-            // console.log('countItem :', countItem);
             if (checkCountItemLoop > 0) {
+              setOnClickSubmit(false);
               alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
               return;
             } else if (orderSelect.length != countItem) {
+              setOnClickSubmit(false);
               alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
               return;
             } else {
-              setLoading(true);
+              setItems([]);
               setOpen(false);
 
-              if (queues.recall_status === 'Y') {
-                loopSelect.map((x) => {
+              loopSelect.map((x) => {
+                const getItemsRegisData = allProductRegis.filter(
+                  (option) => option.order_id === x.order_id && option.item_id === x.item_id
+                );
+                if (queues.recall_status === 'Y' && getItemsRegisData.length > 0) {
                   updateItemsRegister(x.item_register_id, x);
-                });
-              } else {
-                loopSelect.map((x) => {
+                } else {
                   addItemsRegister(x);
-                });
-              }
+                }
+              });
+
+              // รอปรับปรุงข้อมูลกองสินค้าที่เลือก
               orderSelect.map((dataOrder) => {
                 const setData = {
                   product_register_id: dataOrder.value,
@@ -1183,20 +1257,26 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               setLoopSelect([]);
             }
           } else {
+            setOnClickSubmit(false);
             alert('กรุณาเลือกหัวจ่าย');
           }
         } else {
+          setOnClickSubmit(false);
           alert('สถานีบริการเต็ม');
         }
       } else {
         if (fr === 'close') {
+          // setOnClickSubmit(true);
+          setLoading(true);
           //ปิดคิว: Update waiting Step2 ตามหมายเลขคิว 27 = Station ว่าง
           if (teamId === '' || teamId === null) {
+            setOnClickSubmit(false);
             alert('กรุณาเลือกทีมขึ้นสินค้า');
             return;
           }
 
           if (contractorId === '' || contractorId === null) {
+            setOnClickSubmit(false);
             alert('กรุณาเลือกสายรายงาน');
             return;
           }
@@ -1222,23 +1302,20 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           }
 
           if (countSelectError > 0) {
+            setOnClickSubmit(false);
             alert('กรุณาระบุจำนวนสินค้าให้ถูกต้อง');
             return;
           }
           if (countSelectErrorNum > 0) {
+            setOnClickSubmit(false);
             alert('กรุณาระบุจำนวนสินค้าให้มากกว่า 0');
             return;
           }
 
           try {
-            setLoading(true);
+            setItems([]);
             setOpen(false);
-
-            // อัพเดทข้อมูลกองสินค้าใหม่
-            loopSelect.map((x) => {
-              updateItemsRegister(x.item_register_id, x);
-            });
-            // if (id_update == 9999) {
+            if (status === 'processing') setOnClickSubmit(true);
             if (orderSelect.length > 0 || typeSelect.length !== 0) {
               orders.map((order) => {
                 order.items.map((items) => {
@@ -1307,19 +1384,31 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
             setStationCount(station_count - 1);
             updateStation(station_id, 'waiting');
 
-            await updateLoadingTeam(id_update);
-            await updateLoadingTeam(id_update_next);
+            // await updateLoadingTeam(id_update);
+            // await updateLoadingTeam(id_update_next);
+            await updateLoadingTeams([id_update, id_update_next]);
+
             await updateTeamLoading();
             await updateTeamData();
-            await step2Update(id_update_next, 'waiting', 27);
             await updateEndTime(id_update);
             await updateStartTime(id_update_next);
-            await step1Update(id_update, 'completed', station_id);
+
+            // await step2Update(id_update_next, 'waiting', 27);
+            // await step1Update(id_update, 'completed', station_id);
+
+            // อัปเดตสถานะและข้อมูลของทั้งสองขั้นตอนใน API call เดียว
+            const station_id2 = station_id;
+            const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+            const updates = [
+              { step_id: id_update, status: 'completed', station_id: station_id2, updated_at: currentDate },
+              { step_id: id_update_next, status: 'waiting', station_id: 27, updated_at: currentDate }
+            ];
+            await updateMultipleStepStatus(updates);
+
             await getWareHouseManager();
             // }
             setStockSelect([]);
             setLoopSelect([]);
-            setOpen(false);
           } catch (error) {
             console.error(error);
             // จัดการข้อผิดพลาดตามที่ต้องการ
@@ -1329,30 +1418,32 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           }
           // }
         } else {
-          // การใช้งาน Line Notify
           setLoading(true);
+          // การใช้งาน Line Notify
+          setItems([]);
+          setOpen(false);
           getStepToken(id_update)
             .then(({ queue_id, token }) => {
               lineNotify(queue_id, token);
             })
             .catch((error) => {
+              setOnClickSubmit(false);
               console.error('Error:', error);
               // ทำอะไรกับข้อผิดพลาด
             });
 
           loopSelect.map((x) => {
-            console.log('remove loopSelect', x.item_register_id);
             removeItemsRegister(x.item_register_id);
           });
 
-          await getWareHouseManager();
           updateStation(station_id, 'waiting');
           setStationCount(station_count - 1);
-          step1Update(id_update, 'waiting', 27);
-          updateStartTime(id_update);
+          await step1Update(id_update, 'waiting', 27);
+          await updateStartTime(id_update);
+          await getWareHouseManager();
           setStockSelect([]);
           setLoopSelect([]);
-          setOpen(false);
+
           // Trigger the parent to reload the other instance with the common status
         }
       }
@@ -1393,9 +1484,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   // เพิ่มข้อมูลกองสินค้า
   const addItemsRegister = async (data) => {
     await stepRequest.addItemRegister(data);
-    // .then((response) => {
-    //   console.log('response', response);
-    // });
   };
 
   // ลบข้อมูลกองสินค้า
@@ -1623,10 +1711,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     const setStock = stockSelect.filter((x) => x.product_register_id === producrReId);
     let total = 0;
 
-    if (setStock.length > 0) setStock.map((x) => (total = x.stockQuetity + total));
-
-    total = onStock - total;
-
+    if (setStock.length > 0) setStock.map((x) => (total = parseFloat(x.stockQuetity) + total));
+    total = parseFloat(onStock) - total;
     return total;
   };
 
@@ -1716,10 +1802,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                     {loopSelect.length > 0 &&
                                       loopSelect.map(
                                         (onLoop, index) =>
-                                          onLoop.order_id == orderItem.order_id &&
-                                          onLoop.item_id == orderItem.item_id && (
+                                          onLoop.order_id === orderItem.order_id &&
+                                          onLoop.item_id === orderItem.item_id && (
                                             <>
-                                              {queues.recall_status !== 'Y' ? (
+                                              {queues.recall_status !== 'Y' || onLoop.product_register_id === '' ? (
                                                 <FormControl sx={{ width: '100%', mb: 2 }} size="small" key={index}>
                                                   <Select
                                                     displayEmpty
@@ -1739,7 +1825,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                     {orderItem.productRegis &&
                                                       orderItem.productRegis.map(
                                                         (productRegis) =>
-                                                          productRegis.total_remain > 0 && (
+                                                          parseFloat(productRegis.total_remain) > 0 && (
                                                             <MenuItem
                                                               key={productRegis.product_register_id}
                                                               value={productRegis.product_register_id}
@@ -1753,7 +1839,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                                 ) ||
                                                                 sumStock(
                                                                   productRegis.product_register_id,
-                                                                  parseFloat(productRegis.total_remain)
+                                                                  parseFloat(productRegis.total_remain).toFixed(3)
                                                                 ) <= 0
                                                               }
                                                             >
@@ -1775,15 +1861,14 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                               ) : (
                                                                 ''
                                                               )}
-                                                              <strong> ({parseFloat(productRegis.total_remain)} ตัน)</strong>
+                                                              <strong> ({parseFloat(productRegis.total_remain).toFixed(3)} ตัน)</strong>
                                                               {stockSelect.filter(
                                                                 (x) => x.product_register_id === productRegis.product_register_id
                                                               ).length > 0 &&
                                                                 ' คงเหลือ ' +
-                                                                  sumStock(
-                                                                    productRegis.product_register_id,
-                                                                    parseFloat(productRegis.total_remain)
-                                                                  )}
+                                                                  parseFloat(
+                                                                    sumStock(productRegis.product_register_id, productRegis.total_remain)
+                                                                  ).toFixed(3)}
                                                             </MenuItem>
                                                           )
                                                       )}
@@ -1834,8 +1919,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                               ) : (
                                                                 ''
                                                               )}
-                                                              <strong> ({parseFloat(productRegis.total_remain)} ตัน)</strong>
-                                                              <strong> (เลือกแล้ว {onLoop.product_register_quantity} ตัน)</strong>
+                                                              <strong> ({parseFloat(productRegis.total_remain).toFixed(3)} ตัน)</strong>
+                                                              <strong>
+                                                                {' '}
+                                                                (เลือกแล้ว {parseFloat(onLoop.product_register_quantity).toFixed(3)} ตัน)
+                                                              </strong>
                                                               {/* {sumStock(productRegis.product_register_id , parseFloat(productRegis.total_remain))} */}
                                                             </MenuItem>
                                                           )
@@ -1861,31 +1949,39 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               </MainCard>
             </DialogContent>
             <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
-              {stockSelect.length > 0 && (
-                <Button
-                  color="error"
-                  variant="contained"
-                  autoFocus
-                  onClick={() => {
-                    setLoopSelect([]);
-                    setStockSelect([]);
-                    setOrderSelect([]);
-                    getOrderOfReserve(queues.reserve_id);
-                  }}
-                >
-                  รีเซ็ต
-                </Button>
-              )}
-              <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
-                ยกเลิก
-              </Button>
-              <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
-                ยืนยัน
-              </Button>
-              {fr === 'call' && (
-                <Button color="info" variant="contained" onClick={() => handleCallQueue(queues)} autoFocus endIcon={<SoundOutlined />}>
-                  เรียกคิว
-                </Button>
+              {onclickSubmit == true ? (
+                <>
+                  <CircularProgress color="primary" />
+                </>
+              ) : (
+                <>
+                  {stockSelect.length > 0 && (
+                    <Button
+                      color="warning"
+                      variant="contained"
+                      autoFocus
+                      onClick={() => {
+                        setLoopSelect([]);
+                        setStockSelect([]);
+                        setOrderSelect([]);
+                        getOrderOfReserve(queues.reserve_id);
+                      }}
+                    >
+                      รีเซ็ต
+                    </Button>
+                  )}
+                  <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+                    ยกเลิก
+                  </Button>
+                  <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
+                    ยืนยัน
+                  </Button>
+                  {fr === 'call' && (
+                    <Button color="info" variant="contained" onClick={() => handleCallQueue(queues)} autoFocus endIcon={<SoundOutlined />}>
+                      เรียกคิว
+                    </Button>
+                  )}
+                </>
               )}
             </DialogActions>
           </Dialog>
@@ -2073,7 +2169,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                             <div key={orderId}>
                               {ordersItems.product_brand_id !== null && ordersItems.product_company_id && (
                                 <Grid container spacing={2}>
-                                  {/* #################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################### */}
                                   {ordersItems.items.map((orderItem, orderIndex) => (
                                     <>
                                       <Grid item xs={12} md={12} key={orderIndex}>
@@ -2081,47 +2176,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                         <InputLabel sx={{ mt: 1, mb: 1 }}>
                                           จำนวน : <strong>{orderItem.quantity}</strong> (ตัน)
                                         </InputLabel>
-
-                                        {/* <FormControl sx={{ width: '100%' }} size="small">
-                                          <Select
-                                            displayEmpty
-                                            variant="outlined"
-                                            value={orderSelect[orderItem.item_id] || orderItem.product_register_id || ''}
-                                            onChange={(e) => {
-                                              handleChangeProduct(e, orderItem.item_id);
-                                              orderItem.product_register_id = e.target.value;
-                                            }}
-                                          >
-                                            <MenuItem disabled value="">
-                                              เลือกกองสินค้า
-                                            </MenuItem>
-                                            {orderItem.productRegis !== undefined &&
-                                              orderItem.productRegis.map(
-                                                (productRegis, index) =>
-                                                  productRegis.total_remain > 0 && (
-                                                    <MenuItem key={index} value={productRegis.product_register_id}>
-                                                      {'โกดัง : ' + productRegis.warehouse_name + ' '}
-                                                      {productRegis.product_register_name}
-                                                      {productRegis.product_register_date
-                                                        ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                            'DD/MM/YY'
-                                                          )}) `
-                                                        : '-'}
-                                                      {productRegis.product_register_date
-                                                        ? ` (${calculateAge(productRegis.product_register_date)}) `
-                                                        : '-'}
-                                                      {productRegis.product_register_remark ? (
-                                                        <span style={{ color: 'red' }}> ({productRegis.product_register_remark})</span>
-                                                      ) : (
-                                                        ''
-                                                      )}
-                                                      <strong> ({productRegis.total_remain} ตัน)</strong>
-                                                    </MenuItem>
-                                                  )
-                                              )}
-                                          </Select>
-                                        </FormControl> */}
-
                                         {loopSelect.map(
                                           (onLoop, index) =>
                                             onLoop.order_id == orderItem.order_id &&
@@ -2554,6 +2608,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                               <span style={{ color: 'red' }}> (คิวค้าง)</span>
                             )}
                           </TableCell>
+                        <TableCell align="left">
+                          {row.description ? <strong style={{ color: 'red' }}>{row.description}</strong> : '-'}
+                        </TableCell>
                           <TableCell align="center">
                             <Chip color="primary" sx={{ width: '122px' }} label={row.registration_no} />
                           </TableCell>
@@ -2567,9 +2624,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                           </TableCell>
                           <TableCell align="left">{row.driver_name}</TableCell>
                           <TableCell align="left">{row.driver_mobile}</TableCell>
-                          <TableCell align="left">
-                            {row.start_datetime ? row.start_datetime.slice(11, 19) : row.start_time.slice(11, 19)}
-                          </TableCell>
+                          <TableCell align="left">{row.start_time ? row.start_time.slice(11, 19) : row.start_time.slice(11, 19)}</TableCell>
                           <TableCell align="center">
                             {row.recall_status == 'Y' ? <Chip color="error" sx={{ width: '80px' }} label={'ทวนสอบ'} /> : '-'}
                           </TableCell>

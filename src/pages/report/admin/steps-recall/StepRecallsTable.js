@@ -130,7 +130,12 @@ OrderTableHead.propTypes = {
   orderBy: PropTypes.string
 };
 
-function StepRecallsTable({ startDate, endDate, clickDownload }) {
+function StepRecallsTable({
+  startDate,
+  endDate,
+  // , clickDownload
+  dataList
+}) {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [loading, setLoading] = useState(true);
@@ -157,6 +162,7 @@ function StepRecallsTable({ startDate, endDate, clickDownload }) {
     try {
       reportRequest.getStepsRecall(startDate, endDate).then((response) => {
         setItems(response);
+        dataList(response);
         setLoading(false);
       });
     } catch (error) {
@@ -190,14 +196,14 @@ function StepRecallsTable({ startDate, endDate, clickDownload }) {
               pr: 3
             }
           }}
-          ref={clickDownload}
+          // ref={clickDownload}
         >
           <OrderTableHead order={order} orderBy={orderBy} />
           {!loading ? (
             <TableBody>
               {items.length > 0 &&
                 items.map((row, index) => (
-                  <TableRow key={row.step_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                     <TableCell align="center">{index + 1}</TableCell>
                     <TableCell align="center">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
