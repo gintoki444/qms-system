@@ -8,6 +8,8 @@ const apiUrl = process.env.REACT_APP_API_URL;
 import * as reserveRequest from '_api/reserveRequest';
 import * as queuesRequest from '_api/queueReques';
 
+import QueueTag from 'components/@extended/QueueTag';
+
 // Get Role use
 import { useSelector } from 'react-redux';
 
@@ -37,7 +39,12 @@ import {
 
 // project import
 // import Dot from 'components/@extended/Dot';
-import { EditOutlined, DeleteOutlined, DiffOutlined, ProfileOutlined } from '@ant-design/icons';
+import {
+  EditOutlined, DeleteOutlined, DiffOutlined, ProfileOutlined
+  // , WarningOutlined
+} from '@ant-design/icons';
+
+import CancleQueueButton from 'components/@extended/CancleQueueButton';
 
 import axios from 'axios';
 
@@ -73,13 +80,13 @@ const headCells = [
     disablePadding: true,
     label: 'เบรน Code'
   },
-  // {
-  //   id: 'description',
-  //   align: 'left',
-  //   disablePadding: true,
-  //   width: '12%',
-  //   label: 'เหตุผลการจอง'
-  // },
+  {
+    id: 'description',
+    align: 'left',
+    disablePadding: true,
+    width: '12%',
+    label: 'รหัสคิวเดิม'
+  },
   {
     id: 'Company',
     align: 'left',
@@ -87,23 +94,23 @@ const headCells = [
     width: '15%',
     label: 'บริษัท'
   },
-  {
-    id: 'names',
-    align: 'left',
-    disablePadding: false,
-    label: 'ชื่อผู้ติดต่อ'
-  },
-  {
-    id: 'tels',
-    align: 'left',
-    disablePadding: false,
-    label: 'เบอร์โทรผู้ติดต่อ'
-  },
+  // {
+  //   id: 'names',
+  //   align: 'left',
+  //   disablePadding: false,
+  //   label: 'ชื่อผู้ติดต่อ'
+  // },
   {
     id: 'driverName',
     align: 'left',
     disablePadding: false,
     label: 'คนขับรถ'
+  },
+  {
+    id: 'tels',
+    align: 'left',
+    disablePadding: false,
+    label: 'เบอร์โทรคนขับรถ'
   },
   {
     id: 'totalQuantity',
@@ -164,6 +171,10 @@ const OrderStatus = ({ status }) => {
       color = 'warning';
       title = 'รอออกคิว';
       break;
+    case 'cancle':
+      color = 'secondary';
+      title = 'ยกเลิกคิว';
+      break;
     default:
       color = 'secondary';
       title = 'None';
@@ -182,7 +193,7 @@ OrderStatus.propTypes = {
   status: PropTypes.string
 };
 
-export default function ReserveTable({ startDate, endDate, permission }) {
+export default function ReserveTable({ startDate, endDate, permission, onFilter, reserList }) {
   const [loading, setLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
@@ -198,7 +209,7 @@ export default function ReserveTable({ startDate, endDate, permission }) {
     if (userRoles && permission) {
       getReserve();
     }
-  }, [userRoles, startDate, endDate, permission]);
+  }, [userRoles, startDate, endDate, permission, onFilter]);
 
   const getReserve = () => {
     setLoading(true);
@@ -210,7 +221,12 @@ export default function ReserveTable({ startDate, endDate, permission }) {
     }
 
     reserveRequest.getAllReserveByUrl(urlGet).then((response) => {
-      setItems(response);
+      if (onFilter) {
+        setItems(response.filter((x) => x.product_company_id === onFilter));
+      } else {
+        reserList(response);
+        setItems(response);
+      }
       setLoading(false);
     });
   };
@@ -303,6 +319,11 @@ export default function ReserveTable({ startDate, endDate, permission }) {
         addQueue(reserve_id);
       }
       if (onclick == 'delete') {
+        setSaveLoading(true);
+        deleteReserve(reserve_id);
+        setOpen(false);
+      }
+      if (onclick == 'cancle') {
         setSaveLoading(true);
         deleteReserve(reserve_id);
         setOpen(false);
@@ -568,7 +589,6 @@ export default function ReserveTable({ startDate, endDate, permission }) {
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
 
-        console.log('reserveData :', reserveData)
         let newTran = {
           transactions: [
             {
@@ -706,6 +726,12 @@ export default function ReserveTable({ startDate, endDate, permission }) {
     navigate('/reserve/detail/' + id);
   };
 
+  const handleSetReload = (refresh) => {
+    if (refresh === true) {
+      getReserve();
+    }
+  }
+
   return (
     <Box>
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
@@ -781,20 +807,20 @@ export default function ReserveTable({ startDate, endDate, permission }) {
                       <TableCell align="center">
                         <Chip color={'primary'} label={row.registration_no} sx={{ width: 122, border: 1 }} />
                       </TableCell>
-                      <TableCell align="center">{getTokenCompany(row.product_company_id)}</TableCell>
-                      {/* <TableCell align="left">
+                      <TableCell align="center">
+                        {row.queue_token ? <QueueTag id={row.product_company_id} token={row.queue_token} /> : getTokenCompany(row.product_company_id)}
+                      </TableCell>
+                      <TableCell align="left">
                         {row.r_description ? (
-                          <Tooltip title={row.r_description}>
-                            {row.r_description.substring(0, 30)} {row.r_description.length >= 20 && '...'}
-                          </Tooltip>
+                          <strong style={{ color: 'red' }}>{row.r_description}</strong>
                         ) : (
                           <>-</>
                         )}
-                      </TableCell> */}
+                      </TableCell>
                       <TableCell align="left">{row.company}</TableCell>
-                      <TableCell align="left">{row.contact_person ? row.contact_person : '-'}</TableCell>
-                      <TableCell align="left">{row.contact_number ? row.contact_number : '-'}</TableCell>
+                      {/* <TableCell align="left">{row.contact_person ? row.contact_person : '-'}</TableCell> */}
                       <TableCell align="left">{row.driver ? row.driver : '-'}</TableCell>
+                      <TableCell align="left">{row.mobile_no ? row.mobile_no : '-'}</TableCell>
                       <TableCell align="right"> {parseFloat((row.total_quantity * 1).toFixed(3))}</TableCell>
                       <TableCell align="center">
                         {row.status == 'completed' && parseFloat(row.total_quantity) == 0 ? (
@@ -864,6 +890,22 @@ export default function ReserveTable({ startDate, endDate, permission }) {
                                   </Button>
                                 </span>
                               </Tooltip>
+                              <CancleQueueButton reserve_id={row.reserve_id} status={row.status} handleReload={handleSetReload} />
+                              {/* <Tooltip title="ยกเลิก">
+                                <span>
+                                  <Button
+                                    variant="contained"
+                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                    size="medium"
+                                    disabled={row.status !== 'completed'}
+                                    color="warning"
+                                    // onClick={() => deleteDrivers(row.reserve_id)}
+                                    onClick={() => handleClickOpen(row.reserve_id, 'cancle', row.total_quantity, row.brand_code)}
+                                  >
+                                    <WarningOutlined />
+                                  </Button>
+                                </span>
+                              </Tooltip> */}
                               <Tooltip title="ลบ">
                                 <span>
                                   <Button

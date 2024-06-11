@@ -24,6 +24,16 @@ export const getAllproductCompanys = async () => {
 };
 
 // ==============================|| ข้อมูล Product Brand ด้วย id ||============================== //
+export const getAllproductBrand = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/allproductbrand`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
 export const getProductBrandById = async (id) => {
   const requestOptions = {
     method: 'GET',

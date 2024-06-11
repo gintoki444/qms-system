@@ -211,9 +211,9 @@ function Step0Table({ startDate, endDate, onFilter, permission }) {
     try {
       stepRequest.getAllStep0ByDate(startDate, endDate).then((response) => {
         if (onFilter == 0) {
-          setItems(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0));
+          setItems(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed"));
         } else {
-          setItems(response.filter((x) => x.product_company_id == onFilter && x.token !== null && parseFloat(x.total_quantity) > 0) || []);
+          setItems(response.filter((x) => x.product_company_id == onFilter && x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed") || []);
         }
         setLoading(false);
       });
@@ -267,7 +267,9 @@ function Step0Table({ startDate, endDate, onFilter, permission }) {
                         {/* <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} /> */}
                         {row.queue_remain == 1 && <span style={{ color: 'red' }}> (คิวค้าง)</span>}
                       </TableCell>
-                      <TableCell align="left">-</TableCell>
+                      <TableCell align="center">
+                        {row.r_description ? <strong style={{ color: 'red' }}>{row.r_description}</strong> : '-'}
+                      </TableCell>
                       <TableCell align="left">{row.company}</TableCell>
                       <TableCell align="left">{row.registration_no}</TableCell>
                       <TableCell align="left">{row.driver}</TableCell>

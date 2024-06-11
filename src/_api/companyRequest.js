@@ -1,6 +1,24 @@
 // Link api url
 const apiUrl = process.env.REACT_APP_API_URL;
 
+// ==============================|| Company: (เพิ่มข้อมูลร้านค้า/บริษัท) ||============================== //
+export const AddCompany = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/addcompany', requestOptions);
+
+  return await response.json();
+};
+
 // ==============================|| ข้อมูล ร้านค้า/บริษัท By userID ||============================== //
 export const getAllCompanyByuserId = async (userId) => {
   const requestOptions = {

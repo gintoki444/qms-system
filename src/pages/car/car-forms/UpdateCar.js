@@ -28,8 +28,8 @@ import {
   FormControl,
   Select,
   MenuItem,
-  Autocomplete,
-  TextField,
+  // Autocomplete,
+  // TextField,
   Alert
 } from '@mui/material';
 import MainCard from 'components/MainCard';
@@ -57,7 +57,7 @@ function UpdateCar() {
   // =============== Validate Forms ===============//
   const validationSchema = Yup.object().shape({
     registration_no: Yup.string().max(255).required('กรุณาระบุทะเบียนรถ'),
-    province_id: Yup.string().max(255).required('กรุณาระบุจังหวัด'),
+    // province_id: Yup.string().max(255).required('กรุณาระบุจังหวัด'),
     car_type_id: Yup.string().required('กรุณาระบุประเภทรถ')
   });
 
@@ -114,12 +114,12 @@ function UpdateCar() {
     });
   };
 
-  const [provincesList, setProvincesList] = useState([]);
-  const getProvinces = () => {
-    carRequest.getAllProvinces().then((response) => {
-      setProvincesList(response);
-    });
-  };
+  // const [provincesList, setProvincesList] = useState([]);
+  // const getProvinces = () => {
+  //   carRequest.getAllProvinces().then((response) => {
+  //     setProvincesList(response);
+  //   });
+  // };
 
   useEffect(() => {
     setOpen(true);
@@ -129,7 +129,7 @@ function UpdateCar() {
         getCar(id);
         getCarList();
         getCarType();
-        getProvinces();
+        // getProvinces();
       } else {
         setOpen(false);
       }
@@ -221,7 +221,9 @@ function UpdateCar() {
       {pageDetail.length !== 0 && (
         <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
           <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize={true}>
-            {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
+            {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values
+              // , setFieldValue
+            }) => (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
@@ -251,7 +253,7 @@ function UpdateCar() {
                     </Stack>
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
+                  {/* <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <InputLabel>จังหวัด *</InputLabel>
                       <FormControl>
@@ -284,26 +286,6 @@ function UpdateCar() {
                             />
                           )}
                         />
-                        {/* <Select
-                        displayEmpty
-                        variant="outlined"
-                        name="province_id"
-                        value={values.province_id}
-                        onChange={handleChange}
-                        placeholder="เลือกจังหวัด"
-                        fullWidth
-                        error={Boolean(touched.province_id && errors.province_id)}
-                      >
-                        <MenuItem disabled value="">
-                          เลือกจังหวัด
-                        </MenuItem>
-                        {provincesList &&
-                          provincesList.map((province) => (
-                            <MenuItem key={province.province_id} value={province.province_id}>
-                              {province.name_th}
-                            </MenuItem>
-                          ))}
-                      </Select> */}
                       </FormControl>
                       {touched.province_id && errors.province_id && (
                         <FormHelperText error id="helper-province_id">
@@ -311,7 +293,7 @@ function UpdateCar() {
                         </FormHelperText>
                       )}
                     </Stack>
-                  </Grid>
+                  </Grid> */}
 
                   <Grid item xs={12} md={6}>
                     <Stack spacing={1}>

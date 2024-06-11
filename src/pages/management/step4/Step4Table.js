@@ -318,6 +318,13 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       setText('เรียกคิว');
     } else {
       if (fr === 'close') {
+
+
+        const txt_parent_has_cover = checked.some((x) => x.id === step_id && x.value === 'on') === true ? 'Y' : 'N';
+        const txt_trailer_has_cover = checked2.some((x) => x.id === step_id && x.vavbw2jmnlue === 'on') === true ? 'Y' : 'N';
+        setParentHasCover(txt_parent_has_cover);
+        setTrailerHasCover(txt_trailer_has_cover);
+
         setMessage('เสร็จสิ้น(ประตูทางออก)–STEP4 เปิดคิว');
         setText('ปิดคิว');
       } else {
@@ -433,6 +440,8 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       } else {
         if (fr === 'close') {
           // การใช้งาน Line Notify
+
+          // if (id_update === 9999) {
           getStepToken(id_update)
             .then(({ queue_id, token }) => {
               lineNotify(queue_id, token);
@@ -448,6 +457,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
           updateHasCover(id_update);
           setLoading(false);
           setOpen(false);
+          // }
         } else {
           //ยกเลิก
           // การใช้งาน Line Notify
@@ -536,31 +546,56 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
   };
   /* End แจ้งเตือน Line Notify */
 
-  // ประกาศฟังก์ชัน parent_has_cover ซึ่งรับพารามิเตอร์ checked
-  function HasCover(checked) {
-    // ใช้เงื่อนไข if เพื่อตรวจสอบค่าของ checked
-    if (checked) {
-      return 'Y'; // ถ้า checked เป็น true ให้คืนค่า "Y"
-    } else {
-      return 'N'; // ถ้า checked เป็น false ให้คืนค่า "N"
-    }
-  }
   const [parent_has_cover, setParentHasCover] = useState('N');
-  const [checked, setChecked] = useState(false);
+  const [checked, setChecked] = useState([]);
 
-  const handleCheckboxChange = (event) => {
-    setChecked(event.target.checked);
-    const has_cover = HasCover(event.target.checked);
-    setParentHasCover(has_cover);
+  const handleCheckboxChange = (id, name) => (event) => {
+    const { value, checked } = event.target;
+    // setChecked(event.target.checked);
+    // const has_cover = HasCover(event.target.checked);
+    // setParentHasCover(has_cover);
+
+    const selectedOption = { id: id, name: name, value: checked ? value || true : false };
+
+    setChecked((prevState) => {
+      const updatedOptions = [...prevState];
+
+      const index = updatedOptions.findIndex(
+        (option) => option.id === id && option.name === name
+      );
+      if (index !== -1) {
+        updatedOptions[index] = selectedOption;
+      } else {
+        updatedOptions.push(selectedOption);
+      }
+      return updatedOptions;
+    });
   };
 
   const [trailer_has_cover, setTrailerHasCover] = useState('N');
-  const [checked2, setChecked2] = useState(false);
+  const [checked2, setChecked2] = useState([]);
 
-  const handleCheckboxChange2 = (event) => {
-    setChecked2(event.target.checked);
-    const has_cover = HasCover(event.target.checked);
-    setTrailerHasCover(has_cover);
+  const handleCheckboxChange2 = (id, name) => (event) => {
+    // setChecked2(event.target.checked);
+    // const has_cover = HasCover(event.target.checked);
+    // setTrailerHasCover(has_cover);
+
+    const { value, checked } = event.target;
+    const selectedOption = { id: id, name: name, value: checked ? value || true : false };
+
+    setChecked2((prevState) => {
+      const updatedOptions = [...prevState];
+
+      const index = updatedOptions.findIndex(
+        (option) => option.id === id && option.name === name
+      );
+      if (index !== -1) {
+        updatedOptions[index] = selectedOption;
+      } else {
+        updatedOptions.push(selectedOption);
+      }
+      return updatedOptions;
+    });
   };
 
   //Update ผ้าคลุมรถ
@@ -718,16 +753,23 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                           <>
                             <TableCell align="center">
                               <Checkbox
-                                checked={checked}
-                                onChange={handleCheckboxChange}
+                                checked={checked.find((X) => X.id === row.step_id)?.value}
+                                // checked={checked}
+                                // checked={checked.some(
+                                //   (item) =>
+                                //     item.step_id == row.step_id &&
+                                //     item.name === 'checked1' &&
+                                //     item.value === 'Y'
+                                // )}
+                                onChange={handleCheckboxChange(row.step_id, 'checked1')}
                                 color="primary"
                                 inputProps={{ 'aria-label': 'Checkbox' }}
                               />
                             </TableCell>
                             <TableCell align="center">
                               <Checkbox
-                                checked={checked2}
-                                onChange={handleCheckboxChange2}
+                                checked={checked2.find((X) => X.id === row.step_id)?.value}
+                                onChange={handleCheckboxChange2(row.step_id, 'checked2')}
                                 color="primary"
                                 inputProps={{ 'aria-label': 'Checkbox' }}
                               />
@@ -778,7 +820,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                                       size="small"
                                       color="primary"
                                       onClick={() => handleClickOpen(row.step_id, 'close')}
-                                      // endIcon={<RightSquareOutlined />}
+                                    // endIcon={<RightSquareOutlined />}
                                     >
                                       ปิดคิว
                                     </Button>

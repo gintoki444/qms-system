@@ -72,7 +72,7 @@ QueueStatus.propTypes = {
   status: PropTypes.string
 };
 
-export default function QueueTable({ startDate, endDate, permission }) {
+export default function QueueTable({ startDate, endDate, permission, queusList, onFilter }) {
   const [open, setOpen] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
   const userID = useSelector((state) => state.auth.user_id);
@@ -88,7 +88,7 @@ export default function QueueTable({ startDate, endDate, permission }) {
     setLoading(true);
     if (userRoles) getQueue();
 
-  }, [startDate, endDate, userRoles, permission]);
+  }, [startDate, endDate, userRoles, permission, onFilter]);
 
   const getQueue = () => {
     try {
@@ -100,7 +100,13 @@ export default function QueueTable({ startDate, endDate, permission }) {
               No: index + 1
             };
           });
-          setItems(newData);
+
+          if (onFilter) {
+            setItems(response.filter((x) => x.product_company_id === onFilter));
+          } else {
+            queusList(newData)
+            setItems(newData);
+          }
           setLoading(false);
         });
       } else {
@@ -111,7 +117,13 @@ export default function QueueTable({ startDate, endDate, permission }) {
               No: index + 1
             };
           });
-          setItems(newData);
+
+          if (onFilter) {
+            setItems(response.filter((x) => x.product_company_id === onFilter));
+          } else {
+            queusList(newData)
+            setItems(newData);
+          }
           setLoading(false);
         });
       }
@@ -127,10 +139,10 @@ export default function QueueTable({ startDate, endDate, permission }) {
     download: false,
     selectableRows: 'none',
     elevation: 0,
-    rowsPerPage: 25,
+    rowsPerPage: 100,
     responsive: 'standard',
     sort: false,
-    rowsPerPageOptions: [25, 50, 75, 100]
+    rowsPerPageOptions: [100, 200, 300]
   };
 
   const columns = [
@@ -158,6 +170,13 @@ export default function QueueTable({ startDate, endDate, permission }) {
       label: 'หมายเลขคิว',
       options: {
         customBodyRender: (value) => <Chip color={'primary'} label={value} sx={{ width: 70, border: 1 }} />
+      }
+    },
+    {
+      name: 'reserve_description',
+      label: 'รหัสคิวเดิม',
+      options: {
+        customBodyRender: (value) => value ? <strong style={{ color: 'red' }}>{value}</strong> : '-'
       }
     },
     {
@@ -240,8 +259,10 @@ export default function QueueTable({ startDate, endDate, permission }) {
                 </span>
               </Tooltip>
 
-              {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && (
-                <Tooltip title="ลบ">
+              {/* {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && permission=== 9999 && ( */}
+
+              {permission === 9999 && (
+                < Tooltip title="ลบ">
                   <span>
                     <Button
                       variant="contained"
@@ -255,8 +276,9 @@ export default function QueueTable({ startDate, endDate, permission }) {
                     </Button>
                   </span>
                 </Tooltip>
-              )}
-            </ButtonGroup>
+              )
+              }
+            </ButtonGroup >
           );
         },
 

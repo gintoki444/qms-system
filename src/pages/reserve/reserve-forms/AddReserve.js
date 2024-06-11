@@ -12,6 +12,10 @@ const userId = localStorage.getItem('user_id');
 import * as reserveRequest from '_api/reserveRequest';
 import * as lineNotifyApi from '_api/linenotify';
 
+import AddCar from './AddCar';
+import AddDriver from './AddDriver';
+import AddCompany from './AddCompany';
+
 // material-ui
 import {
   Button,
@@ -47,6 +51,26 @@ function AddReserve() {
   const currentDate = new Date().toISOString().split('T')[0];
   const userRoles = useSelector((state) => state.auth.roles);
   const { enqueueSnackbar } = useSnackbar();
+
+  const [newCar, setNewCar] = useState([]);
+  const [newDriver, setNewDriver] = useState([]);
+  const [newCompany, setNewCompany] = useState([]);
+  // =============== Get Reserve ID ===============//
+  const [initialValue, setInitialValue] = useState({
+    company_id: '',
+    car_id: '',
+    brand_group_id: '',
+    product_company_id: '',
+    product_brand_id: '',
+    driver_id: '',
+    description: '',
+    pickup_date: moment(new Date()).format('yyyy-MM-DD'),
+    warehouse_id: 1,
+    station_id: 1,
+    reserve_station_id: 1,
+    status: 'waiting',
+    total_quantity: 0
+  });
 
   // =============== Get Company ===============//
   const [companyList, setCompanyList] = useState([]);
@@ -160,23 +184,7 @@ function AddReserve() {
         setLoading(false);
       }
     }
-  }, [userRoles, userPermission]);
-
-  const initialValue = {
-    company_id: '',
-    car_id: '',
-    brand_group_id: '',
-    product_company_id: '',
-    product_brand_id: '',
-    driver_id: '',
-    description: '',
-    pickup_date: moment(new Date()).format('yyyy-MM-DD'),
-    warehouse_id: 1,
-    station_id: 1,
-    reserve_station_id: 1,
-    status: 'waiting',
-    total_quantity: 0
-  };
+  }, [userRoles, userPermission, newCar, newCompany, newDriver]);
 
   // =============== Validate Forms ===============//
   const validationSchema = Yup.object().shape({
@@ -284,6 +292,39 @@ function AddReserve() {
     });
   };
 
+  // =============== เพิ่มข้อมูลร้านค้า ===============//
+  const handleSaveCompany = (formData) => {
+    setNewCompany(formData);
+    getCompanyLsit();
+    setInitialValue((preViews) => {
+      let data = preViews;
+      data.company_id = formData[0].company_id;
+      return data
+    })
+  };
+
+  // =============== เพิ่มข้อมูลรถ ===============//
+  const handleSaveForm = async (formData) => {
+    setNewCar(formData);
+    getCarLsit();
+    setInitialValue((preViews) => {
+      let data = preViews;
+      data.car_id = formData[0].car_id;
+      return data;
+    })
+  };
+
+  // =============== เพิ่มข้อมูลคนขับรถ ===============//
+  const handleSaveDriverForm = (formData) => {
+    setNewDriver(formData);
+    getDriverLsit();
+    setInitialValue((preViews) => {
+      let data = preViews;
+
+      data.driver_id = formData[0].driver_id;
+      return data
+    })
+  };
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -326,7 +367,10 @@ function AddReserve() {
                           onChange={(e, value) => {
                             const newValue = value ? value.company_id : null;
                             setFieldValue('company_id', newValue);
+                            setNewCompany([companyList.find((x) => x.company_id === newValue)]);
                           }}
+
+                          value={newCompany.length > 0 ? newCompany[0] : null}
                           getOptionLabel={(option) => option.name}
                           sx={{
                             width: '100%',
@@ -351,6 +395,31 @@ function AddReserve() {
                       {touched.company_id && errors.company_id && (
                         <FormHelperText error id="helper-text-company-car">
                           {errors.company_id}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                    <AddCompany userID={userId} onSaves={handleSaveCompany} companyList={companyList} />
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>วันที่เข้ารับสินค้า *</InputLabel>
+                      <TextField
+                        required
+                        fullWidth
+                        type="date"
+                        id="pickup_date"
+                        name="pickup_date"
+                        onBlur={handleBlur}
+                        value={values.pickup_date}
+                        onChange={handleChange}
+                        inputProps={{
+                          min: currentDate
+                        }}
+                      />
+                      {touched.pickup_date && errors.pickup_date && (
+                        <FormHelperText error id="helper-text-pickup_date">
+                          {errors.pickup_date}
                         </FormHelperText>
                       )}
                     </Stack>
@@ -423,34 +492,11 @@ function AddReserve() {
                     )}
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
-                    <Stack spacing={1}>
-                      <InputLabel>วันที่เข้ารับสินค้า *</InputLabel>
-                      <TextField
-                        required
-                        fullWidth
-                        type="date"
-                        id="pickup_date"
-                        name="pickup_date"
-                        onBlur={handleBlur}
-                        value={values.pickup_date}
-                        onChange={handleChange}
-                        inputProps={{
-                          min: currentDate
-                        }}
-                      />
-                      {touched.pickup_date && errors.pickup_date && (
-                        <FormHelperText error id="helper-text-pickup_date">
-                          {errors.pickup_date}
-                        </FormHelperText>
-                      )}
-                    </Stack>
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={6} align="left">
                     <Stack spacing={1}>
                       <InputLabel>รถบรรทุก *</InputLabel>
                       <FormControl fullWidth>
+                        {console.log(values.car_id)}
                         <Autocomplete
                           disablePortal
                           id="car-list"
@@ -458,7 +504,11 @@ function AddReserve() {
                           onChange={(e, value) => {
                             const newValue = value ? value.car_id : '';
                             setFieldValue('car_id', newValue);
+                            setNewCar([carList.find((x) => x.car_id === newValue)]);
                           }}
+                          value={newCar.length > 0 ? newCar[0] : null}
+
+                          // value={carList.length > 0 ? carList.find((item) => item.car_id === values.car_id) : []}
                           getOptionLabel={(option) => {
                             if (option.car_id !== 1) {
                               return option.registration_no;
@@ -485,25 +535,6 @@ function AddReserve() {
                             />
                           )}
                         />
-                        {/* <Select
-                        displayEmpty
-                        variant="outlined"
-                        name="car_id"
-                        value={values.car_id || ''}
-                        onChange={handleChange}
-                        fullWidth
-                        error={Boolean(touched.car_id && errors.car_id)}
-                      >
-                        <MenuItem disabled value="">
-                          เลือกรถบรรทุก
-                        </MenuItem>
-                        <MenuItem value="1">ไม่ระบุรถบรรทุก</MenuItem>
-                        {carList.map((cars) => (
-                          <MenuItem key={cars.car_id} value={cars.car_id}>
-                            ทะเบียน : {cars.registration_no}
-                          </MenuItem>
-                        ))}
-                      </Select> */}
                       </FormControl>
                       {touched.car_id && errors.car_id && (
                         <FormHelperText error id="helper-text-company-car">
@@ -511,9 +542,10 @@ function AddReserve() {
                         </FormHelperText>
                       )}
                     </Stack>
+                    <AddCar userID={userId} onSaves={handleSaveForm} carsList={carList} />
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={6} align="left">
                     <Stack spacing={1}>
                       <InputLabel>คนขับรถ *</InputLabel>
                       <FormControl fullWidth>
@@ -522,10 +554,11 @@ function AddReserve() {
                           id="driver-list"
                           options={driverList}
                           name="driver_id"
-                          // onChange={(e, value) => setFieldValue('driver_id', value.driver_id)}
+                          value={newDriver.length > 0 ? newDriver[0] : null}
                           onChange={(e, value) => {
                             const newValue = value ? value.driver_id : '';
                             setFieldValue('driver_id', newValue);
+                            setNewDriver([driverList.find((x) => x.driver_id === newValue)]);
                           }}
                           getOptionLabel={(option) => option.firstname + ' ' + option.lastname}
                           sx={{
@@ -550,28 +583,29 @@ function AddReserve() {
                         </FormHelperText>
                       )}
                     </Stack>
+                    <AddDriver userID={userId} onSaves={handleSaveDriverForm} driverList={driverList} />
                   </Grid>
 
                   <Grid item xs={12} md={6}>
-                  <Stack spacing={1}>
-                    <InputLabel>หมายเหตุ (รหัสคิวเดิม)</InputLabel>
-                    <OutlinedInput
-                      id="description"
-                      type="description"
-                      value={values.description}
-                      name="description"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="หมายเหตุ (รหัสคิวเดิม)"
-                      error={Boolean(touched.description && errors.description)}
-                    />
-                    {touched.description && errors.description && (
-                      <FormHelperText error id="helper-text-description">
-                        {errors.description}
-                      </FormHelperText>
-                    )}
-                  </Stack>
-                </Grid>
+                    <Stack spacing={1}>
+                      <InputLabel>หมายเหตุ (รหัสคิวเดิม)</InputLabel>
+                      <OutlinedInput
+                        id="description"
+                        type="description"
+                        value={values.description}
+                        name="description"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        placeholder="หมายเหตุ (รหัสคิวเดิม)"
+                        error={Boolean(touched.description && errors.description)}
+                      />
+                      {touched.description && errors.description && (
+                        <FormHelperText error id="helper-text-description">
+                          {errors.description}
+                        </FormHelperText>
+                      )}
+                    </Stack>
+                  </Grid>
 
                   <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
@@ -595,6 +629,7 @@ function AddReserve() {
                       )}
                     </Stack>
                   </Grid>
+
 
                   <Grid item xs={12}>
                     {pageDetail.length > 0 &&

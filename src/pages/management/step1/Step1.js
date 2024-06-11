@@ -12,7 +12,6 @@ import MainCard from 'components/MainCard';
 // import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-
 import QueueTab from 'components/@extended/QueueTab';
 
 function Step1() {
@@ -146,7 +145,7 @@ function Step1() {
                               numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                               txtLabel={company.product_company_name_th2}
                               onSelect={() => handleChange(company.product_company_id)}
-                              // {...a11yProps(company.product_company_id)}
+                            // {...a11yProps(company.product_company_id)}
                             />
                           ))}
                       </Tabs>

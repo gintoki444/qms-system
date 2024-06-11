@@ -25,8 +25,8 @@ import {
   MenuItem,
   Backdrop,
   CircularProgress,
-  Autocomplete,
-  TextField,
+  // Autocomplete,
+  // TextField,
   Alert
 } from '@mui/material';
 import MainCard from 'components/MainCard';
@@ -54,12 +54,12 @@ function AddCar() {
     });
   };
 
-  const [provincesList, setProvincesList] = useState([]);
-  const getProvinces = () => {
-    carRequest.getAllProvinces().then((response) => {
-      setProvincesList(response);
-    });
-  };
+  // const [provincesList, setProvincesList] = useState([]);
+  // const getProvinces = () => {
+  //   carRequest.getAllProvinces().then((response) => {
+  //     setProvincesList(response);
+  //   });
+  // };
 
   const [carList, setCarList] = useState([]);
   const getCarList = async () => {
@@ -80,7 +80,7 @@ function AddCar() {
         setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
         getCarList();
         getCarType();
-        getProvinces();
+        // getProvinces();
       } else {
         setOpen(false);
       }
@@ -97,7 +97,7 @@ function AddCar() {
 
   const valiDationSchema = Yup.object().shape({
     registration_no: Yup.string().max(255).required('กรุณาระบุทะเบียนรถ'),
-    province_id: Yup.string().max(255).required('กรุณาระบุจังหวัด'),
+    // province_id: Yup.string().max(255).required('กรุณาระบุจังหวัด'),
     car_type_id: Yup.string().required('กรุณาระบุประเภทรถ')
   });
 
@@ -177,7 +177,9 @@ function AddCar() {
       {pageDetail.length !== 0 && (
         <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
           <Formik initialValues={initialValue} validationSchema={valiDationSchema} onSubmit={handleSubmits}>
-            {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
+            {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values
+              // , setFieldValue
+            }) => (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
@@ -207,7 +209,7 @@ function AddCar() {
                     </Stack>
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
+                  {/* <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <InputLabel>จังหวัด *</InputLabel>
                       <FormControl>
@@ -238,8 +240,8 @@ function AddCar() {
                               error={Boolean(touched.province_id && errors.province_id)}
                             />
                           )}
-                        />
-                        {/* <Select
+                        /> */}
+                  {/* <Select
                         displayEmpty
                         variant="outlined"
                         name="province_id"
@@ -259,14 +261,14 @@ function AddCar() {
                             </MenuItem>
                           ))}
                       </Select> */}
-                      </FormControl>
+                  {/* </FormControl>
                       {touched.province_id && errors.province_id && (
                         <FormHelperText error id="helper-province_id">
                           {errors.province_id}
                         </FormHelperText>
                       )}
                     </Stack>
-                  </Grid>
+                  </Grid> */}
 
                   <Grid item xs={12} md={6}>
                     <Stack spacing={1}>

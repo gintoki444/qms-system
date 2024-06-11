@@ -39,7 +39,8 @@ import CryptoJS from 'crypto-js';
 const KeyCode = process.env.REACT_APP_CODE_URL;
 
 // Get api queuesRequest
-import * as queueRequest from '_api/queueReques';
+import * as queueRequest from '_api/queueReques'
+import * as reserveRequest from '_api/reserveRequest';
 const apiUrl = process.env.REACT_APP_API_URL;
 const steps = ['ชั่งเบา', 'ขึ้นสินค้า', 'ชั่งหนัก', 'เสร็จสิ้น'];
 const userId = localStorage.getItem('user_id');
@@ -65,6 +66,7 @@ function QueueDetail({ sx }) {
   const prurl = window.location.origin + '/queues/detail/';
 
   useEffect(() => {
+
     const decryptData = () => {
       try {
         // Decode the Base64 string
@@ -132,7 +134,6 @@ function QueueDetail({ sx }) {
     try {
       queueRequest.getQueueDetailID(id).then((result) => {
         if (result.length > 0) {
-          console.log('getQueueDetailID :', result)
           // const currentDate = moment(new Date()).format('DD/MM/YYYY');
           const currentDate = moment();
 
@@ -902,6 +903,30 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
     id: PropTypes.string
   };
 
+  useEffect(() => {
+    getProductBrandList();
+    getProductCompany();
+  }, []);
+  // =============== Get Product Company ===============//
+  const [productCompany, setProductCompany] = useState([]);
+  const getProductCompany = () => {
+    try {
+      reserveRequest.getAllproductCompanys().then((response) => {
+        setProductCompany(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const [productBrandList, setProductBrandList] = useState([]);
+  const getProductBrandList = async () => {
+    reserveRequest.getAllproductBrand().then((response) => {
+      if (response.length > 0) {
+        setProductBrandList(response)
+      }
+    });
+  }
   return (
     <Grid container spacing={2} sx={{ p: '0 3%' }}>
       {!isMobile && (
@@ -975,8 +1000,23 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
                           <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
                         </Typography>
                       </Grid>
+                      <Grid item xs={12} md={6} >
+                        <Typography variant="body1" sx={{ pl: { xs: 1, lg: '20%' } }}>
+                          <strong>วันที่สั่งซื้อสินค้า : </strong> {moment(order.order_date).format('DD/MM/YYYY')}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Typography variant="body1">
+                          <strong>บริษัท(สินค้า) : </strong> {productCompany.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}
+                        </Typography>
+                      </Grid>
                       <Grid item xs={12} md={6}>
                         <Typography variant="body1" sx={{ pl: { xs: 1, lg: '20%' } }}>
+                          <strong>ตราสินค้า : </strong>  {productBrandList.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Typography variant="body1" >
                           <strong>ยอดจ่าย : </strong> {parseFloat(order.total_amount)} ตัน
                         </Typography>
                       </Grid>
@@ -1044,7 +1084,7 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body" sx={{ pl: 1 }}>
+              <Typography variant="body" sx={{ pl: { xs: 1, lg: '20%' } }}>
                 <strong>น้ำหนักหลังรับสินค้า :</strong> {queues.weight2 && queues.weight2 !== null ? parseFloat(queues.weight2) + ' ตัน' : '-'}
               </Typography>
             </Grid>

@@ -43,12 +43,12 @@ function CarTable({ permission }) {
     });
   };
 
-  const [provincesList, setProvincesList] = useState([]);
-  const getProvinces = () => {
-    carRequest.getAllProvinces().then((response) => {
-      setProvincesList(response);
-    });
-  };
+  // const [provincesList, setProvincesList] = useState([]);
+  // const getProvinces = () => {
+  //   carRequest.getAllProvinces().then((response) => {
+  //     setProvincesList(response);
+  //   });
+  // };
 
   const setCarTypeName = (id) => {
     const carType = carTypeList.filter((x) => x.car_type_id == id);
@@ -60,7 +60,7 @@ function CarTable({ permission }) {
     if (userRole && permission) {
       getCar();
       getCarType();
-      getProvinces();
+      // getProvinces();
     }
   }, [userId, userRole, permission]);
 
@@ -158,17 +158,17 @@ function CarTable({ permission }) {
       name: 'registration_no',
       label: 'ทะเบียนรถ'
     },
-    {
-      name: 'province_id',
-      label: 'จังหวัด',
-      options: {
-        customBodyRender: (value) => (
-          <Typography variant="body">{value ? provincesList.find((x) => x.province_id == value)?.name_th : '-'}</Typography>
-        )
-        // setC.;ellProps: () => ({ style: { color: 'red', textAlign: 'center' } }),
-        // setCellHeaderProps: () => ({ style: { color: 'red', textAlign: 'center' } })
-      }
-    },
+    // {
+    //   name: 'province_id',
+    //   label: 'จังหวัด',
+    //   options: {
+    //     customBodyRender: (value) => (
+    //       <Typography variant="body">{value ? provincesList.find((x) => x.province_id == value)?.name_th : '-'}</Typography>
+    //     )
+    //     // setC.;ellProps: () => ({ style: { color: 'red', textAlign: 'center' } }),
+    //     // setCellHeaderProps: () => ({ style: { color: 'red', textAlign: 'center' } })
+    //   }
+    // },
     {
       name: 'car_type_id',
       label: 'ประเภทรถ',

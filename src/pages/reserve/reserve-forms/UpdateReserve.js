@@ -238,14 +238,24 @@ function UpdateReserve() {
     }
   };
 
+  const [productBrandList, setProductBrandList] = useState([]);
+  const getProductBrandList = async () => {
+    reserveRequest.getAllproductBrand().then((response) => {
+      if (response.length > 0) {
+        setProductBrandList(response)
+      }
+    });
+  }
+
   // =============== useEffect ===============//
   useEffect(() => {
     setLoading(true);
+    getProductBrandList();
+    getProductCompany();
     if (Object.keys(userPermission).length > 0) {
       if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
         setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
         getReserve();
-        getProductCompany();
 
         if (user_Id) {
           getCompanyList();
@@ -287,6 +297,7 @@ function UpdateReserve() {
 
             result.pickup_date = moment(result.pickup_date).format('YYYY-MM-DD');
 
+            console.log(result)
             setReservationData(result);
             setCompanyId(result.product_company_id);
             checkQueueCompanyCount(result.product_company_id);
@@ -306,7 +317,7 @@ function UpdateReserve() {
   //   product_company_id: reservationData.product_company_id || '',
   //   product_brand_id: reservationData.product_brand_id || '',
   //   driver_id: reservationData.driver_id,
-  //   description: reservationData.reserve_description,
+  //   description: reservationData.description,
   //   pickup_date: moment(reservationData.pickup_date).format('YYYY-MM-DD'),
   //   status: reservationData.status,
   //   total_quantity: reservationData.total_quantity,
@@ -337,6 +348,9 @@ function UpdateReserve() {
       values.user_id = user_Id;
       values.updated_at = currentDate;
       values.brand_group_id = values.product_company_id;
+      values.description = values.reserve_description;
+
+      console.log('put ', values)
 
       await reserveRequest
         .putReserById(id, values)
@@ -993,6 +1007,30 @@ function UpdateReserve() {
 
                         <Grid item xs={12} md={6}>
                           <Stack spacing={1}>
+                            <InputLabel>วันที่เข้ารับสินค้า *</InputLabel>
+                            <TextField
+                              required
+                              fullWidth
+                              type="date"
+                              id="pickup_date"
+                              name="pickup_date"
+                              onBlur={handleBlur}
+                              value={values.pickup_date}
+                              onChange={handleChange}
+                              inputProps={{
+                                min: currentDate
+                              }}
+                            />
+                            {touched.pickup_date && errors.pickup_date && (
+                              <FormHelperText error id="helper-text-pickup_date">
+                                {errors.pickup_date}
+                              </FormHelperText>
+                            )}
+                          </Stack>
+                        </Grid>
+
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
                             <InputLabel>บริษัท (สินค้า) *</InputLabel>
                             <FormControl fullWidth>
                               <Select
@@ -1058,30 +1096,6 @@ function UpdateReserve() {
                               {errors.product_brand_id}
                             </FormHelperText>
                           )}
-                        </Grid>
-
-                        <Grid item xs={12} md={6}>
-                          <Stack spacing={1}>
-                            <InputLabel>วันที่เข้ารับสินค้า *</InputLabel>
-                            <TextField
-                              required
-                              fullWidth
-                              type="date"
-                              id="pickup_date"
-                              name="pickup_date"
-                              onBlur={handleBlur}
-                              value={values.pickup_date}
-                              onChange={handleChange}
-                              inputProps={{
-                                min: currentDate
-                              }}
-                            />
-                            {touched.pickup_date && errors.pickup_date && (
-                              <FormHelperText error id="helper-text-pickup_date">
-                                {errors.pickup_date}
-                              </FormHelperText>
-                            )}
-                          </Stack>
                         </Grid>
 
                         <Grid item xs={12} md={6}>
@@ -1159,7 +1173,7 @@ function UpdateReserve() {
                                 }}
                                 getOptionLabel={(option) => {
                                   if (option.driver_id !== 1 && option.driver_id !== undefined) {
-                                    return option.firstname ? option.firstname + option.lastname : '';
+                                    return option.firstname ? option.firstname + ' ' + option.lastname : '';
                                   } else {
                                     return 'ไม่ระบุคนขับรถ';
                                   }
@@ -1205,6 +1219,7 @@ function UpdateReserve() {
                               id="reserve_description"
                               type="reserve_description"
                               value={values.reserve_description}
+                              // disabled
                               name="reserve_description"
                               onBlur={handleBlur}
                               onChange={handleChange}
@@ -1266,19 +1281,29 @@ function UpdateReserve() {
                                         <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
                                       </Typography>
                                     </Grid>
-                                    <Grid item xs={12} md={12}>
+                                    <Grid item xs={12} md={6}>
                                       <Typography variant="body1">
                                         <strong>วันที่สั่งซื้อสินค้า : </strong> {moment(order.order_date).format('DD/MM/YYYY')}
                                       </Typography>
                                     </Grid>
+                                    <Grid item xs={12} md={6}>
+                                      <Typography variant="body1">
+                                        <strong>บริษัท(สินค้า) : </strong> {productCompany.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}
+                                      </Typography>
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                      <Typography variant="body1">
+                                        <strong>ตราสินค้า : </strong>  {productBrandList.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}
+                                      </Typography>
+                                    </Grid>
                                     <Grid item xs={12} md={12}>
                                       <Typography variant="body1">
-                                        <strong>รายละเอียด : </strong> {order.description}
+                                        <strong>รายละเอียด : </strong> {order.description ? order.description : '-'}
                                       </Typography>
                                     </Grid>
                                   </Grid>
                                   <Grid item xs={12} md={12}></Grid>
-                                  <Grid item xs={12} md={6}>
+                                  <Grid item xs={12} md={8}>
                                     <TableContainer>
                                       <Table
                                         aria-labelledby="tableTitle"
@@ -1417,19 +1442,21 @@ function UpdateReserve() {
                             พิมพ์
                           </Button>
                         )}
-                        {reservationData.status !== 'completed' && (
-                          <Button
-                            disableElevation
-                            disabled={isSubmitting}
-                            size="mediam"
-                            type="submit"
-                            variant="contained"
-                            color="primary"
-                            startIcon={<SaveOutlined />}
-                          >
-                            บันทึกข้อมูลการจอง
-                          </Button>
-                        )}
+
+                        {pageDetail.length > 0 &&
+                          (pageDetail[0].permission_name === 'manage_everything' || reservationData.status !== 'completed') && (
+                            <Button
+                              disableElevation
+                              disabled={isSubmitting}
+                              size="mediam"
+                              type="submit"
+                              variant="contained"
+                              color="primary"
+                              startIcon={<SaveOutlined />}
+                            >
+                              บันทึกข้อมูลการจอง
+                            </Button>
+                          )}
                         {reservationData.status === 'completed' && (
                           <Button
                             size="mediam"

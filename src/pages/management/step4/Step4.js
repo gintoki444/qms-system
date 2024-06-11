@@ -39,7 +39,6 @@ function Step4() {
   };
 
   useEffect(() => {
-    console.log('userPermission', userPermission);
     if (Object.keys(userPermission).length > 0) {
       setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
     }

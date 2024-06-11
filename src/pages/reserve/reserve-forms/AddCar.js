@@ -34,7 +34,7 @@ import * as carRequest from '_api/carRequest';
 import moment from 'moment';
 import { useSnackbar } from 'notistack';
 
-function AddCar({ userID, onSaves, carsList }) { 
+function AddCar({ userID, onSaves, carsList }) {
   const [loading, setLoading] = useState(false);
   const userId = localStorage.getItem('user_id');
   const { enqueueSnackbar } = useSnackbar();
@@ -50,16 +50,16 @@ function AddCar({ userID, onSaves, carsList }) {
     });
   };
 
-  const [provincesList, setProvincesList] = useState([]);
-  const getProvinces = () => {
-    carRequest.getAllProvinces().then((response) => {
-      setProvincesList(response);
-    });
-  };
+  // const [provincesList, setProvincesList] = useState([]);
+  // const getProvinces = () => {
+  //   carRequest.getAllProvinces().then((response) => {
+  //     setProvincesList(response);
+  //   });
+  // };
 
   useEffect(() => {
     getCarType();
-    getProvinces();
+    // getProvinces();
   }, [userID, carsList]);
 
   const initialValue = {
@@ -72,7 +72,7 @@ function AddCar({ userID, onSaves, carsList }) {
 
   const valiDationSchema = Yup.object().shape({
     registration_no: Yup.string().max(255).required('กรุณาระบุทะเบียนรถ'),
-    province_id: Yup.string().max(255).required('กรุณาระบุจังหวัด'),
+    // province_id: Yup.string().max(255).required('กรุณาระบุจังหวัด'),
     car_type_id: Yup.string().required('กรุณาระบุประเภทรถ')
   });
 
@@ -91,7 +91,9 @@ function AddCar({ userID, onSaves, carsList }) {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     const checkCar = carsList.filter(
-      (x) => x.registration_no == values.registration_no && x.province_id == values.province_id && x.car_type_id == values.car_type_id
+      (x) => x.registration_no == values.registration_no
+        // && x.province_id == values.province_id 
+        && x.car_type_id == values.car_type_id
     );
 
     if (checkCar && checkCar.length <= 0) {
@@ -111,7 +113,9 @@ function AddCar({ userID, onSaves, carsList }) {
             carRequest.getAllCars(userID).then((response) => {
               const result = response.filter(
                 (x) =>
-                  x.registration_no == values.registration_no && x.province_id == values.province_id && x.car_type_id == values.car_type_id
+                  x.registration_no == values.registration_no
+                  // && x.province_id == values.province_id 
+                  && x.car_type_id == values.car_type_id
               );
 
               enqueueSnackbar('เพิ่มข้อมูลรถสำเร็จ!', { variant: 'success' });
@@ -184,7 +188,7 @@ function AddCar({ userID, onSaves, carsList }) {
                         </Stack>
                       </Grid>
 
-                      <Grid item xs={12} md={6}>
+                      {/* <Grid item xs={12} md={6}>
                         <Stack spacing={1}>
                           <InputLabel>จังหวัด *</InputLabel>
                           <FormControl>
@@ -215,7 +219,7 @@ function AddCar({ userID, onSaves, carsList }) {
                             </FormHelperText>
                           )}
                         </Stack>
-                      </Grid>
+                      </Grid> */}
 
                       <Grid item xs={12} md={6}>
                         <Stack spacing={1}>

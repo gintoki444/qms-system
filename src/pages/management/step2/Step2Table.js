@@ -744,10 +744,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         const filterindex = updatedOptions.filter((option) => option.order_id === items.order_id && option.item_id === items.item_id);
         filterindex.map(
           (x) =>
-            (selectedStock.stockQuetity =
-              selectedStock.stockQuetity > x.stockQuetity
-                ? selectedStock.stockQuetity - x.stockQuetity
-                : x.stockQuetity - selectedStock.stockQuetity)
+          (selectedStock.stockQuetity =
+            selectedStock.stockQuetity > x.stockQuetity
+              ? selectedStock.stockQuetity - x.stockQuetity
+              : x.stockQuetity - selectedStock.stockQuetity)
         );
         if (selectedStock.stockQuetity <= 0 && indexKey !== -1) {
           selectedStock.stockQuetity = parseFloat(items.quantity);
@@ -915,10 +915,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         const filterindex = updatedOptions.filter((option) => option.order_id === items.order_id && option.item_id === items.item_id);
         filterindex.map(
           (x) =>
-            (selectedOptionNew.product_register_quantity =
-              selectedOptionNew.product_register_quantity > x.product_register_quantity
-                ? selectedOptionNew.product_register_quantity - x.product_register_quantity
-                : x.product_register_quantity - selectedOptionNew.product_register_quantity)
+          (selectedOptionNew.product_register_quantity =
+            selectedOptionNew.product_register_quantity > x.product_register_quantity
+              ? selectedOptionNew.product_register_quantity - x.product_register_quantity
+              : x.product_register_quantity - selectedOptionNew.product_register_quantity)
         );
 
         if (selectedOptionNew.product_register_quantity <= 0 && indexKey !== -1) {
@@ -1222,17 +1222,40 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
               return;
             } else {
+
+              // loopSelect.map((x) => {
+              //   const getItemsRegisData = allProductRegis.filter(
+              //     (option) => option.order_id === x.order_id && option.item_id === x.item_id
+              //   );
+              //   if (queues.recall_status === 'Y' && getItemsRegisData.length > 0) {
+              //     console.log('updateItemsRegister x.item_register_id', x.item_register_id)
+              //     console.log('updateItemsRegister x', x)
+              //     // updateItemsRegister(x.item_register_id, x);
+              //   } else {
+              //     console.log('addItemsRegister x', x)
+              //     // addItemsRegister(x);
+              //   }
+              // });
+
+
+              // if (status === 9999) {
               setItems([]);
               setOpen(false);
 
               loopSelect.map((x) => {
-                const getItemsRegisData = allProductRegis.filter(
-                  (option) => option.order_id === x.order_id && option.item_id === x.item_id
-                );
-                if (queues.recall_status === 'Y' && getItemsRegisData.length > 0) {
-                  updateItemsRegister(x.item_register_id, x);
-                } else {
-                  addItemsRegister(x);
+
+                if ((x.order_id !== null || x.order_id !== undefined) &&
+                  (x.item_id !== null || x.item_id !== undefined) &&
+                  (x.product_register_id !== null || x.product_register_id !== undefined)
+                ) {
+                  const getItemsRegisData = allProductRegis.filter(
+                    (option) => option.order_id === x.order_id && option.item_id === x.item_id
+                  );
+                  if (queues.recall_status === 'Y' && getItemsRegisData.length > 0) {
+                    updateItemsRegister(x.item_register_id, x);
+                  } else {
+                    addItemsRegister(x);
+                  }
                 }
               });
 
@@ -1255,6 +1278,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               await getWareHouseManager();
               // }
               setLoopSelect([]);
+              // }
             }
           } else {
             setOnClickSubmit(false);
@@ -1313,8 +1337,20 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           }
 
           try {
+            // if (status === 9999) {
             setItems([]);
             setOpen(false);
+
+
+            loopSelect.map((x) => {
+              if (x.item_register_id &&
+                (x.order_id !== null || x.order_id !== undefined) &&
+                (x.item_id !== null || x.item_id !== undefined) &&
+                (x.product_register_id !== null || x.product_register_id !== undefined)
+              ) {
+                updateItemsRegister(x.item_register_id, x)
+              }
+            });
             if (status === 'processing') setOnClickSubmit(true);
             if (orderSelect.length > 0 || typeSelect.length !== 0) {
               orders.map((order) => {
@@ -1409,6 +1445,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
             // }
             setStockSelect([]);
             setLoopSelect([]);
+            // }
           } catch (error) {
             console.error(error);
             // จัดการข้อผิดพลาดตามที่ต้องการ
@@ -1498,9 +1535,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
   // แก้ไขข้อมูลกองสินค้า
   const updateItemsRegister = async (id, data) => {
-    await stepRequest.putItemsRegister(id, data).then((response) => {
-      console.log('updateItemsRegister:', response);
-    });
+    try {
+      await stepRequest.putItemsRegister(id, data).then((response) => {
+        console.log('updateItemsRegister:', response);
+      });
+    } catch (error) {
+      console.log()
+    }
     // .then((response) => {
     //   console.log('response', response);
     // });
@@ -1847,8 +1888,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                               {productRegis.product_register_name}
                                                               {productRegis.product_register_date
                                                                 ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                                    'DD/MM/YY'
-                                                                  )}) `
+                                                                  'DD/MM/YY'
+                                                                )}) `
                                                                 : '-'}
                                                               {productRegis.product_register_date
                                                                 ? ` (${calculateAge(productRegis.product_register_date)}) `
@@ -1866,9 +1907,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                                 (x) => x.product_register_id === productRegis.product_register_id
                                                               ).length > 0 &&
                                                                 ' คงเหลือ ' +
-                                                                  parseFloat(
-                                                                    sumStock(productRegis.product_register_id, productRegis.total_remain)
-                                                                  ).toFixed(3)}
+                                                                parseFloat(
+                                                                  sumStock(productRegis.product_register_id, productRegis.total_remain)
+                                                                ).toFixed(3)}
                                                             </MenuItem>
                                                           )
                                                       )}
@@ -1905,8 +1946,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                               {productRegis.product_register_name}
                                                               {productRegis.product_register_date
                                                                 ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                                    'DD/MM/YY'
-                                                                  )}) `
+                                                                  'DD/MM/YY'
+                                                                )}) `
                                                                 : '-'}
                                                               {productRegis.product_register_date
                                                                 ? ` (${calculateAge(productRegis.product_register_date)}) `
@@ -2006,13 +2047,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                       </Grid>
                       <Grid item xs={12} md={6}>
                         <Typography variant="body">
-                          <strong>ชื่อผู้ขับ :</strong> {queues.driver_name}{' '}
+                          <strong>ชื่อผู้ขับ :</strong> {queues.driver_name}
                         </Typography>
                       </Grid>
 
                       <Grid item xs={12} md={6}>
                         <Typography variant="body">
-                          <strong>ทะเบียนรถ :</strong> {queues.registration_no}{' '}
+                          <strong>ทะเบียนรถ :</strong> {queues.registration_no}
                         </Typography>
                       </Grid>
 
@@ -2210,8 +2251,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                             {productRegis.product_register_name}
                                                             {productRegis.product_register_date
                                                               ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                                  'DD/MM/YY'
-                                                                )}) `
+                                                                'DD/MM/YY'
+                                                              )}) `
                                                               : '-'}
                                                             {productRegis.product_register_date
                                                               ? ` (${calculateAge(productRegis.product_register_date)}) `
@@ -2309,38 +2350,38 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                     item.name === 'checked1' &&
                                                     item.value === 'on'
                                                 ) && (
-                                                  <Grid item xs={12} md={12}>
-                                                    <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                                      จำนวนทุบปุ๋ย : (สูงสุด{' '}
-                                                      {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
-                                                    </InputLabel>
-                                                    <FormControl sx={{ width: '100%' }} size="small">
-                                                      <OutlinedInput
-                                                        size="small"
-                                                        id={typeNumSelect[orderItem.item_id]}
-                                                        type="number"
-                                                        value={
-                                                          typeNumSelect.find(
-                                                            (item) =>
-                                                              item.id == orderItem.item_id &&
-                                                              item.product_register_id == onLoop.product_register_id &&
-                                                              item.name === 'checked1'
-                                                          )?.value || ''
-                                                        }
-                                                        onChange={(e) => {
-                                                          handleChangeTypeNum(
-                                                            orderItem.item_id,
-                                                            'checked1',
-                                                            e,
-                                                            parseFloat((onLoop.product_register_quantity * 1).toFixed(3)),
-                                                            onLoop
-                                                          );
-                                                        }}
-                                                        placeholder="จำนวน"
-                                                      />
-                                                    </FormControl>
-                                                  </Grid>
-                                                )}
+                                                    <Grid item xs={12} md={12}>
+                                                      <InputLabel sx={{ mt: 1, mb: 1.5 }}>
+                                                        จำนวนทุบปุ๋ย : (สูงสุด{' '}
+                                                        {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
+                                                      </InputLabel>
+                                                      <FormControl sx={{ width: '100%' }} size="small">
+                                                        <OutlinedInput
+                                                          size="small"
+                                                          id={typeNumSelect[orderItem.item_id]}
+                                                          type="number"
+                                                          value={
+                                                            typeNumSelect.find(
+                                                              (item) =>
+                                                                item.id == orderItem.item_id &&
+                                                                item.product_register_id == onLoop.product_register_id &&
+                                                                item.name === 'checked1'
+                                                            )?.value || ''
+                                                          }
+                                                          onChange={(e) => {
+                                                            handleChangeTypeNum(
+                                                              orderItem.item_id,
+                                                              'checked1',
+                                                              e,
+                                                              parseFloat((onLoop.product_register_quantity * 1).toFixed(3)),
+                                                              onLoop
+                                                            );
+                                                          }}
+                                                          placeholder="จำนวน"
+                                                        />
+                                                      </FormControl>
+                                                    </Grid>
+                                                  )}
                                                 {typeSelect.some(
                                                   (item) =>
                                                     item.id == orderItem.item_id &&
@@ -2348,41 +2389,41 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                     item.name === 'checked2' &&
                                                     item.value === 'on'
                                                 ) && (
-                                                  <Grid item xs={12} md={12}>
-                                                    <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                                      จำนวนเกี่ยวสลิง : (สูงสุด{' '}
-                                                      {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
-                                                    </InputLabel>
-                                                    <FormControl sx={{ width: '100%' }} size="small">
-                                                      <OutlinedInput
-                                                        size="small"
-                                                        id={typeNumSelect[orderItem.item_id]}
-                                                        type="number"
-                                                        value={
-                                                          typeNumSelect.find(
-                                                            (item) =>
-                                                              item.id == orderItem.item_id &&
-                                                              item.product_register_id == onLoop.product_register_id &&
-                                                              item.name === 'checked2'
-                                                          )?.value || ''
-                                                        }
-                                                        // onChange={(e) => {
-                                                        //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
-                                                        // }}
-                                                        onChange={(e) => {
-                                                          handleChangeTypeNum(
-                                                            orderItem.item_id,
-                                                            'checked2',
-                                                            e,
-                                                            parseFloat(onLoop.product_register_quantity),
-                                                            onLoop
-                                                          );
-                                                        }}
-                                                        placeholder="จำนวน"
-                                                      />
-                                                    </FormControl>
-                                                  </Grid>
-                                                )}
+                                                    <Grid item xs={12} md={12}>
+                                                      <InputLabel sx={{ mt: 1, mb: 1.5 }}>
+                                                        จำนวนเกี่ยวสลิง : (สูงสุด{' '}
+                                                        {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
+                                                      </InputLabel>
+                                                      <FormControl sx={{ width: '100%' }} size="small">
+                                                        <OutlinedInput
+                                                          size="small"
+                                                          id={typeNumSelect[orderItem.item_id]}
+                                                          type="number"
+                                                          value={
+                                                            typeNumSelect.find(
+                                                              (item) =>
+                                                                item.id == orderItem.item_id &&
+                                                                item.product_register_id == onLoop.product_register_id &&
+                                                                item.name === 'checked2'
+                                                            )?.value || ''
+                                                          }
+                                                          // onChange={(e) => {
+                                                          //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
+                                                          // }}
+                                                          onChange={(e) => {
+                                                            handleChangeTypeNum(
+                                                              orderItem.item_id,
+                                                              'checked2',
+                                                              e,
+                                                              parseFloat(onLoop.product_register_quantity),
+                                                              onLoop
+                                                            );
+                                                          }}
+                                                          placeholder="จำนวน"
+                                                        />
+                                                      </FormControl>
+                                                    </Grid>
+                                                  )}
                                                 {typeSelect.some(
                                                   (item) =>
                                                     item.id == orderItem.item_id &&
@@ -2390,41 +2431,41 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                     item.name === 'checked3' &&
                                                     item.value === 'on'
                                                 ) && (
-                                                  <Grid item xs={12} md={12}>
-                                                    <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                                      จำนวนเรียงสลิง : (สูงสุด{' '}
-                                                      {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
-                                                    </InputLabel>
-                                                    <FormControl sx={{ width: '100%' }} size="small">
-                                                      <OutlinedInput
-                                                        size="small"
-                                                        id={typeNumSelect[orderItem.item_id]}
-                                                        type="number"
-                                                        value={
-                                                          typeNumSelect.find(
-                                                            (item) =>
-                                                              item.id == orderItem.item_id &&
-                                                              item.product_register_id == onLoop.product_register_id &&
-                                                              item.name === 'checked3'
-                                                          )?.value || ''
-                                                        }
-                                                        // onChange={(e) => {
-                                                        //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
-                                                        // }}
-                                                        onChange={(e) => {
-                                                          handleChangeTypeNum(
-                                                            orderItem.item_id,
-                                                            'checked3',
-                                                            e,
-                                                            parseFloat(onLoop.product_register_quantity),
-                                                            onLoop
-                                                          );
-                                                        }}
-                                                        placeholder="จำนวน"
-                                                      />
-                                                    </FormControl>
-                                                  </Grid>
-                                                )}
+                                                    <Grid item xs={12} md={12}>
+                                                      <InputLabel sx={{ mt: 1, mb: 1.5 }}>
+                                                        จำนวนเรียงสลิง : (สูงสุด{' '}
+                                                        {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
+                                                      </InputLabel>
+                                                      <FormControl sx={{ width: '100%' }} size="small">
+                                                        <OutlinedInput
+                                                          size="small"
+                                                          id={typeNumSelect[orderItem.item_id]}
+                                                          type="number"
+                                                          value={
+                                                            typeNumSelect.find(
+                                                              (item) =>
+                                                                item.id == orderItem.item_id &&
+                                                                item.product_register_id == onLoop.product_register_id &&
+                                                                item.name === 'checked3'
+                                                            )?.value || ''
+                                                          }
+                                                          // onChange={(e) => {
+                                                          //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
+                                                          // }}
+                                                          onChange={(e) => {
+                                                            handleChangeTypeNum(
+                                                              orderItem.item_id,
+                                                              'checked3',
+                                                              e,
+                                                              parseFloat(onLoop.product_register_quantity),
+                                                              onLoop
+                                                            );
+                                                          }}
+                                                          placeholder="จำนวน"
+                                                        />
+                                                      </FormControl>
+                                                    </Grid>
+                                                  )}
                                                 {typeSelect.some(
                                                   (item) =>
                                                     item.id == orderItem.item_id &&
@@ -2432,41 +2473,41 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                     item.name === 'checked4' &&
                                                     item.value === 'on'
                                                 ) && (
-                                                  <Grid item xs={12} md={12}>
-                                                    <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                                      จำนวนเกี่ยวจัมโบ้ : (สูงสุด{' '}
-                                                      {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
-                                                    </InputLabel>
-                                                    <FormControl sx={{ width: '100%' }} size="small">
-                                                      <OutlinedInput
-                                                        size="small"
-                                                        id={typeNumSelect[orderItem.item_id]}
-                                                        type="number"
-                                                        value={
-                                                          typeNumSelect.find(
-                                                            (item) =>
-                                                              item.id == orderItem.item_id &&
-                                                              item.product_register_id == onLoop.product_register_id &&
-                                                              item.name === 'checked4'
-                                                          )?.value || ''
-                                                        }
-                                                        // onChange={(e) => {
-                                                        //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
-                                                        // }}
-                                                        onChange={(e) => {
-                                                          handleChangeTypeNum(
-                                                            orderItem.item_id,
-                                                            'checked4',
-                                                            e,
-                                                            parseFloat(onLoop.product_register_quantity),
-                                                            onLoop
-                                                          );
-                                                        }}
-                                                        placeholder="จำนวน"
-                                                      />
-                                                    </FormControl>
-                                                  </Grid>
-                                                )}
+                                                    <Grid item xs={12} md={12}>
+                                                      <InputLabel sx={{ mt: 1, mb: 1.5 }}>
+                                                        จำนวนเกี่ยวจัมโบ้ : (สูงสุด{' '}
+                                                        {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
+                                                      </InputLabel>
+                                                      <FormControl sx={{ width: '100%' }} size="small">
+                                                        <OutlinedInput
+                                                          size="small"
+                                                          id={typeNumSelect[orderItem.item_id]}
+                                                          type="number"
+                                                          value={
+                                                            typeNumSelect.find(
+                                                              (item) =>
+                                                                item.id == orderItem.item_id &&
+                                                                item.product_register_id == onLoop.product_register_id &&
+                                                                item.name === 'checked4'
+                                                            )?.value || ''
+                                                          }
+                                                          // onChange={(e) => {
+                                                          //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
+                                                          // }}
+                                                          onChange={(e) => {
+                                                            handleChangeTypeNum(
+                                                              orderItem.item_id,
+                                                              'checked4',
+                                                              e,
+                                                              parseFloat(onLoop.product_register_quantity),
+                                                              onLoop
+                                                            );
+                                                          }}
+                                                          placeholder="จำนวน"
+                                                        />
+                                                      </FormControl>
+                                                    </Grid>
+                                                  )}
                                               </MainCard>
                                             )
                                         )}
@@ -2608,9 +2649,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                               <span style={{ color: 'red' }}> (คิวค้าง)</span>
                             )}
                           </TableCell>
-                        <TableCell align="left">
-                          {row.description ? <strong style={{ color: 'red' }}>{row.description}</strong> : '-'}
-                        </TableCell>
+                          <TableCell align="left">
+                            {row.description ? <strong style={{ color: 'red' }}>{row.description}</strong> : '-'}
+                          </TableCell>
                           <TableCell align="center">
                             <Chip color="primary" sx={{ width: '122px' }} label={row.registration_no} />
                           </TableCell>

@@ -48,6 +48,7 @@ import { setStation } from 'store/reducers/station';
 import SoundCall from 'components/@extended/SoundCall';
 
 import QueueTag from 'components/@extended/QueueTag';
+// import ChangeWeight from './ChangeWeight';
 
 export const Step3Table = ({ status, title, onStatusChange, onFilter, permission }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
@@ -855,6 +856,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
                     <Typography variant="body1" sx={{ fontSize: 16 }}>
                       น้ำหนักชั่งเบา : <strong>{queuesDetial.length > 0 ? parseFloat(queuesDetial[0].weight1) : '-'}</strong> ตัน
                     </Typography>
+                    {/* <ChangeWeight weight1={queuesDetial.length > 0 && parseFloat(queuesDetial[0].weight1)} /> */}
                   </Grid>
 
                   <Grid item xs={12}>

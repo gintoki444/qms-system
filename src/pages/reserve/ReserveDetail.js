@@ -82,8 +82,33 @@ function ReserveDetail() {
       })
       .catch((err) => console.log(err));
   };
+
+
+  // =============== Get Product Company ===============//
+  const [productCompany, setProductCompany] = useState([]);
+  const getProductCompany = () => {
+    try {
+      reserveRequest.getAllproductCompanys().then((response) => {
+        setProductCompany(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const [productBrandList, setProductBrandList] = useState([]);
+  const getProductBrandList = async () => {
+    reserveRequest.getAllproductBrand().then((response) => {
+      if (response.length > 0) {
+        setProductBrandList(response)
+      }
+    });
+  }
+
   useEffect(() => {
 
+    getProductBrandList();
+    getProductCompany();
     if (Object.keys(userPermission).length > 0) {
       if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
         setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
@@ -710,12 +735,26 @@ function ReserveDetail() {
                   {orderList.map((order, index) => (
                     <Grid item xs={12} key={index} sx={{ mt: 1 }}>
                       <Grid container spacing={2} sx={{ mb: '15px' }}>
-                        {' '}
                         <Grid item xs={12} md={6}>
                           <Typography variant="body1">
                             <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
                           </Typography>
-                        </Grid>{' '}
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Typography variant="body1">
+                            <strong>วันที่สั่งซื้อสินค้า : </strong> {moment(order.order_date).format('DD/MM/YYYY')}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Typography variant="body1">
+                            <strong>บริษัท(สินค้า) : </strong> {productCompany.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Typography variant="body1">
+                            <strong>ตราสินค้า : </strong>  {productBrandList.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}
+                          </Typography>
+                        </Grid>
                         <Grid item xs={12} md={6}>
                           <Typography variant="body1">
                             <strong>รายละเอียด : </strong> {order.description}

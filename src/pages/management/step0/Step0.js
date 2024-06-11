@@ -78,7 +78,11 @@ function Step0() {
           if (company.length > 0) {
             company.map((x) => {
               let countCompany = response.filter(
-                (i) => i.token !== null && i.product_company_id == x.product_company_id && parseFloat(i.total_quantity) > 0
+                (i) =>
+                  i.token !== null &&
+                  i.product_company_id == x.product_company_id &&
+                  parseFloat(i.total_quantity) > 0 &&
+                  i.step2_status !== "completed"
               ).length;
 
               setItems((prevState) => ({
@@ -89,7 +93,7 @@ function Step0() {
           }
 
           setCompanyList(company);
-          setCountAllQueue(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0).length);
+          setCountAllQueue(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed").length);
         });
       } catch (e) {
         console.log(e);
@@ -150,9 +154,9 @@ function Step0() {
                   name="pickup_date"
                   value={selectedDate1}
                   onChange={handleDateChange1}
-                  // inputProps={{
-                  //   min: currentDate
-                  // }}
+                // inputProps={{
+                //   min: currentDate
+                // }}
                 />
               </Stack>
             </Grid>
@@ -166,9 +170,9 @@ function Step0() {
                   name="pickup_date"
                   value={selectedDate2}
                   onChange={handleDateChange2}
-                  // inputProps={{
-                  //   min: currentDate
-                  // }}
+                // inputProps={{
+                //   min: currentDate
+                // }}
                 />
               </Stack>
             </Grid>
@@ -183,7 +187,7 @@ function Step0() {
           <Grid item xs={12} sx={{ mt: 1.5 }}>
             <MainCard content={true} title="สถานีทั้งหมด">
               <Divider sx={{ mt: -2, mb: 1 }} />
-              <AllStations permission={pageDetail[0].permission_name}/>
+              <AllStations permission={pageDetail[0].permission_name} />
             </MainCard>
           </Grid>
           <MainCard content={false} sx={{ mt: 1.5 }}>
@@ -209,7 +213,7 @@ function Step0() {
                       numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                       txtLabel={company.product_company_name_th2}
                       onSelect={() => handleChange(company.product_company_id)}
-                      // {...a11yProps(company.product_company_id)}
+                    // {...a11yProps(company.product_company_id)}
                     />
                   ))}
               </Tabs>
