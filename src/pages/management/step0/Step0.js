@@ -82,7 +82,8 @@ function Step0() {
                   i.token !== null &&
                   i.product_company_id == x.product_company_id &&
                   parseFloat(i.total_quantity) > 0 &&
-                  i.step2_status !== "completed"
+                  i.step2_status !== "completed" &&
+                  i.step2_status !== "cancle"
               ).length;
 
               setItems((prevState) => ({
@@ -93,7 +94,12 @@ function Step0() {
           }
 
           setCompanyList(company);
-          setCountAllQueue(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed").length);
+          setCountAllQueue(response.filter((x) =>
+            x.token !== null &&
+            parseFloat(x.total_quantity) > 0 &&
+            x.step2_status !== "completed" &&
+            x.step2_status !== "cancle").length
+          );
         });
       } catch (e) {
         console.log(e);

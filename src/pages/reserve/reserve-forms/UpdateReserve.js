@@ -76,7 +76,7 @@ function UpdateReserve() {
   const [pageDetail, setPageDetail] = useState([]);
 
   const userRoles = useSelector((state) => state.auth.roles);
-  const userID = useSelector((state) => state.auth.user_id);
+  // const userID = useSelector((state) => state.auth.user_id);
   const [loading, setLoading] = useState(false);
   const [checkDate, setCheckDate] = useState(false);
   const currentDate = new Date().toISOString().split('T')[0];
@@ -130,12 +130,16 @@ function UpdateReserve() {
 
   // =============== Get Company ===============//
   const [companyList, setCompanyList] = useState([]);
-  const getCompanyList = () => {
+  const getCompanyList = (permission) => {
     if (user_Id) {
       try {
-        companyRequest.getAllCompanyByuserId(user_Id).then((response) => {
+        let user_id = '';
+        if (permission !== "manage_everything") {
+          user_id = user_Id;
+        }
+        companyRequest.getAllCompanyByuserId(user_id).then((response) => {
           setCompanyList(response);
-          getCarLsit();
+          getCarLsit(permission);
         });
       } catch (error) {
         console.log(error);
@@ -145,19 +149,21 @@ function UpdateReserve() {
 
   // =============== Get Car ===============//
   const [carList, setCarList] = useState([]);
-  const getCarLsit = () => {
+  const getCarLsit = (permission) => {
     let urlapi = '';
-    if ((userRoles && userRoles == 1) || userRoles == 9 || userRoles == 10) {
-      urlapi = apiUrl + `/allcars/`;
-    } else {
+    // if ((userRoles && userRoles == 1) || userRoles == 9 || userRoles == 10) {
+    if (permission !== "manage_everything") {
       urlapi = apiUrl + `/allcars/` + user_Id;
+    } else {
+      urlapi = apiUrl + `/allcars/`;
     }
     axios
       .get(urlapi)
       .then((res) => {
         if (res) {
-          setCarList(res.data.filter((x) => x.user_id == userID || x.user_id == user_Id || x.user_id == 1));
-          getDriverLsit();
+          // setCarList(res.data.filter((x) => x.user_id == userID || x.user_id == user_Id || x.user_id == 1));
+          setCarList(res.data);
+          getDriverLsit(permission);
         }
       })
       .catch((err) => console.log(err));
@@ -165,18 +171,20 @@ function UpdateReserve() {
 
   // =============== Get Driver ===============//
   const [driverList, setDriverList] = useState([]);
-  const getDriverLsit = () => {
+  const getDriverLsit = (permission) => {
     let urlapi = '';
-    if ((userRoles && userRoles == 1) || userRoles == 9 || userRoles == 10) {
-      urlapi = apiUrl + `/alldrivers/`;
-    } else {
+    // if ((userRoles && userRoles == 1) || userRoles == 9 || userRoles == 10) {
+    if (permission !== "manage_everything") {
       urlapi = apiUrl + `/alldrivers/` + user_Id;
+    } else {
+      urlapi = apiUrl + `/alldrivers/`;
     }
     axios
       .get(urlapi)
       .then((res) => {
         if (res) {
-          setDriverList(res.data.filter((x) => x.user_id == userID || x.user_id == user_Id || x.user_id == 1));
+          // setDriverList(res.data.filter((x) => x.user_id == userID || x.user_id == user_Id || x.user_id == 1));
+          setDriverList(res.data);
           setLoading(false);
           getOrders();
         }
@@ -254,11 +262,12 @@ function UpdateReserve() {
     getProductCompany();
     if (Object.keys(userPermission).length > 0) {
       if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
+        const permissionName = userPermission.permission.find((x) => x.page_id === pageId);
         setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
         getReserve();
 
         if (user_Id) {
-          getCompanyList();
+          getCompanyList(permissionName.permission_name);
         }
       } else {
         setLoading(false);
@@ -296,8 +305,6 @@ function UpdateReserve() {
             }
 
             result.pickup_date = moment(result.pickup_date).format('YYYY-MM-DD');
-
-            console.log(result)
             setReservationData(result);
             setCompanyId(result.product_company_id);
             checkQueueCompanyCount(result.product_company_id);
@@ -952,7 +959,7 @@ function UpdateReserve() {
                             <InputLabel>บริษัท/ร้านค้า*</InputLabel>
                             <FormControl fullWidth>
                               <Autocomplete
-                                disablePortal
+                                //disablePortal
                                 id="company-list"
                                 options={companyList}
                                 value={companyList.length > 0 ? companyList.find((item) => item.company_id === values.company_id) : []}
@@ -1103,7 +1110,7 @@ function UpdateReserve() {
                             <InputLabel>รถบรรทุก *</InputLabel>
                             <FormControl fullWidth>
                               <Autocomplete
-                                disablePortal
+                                //disablePortal
                                 id="car-list"
                                 options={carList}
                                 value={carList.length > 0 ? carList.find((item) => item.car_id === values.car_id) : []}
@@ -1161,7 +1168,7 @@ function UpdateReserve() {
                             <InputLabel>คนขับรถ *</InputLabel>
                             <FormControl fullWidth>
                               <Autocomplete
-                                disablePortal
+                                //disablePortal
                                 id="driver-list"
                                 options={driverList}
                                 name="driver_id"

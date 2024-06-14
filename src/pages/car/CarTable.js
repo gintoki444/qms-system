@@ -67,7 +67,11 @@ function CarTable({ permission }) {
   const getCar = async () => {
     setLoading(true);
     try {
-      carRequest.getAllCars(userId).then((response) => {
+      let user_id = '';
+      if (permission !== "manage_everything") {
+        user_id = userId;
+      }
+      carRequest.getAllCars(user_id).then((response) => {
         const newData = response.map((item, index) => {
           return {
             ...item,
@@ -199,7 +203,7 @@ function CarTable({ permission }) {
                 variant="contained"
                 size="medium"
                 color="error"
-                disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
+                disabled={permission !== 'manage_everything'}
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                 onClick={() => handleClickOpen(value)}
               >

@@ -115,7 +115,7 @@ OrderTableHead.propTypes = {
 function ConTractorSumTable({
   startDate,
   endDate,
-  // , clickDownload
+  clickDownload,
   onFilter,
   nameCompany
 }) {
@@ -198,7 +198,7 @@ function ConTractorSumTable({
               pr: 3
             }
           }}
-          // ref={clickDownload}
+          ref={clickDownload}
         >
           <TableHead>
             <TableRow>

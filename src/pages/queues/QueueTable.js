@@ -56,6 +56,10 @@ const QueueStatus = ({ status }) => {
       color = 'secondary';
       title = 'รอเรียกคิว';
       break;
+    case 'cancle':
+      color = 'error';
+      title = 'ยกเลิกคิว';
+      break;
     default:
       color = 'secondary';
       title = '-';

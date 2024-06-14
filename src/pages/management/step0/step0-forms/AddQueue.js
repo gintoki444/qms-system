@@ -426,6 +426,11 @@ function AddQueue() {
         labor_line_id: values.labor_line_id
       };
 
+      console.log('teamData :', teamData);
+      console.log('values.team_data :', values.team_data);
+      console.log('values.team_data :', values.team_data);
+
+      // if (id === 9999) {
       await reserveRequest
         .putReserById(id, values)
         .then((result) => {
@@ -439,6 +444,7 @@ function AddQueue() {
         .catch((error) => {
           console.log(error);
         });
+      // }
     } catch (err) {
       console.error(err);
     }

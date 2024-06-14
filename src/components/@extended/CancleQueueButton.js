@@ -10,8 +10,12 @@ import {
     Typography,
 } from '@mui/material';
 import { WarningOutlined } from '@ant-design/icons';
+import moment from 'moment-timezone';
 
 import * as reserveRequest from '_api/reserveRequest';
+import * as stepRequest from '_api/StepRequest';
+import * as queueReques from '_api/queueReques';
+
 import { useSnackbar } from 'notistack';
 
 function CancleQueueButton({ reserve_id, status, handleReload }) {
@@ -33,10 +37,11 @@ function CancleQueueButton({ reserve_id, status, handleReload }) {
             reserveRequest.getQueuesByIdReserve(reserve_id).then((response) => {
                 const queueData = response.find((x) => x.reserve_id === reserve_id);
                 if (response.length > 0 && queueData.step2_status !== "completed" && queueData.step2_status !== "processing") {
-                    cancleReserve(reserve_id);
+                    // if (queueData.queue_id === 99999) {
+                    getQueueDetail(queueData.queue_id);
+                    // }
                 } else {
                     enqueueSnackbar('ไม่สามารถยกเลิกคิวนี้ได้! : เนื่องจากมีการรับสินค้าเรียบร้อย', { variant: 'error' });
-                    console.log('no')
                 }
             });
             setOpen(false);
@@ -45,8 +50,26 @@ function CancleQueueButton({ reserve_id, status, handleReload }) {
         }
     };
 
-    const cancleReserve = (reserve_id) => {
+    const getQueueDetail = async (queueId) => {
+        try {
+            var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+            const statusData = {
+                status: 'cancle',
+                station_id: 27,
+                updated_at: currentDate
+            };
+            await queueReques.getAllStepById(queueId).then((response) => {
+                response.map((x) => {
+                    stepRequest.updateStatusStep(x.step_id, statusData);
+                })
+                cancleReserve(reserve_id);
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
+    const cancleReserve = (reserve_id) => {
         try {
             const statusData = {
                 status: 'cancle'
@@ -56,7 +79,6 @@ function CancleQueueButton({ reserve_id, status, handleReload }) {
                 enqueueSnackbar('ยกเลิกคิวนี้สำเร็จ !', { variant: 'success' });
                 handleReload(true)
             })
-            console.log('reserve_id cancleReserve', reserve_id)
         } catch (error) {
             enqueueSnackbar('ยกเลิกคิวเกิดข้อผิดพลาด', { variant: 'warning' });
             console.log(error)

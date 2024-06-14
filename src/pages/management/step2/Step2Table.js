@@ -47,6 +47,8 @@ import QueueTag from 'components/@extended/QueueTag';
 import SoundCall from 'components/@extended/SoundCall';
 import { Stack } from '../../../../node_modules/@mui/material/index';
 
+import * as functionCancleTeam from 'components/Function/CancleTeamStation';
+
 export const Step2Table = ({ status, title, onStatusChange, onFilter, permission }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
   const headCells = [
@@ -356,10 +358,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         .then((response) => response.json())
         .then((result) => {
           if (result['status'] === 'ok') {
-            console.log('updateLoadingTeam is ok');
+            // console.log('updateLoadingTeam is ok');
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
-            console.log('not update LoadingTeam');
+            // console.log('not update LoadingTeam');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
           }
         })
@@ -477,8 +479,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
       const raw = JSON.stringify({ updates });
 
-      console.log(raw);
-
       const requestOptions = {
         method: 'PUT',
         headers: myHeaders,
@@ -490,7 +490,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         .then((response) => response.json())
         .then((result) => {
           if (result['status'] === 'ok') {
-            console.log('updateMultipleStepStatus is ok');
+            // console.log('updateMultipleStepStatus is ok');
 
             //alert("Update multiplestepstatus");
             waitingGet();
@@ -500,7 +500,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
-            console.log('not update MultipleStepStatus');
+            // console.log('not update MultipleStepStatus');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
           }
         })
@@ -594,14 +594,17 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           }
 
           if (result.team_id !== null) {
-            if (result.team_data === null || result.team_data.team_id === null) {
-              getTeamloadingByIds(result.team_id);
-            } else if (result.team_data.team_data && result.team_data.team_data.team_id === null) {
+            // if (result.team_data === null || result.team_data.team_id === null) {
+            //   getTeamloadingByIds(result.team_id);
+            // } else if (result.team_data.team_data && result.team_data.team_data.team_id === null) {
+            //   getTeamloadingByIds(result.team_id);
+            // } 
+            if (result.team_data) {
               getTeamloadingByIds(result.team_id);
             } else if (result.team_data.length > 0) {
-              setTeamData(result.team_data);
+              // setTeamData(result.team_data);
 
-              console.log('result.team_data :', result.team_data);
+              // console.log('result.team_data :', result.team_data);
 
               // if (result.team_data === 999) {
               const combinedData = [
@@ -851,22 +854,22 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       const indexKey = updatedOptions.findIndex((option) => option.id === key);
       const orderList = updatedOptions.filter((option) => option.item_id == items.item_id && option.order_id == items.order_id);
       const orderListNotSelect = orderList.filter((option) => option.id !== key);
-      console.log('orderListNotSelect ', orderListNotSelect);
+      // console.log('orderListNotSelect ', orderListNotSelect);
 
       let checkSum = sumSelectProductRegis(orderList);
       let checkSumNotSelect = sumSelectProductRegis(orderListNotSelect);
-      console.log('checkSum ', checkSum);
+      // console.log('checkSum ', checkSum);
       checkSum = checkSum + selectedOptionNew.product_register_quantity;
-      console.log('checkSum =  ', checkSum);
+      // console.log('checkSum =  ', checkSum);
 
       // console.log('parseFloat(stockItem) ', parseFloat(stockItem));
       // console.log('parseFloat(items.quantity) ', parseFloat(items.quantity));
       // console.log('indexKey ', indexKey);
       // console.log('indexProId ', indexProId);
 
-      console.log('updatedOptionsbefor ', updatedOptions);
+      // console.log('updatedOptionsbefor ', updatedOptions);
       if (parseFloat(stockItem) < parseFloat(items.quantity) && indexKey !== -1) {
-        console.log('check 1');
+        // console.log('check 1');
         const filterList = updatedOptions.filter(
           (option) => option.item_id == items.item_id && option.order_id == items.order_id && option.product_register_id === ''
         );
@@ -877,9 +880,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           orderList.length < items.productRegis.length &&
           filterList.length === 0
         ) {
-          console.log('check 1.1');
+          // console.log('check 1.1');
           if (parseFloat(items.quantity) > checkSum || checkSumNotSelect === 0) {
-            console.log('check 1.2');
+            // console.log('check 1.2');
             const selectedOption = {
               id: `${items.order_id}${items.item_id}${orderList.length + 1}`,
               order_id: items.order_id,
@@ -898,7 +901,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           //   console.log('check checkSumNotSelect', checkSumNotSelect);
           // }
         } else if (parseFloat(items.quantity) < checkSum) {
-          console.log('check 1.3');
+          // console.log('check 1.3');
           let sumquatity = sumSelectProductRegis(orderList);
           console.log('newsum = ', sumquatity - parseFloat(items.quantity));
           console.log('newsum = ', parseFloat(items.quantity) - sumquatity);
@@ -911,7 +914,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         indexKey !== -1 &&
         indexProId.length !== 0
       ) {
-        console.log('check 2');
+        // console.log('check 2');
         const filterindex = updatedOptions.filter((option) => option.order_id === items.order_id && option.item_id === items.item_id);
         filterindex.map(
           (x) =>
@@ -922,32 +925,32 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         );
 
         if (selectedOptionNew.product_register_quantity <= 0 && indexKey !== -1) {
-          console.log('check 2.1');
+          // console.log('check 2.1');
 
           selectedOptionNew.product_register_quantity = parseFloat(items.quantity);
-          console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
+          // console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
           const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
 
           filterRemove.push(selectedOptionNew);
           updatedOptions = filterRemove;
         } else if (indexKey !== -1) {
-          console.log('check 2.2');
+          // console.log('check 2.2');
 
           const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value && x.id !== key);
           const checkNumSelect = updatedOptions.filter(
             (option) => option.item_id == items.item_id && option.order_id == items.order_id && option.product_register_id === ''
           );
           if (checkStock.length > 0) {
-            console.log('check 2.2.1');
+            // console.log('check 2.2.1');
             let totolIsSelect = 0;
             checkStock.map((x) => (totolIsSelect = x.product_register_quantity + totolIsSelect));
 
             if (parseFloat(stockItem) < totolIsSelect + selectedOptionNew.product_register_quantity) {
               selectedOptionNew.product_register_quantity = parseFloat(stockItem) - totolIsSelect;
-              console.log('check 2.2.1.1');
+              // console.log('check 2.2.1.1');
 
               if (selectedOptionNew.product_register_quantity < selectedOptionNew.quantity && checkNumSelect < 1) {
-                console.log('check 2.2.1.1.1');
+                // console.log('check 2.2.1.1.1');
 
                 const selectedOption = {
                   id: items.order_id + items.item_id + orderList.length,
@@ -964,20 +967,20 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 updatedOptions.push(selectedOption);
               }
             } else if (parseFloat(stockItem) === totolIsSelect + selectedOptionNew.product_register_quantity && checkNumSelect.length > 0) {
-              console.log('check 2.2.1.2');
+              // console.log('check 2.2.1.2');
               updatedOptions = updatedOptions.filter((x) => x.id !== checkNumSelect[0].id);
             } else if (totolIsSelect < selectedOptionNew.product_register_quantity) {
-              console.log('check 2.2.1.3');
+              // console.log('check 2.2.1.3');
               selectedOptionNew.quantity = selectedOptionNew.product_register_quantity - totolIsSelect;
             }
           } else if (checkNumSelect.length > 0) {
-            console.log('check 2.2.2');
+            // console.log('check 2.2.2');
 
             const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
 
-            console.log('filterRemove :', filterRemove);
-            console.log('key :', key);
-            console.log('filterRemove :', (updatedOptions = filterRemove));
+            // console.log('filterRemove :', filterRemove);
+            // console.log('key :', key);
+            // console.log('filterRemove :', (updatedOptions = filterRemove));
             updatedOptions = filterRemove;
             updatedOptions.push(selectedOptionNew);
           }
@@ -991,19 +994,19 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         //   updatedOptions.push(selectedOptionNew);
         // }
       } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length === 0) {
-        console.log('check 3');
+        // console.log('check 3');
         // selectedOptionNew.product_register_quantity = parseFloat(items.quantity);
         // console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
         const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
 
         const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
         if (checkStock.length > 0) {
-          console.log('check 3.1');
+          // console.log('check 3.1');
           let totolIsSelect = 0;
           checkStock.map((x) => (totolIsSelect = x.product_register_quantity + totolIsSelect));
 
           if (parseFloat(stockItem) < totolIsSelect + selectedOptionNew.product_register_quantity) {
-            console.log('check 3.2');
+            // console.log('check 3.2');
             selectedOptionNew.product_register_quantity = parseFloat(stockItem) - totolIsSelect;
 
             if (
@@ -1011,10 +1014,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               orderList.length < 3 &&
               orderList.length < items.productRegis.length
             ) {
-              console.log('check 1.1');
-              console.log('parseFloat(stockItem) > parseFloat(items.quantity)', parseFloat(stockItem) > parseFloat(items.quantity));
-              console.log('orderList.length < 3 :', orderList.length < 3);
-              console.log('orderList.length < items.productRegis.length :', orderList.length < items.productRegis.length);
+              // console.log('check 1.1');
+              // console.log('parseFloat(stockItem) > parseFloat(items.quantity)', parseFloat(stockItem) > parseFloat(items.quantity));
+              // console.log('orderList.length < 3 :', orderList.length < 3);
+              // console.log('orderList.length < items.productRegis.length :', orderList.length < items.productRegis.length);
               const selectedOption = {
                 id: items.order_id + items.item_id + orderList.length,
                 order_id: items.order_id,
@@ -1036,7 +1039,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         updatedOptions = filterRemove;
       }
 
-      console.log('setLoopSelect ', updatedOptions);
+      // console.log('setLoopSelect ', updatedOptions);
       return updatedOptions;
     });
 
@@ -1337,6 +1340,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           }
 
           try {
+            // console.log('Click close teamData', teamData);
             // if (status === 9999) {
             setItems([]);
             setOpen(false);
@@ -1425,7 +1429,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
             await updateLoadingTeams([id_update, id_update_next]);
 
             await updateTeamLoading();
-            await updateTeamData();
+            // await updateTeamData();
             await updateEndTime(id_update);
             await updateStartTime(id_update_next);
 
@@ -1458,6 +1462,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           setLoading(true);
           // การใช้งาน Line Notify
           setItems([]);
+
+          // console.log('cancle Click');
+          updateCancleTeams(queues.reserve_id);
+
+          // if (id_update === 999999) {
           setOpen(false);
           getStepToken(id_update)
             .then(({ queue_id, token }) => {
@@ -1480,7 +1489,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           await getWareHouseManager();
           setStockSelect([]);
           setLoopSelect([]);
-
+          // }
           // Trigger the parent to reload the other instance with the common status
         }
       }
@@ -1502,9 +1511,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     await adminRequest.putReserveTeam(queues.reserve_id, teamValue);
   };
 
-  const updateTeamData = async () => {
-    await adminRequest.putReserveTeamData(queues.reserve_id, teamData);
-  };
+  // const updateTeamData = async () => {
+  //   await adminRequest.putReserveTeamData(queues.reserve_id, teamData);
+  // };
 
   // แสดงข้อมูลกองสินค้าทั้งหมด
   const [allProductRegis, setAllProductRegis] = useState([]);
@@ -1664,12 +1673,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     }
   };
 
-  const [teamData, setTeamData] = useState([]);
+  // const [teamData, setTeamData] = useState([]);
   const [teamLoading, setTeamLoading] = useState([]);
   const getTeamloadingByIds = (id) => {
     try {
       adminRequest.getLoadingTeamById(id).then((result) => {
-        setTeamData(result);
+        // console.log("getLoadingTeamById :", result);
+        // setTeamData(result);
         const combinedData = [...result.team_managers, ...result.team_checkers, ...result.team_forklifts];
         setTeamLoading(combinedData);
       });
@@ -1784,6 +1794,17 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
     SoundCall(`${titleTxt} ทะเบียน ${spacedString} ${detialTxt} ${getWarehouseData[0].warehouse_name} ${cleanedStringStation}`);
   };
+
+  const updateCancleTeams = async (reserveId) => {
+    functionCancleTeam.updateCancleTeamStation(reserveId).then((response) => {
+      console.log('updateCancleTeams :', response);
+    })
+  }
+
+
+  // const handleClickOpentest = async () => {
+
+  // }
   return (
     <>
       <Box>
@@ -2665,7 +2686,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                           </TableCell>
                           <TableCell align="left">{row.driver_name}</TableCell>
                           <TableCell align="left">{row.driver_mobile}</TableCell>
-                          <TableCell align="left">{row.start_time ? row.start_time.slice(11, 19) : row.start_time.slice(11, 19)}</TableCell>
+                          <TableCell align="left">{row.start_time ? row.start_time.slice(11, 19) : '-'}</TableCell>
                           <TableCell align="center">
                             {row.recall_status == 'Y' ? <Chip color="error" sx={{ width: '80px' }} label={'ทวนสอบ'} /> : '-'}
                           </TableCell>
@@ -2717,6 +2738,16 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                             <ButtonGroup aria-label="button group" sx={{ alignItems: 'center' }}>
                               {status == 'waiting' && (
                                 <Tooltip title="เรียกคิว">
+                                  {/* <Button
+                                    // sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                    variant="contained"
+                                    size="small"
+                                    color="info"
+                                    disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
+                                    onClick={handleClickOpentest}
+                                  >
+                                    ทดสอบ
+                                  </Button> */}
                                   <Button
                                     // sx={{ minWidth: '33px!important', p: '6px 0px' }}
                                     variant="contained"

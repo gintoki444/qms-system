@@ -33,7 +33,7 @@ import {
 
 import { EditOutlined } from '@ant-design/icons';
 
-// import axios from 'axios';
+import CancleTeamStation from 'components/@extended/CancleTeamStation';
 
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
@@ -211,9 +211,9 @@ function Step0Table({ startDate, endDate, onFilter, permission }) {
     try {
       stepRequest.getAllStep0ByDate(startDate, endDate).then((response) => {
         if (onFilter == 0) {
-          setItems(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed"));
+          setItems(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed" && x.step2_status !== "cancle"));
         } else {
-          setItems(response.filter((x) => x.product_company_id == onFilter && x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed") || []);
+          setItems(response.filter((x) => x.product_company_id == onFilter && x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed" && x.step2_status !== "cancle") || []);
         }
         setLoading(false);
       });
@@ -225,6 +225,12 @@ function Step0Table({ startDate, endDate, onFilter, permission }) {
   const updateDrivers = (id) => {
     navigate('/admin/step0/add-queues/' + id);
   };
+
+  const handleSetReload = (refresh) => {
+    if (refresh === true) {
+      getQueue();
+    }
+  }
   return (
     <Box>
       <TableContainer
@@ -302,6 +308,7 @@ function Step0Table({ startDate, endDate, onFilter, permission }) {
                               </Button>
                             </span>
                           </Tooltip>
+                          <CancleTeamStation reserveId={row.reserve_id} reserveData={row} handleReload={handleSetReload} />
                         </ButtonGroup>
                         {/* <Button 
                     sx={{ minWidth: '33px!important', p: '6px 0px' }}

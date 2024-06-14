@@ -40,7 +40,11 @@ function DriverTable({ permission }) {
   const getDrivers = () => {
     setLoading(true);
     try {
-      driverRequest.getAllDriver(userId).then((response) => {
+      let user_id = '';
+      if (permission !== "manage_everything") {
+        user_id = userId;
+      }
+      driverRequest.getAllDriver(user_id).then((response) => {
         setLoading(false);
         const newData = response.map((item, index) => {
           return {
@@ -136,7 +140,7 @@ function DriverTable({ permission }) {
                 variant="contained"
                 size="medium"
                 color="error"
-                disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
+                disabled={permission !== 'manage_everything'}
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                 onClick={() => handleClickOpen(value)}
               >

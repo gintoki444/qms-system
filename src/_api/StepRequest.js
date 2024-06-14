@@ -238,6 +238,23 @@ export const putRegisterItem = async (id, data) => {
 
 // ==============================|| ข้อมูล Step 3  ||============================== //
 
+// แก้ไขน้ำหนักชั่งเบา
+export const updateStatusStep = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/updatestepstatus/' + id, requestOptions);
+  return await response.json();
+};
+
 // เพิ่มข้อมูล Recall
 export const addRecallProcess = async (data) => {
   const myHeaders = new Headers();
@@ -252,5 +269,22 @@ export const addRecallProcess = async (data) => {
   };
 
   const response = await fetch(apiUrl + '/updaterecallprocess/', requestOptions);
+  return await response.json();
+};
+
+// แก้ไขน้ำหนักชั่งเบา
+export const updateWeight1 = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/updateweight1/' + id, requestOptions);
   return await response.json();
 };

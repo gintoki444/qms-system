@@ -48,7 +48,7 @@ import { setStation } from 'store/reducers/station';
 import SoundCall from 'components/@extended/SoundCall';
 
 import QueueTag from 'components/@extended/QueueTag';
-// import ChangeWeight from './ChangeWeight';
+import ChangeWeight from './ChangeWeight';
 
 export const Step3Table = ({ status, title, onStatusChange, onFilter, permission }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
@@ -286,11 +286,11 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
       .then((response) => response.json())
       .then(async (result) => {
         if (result['status'] === 'ok') {
-          // await waitingGet();
-          // await processingGet();
+          await waitingGet();
+          await processingGet();
           //3=Step ชั่งหนัก
           // await getStepCount(3, 'processing');
-          resolve(); // ส่งคืนเมื่อการอัปเดตสำเร็จ
+          // resolve(); // ส่งคืนเมื่อการอัปเดตสำเร็จ
         }
       })
       .catch((error) => console.log('error', error));
@@ -839,6 +839,12 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
       [row.step_id]: value // เก็บค่าสถานีที่ถูกเลือกในแต่ละแถวโดยใช้ step_id เป็น key
     }));
   };
+
+  useEffect(() => {
+  }, [queuesDetial])
+  const handleChangeWeight1 = (data) => {
+    setQueuesDetial(data);
+  }
   return (
     <>
       <Box>
@@ -853,10 +859,12 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
               <DialogContent sx={{ width: 350, mt: 2 }}>
                 <Grid container alignItems="center" justifyContent="flex-end" spacing={2}>
                   <Grid item xs={12}>
-                    <Typography variant="body1" sx={{ fontSize: 16 }}>
+                    {/* <Typography variant="body1" sx={{ fontSize: 16 }}>
                       น้ำหนักชั่งเบา : <strong>{queuesDetial.length > 0 ? parseFloat(queuesDetial[0].weight1) : '-'}</strong> ตัน
-                    </Typography>
-                    {/* <ChangeWeight weight1={queuesDetial.length > 0 && parseFloat(queuesDetial[0].weight1)} /> */}
+                    </Typography> */}
+                    {queuesDetial.length > 0 &&
+                      <ChangeWeight weight1={parseFloat(queuesDetial[0].weight1)} queueId={queuesDetial[0]?.queue_id} changeWeight={handleChangeWeight1} />
+                    }
                   </Grid>
 
                   <Grid item xs={12}>

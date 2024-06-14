@@ -7,6 +7,7 @@ import moment from 'moment';
 const apiUrl = process.env.REACT_APP_API_URL;
 import * as reserveRequest from '_api/reserveRequest';
 import * as queuesRequest from '_api/queueReques';
+import * as stepRequest from '_api/StepRequest';
 
 import QueueTag from 'components/@extended/QueueTag';
 
@@ -333,11 +334,34 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     }
   };
 
-  //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
+  // อัพเดทสถานะคิว
+  async function updateQueuesStatus(queueId) {
+    try {
+      var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+      const statusData = {
+        status: 'waiting',
+        station_id: 27,
+        updated_at: currentDate
+      };
+      await queuesRequest.getAllStepById(queueId).then((response) => {
+        response.map((x, index) => {
+          if (index > 0) {
+            statusData.status = 'none';
+          }
+          stepRequest.updateStatusStep(x.step_id, statusData).then();
+        })
+
+      }).then(() => {
+        window.location.href = '/queues/detail/' + queueId;
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
   async function getQueueIdByReserve(reserve_id) {
     try {
-      reserveRequest.getQueuesByIdReserve(reserve_id).then((response) => {
-        window.location.href = '/queues/detail/' + response[0].queue_id;
+      await reserveRequest.getQueuesByIdReserve(reserve_id).then((response) => {
+        updateQueuesStatus(response[0].queue_id)
       });
     } catch (error) {
       console.log(error);

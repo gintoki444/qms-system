@@ -54,7 +54,7 @@ function AddReserve() {
 
   const [newCar, setNewCar] = useState([]);
   const [newDriver, setNewDriver] = useState([]);
-  const [newCompany, setNewCompany] = useState([]);
+  const [newCompany, setNewCompany] = useState('');
   // =============== Get Reserve ID ===============//
   const [initialValue, setInitialValue] = useState({
     company_id: '',
@@ -74,8 +74,12 @@ function AddReserve() {
 
   // =============== Get Company ===============//
   const [companyList, setCompanyList] = useState([]);
-  const getCompanyLsit = () => {
-    const urlapi = apiUrl + `/allcompany/` + userId;
+  const getCompanyLsit = (permission) => {
+    let user_id = '';
+    if (permission !== "manage_everything") {
+      user_id = userId;
+    }
+    const urlapi = apiUrl + `/allcompany/` + user_id;
     axios
       .get(urlapi)
       .then((res) => {
@@ -88,8 +92,12 @@ function AddReserve() {
 
   // =============== Get Car ===============//
   const [carList, setCarList] = useState([]);
-  const getCarLsit = () => {
-    const urlapi = apiUrl + `/allcars/${userId}`;
+  const getCarLsit = (permission) => {
+    let user_id = '';
+    if (permission !== "manage_everything") {
+      user_id = userId;
+    }
+    const urlapi = apiUrl + `/allcars/${user_id}`;
     axios
       .get(urlapi)
       .then((res) => {
@@ -118,8 +126,12 @@ function AddReserve() {
 
   // =============== Get Driver ===============//
   const [driverList, setDriverList] = useState([]);
-  const getDriverLsit = () => {
-    const urlapi = apiUrl + `/alldrivers/${userId}`;
+  const getDriverLsit = (permission) => {
+    let user_id = '';
+    if (permission !== "manage_everything") {
+      user_id = userId;
+    }
+    const urlapi = apiUrl + `/alldrivers/${user_id}`;
     axios
       .get(urlapi)
       .then((res) => {
@@ -174,10 +186,13 @@ function AddReserve() {
     setLoading(true);
     if (userRoles && Object.keys(userPermission).length > 0) {
       if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
+        const permissionName = userPermission.permission.find((x) => x.page_id === pageId);
         setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
-        getCompanyLsit();
-        getCarLsit();
-        getDriverLsit();
+
+        getCompanyLsit(permissionName?.permission_name);
+        getCarLsit(permissionName?.permission_name);
+        getDriverLsit(permissionName?.permission_name);
+
         getProductCompany();
         setLoading(false);
       } else {
@@ -215,7 +230,6 @@ function AddReserve() {
       values.created_at = currentDate;
       values.updated_at = currentDate;
 
-      console.log(values);
       let config = {
         method: 'post',
         maxBodyLength: Infinity,
@@ -293,37 +307,54 @@ function AddReserve() {
   };
 
   // =============== เพิ่มข้อมูลร้านค้า ===============//
-  const handleSaveCompany = (formData) => {
-    setNewCompany(formData);
-    getCompanyLsit();
-    setInitialValue((preViews) => {
-      let data = preViews;
-      data.company_id = formData[0].company_id;
-      return data
-    })
+  const handleSaveCompany = (formData, valuesData) => {
+    setCompanyList([...companyList, formData[0]]);
+    setNewCompany(formData[0]);
+    setInitialValue(() => ({
+      ...valuesData,
+      company_id: formData[0].company_id
+    }));
+    // getCompanyLsit();
+    // setInitialValue((preViews) => {
+    //   let data = preViews;
+    //   data.company_id = formData[0].company_id;
+    //   return data
+    // })
   };
 
   // =============== เพิ่มข้อมูลรถ ===============//
-  const handleSaveForm = async (formData) => {
-    setNewCar(formData);
-    getCarLsit();
-    setInitialValue((preViews) => {
-      let data = preViews;
-      data.car_id = formData[0].car_id;
-      return data;
-    })
+  const handleSaveForm = async (formData, valuesData) => {
+    setCarList([...carList, formData[0]]);
+    setNewCompany(formData[0]);
+    setInitialValue(() => ({
+      ...valuesData,
+      car_id: formData[0].car_id
+    }));
+    // setNewCar(formData);
+    // getCarLsit();
+    // setInitialValue((preViews) => {
+    //   let data = preViews;
+    //   data.car_id = formData[0].car_id;
+    //   return data;
+    // })
   };
 
   // =============== เพิ่มข้อมูลคนขับรถ ===============//
-  const handleSaveDriverForm = (formData) => {
-    setNewDriver(formData);
-    getDriverLsit();
-    setInitialValue((preViews) => {
-      let data = preViews;
+  const handleSaveDriverForm = (formData, valuesData) => {
+    setDriverList([...driverList, formData[0]]);
+    setNewCompany(formData[0]);
+    setInitialValue(() => ({
+      ...valuesData,
+      driver_id: formData[0].driver_id
+    }));
+    // setNewDriver(formData);
+    // getDriverLsit();
+    // setInitialValue((preViews) => {
+    //   let data = preViews;
 
-      data.driver_id = formData[0].driver_id;
-      return data
-    })
+    //   data.driver_id = formData[0].driver_id;
+    //   return data
+    // })
   };
   return (
     <Grid alignItems="center" justifyContent="space-between">
@@ -347,7 +378,7 @@ function AddReserve() {
       )}
       {pageDetail.length !== 0 && (
         <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
-          <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits}>
+          <Formik initialValues={initialValue} validationSchema={validationSchema} onSubmit={handleSubmits} enableReinitialize>
             {({ handleBlur, handleChange, setFieldValue, handleSubmit, isSubmitting, values, touched, errors }) => (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
@@ -361,16 +392,17 @@ function AddReserve() {
                       <InputLabel>บริษัท/ร้านค้า *</InputLabel>
                       <FormControl fullWidth>
                         <Autocomplete
-                          disablePortal
+                          // disablePortal
                           id="company-list"
                           options={companyList}
                           onChange={(e, value) => {
                             const newValue = value ? value.company_id : null;
                             setFieldValue('company_id', newValue);
-                            setNewCompany([companyList.find((x) => x.company_id === newValue)]);
+                            setNewCompany(companyList.find((x) => x.company_id === newValue));
                           }}
 
-                          value={newCompany.length > 0 ? newCompany[0] : null}
+                          value={values.company_id ? companyList.find((x) => x.company_id === values.company_id) : null}
+                          // value={newCompany.length > 0 ? newCompany[0] : null}
                           getOptionLabel={(option) => option.name}
                           sx={{
                             width: '100%',
@@ -398,7 +430,17 @@ function AddReserve() {
                         </FormHelperText>
                       )}
                     </Stack>
-                    <AddCompany userID={userId} onSaves={handleSaveCompany} companyList={companyList} />
+                    <AddCompany
+                      userID={userId}
+                      onSaves={(value) => {
+                        handleSaveCompany(value, values);
+                        // setInitialValue(values);
+                        // setInitialValue(() => ({
+                        //   ...values,
+                        //   company_id: value[0].company_id
+                        // }));
+                      }}
+                      companyList={companyList} />
                   </Grid>
 
                   <Grid item xs={12} md={6}>
@@ -468,7 +510,7 @@ function AddReserve() {
                           displayEmpty
                           variant="outlined"
                           name="product_brand_id"
-                          value={values.product_brand_id}
+                          value={values.product_brand_id || ''}
                           onChange={handleChange}
                           placeholder="เลือกสายแรงงาน"
                           fullWidth
@@ -496,9 +538,8 @@ function AddReserve() {
                     <Stack spacing={1}>
                       <InputLabel>รถบรรทุก *</InputLabel>
                       <FormControl fullWidth>
-                        {console.log(values.car_id)}
                         <Autocomplete
-                          disablePortal
+                          // disablePortal
                           id="car-list"
                           options={carList}
                           onChange={(e, value) => {
@@ -506,9 +547,9 @@ function AddReserve() {
                             setFieldValue('car_id', newValue);
                             setNewCar([carList.find((x) => x.car_id === newValue)]);
                           }}
-                          value={newCar.length > 0 ? newCar[0] : null}
+                          // value={newCar.length > 0 ? newCar[0] : null}
+                          value={values.car_id ? carList.find((x) => x.car_id === values.car_id) : null}
 
-                          // value={carList.length > 0 ? carList.find((item) => item.car_id === values.car_id) : []}
                           getOptionLabel={(option) => {
                             if (option.car_id !== 1) {
                               return option.registration_no;
@@ -542,7 +583,9 @@ function AddReserve() {
                         </FormHelperText>
                       )}
                     </Stack>
-                    <AddCar userID={userId} onSaves={handleSaveForm} carsList={carList} />
+                    <AddCar userID={userId} onSaves={(value) => {
+                      handleSaveForm(value, values);
+                    }} carsList={carList} />
                   </Grid>
 
                   <Grid item xs={12} md={6} align="left">
@@ -550,11 +593,12 @@ function AddReserve() {
                       <InputLabel>คนขับรถ *</InputLabel>
                       <FormControl fullWidth>
                         <Autocomplete
-                          disablePortal
+                          // disablePortal
                           id="driver-list"
                           options={driverList}
                           name="driver_id"
-                          value={newDriver.length > 0 ? newDriver[0] : null}
+                          value={values.driver_id ? driverList.find((x) => x.driver_id === values.driver_id) : null}
+                          // value={newDriver.length > 0 ? newDriver[0] : null}
                           onChange={(e, value) => {
                             const newValue = value ? value.driver_id : '';
                             setFieldValue('driver_id', newValue);
@@ -583,7 +627,9 @@ function AddReserve() {
                         </FormHelperText>
                       )}
                     </Stack>
-                    <AddDriver userID={userId} onSaves={handleSaveDriverForm} driverList={driverList} />
+                    <AddDriver userID={userId} onSaves={(value) => {
+                      handleSaveDriverForm(value, values);
+                    }} driverList={driverList} />
                   </Grid>
 
                   <Grid item xs={12} md={6}>

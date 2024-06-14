@@ -491,8 +491,28 @@ function QueueDetail({ sx }) {
   };
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getProductCompany();
+  }, []);
+  // =============== Get Product Company ===============//
+  const [productCompany, setProductCompany] = useState([]);
+  const getProductCompany = () => {
+    try {
+      reserveRequest.getAllproductCompanys().then((response) => {
+        setProductCompany(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const printQueues = () => {
-    navigate('/prints/queues', { state: { queuesId: queueID } });
+    navigate('/prints/queues', {
+      state: {
+        queuesId: queueID,
+        productCampanyName: productCompany.find((x) => x.product_company_id === queues.product_company_id)?.product_company_name_th
+      }
+    });
   };
   const backToQueues = () => {
     navigate('/queues');
@@ -795,9 +815,14 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
         id: 0,
         detail: [
           {
+            color: 'error',
+            status: 'pending',
+            title: 'รอคำสั่งซื้อ'
+          },
+          {
             color: 'secondary',
             status: 'waiting',
-            title: 'รอชั่งเบา'
+            title: 'รอเรียกชั่งเบา'
           },
           {
             color: 'warning',
@@ -810,9 +835,14 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
             title: 'สำเร็จ'
           },
           {
+            color: 'error',
+            status: 'cancle',
+            title: 'ยกเลิกคิว'
+          },
+          {
             color: 'secondary',
             status: 'none',
-            title: 'รอชั่งเบา'
+            title: 'รอเรียกชั่งเบา'
           }
         ]
       },
@@ -820,9 +850,14 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
         id: 1,
         detail: [
           {
+            color: 'error',
+            status: 'pending',
+            title: 'รอคำสั่งซื้อ'
+          },
+          {
             color: 'secondary',
             status: 'waiting',
-            title: 'รอขึ้นสินค้า'
+            title: 'รอเรียกขึ้นสินค้า'
           },
           {
             color: 'warning',
@@ -837,7 +872,7 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
           {
             color: 'secondary',
             status: 'none',
-            title: 'รอขึ้นสินค้า'
+            title: 'รอเรียกขึ้นสินค้า'
           }
         ]
       },
@@ -845,9 +880,14 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
         id: 2,
         detail: [
           {
+            color: 'error',
+            status: 'pending',
+            title: 'รอคำสั่งซื้อ'
+          },
+          {
             color: 'secondary',
             status: 'waiting',
-            title: 'รอชั่งหนัก'
+            title: 'รอเรียกชั่งหนัก'
           },
           {
             color: 'warning',
@@ -862,13 +902,18 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
           {
             color: 'secondary',
             status: 'none',
-            title: 'รอชั่งหนัก'
+            title: 'รอเรียกชั่งหนัก'
           }
         ]
       },
       {
         id: 3,
         detail: [
+          {
+            color: 'error',
+            status: 'pending',
+            title: 'รอคำสั่งซื้อ'
+          },
           {
             color: 'secondary',
             status: 'waiting',
@@ -950,7 +995,11 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
             index === stepId && (
               <Typography key={index} variant="h5" sx={{ pl: { xs: 1, lg: '20%' } }}>
                 <strong>สถานะ : </strong>
-                <QueueStatus id={`${stepId}`} status={item.status} />
+                {stepId === 0 && parseFloat(queues.total_quantity) == 0 ? (
+                  <QueueStatus id={`${stepId}`} status={'pending'} />
+                ) : (
+                  <QueueStatus id={`${stepId}`} status={item.status} />
+                )}
               </Typography>
             )
         )}

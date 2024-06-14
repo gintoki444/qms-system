@@ -126,7 +126,7 @@ function CompanyTable({ permission }) {
                 variant="contained"
                 size="medium"
                 color="error"
-                disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
+                disabled={permission !== 'manage_everything'}
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                 onClick={() => handleClickOpen(value)}
               >
@@ -152,9 +152,12 @@ function CompanyTable({ permission }) {
 
   const getCompany = () => {
     setLoading(true);
-
+    let user_id = '';
+    if (permission !== "manage_everything") {
+      user_id = userId;
+    }
     companyRequest
-      .getAllCompanyByuserId(userId)
+      .getAllCompanyByuserId(user_id)
       .then((response) => {
         const newData = response.map((item, index) => {
           return {

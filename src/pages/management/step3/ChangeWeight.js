@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import {
     // Grid,
@@ -13,38 +13,33 @@ import {
 import MainCard from 'components/MainCard';
 import { EditOutlined, CloseCircleOutlined, SaveOutlined } from '@ant-design/icons';
 
-function ChangeWeight({ weight1 }) {
+import * as queueReques from '_api/queueReques'
+import * as stepRequest from '_api/StepRequest'
 
+function ChangeWeight({ weight1, queueId, changeWeight }) {
 
-    const updateWeight1 = (step_id) => {
-        return new Promise((resolve, reject) => {
-            const myHeaders = new Headers();
-            myHeaders.append('Content-Type', 'application/json');
+    const [step1Data, setStep1Data] = useState({});
+    const [weightTxt, setWeightTxt] = useState({});
+    const [queueData, setQueueData] = useState({});
+    const getQueueDetail = (queueId) => {
+        try {
+            queueReques.getAllStepById(queueId).then((response) => {
+                const dataFind = response.find((x) => x.station_code === "STEP1-001");
+                // console.log('getQueueDetail dataFind:', dataFind)
+                // console.log('getQueueDetail response:', response)
+                setStep1Data(dataFind)
+                setQueueData(response);
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
-            const raw = JSON.stringify({
-                weight1: weight
-            });
-
-            const requestOptions = {
-                method: 'PUT',
-                headers: myHeaders,
-                body: raw,
-                redirect: 'follow'
-            };
-
-            fetch(apiUrl + '/updateweight1/' + step_id, requestOptions)
-                .then((response) => response.json())
-                .then((result) => {
-                    if (result['status'] === 'ok') {
-                        setWeight('');
-                        resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
-                    } else {
-                        reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
-                    }
-                })
-                .catch((error) => console.error(error));
-        });
-    };
+    useEffect(() => {
+        console.log(queueId)
+        setWeightTxt(weight1);
+        getQueueDetail(queueId);
+    }, [queueId, weight1])
 
     const [onclickShow, setOnClickShow] = useState(false);
     const handleClickShow = () => {
@@ -61,12 +56,31 @@ function ChangeWeight({ weight1 }) {
     };
 
     const handleClickSave = () => {
-        setOnClickShow(false);
+        // console.log('Save :', weight);
+        queueData[0].weight1 = weight;
+        // console.log('queueData :', queueData);
+        changeWeight(queueData);
+        try {
+            if (step1Data.step_id && weight) {
+                const weightData = {
+                    weight1: weight
+                }
+                stepRequest.updateWeight1(step1Data.step_id, weightData).then((response) => {
+                    if (response['status'] === 'ok') {
+                        setWeightTxt(weight);
+                        changeWeight(queueData);
+                        setOnClickShow(false);
+                    }
+                })
+            }
+        } catch (error) {
+            console.log(error);
+        }
     };
     return (
         <>
             <Typography variant="body1" sx={{ fontSize: 16 }}>
-                น้ำหนักชั่งเบา : <strong>{weight1 ? parseFloat(weight1) : '-'}</strong> ตัน
+                น้ำหนักชั่งเบา : <strong>{weightTxt ? parseFloat(weightTxt) : parseFloat(weight1)}</strong> ตัน
                 <Button
                     variant="outlined"
                     size="small"
@@ -100,7 +114,7 @@ function ChangeWeight({ weight1 }) {
                         <Button
                             variant="contained"
                             size="small"
-                            onClick={handleClickShow}
+                            onClick={handleClickSave}
                             color="success"
                             sx={{ minWidth: '33px!important', p: '8px 0px' }}
                         >
@@ -109,7 +123,7 @@ function ChangeWeight({ weight1 }) {
                         <Button
                             variant="contained"
                             size="small"
-                            onClick={handleClickSave}
+                            onClick={handleClickShow}
                             color="error"
                             sx={{ minWidth: '33px!important', p: '8px 0px' }}
                         >
@@ -122,4 +136,4 @@ function ChangeWeight({ weight1 }) {
     )
 }
 
-export default ChangeWeight
+export default ChangeWeight;

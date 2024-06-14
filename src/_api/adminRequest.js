@@ -24,6 +24,8 @@ export const putReserveTeamData = async (id, data) => {
   myHeaders.append('Content-Type', 'application/json');
   const raw = JSON.stringify(data);
 
+  console.log('putReserveTeamData :', raw);
+
   const requestOptions = {
     method: 'PUT',
     headers: myHeaders,
