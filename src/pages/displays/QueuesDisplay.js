@@ -134,6 +134,13 @@ function QueuesDisplay() {
               </Grid>
             </Grid>
           </Grid>
+          {/* <Grid xs={12} md ={6} sx={{ background: '#F9D8C7', minHeight: '89vh' }}>
+                <AllStations />
+              </Grid> */}
+          {/* <Grid xs={12} md={3} sx={{ background: '#C1E5F5', minHeight: '100vh' }}>
+              </Grid>
+              <Grid xs={12} md={3} sx={{ background: '#D9F3D0', minHeight: '100vh' }}>
+              </Grid> */}
           <Grid
             xs={12}
             sx={{

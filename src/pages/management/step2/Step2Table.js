@@ -26,6 +26,8 @@ import {
   ButtonGroup,
   Checkbox,
   // Autocomplete,
+  RadioGroup,
+  Radio,
   FormControlLabel,
   OutlinedInput
 } from '@mui/material';
@@ -205,6 +207,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     getAllContractor();
     getWareHouseManager();
     getAllItemsRegis();
+
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 5000); // Polling every 5 seconds
+
+    return () => clearInterval(intervalId);
   }, [status, onStatusChange, onFilter, loopSelect, permission]);
 
   const fetchData = async () => {
@@ -239,9 +247,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     }
   };
 
-  const cleckStations = async () => {
+  const processingGet = async () => {
     try {
       getQueues.getStep2Processing().then((response) => {
+        setItems(response);
         setItems2(response);
       });
     } catch (e) {
@@ -249,10 +258,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     }
   };
 
-  const processingGet = async () => {
+  const cleckStations = async () => {
     try {
       getQueues.getStep2Processing().then((response) => {
-        setItems(response);
         setItems2(response);
       });
     } catch (e) {
@@ -761,17 +769,17 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           updatedOptions = filterRemove;
           // updatedOptions.push(selectedStock);
         } else if (indexKey !== -1) {
-          // console.log('check 3.2');
+          console.log('check 3.2');
           selectedStock.stockQuetity = parseFloat(items.quantity);
 
           const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
           if (checkStock.length > 0) {
-            // console.log('check 3.3');
+            console.log('check 3.3');
             let totolIsSelect = 0;
             checkStock.map((x) => (totolIsSelect = x.stockQuetity + totolIsSelect));
 
             if (parseFloat(stockItem) < totolIsSelect + selectedStock.stockQuetity) {
-              // console.log('check 3.4');
+              console.log('check 3.4');
               selectedStock.stockQuetity = parseFloat(stockItem) - totolIsSelect;
             }
           }
@@ -782,28 +790,28 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey === -1) {
         const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
         const checkStockSelect = updatedOptions.filter((x) => x.order_id === items.order_id && x.item_id === items.item_id);
-        // console.log('checkStock :', checkStock);
+        console.log('checkStock :', checkStock);
 
         if (checkStock.length > 0) {
-          // console.log('check 4.1');
+          console.log('check 4.1');
           let totolIsSelect = 0;
           checkStock.map((x) => (totolIsSelect = x.stockQuetity + totolIsSelect));
 
-          // console.log('parseFloat(stockItem)', parseFloat(stockItem));
-          // console.log('totolIsSelect', totolIsSelect);
-          // console.log('totolIsSelect', selectedStock.stockQuetity);
+          console.log('parseFloat(stockItem)', parseFloat(stockItem));
+          console.log('totolIsSelect', totolIsSelect);
+          console.log('totolIsSelect', selectedStock.stockQuetity);
           if (parseFloat(stockItem) < totolIsSelect + selectedStock.stockQuetity) {
-            // console.log('check 4.2');
+            console.log('check 4.2');
             selectedStock.stockQuetity = parseFloat(stockItem) - totolIsSelect;
 
             // if (selectedStock.stockQuetity < items.quantity) {
-            //   // console.log('check 4.2.1');
+            // console.log('check 4.2.1');
             // }
           } else if (parseFloat(stockItem) === totolIsSelect + selectedStock.stockQuetity && checkStockSelect.length > 0) {
             // console.log('checkStockSelect',checkStockSelect);
-            // console.log('check 4.3');
+            console.log('check 4.3');
             selectedStock.stockQuetity = parseFloat(stockItem) - selectedStock.stockQuetity;
-            // console.log('selectedStock.stockQuetity',selectedStock.stockQuetity);
+            console.log('selectedStock.stockQuetity', selectedStock.stockQuetity);
           }
         } else if (checkStockSelect.length > 0) {
           checkStockSelect.map((x) => {
@@ -812,22 +820,22 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         }
         updatedOptions.push(selectedStock);
       } else {
-        // console.log('check 5');
+        console.log('check 5');
         const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
         if (checkStock.length > 0) {
-          // console.log('check 5.1');
+          console.log('check 5.1');
           let totolIsSelect = 0;
           checkStock.map((x) => (totolIsSelect = x.stockQuetity + totolIsSelect));
 
           if (parseFloat(stockItem) < totolIsSelect + selectedStock.stockQuetity) {
-            // console.log('check 5.2');
+            console.log('check 5.2');
             selectedStock.stockQuetity = parseFloat(stockItem) - totolIsSelect;
           }
         }
 
         updatedOptions[index] = selectedStock;
       }
-      // console.log('setStockSelect', updatedOptions);
+      console.log('setStockSelect', updatedOptions);
       return updatedOptions;
     });
 
@@ -854,11 +862,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       const indexKey = updatedOptions.findIndex((option) => option.id === key);
       const orderList = updatedOptions.filter((option) => option.item_id == items.item_id && option.order_id == items.order_id);
       const orderListNotSelect = orderList.filter((option) => option.id !== key);
-      // console.log('orderListNotSelect ', orderListNotSelect);
+      console.log('orderListNotSelect ', orderListNotSelect);
 
       let checkSum = sumSelectProductRegis(orderList);
       let checkSumNotSelect = sumSelectProductRegis(orderListNotSelect);
-      // console.log('checkSum ', checkSum);
+      console.log('checkSum ', checkSum);
       checkSum = checkSum + selectedOptionNew.product_register_quantity;
       // console.log('checkSum =  ', checkSum);
 
@@ -869,7 +877,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
       // console.log('updatedOptionsbefor ', updatedOptions);
       if (parseFloat(stockItem) < parseFloat(items.quantity) && indexKey !== -1) {
-        // console.log('check 1');
+        console.log('check 1');
         const filterList = updatedOptions.filter(
           (option) => option.item_id == items.item_id && option.order_id == items.order_id && option.product_register_id === ''
         );
@@ -880,9 +888,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           orderList.length < items.productRegis.length &&
           filterList.length === 0
         ) {
-          // console.log('check 1.1');
+          console.log('check 1.1');
           if (parseFloat(items.quantity) > checkSum || checkSumNotSelect === 0) {
-            // console.log('check 1.2');
+            console.log('check 1.2');
             const selectedOption = {
               id: `${items.order_id}${items.item_id}${orderList.length + 1}`,
               order_id: items.order_id,
@@ -901,7 +909,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           //   console.log('check checkSumNotSelect', checkSumNotSelect);
           // }
         } else if (parseFloat(items.quantity) < checkSum) {
-          // console.log('check 1.3');
+          console.log('check 1.3');
           let sumquatity = sumSelectProductRegis(orderList);
           console.log('newsum = ', sumquatity - parseFloat(items.quantity));
           console.log('newsum = ', parseFloat(items.quantity) - sumquatity);
@@ -909,12 +917,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
         updatedOptions[indexKey] = selectedOptionNew;
       } else if (
-        // parseFloat(items.quantity) > checkSum &&
+        parseFloat(items.quantity) > checkSum &&
         parseFloat(stockItem) >= parseFloat(items.quantity) &&
         indexKey !== -1 &&
         indexProId.length !== 0
       ) {
-        // console.log('check 2');
+        console.log('check 2');
         const filterindex = updatedOptions.filter((option) => option.order_id === items.order_id && option.item_id === items.item_id);
         filterindex.map(
           (x) =>
@@ -925,7 +933,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         );
 
         if (selectedOptionNew.product_register_quantity <= 0 && indexKey !== -1) {
-          // console.log('check 2.1');
+          console.log('check 2.1');
 
           selectedOptionNew.product_register_quantity = parseFloat(items.quantity);
           // console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
@@ -934,23 +942,23 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           filterRemove.push(selectedOptionNew);
           updatedOptions = filterRemove;
         } else if (indexKey !== -1) {
-          // console.log('check 2.2');
+          console.log('check 2.2');
 
           const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value && x.id !== key);
           const checkNumSelect = updatedOptions.filter(
             (option) => option.item_id == items.item_id && option.order_id == items.order_id && option.product_register_id === ''
           );
           if (checkStock.length > 0) {
-            // console.log('check 2.2.1');
+            console.log('check 2.2.1');
             let totolIsSelect = 0;
             checkStock.map((x) => (totolIsSelect = x.product_register_quantity + totolIsSelect));
 
             if (parseFloat(stockItem) < totolIsSelect + selectedOptionNew.product_register_quantity) {
               selectedOptionNew.product_register_quantity = parseFloat(stockItem) - totolIsSelect;
-              // console.log('check 2.2.1.1');
+              console.log('check 2.2.1.1');
 
               if (selectedOptionNew.product_register_quantity < selectedOptionNew.quantity && checkNumSelect < 1) {
-                // console.log('check 2.2.1.1.1');
+                console.log('check 2.2.1.1.1');
 
                 const selectedOption = {
                   id: items.order_id + items.item_id + orderList.length,
@@ -967,18 +975,18 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 updatedOptions.push(selectedOption);
               }
             } else if (parseFloat(stockItem) === totolIsSelect + selectedOptionNew.product_register_quantity && checkNumSelect.length > 0) {
-              // console.log('check 2.2.1.2');
+              console.log('check 2.2.1.2');
               updatedOptions = updatedOptions.filter((x) => x.id !== checkNumSelect[0].id);
             } else if (totolIsSelect < selectedOptionNew.product_register_quantity) {
-              // console.log('check 2.2.1.3');
+              console.log('check 2.2.1.3');
               selectedOptionNew.quantity = selectedOptionNew.product_register_quantity - totolIsSelect;
             }
           } else if (checkNumSelect.length > 0) {
-            // console.log('check 2.2.2');
+            console.log('check 2.2.2');
 
             const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
 
-            // console.log('filterRemove :', filterRemove);
+            console.log('filterRemove :', filterRemove);
             // console.log('key :', key);
             // console.log('filterRemove :', (updatedOptions = filterRemove));
             updatedOptions = filterRemove;
@@ -994,19 +1002,19 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         //   updatedOptions.push(selectedOptionNew);
         // }
       } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length === 0) {
-        // console.log('check 3');
+        console.log('check 3');
         // selectedOptionNew.product_register_quantity = parseFloat(items.quantity);
-        // console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
+        console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
         const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
 
         const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
         if (checkStock.length > 0) {
-          // console.log('check 3.1');
+          console.log('check 3.1');
           let totolIsSelect = 0;
           checkStock.map((x) => (totolIsSelect = x.product_register_quantity + totolIsSelect));
 
           if (parseFloat(stockItem) < totolIsSelect + selectedOptionNew.product_register_quantity) {
-            // console.log('check 3.2');
+            console.log('check 3.2');
             selectedOptionNew.product_register_quantity = parseFloat(stockItem) - totolIsSelect;
 
             if (
@@ -1014,8 +1022,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               orderList.length < 3 &&
               orderList.length < items.productRegis.length
             ) {
-              // console.log('check 1.1');
-              // console.log('parseFloat(stockItem) > parseFloat(items.quantity)', parseFloat(stockItem) > parseFloat(items.quantity));
+              console.log('check 1.1');
+              console.log('parseFloat(stockItem) > parseFloat(items.quantity)', parseFloat(stockItem) > parseFloat(items.quantity));
               // console.log('orderList.length < 3 :', orderList.length < 3);
               // console.log('orderList.length < items.productRegis.length :', orderList.length < items.productRegis.length);
               const selectedOption = {
@@ -1200,9 +1208,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   };
 
   const handleClose = async (flag) => {
-    setOnClickSubmit(true);
     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
     if (flag === 1) {
+      setOnClickSubmit(true);
       if (fr === 'call') {
         setLoading(true);
         if (station_count < station_num) {
@@ -1214,13 +1222,20 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
             let checkCountItemLoop = 0;
             loopSelect.map((orderData) => {
-              if (!orderData.product_register_quantity) checkCountItemLoop = checkCountItemLoop + 1;
+              if (!orderData.product_register_quantity) {
+                console.log('product_register_quantity:', orderData.product_register_quantity);
+                checkCountItemLoop = checkCountItemLoop + 1;
+              }
             });
             if (checkCountItemLoop > 0) {
+              console.log('loopSelect ', loopSelect);
+              console.log('1 กรุณาระบุกองสินค้าให้ครบถ้วน:', checkCountItemLoop);
               setOnClickSubmit(false);
               alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
               return;
             } else if (orderSelect.length != countItem) {
+              console.log('2 กรุณาระบุกองสินค้าให้ครบถ้วน:', orderSelect.length);
+              console.log('2 กรุณาระบุกองสินค้าให้ครบถ้วน:', countItem);
               setOnClickSubmit(false);
               alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
               return;
@@ -1246,7 +1261,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               setOpen(false);
 
               loopSelect.map((x) => {
-
                 if ((x.order_id !== null || x.order_id !== undefined) &&
                   (x.item_id !== null || x.item_id !== undefined) &&
                   (x.product_register_id !== null || x.product_register_id !== undefined)
@@ -1464,8 +1478,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           setItems([]);
 
           // console.log('cancle Click');
-          updateCancleTeams(queues.reserve_id);
-
+          if (stationStatus === 'N') {
+            updateCancleTeams(queues.reserve_id);
+          }
           // if (id_update === 999999) {
           setOpen(false);
           getStepToken(id_update)
@@ -1498,6 +1513,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       setOrders([]);
       setStockSelect([]);
       setOpen(false);
+      setStationStatus('');
     }
   };
 
@@ -1534,9 +1550,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
   // ลบข้อมูลกองสินค้า
   const removeItemsRegister = async (id) => {
-    await stepRequest.deleteItemsRegister(id).then((response) => {
-      console.log('removeItemsRegister:', response);
-    });
+    await stepRequest.deleteItemsRegister(id);
+    // .then((response) => {
+    //   console.log('removeItemsRegister:', response);
+    // });
     // .then((response) => {
     //   console.log('response', response);
     // });
@@ -1801,6 +1818,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     })
   }
 
+  // =============== เลือกสถานะ หัวจ่าย ===============//
+  const [stationStatus, setStationStatus] = useState('');
+  const handleSelectCloseStation = (e) => {
+    setStationStatus(e);
+  };
 
   // const handleClickOpentest = async () => {
 
@@ -2614,6 +2636,22 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                     ต้องการ <strong> {textnotify} </strong> คิวหมายเลข :{' '}
                     <QueueTag id={queues.product_company_id || ''} token={queues.token} /> หรือไม่?
                   </DialogContentText>
+                  <FormControl>
+                    <RadioGroup
+                      row
+                      aria-labelledby="demo-row-radio-buttons-group-label"
+                      name="row-radio-buttons-group"
+                      defaultValue={stationStatus == '' ? 'Y' : 'N'}
+                      onChange={(e) => handleSelectCloseStation(e.target.value)}
+                    >
+                      <FormControlLabel value="Y" control={<Radio />} label={'แก้ไขรายการคำสั่งซื้อ'} />
+                      <FormControlLabel
+                        value="N"
+                        control={<Radio />}
+                        label={'ยกเลิกเข้าหัวจ่าย'}
+                      />
+                    </RadioGroup>
+                  </FormControl>
                 </DialogContent>
               </>
             )}

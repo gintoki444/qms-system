@@ -8,7 +8,7 @@ function ClockTime() {
     setInterval(() => setTimeNow(moment().locale('th').format('LTS')));
   }, timeNow);
   return (
-    <Typography variant="h3" color="error" sx={{ mt: 1 }}>
+    <Typography variant="h3" color="error" sx={{ ml: 1 }}>
       เวลา {timeNow} น.
     </Typography>
   );

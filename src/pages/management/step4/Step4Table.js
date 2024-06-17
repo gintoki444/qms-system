@@ -194,11 +194,17 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
   const station_num = 1;
 
   useEffect(() => {
+    setLoading(true);
     fetchData();
+
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 5000); // Polling every 5 seconds
+
+    return () => clearInterval(intervalId);
   }, [status, onStatusChange, onFilter, permission]);
 
   const fetchData = async () => {
-    setLoading(true);
 
     if (status === 'waiting') {
       await waitingGet();

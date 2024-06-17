@@ -101,7 +101,7 @@ function AddQueue() {
   // =============== Get Company ===============//
   const [companyList, setCompanyList] = useState([]);
   const getCompanyList = () => {
-    const urlapi = apiUrl + `/allcompany/` + user_Id;
+    const urlapi = apiUrl + `/allcompany/`;
     axios
       .get(urlapi)
       .then((res) => {
@@ -116,7 +116,7 @@ function AddQueue() {
   // =============== Get Car ===============//
   const [carList, setCarList] = useState([]);
   const getCarLsit = () => {
-    const urlapi = apiUrl + `/allcars/` + user_Id;
+    const urlapi = apiUrl + `/allcars/`;
     axios
       .get(urlapi)
       .then((res) => {
@@ -131,7 +131,7 @@ function AddQueue() {
   // =============== Get Driver ===============//
   const [driverList, setDriverList] = useState([]);
   const getDriverLsit = () => {
-    const urlapi = apiUrl + `/alldrivers/` + user_Id;
+    const urlapi = apiUrl + `/alldrivers/`;
     axios
       .get(urlapi)
       .then((res) => {
@@ -193,10 +193,10 @@ function AddQueue() {
     await adminRequest
       .getAllWareHouse()
       .then((result) => {
-        console.log(
-          'result filter:',
-          result.filter((x) => x.warehouse_id == selectId)
-        );
+        // console.log(
+        //   'result filter:',
+        //   result.filter((x) => x.warehouse_id == selectId)
+        // );
 
         setWarehousesList(result.filter((x) => x.warehouse_id == selectId));
       })
@@ -426,9 +426,9 @@ function AddQueue() {
         labor_line_id: values.labor_line_id
       };
 
-      console.log('teamData :', teamData);
-      console.log('values.team_data :', values.team_data);
-      console.log('values.team_data :', values.team_data);
+      // console.log('teamData :', teamData);
+      // console.log('values.team_data :', values.team_data);
+      // console.log('values.team_data :', values.team_data);
 
       // if (id === 9999) {
       await reserveRequest

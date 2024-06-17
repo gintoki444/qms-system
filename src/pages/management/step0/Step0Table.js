@@ -202,12 +202,18 @@ function Step0Table({ startDate, endDate, onFilter, permission }) {
 
   useEffect(() => {
     if (userRoles && userId) {
+      setLoading(true);
       getQueue();
     }
+
+    const intervalId = setInterval(() => {
+      getQueue();
+    }, 5000); // Polling every 5 seconds
+
+    return () => clearInterval(intervalId);
   }, [userId, userRoles, startDate, endDate, onFilter, permission]);
 
   const getQueue = () => {
-    setLoading(true);
     try {
       stepRequest.getAllStep0ByDate(startDate, endDate).then((response) => {
         if (onFilter == 0) {

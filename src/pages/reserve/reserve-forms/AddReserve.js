@@ -102,22 +102,24 @@ function AddReserve() {
       .get(urlapi)
       .then((res) => {
         if (res) {
-          res.data.unshift({
-            car_id: 1,
-            user_id: 1,
-            registration_no: 'ไม่ระบุรถ',
-            brand: 'ไม่ระบุ',
-            color: 'ไม่ระบุ',
-            car_type_id: 4,
-            province_id: null,
-            created_at: '2024-04-04T21:17:43.000Z',
-            updated_at: '2024-04-04T21:17:43.000Z',
-            car_type_name: 'รถสิบล้อ',
-            code: null,
-            name_th: null,
-            name_en: null,
-            geography_id: null
-          });
+          if (user_id) {
+            res.data.unshift({
+              car_id: 1,
+              user_id: 1,
+              registration_no: 'ไม่ระบุรถ',
+              brand: 'ไม่ระบุ',
+              color: 'ไม่ระบุ',
+              car_type_id: 4,
+              province_id: null,
+              created_at: '2024-04-04T21:17:43.000Z',
+              updated_at: '2024-04-04T21:17:43.000Z',
+              car_type_name: 'รถสิบล้อ',
+              code: null,
+              name_th: null,
+              name_en: null,
+              geography_id: null
+            });
+          }
           setCarList(res.data);
         }
       })
@@ -136,17 +138,19 @@ function AddReserve() {
       .get(urlapi)
       .then((res) => {
         if (res) {
-          res.data.unshift({
-            driver_id: 1,
-            user_id: 1,
-            firstname: 'ไม่ระบุคนขับรถ',
-            lastname: '',
-            license_no: 'ไม่ระบุ',
-            id_card_no: 'ไม่ระบุ',
-            mobile_no: 'ไม่ระบุ',
-            created_at: '2024-04-04T21:21:02.000Z',
-            updated_at: '2024-04-04T21:21:02.000Z'
-          });
+          if (user_id) {
+            res.data.unshift({
+              driver_id: 1,
+              user_id: 1,
+              firstname: 'ไม่ระบุคนขับรถ',
+              lastname: '',
+              license_no: 'ไม่ระบุ',
+              id_card_no: 'ไม่ระบุ',
+              mobile_no: 'ไม่ระบุ',
+              created_at: '2024-04-04T21:21:02.000Z',
+              updated_at: '2024-04-04T21:21:02.000Z'
+            });
+          }
           setDriverList(res.data);
         }
       })
@@ -549,6 +553,16 @@ function AddReserve() {
                           }}
                           // value={newCar.length > 0 ? newCar[0] : null}
                           value={values.car_id ? carList.find((x) => x.car_id === values.car_id) : null}
+                          filterOptions={(options, { inputValue }) => {
+                            if (!inputValue) {
+                              return options;
+                            }
+                            const filtered = options.filter(option =>
+                              option.registration_no.toLowerCase().includes(inputValue.toLowerCase())
+                            );
+                            return filtered;
+                          }}
+                          getOptionSelected={(option, value) => option.registration_no === value.registration_no}
 
                           getOptionLabel={(option) => {
                             if (option.car_id !== 1) {
@@ -604,7 +618,13 @@ function AddReserve() {
                             setFieldValue('driver_id', newValue);
                             setNewDriver([driverList.find((x) => x.driver_id === newValue)]);
                           }}
-                          getOptionLabel={(option) => option.firstname + ' ' + option.lastname}
+                          getOptionLabel={(option) => {
+                            if (option.driver_id !== 1) {
+                              return option.firstname + ' ' + option.lastname;
+                            } else {
+                              return 'ไม่ระบุคนขับรถ';
+                            }
+                          }}
                           sx={{
                             width: '100%',
                             '& .MuiOutlinedInput-root': {

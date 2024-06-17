@@ -36,6 +36,7 @@ function Step0() {
     startDate: currentDate,
     endDate: currentDate
   });
+  const [companyList, setCompanyList] = useState([]);
   const handleDateChange1 = (event) => {
     setSelectedDate1(event.target.value);
   };
@@ -58,9 +59,15 @@ function Step0() {
       setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
       getProductCompany();
     }
-  }, [userRole, userPermission]);
 
-  const [companyList, setCompanyList] = useState([]);
+
+    const intervalId = setInterval(() => {
+      waitingGet(companyList, selectedDate1, selectedDate2);
+    }, 5000); // Polling every 5 seconds
+
+    return () => clearInterval(intervalId);
+  }, [userRole, userPermission, companyList]);
+
   const getProductCompany = () => {
     stepRequest.getAllProductCompany().then((response) => {
       if (response) {

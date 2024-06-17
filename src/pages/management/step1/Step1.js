@@ -22,6 +22,7 @@ function Step1() {
   const [pageDetail, setPageDetail] = useState([]);
 
   const [commonStatus, setCommonStatus] = useState('');
+  const [companyList, setCompanyList] = useState([]);
   const handleStatusChange = (newStatus) => {
     // Change the common status and trigger a data reload in the other instance
     if (newStatus !== commonStatus) {
@@ -38,9 +39,14 @@ function Step1() {
       setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
       getProductCompany();
     }
-  }, [commonStatus, userRole, userPermission]);
 
-  const [companyList, setCompanyList] = useState([]);
+    const intervalId = setInterval(() => {
+      waitingGet(companyList);
+    }, 5000); // Polling every 5 seconds
+
+    return () => clearInterval(intervalId);
+  }, [commonStatus, userRole, userPermission, companyList]);
+
   const getProductCompany = () => {
     stepRequest.getAllProductCompany().then((response) => {
       if (response) {

@@ -1118,6 +1118,16 @@ function UpdateReserve() {
                                   const newValue = value ? value.car_id : '';
                                   setFieldValue('car_id', newValue);
                                 }}
+                                filterOptions={(options, { inputValue }) => {
+                                  if (!inputValue) {
+                                    return options;
+                                  }
+                                  const filtered = options.filter(option =>
+                                    option.registration_no.toLowerCase().includes(inputValue.toLowerCase())
+                                  );
+                                  return filtered;
+                                }}
+                                getOptionSelected={(option, value) => option.registration_no === value.registration_no}
                                 getOptionLabel={(option) => {
                                   if (option.car_id !== undefined) {
                                     if (option.car_id !== 1) {

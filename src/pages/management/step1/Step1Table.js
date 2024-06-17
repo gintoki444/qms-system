@@ -177,6 +177,12 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
   useEffect(() => {
     getStation();
     fetchData();
+
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 5000); // Polling every 5 seconds
+
+    return () => clearInterval(intervalId);
   }, [status, onStatusChange, onFilter, permission]);
 
   const fetchData = async () => {
@@ -836,9 +842,9 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
                             <TableCell align="left">
                               {row.reserve_datetime &&
                                 moment(row.reserve_datetime.slice(0, 10)).format('DD/MM/YY') +
-                                  ' - ' +
-                                  row.reserve_datetime.slice(11, 16) +
-                                  'น.'}
+                                ' - ' +
+                                row.reserve_datetime.slice(11, 16) +
+                                'น.'}
                             </TableCell>
                           )}
                           <TableCell align="left">
@@ -970,7 +976,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
                                           row.station_id === 30
                                         }
                                         onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row)}
-                                        // endIcon={<RightSquareOutlined />}
+                                      // endIcon={<RightSquareOutlined />}
                                       >
                                         ปิดคิว
                                       </Button>

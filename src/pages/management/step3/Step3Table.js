@@ -192,6 +192,12 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
   useEffect(() => {
     getStation();
     fetchData();
+
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 5000); // Polling every 5 seconds
+
+    return () => clearInterval(intervalId);
   }, [status, onStatusChange, onFilter, permission]);
 
   const fetchData = async () => {
