@@ -24,14 +24,15 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Checkbox
+  Checkbox,
+  Stack
 } from '@mui/material';
 
 import moment from 'moment-timezone';
 
 import MainCard from 'components/MainCard';
 import PropTypes from 'prop-types';
-import { StepContent } from '../../../node_modules/@mui/material/index';
+// import { StepContent } from '../../../node_modules/@mui/material/index';
 import { PrinterOutlined, RollbackOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 
 import CopyLinkButton from 'components/CopyLinkButton';
@@ -41,14 +42,15 @@ const KeyCode = process.env.REACT_APP_CODE_URL;
 // Get api queuesRequest
 import * as queueRequest from '_api/queueReques'
 import * as reserveRequest from '_api/reserveRequest';
+import QueueNow from './QueueNow';
 const apiUrl = process.env.REACT_APP_API_URL;
 const steps = ['ชั่งเบา', 'ขึ้นสินค้า', 'ชั่งหนัก', 'เสร็จสิ้น'];
 const userId = localStorage.getItem('user_id');
 
 // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
-const padZero = (num) => {
-  return num < 10 ? `0${num}` : num;
-};
+// const padZero = (num) => {
+//   return num < 10 ? `0${num}` : num;
+// };
 
 function QueueDetail({ sx }) {
   const pageId = 6;
@@ -112,7 +114,7 @@ function QueueDetail({ sx }) {
 
   const [queue_token, setQueueToken] = useState('');
   const [queues, setQueues] = useState([]);
-  const [queueNumber, setQueueNumber] = useState([]);
+  // const [queueNumber, setQueueNumber] = useState([]);
 
   function getDateFormat(end_time) {
     // แปลงวันที่จาก row.end_time เป็น moment object และกำหนดโซนเวลาเป็น 'Asia/Bangkok'
@@ -145,7 +147,7 @@ function QueueDetail({ sx }) {
             // if (getDateFormat(result[0]['queue_date']) === moment(new Date()).format('DD/MM/YYYY')) {
             setQueueToken(result[0]['token']);
             setQueues(result[0]);
-            setQueueNumber(result[0]['queue_number']);
+            // setQueueNumber(result[0]['queue_number']);
             getOrder(result[0].reserve_id);
             setLoading(false);
           } else {
@@ -549,7 +551,7 @@ function QueueDetail({ sx }) {
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Typography variant="body">
-                    <strong>ชื่อผู้ขับ :</strong> {queues.driver_name}{' '}
+                    <strong>ชื่อผู้ขับ :</strong> {' '}{queues.driver_name}
                   </Typography>
                 </Grid>
 
@@ -634,18 +636,20 @@ function QueueDetail({ sx }) {
                     {isMobile ? (
                       <Grid container>
                         <Grid item xs={6}>
-                          <Typography variant="h5">
-                            คิวที่ : <span style={{ color: 'red' }}> {padZero(queueNumber)}</span>
-                          </Typography>
-                          <Typography variant="h5">
-                            หมายเลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>
-                          </Typography>
+                          <Typography variant="h4">หมายเลขคิว : <span style={{ color: 'red' }}>{queue_token}</span></Typography>
+                          {userId && (
+                            <Typography variant="h4">
+                              เลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>
+                            </Typography>
+                          )}
                         </Grid>
                         <Grid item xs={6} align="right">
-                          <Typography variant="h5">หมายเลขคิว : {queue_token}</Typography>
+                          {(queues.step2_status === "waiting" || queues.step2_status === "none") && (
+                            <QueueNow productComId={queues.product_company_id} />
+                          )}
                         </Grid>
                         <Grid item xs={12} align="right">
-                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 1 }} />
+                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 2 }} />
                         </Grid>
 
                         <VerticalStepper
@@ -662,14 +666,17 @@ function QueueDetail({ sx }) {
                     ) : (
                       <div>
                         <Grid item xs={12}>
-                          <Typography variant="h4">
-                            {' '}
-                            คิวที่ : <span style={{ color: 'red' }}> {padZero(queueNumber)}</span>
-                            {/* <span style={{ color: 'red' }}>{queueNumber}</span> */}
-                          </Typography>
-                          <Typography variant="h5">
-                            หมายเลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>
-                          </Typography>
+                          <Stack justifyContent="space-between" flexDirection="row">
+                            <Typography variant="h4">
+                              หมายเลขคิว : {' '} <span style={{ color: 'red' }}> {queue_token}</span>{'  '}
+
+                              (เลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>)
+                              {/* <span style={{ color: 'red' }}>{queueNumber}</span> */}
+                            </Typography>
+                            {(queues.step2_status === "waiting" || queues.step2_status === "none") && (
+                              <QueueNow productComId={queues.product_company_id} />
+                            )}
+                          </Stack>
                           <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                         </Grid>
 
@@ -740,15 +747,167 @@ function QueueDetail({ sx }) {
     </>
   );
 }
-const VerticalStepper = ({ activeStep, steps, queue_token, queues, orders, totalItem, stepDetail, stepId }) => (
-  <div>
-    <Stepper activeStep={activeStep} orientation="vertical">
-      {steps.map((label, index) => (
-        <Step key={index}>
-          <StepLabel>
-            <Typography variant="h5">{label}</Typography>
-          </StepLabel>
-          <StepContent>
+const VerticalStepper = ({ activeStep, steps, queue_token, queues, orders, totalItem, stepDetail, stepId }) => {
+
+  // ==============================|| ORDER TABLE - STATUS ||============================== //
+  const QueueStatus = ({ status, id }) => {
+    const statusText = [
+      {
+        id: 0,
+        detail: [
+          {
+            color: 'error',
+            status: 'pending',
+            title: 'รอคำสั่งซื้อ'
+          },
+          {
+            color: 'secondary',
+            status: 'waiting',
+            title: 'รอเรียกชั่งเบา'
+          },
+          {
+            color: 'warning',
+            status: 'processing',
+            title: 'กำลังชั่งเบา'
+          },
+          {
+            color: 'success',
+            status: 'completed',
+            title: 'สำเร็จ'
+          },
+          {
+            color: 'error',
+            status: 'cancle',
+            title: 'ยกเลิกคิว'
+          },
+          {
+            color: 'secondary',
+            status: 'none',
+            title: 'รอเรียกชั่งเบา'
+          }
+        ]
+      },
+      {
+        id: 1,
+        detail: [
+          {
+            color: 'error',
+            status: 'pending',
+            title: 'รอคำสั่งซื้อ'
+          },
+          {
+            color: 'secondary',
+            status: 'waiting',
+            title: 'รอเรียกขึ้นสินค้า'
+          },
+          {
+            color: 'warning',
+            status: 'processing',
+            title: 'กำลังขึ้นสินค้า'
+          },
+          {
+            color: 'success',
+            status: 'completed',
+            title: 'สำเร็จ'
+          },
+          {
+            color: 'secondary',
+            status: 'none',
+            title: 'รอเรียกขึ้นสินค้า'
+          }
+        ]
+      },
+      {
+        id: 2,
+        detail: [
+          {
+            color: 'error',
+            status: 'pending',
+            title: 'รอคำสั่งซื้อ'
+          },
+          {
+            color: 'secondary',
+            status: 'waiting',
+            title: 'รอเรียกชั่งหนัก'
+          },
+          {
+            color: 'warning',
+            status: 'processing',
+            title: 'กำลังชั่งหนัก'
+          },
+          {
+            color: 'success',
+            status: 'completed',
+            title: 'สำเร็จ'
+          },
+          {
+            color: 'secondary',
+            status: 'none',
+            title: 'รอเรียกชั่งหนัก'
+          }
+        ]
+      },
+      {
+        id: 3,
+        detail: [
+          {
+            color: 'error',
+            status: 'pending',
+            title: 'รอคำสั่งซื้อ'
+          },
+          {
+            color: 'secondary',
+            status: 'waiting',
+            title: 'รอออกจากโรงงาน'
+          },
+          {
+            color: 'warning',
+            status: 'processing',
+            title: 'กำลังออกจากโรงงาน'
+          },
+          {
+            color: 'success',
+            status: 'completed',
+            title: 'สำเร็จ'
+          },
+          {
+            color: 'secondary',
+            status: 'none',
+            title: 'รอออกจากโรงงาน'
+          }
+        ]
+      }
+    ];
+
+    const queueTxt = statusText[id].detail.find((x) => x.status == status);
+
+    return <Chip color={queueTxt.color} label={queueTxt.title} sx={{ fontSize: '18px!important', p: '10px', mb: 2, mt: 2 }} />;
+  };
+
+  return (
+    <div>
+      <Grid item xs={12} md={6}>
+        {stepDetail.map(
+          (item, index) =>
+            index === stepId && (
+              <Typography key={index} variant="h4" sx={{ pl: { xs: 1, lg: '20%' } }}>
+                <strong style={{ color: '#555555' }}>สถานะ : </strong>
+                {stepId === 0 && parseFloat(queues.total_quantity) == 0 ? (
+                  <QueueStatus id={`${stepId}`} status={'pending'} />
+                ) : (
+                  <QueueStatus id={`${stepId}`} status={item.status} />
+                )}
+              </Typography>
+            )
+        )}
+      </Grid>
+      <Stepper activeStep={activeStep} orientation="vertical">
+        {steps.map((label, index) => (
+          <Step key={index}>
+            <StepLabel>
+              <Typography variant="h5">{label}</Typography>
+            </StepLabel>
+            {/* <StepContent>
             {activeStep < 3 && (
               <QueueDetails
                 queue_token={queue_token}
@@ -759,11 +918,11 @@ const VerticalStepper = ({ activeStep, steps, queue_token, queues, orders, total
                 stepId={stepId}
               />
             )}
-          </StepContent>
-        </Step>
-      ))}
-    </Stepper>
-    {activeStep >= 3 && (
+          </StepContent> */}
+          </Step>
+        ))}
+      </Stepper>
+      {/* {activeStep >= 3 && ( */}
       <QueueDetails
         queue_token={queue_token}
         queues={queues}
@@ -772,9 +931,11 @@ const VerticalStepper = ({ activeStep, steps, queue_token, queues, orders, total
         stepDetail={stepDetail}
         stepId={stepId}
       />
-    )}
-  </div>
-);
+      {/* )} */}
+    </div>
+  )
+
+};
 
 const HorizontalStepper = ({ activeStep, steps, queue_token, queues, orders, totalItem, stepDetail, stepId }) => (
   <div>
@@ -805,7 +966,7 @@ const HorizontalStepper = ({ activeStep, steps, queue_token, queues, orders, tot
   </div>
 );
 
-const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, stepId }) => {
+const QueueDetails = ({ queues, orders, totalItem, stepDetail, stepId }) => {
   const isMobile = useMediaQuery('(max-width:600px)');
 
   // ==============================|| ORDER TABLE - STATUS ||============================== //
@@ -974,60 +1135,88 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
   }
   return (
     <Grid container spacing={2} sx={{ p: '0 3%' }}>
-      {!isMobile && (
-        <Grid item xs={12} md={6}>
-          <Typography variant="h5">
-            <strong>หมายเลขคิว :</strong> {queue_token}
+      <Grid item xs={12}>
+        <Grid item xs={12} sx={{ mt: 2 }}>
+          <Typography variant="h4">
+            <strong>ข้อมูลการรับสินค้า:</strong>
           </Typography>
         </Grid>
-      )}
-
-      {isMobile && (
-        <Grid item xs={12} sx={{ mt: 2, mb: 0 }}>
-          <Typography variant="h5">
-            <strong>ข้อมูลผู้ขับขี่:</strong>
-          </Typography>
-        </Grid>
-      )}
-      <Grid item xs={12} md={6}>
-        {stepDetail.map(
-          (item, index) =>
-            index === stepId && (
-              <Typography key={index} variant="h5" sx={{ pl: { xs: 1, lg: '20%' } }}>
-                <strong>สถานะ : </strong>
-                {stepId === 0 && parseFloat(queues.total_quantity) == 0 ? (
-                  <QueueStatus id={`${stepId}`} status={'pending'} />
-                ) : (
-                  <QueueStatus id={`${stepId}`} status={item.status} />
-                )}
+        <Grid item xs={12} sx={{ mt: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h4" sx={{ pl: 1 }}>
+                <strong>โกดัง :  <span style={{ color: 'red' }}>{queues.warehouse_name || '-'}</span></strong>
               </Typography>
-            )
-        )}
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h4" sx={{ pl: { xs: 1, lg: '20%' } }}>
+                <strong>หัวจ่าย :  <span style={{ color: 'red' }}>{queues.station_description || '-'}</span></strong>
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h4" sx={{ pl: 1 }}>
+                <strong>น้ำหนักก่อนรับสินค้า :</strong> <span style={{ color: 'red' }}>{queues.weight1 && queues.weight1 !== null ? parseFloat(queues.weight1) + ' ตัน' : '-'}</span>
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h4" sx={{ pl: { xs: 1, lg: '20%' } }}>
+                <strong>น้ำหนักหลังรับสินค้า :</strong>  <span style={{ color: 'red' }}>{queues.weight2 && queues.weight2 !== null ? parseFloat(queues.weight2) + ' ตัน' : '-'}</span>
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Divider sx={{ mb: { xs: 1, sm: 2 }, mt: 2 }} />
+            </Grid>
+          </Grid>
+        </Grid>
       </Grid>
+      {/* {isMobile && (
+        <Grid item xs={12} sx={{ mt: 2, mb: 0 }}>
+          <Typography variant="h4">
+            <strong>ข้อมูลผู้ขับขี่:</strong>{queues.driver_name}
+          </Typography>
+        </Grid>
+      )} */}
       <Grid item xs={12} md={6}>
-        <Typography variant="body">
-          <strong>ชื่อผู้ขับ :</strong> {queues.driver_name}{' '}
+        <Typography variant="h4" sx={{ pl: 1 }}>
+          <strong style={{ color: '#555555' }}>ข้อมูลผู้ขับขี่:</strong>{' '}{queues.driver_name}
         </Typography>
       </Grid>
 
       <Grid item xs={12} md={6}>
-        <Typography variant="body" sx={{ pl: { xs: 1, lg: '20%' } }}>
-          <strong>ทะเบียนรถ :</strong> {queues.registration_no}{' '}
+        <Typography variant="h4" sx={{ pl: { xs: 1, lg: '20%' } }}>
+          <strong style={{ color: '#555555' }}>ทะเบียนรถ :</strong> {queues.registration_no}{' '}
         </Typography>
       </Grid>
 
-      <Grid item xs={12} md={6}>
-        <Typography variant="body">
+      {/* <Grid item xs={12} md={6}>
+        <Typography variant="h4">
           <strong>เลขที่ใบขับขี่ :</strong> {queues.license_no}{' '}
         </Typography>
-      </Grid>
+      </Grid> */}
 
       <Grid item xs={12} md={6}>
-        <Typography variant="body" sx={{ pl: { xs: 1, lg: '20%' } }}>
-          <strong>จำนวนสินค้า :</strong> {totalItem} ตัน
+        <Typography variant="h4" sx={{ pl: 1 }}>
+          <strong style={{ color: '#555555' }}>จำนวนสินค้า :</strong> {totalItem} ตัน
         </Typography>
       </Grid>
 
+      {stepDetail && !isMobile &&
+        <Grid item xs={12} md={6}>
+          {stepDetail.map(
+            (item, index) =>
+              index === stepId && (
+                <Typography key={index} variant="h4" sx={{ pl: { xs: 1, lg: '20%' } }}>
+                  <strong style={{ color: '#555555' }}>สถานะ : </strong>
+                  {stepId === 0 && parseFloat(queues.total_quantity) == 0 ? (
+                    <QueueStatus id={`${stepId}`} status={'pending'} />
+                  ) : (
+                    <QueueStatus id={`${stepId}`} status={item.status} />
+                  )}
+                </Typography>
+              )
+          )}
+        </Grid>
+      }
       {userId && (
         <>
           <Grid item xs={12} sx={{ mt: 1 }}>
@@ -1043,36 +1232,36 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
                 <Grid item xs={12} sx={{ ml: 2, mr: 2 }}>
                   {/* {order.items.map((item) => ( */}
                   <Grid item xs={12} key={item} sx={{ mb: 2 }}>
-                    <Grid container spacing={2} sx={{ mb: '15px' }}>
-                      <Grid item xs={12} md={6}>
-                        <Typography variant="body1">
-                          <strong>เลขที่คำสั่งซื้อ : </strong> {order.ref_order_id}
+                    <Grid container spacing={2} columnSpacing={0} sx={{ mb: '15px' }}>
+                      <Grid item xs={12} md={6} sx={{ pf: 0 }}>
+                        <Typography variant="body1" sx={{ fontSize: '18px' }}>
+                          เลขที่คำสั่งซื้อ : <strong>{order.ref_order_id}</strong>
                         </Typography>
                       </Grid>
                       <Grid item xs={12} md={6} >
-                        <Typography variant="body1" sx={{ pl: { xs: 1, lg: '20%' } }}>
-                          <strong>วันที่สั่งซื้อสินค้า : </strong> {moment(order.order_date).format('DD/MM/YYYY')}
+                        <Typography variant="body1" sx={{ fontSize: '18px', pl: { xs: 1, lg: '20%' } }}>
+                          วันที่สั่งซื้อสินค้า : <strong>{moment(order.order_date).format('DD/MM/YYYY')}</strong>
                         </Typography>
                       </Grid>
                       <Grid item xs={12} md={6}>
-                        <Typography variant="body1">
-                          <strong>บริษัท(สินค้า) : </strong> {productCompany.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}
+                        <Typography variant="body1" sx={{ fontSize: '18px' }}>
+                          บริษัท(สินค้า) : <strong> {productCompany.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}</strong>
                         </Typography>
                       </Grid>
                       <Grid item xs={12} md={6}>
-                        <Typography variant="body1" sx={{ pl: { xs: 1, lg: '20%' } }}>
-                          <strong>ตราสินค้า : </strong>  {productBrandList.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}
+                        <Typography variant="body1" sx={{ fontSize: '18px', pl: { xs: 1, lg: '20%' } }}>
+                          ตราสินค้า : <strong>  {productBrandList.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}</strong>
                         </Typography>
                       </Grid>
                       <Grid item xs={12} md={6}>
-                        <Typography variant="body1" >
-                          <strong>ยอดจ่าย : </strong> {parseFloat(order.total_amount)} ตัน
+                        <Typography variant="body1" sx={{ fontSize: '18px' }}>
+                          ยอดจ่าย : <strong> {parseFloat(order.total_amount)} ตัน</strong>
                         </Typography>
                       </Grid>
                     </Grid>
                     <Grid item xs={12} md={12}>
-                      <Typography variant="body1">
-                        <strong>รายละเอียด : </strong> {order.description}
+                      <Typography variant="body1" sx={{ fontSize: '18px' }}>
+                        รายละเอียด :  <strong> {order.description}</strong>
                       </Typography>
                     </Grid>
                     <Grid item xs={12} md={9}>
@@ -1118,39 +1307,6 @@ const QueueDetails = ({ queue_token, queues, orders, totalItem, stepDetail, step
           </Grid>
         </>
       )}
-      <Grid item xs={12}>
-        <Grid item xs={12}>
-          <Divider sx={{ mb: { xs: 1, sm: 2 } }} />
-          <Typography variant="h5">
-            <strong>ข้อมูลการรับสินค้า:</strong>
-          </Typography>
-        </Grid>
-        <Grid item xs={12} sx={{ mt: 2 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="body" sx={{ pl: 1 }}>
-                <strong>น้ำหนักก่อนรับสินค้า :</strong> {queues.weight1 && queues.weight1 !== null ? parseFloat(queues.weight1) + ' ตัน' : '-'}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="body" sx={{ pl: { xs: 1, lg: '20%' } }}>
-                <strong>น้ำหนักหลังรับสินค้า :</strong> {queues.weight2 && queues.weight2 !== null ? parseFloat(queues.weight2) + ' ตัน' : '-'}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="body" sx={{ pl: 1 }}>
-                <strong>โกดัง :</strong> {queues.warehouse_name || '-'}
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Typography variant="body" sx={{ pl: { xs: 1, lg: '20%' } }}>
-                <strong>หัวจ่าย :</strong> {queues.station_description || '-'}
-              </Typography>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
     </Grid >
   );
 };

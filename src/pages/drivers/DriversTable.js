@@ -35,15 +35,15 @@ function DriverTable({ permission }) {
 
   useEffect(() => {
     getDrivers();
-  }, [permission]);
+  }, [permission, userId]);
 
   const getDrivers = () => {
     setLoading(true);
     try {
       let user_id = '';
-      if (permission !== "manage_everything") {
-        user_id = userId;
-      }
+      // if (permission !== "manage_everything") {
+      //   user_id = userId;
+      // }
       driverRequest.getAllDriver(user_id).then((response) => {
         setLoading(false);
         const newData = response.map((item, index) => {

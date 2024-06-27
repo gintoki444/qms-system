@@ -6,7 +6,7 @@ import * as getQueues from '_api/queueReques';
 
 import { StepTable } from 'pages/management/step1/Step1Table';
 
-import { Grid, Stack, Box, Typography, Badge, Alert } from '@mui/material';
+import { Grid, Stack, Box, Typography, Badge, Alert, Backdrop, CircularProgress } from '@mui/material';
 import MainCard from 'components/MainCard';
 
 // import PropTypes from 'prop-types';
@@ -16,13 +16,13 @@ import QueueTab from 'components/@extended/QueueTab';
 
 function Step1() {
   const pageId = 12;
-  const userRole = useSelector((state) => state.auth?.roles);
+  // const userRole = useSelector((state) => state.auth?.roles);
   const userPermission = useSelector((state) => state.auth?.user_permissions);
-
   const [pageDetail, setPageDetail] = useState([]);
-
   const [commonStatus, setCommonStatus] = useState('');
   const [companyList, setCompanyList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const handleStatusChange = (newStatus) => {
     // Change the common status and trigger a data reload in the other instance
     if (newStatus !== commonStatus) {
@@ -33,33 +33,72 @@ function Step1() {
       setCommonStatus('commonStatus');
     }
   };
-
   useEffect(() => {
     if (Object.keys(userPermission).length > 0) {
-      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
-      getProductCompany();
+      const filteredPermissions = userPermission.permission.filter((x) => x.page_id === pageId);
+      setPageDetail(filteredPermissions);
+      getProductCompany(filteredPermissions);
     }
+  }, [userPermission, pageId]);
 
+  useEffect(() => {
     const intervalId = setInterval(() => {
       waitingGet(companyList);
-    }, 5000); // Polling every 5 seconds
+    }, 120000); // Polling every 120 seconds
 
     return () => clearInterval(intervalId);
-  }, [commonStatus, userRole, userPermission, companyList]);
+  }, [companyList]);
 
-  const getProductCompany = () => {
-    stepRequest.getAllProductCompany().then((response) => {
-      if (response) {
-        waitingGet(response);
-      }
-    });
+  useEffect(() => {
+    if (commonStatus === 'waiting') {
+      waitingGet(companyList);
+    } else if (commonStatus === 'processing') {
+      waitingGet(companyList);
+    }
+  }, [commonStatus, companyList]);
+
+  const getProductCompany = (permissions) => {
+    if (permissions.length > 0) {
+      stepRequest.getAllProductCompany().then((response) => {
+        if (response) {
+          waitingGet(response);
+        }
+        setLoading(false);
+      }).catch(() => {
+        setLoading(false);
+      });
+    } else {
+      setLoading(false);
+    }
   };
+
+  // useEffect(() => {
+  //   if (Object.keys(userPermission).length > 0) {
+  //     setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+  //     getProductCompany();
+  //   }
+
+  //   const intervalId = setInterval(() => {
+  //     waitingGet(companyList);
+  //   }, 120000); // Polling every 5 seconds
+
+  //   return () => clearInterval(intervalId);
+  // }, [commonStatus, userRole, userPermission, companyList]);
+
+  // const getProductCompany = () => {
+  //   stepRequest.getAllProductCompany().then((response) => {
+  //     if (response) {
+  //       waitingGet(response);
+  //     }
+  //   });
+  // };
 
   const [items, setItems] = useState([]);
   const [countAllQueue, setCountAllQueue] = useState(0);
   const waitingGet = async (company) => {
     try {
       await getQueues.getStep1Waitting().then((response) => {
+        console.log('getStep1Waitting ', response);
         if (company.length > 0) {
           company.map((x) => {
             let countCompany = response.filter(
@@ -87,6 +126,14 @@ function Step1() {
   };
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
+      {loading && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={loading}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <Grid item xs={12} md={7} lg={8}>
         <Grid container alignItems="center" justifyContent="flex-end">
           <Grid item>

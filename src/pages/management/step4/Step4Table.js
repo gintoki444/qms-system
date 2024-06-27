@@ -199,7 +199,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
 
     const intervalId = setInterval(() => {
       fetchData();
-    }, 5000); // Polling every 5 seconds
+    }, 120000); // Polling every 5 seconds
 
     return () => clearInterval(intervalId);
   }, [status, onStatusChange, onFilter, permission]);
@@ -327,7 +327,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
 
 
         const txt_parent_has_cover = checked.some((x) => x.id === step_id && x.value === 'on') === true ? 'Y' : 'N';
-        const txt_trailer_has_cover = checked2.some((x) => x.id === step_id && x.vavbw2jmnlue === 'on') === true ? 'Y' : 'N';
+        const txt_trailer_has_cover = checked2.some((x) => x.id === step_id && x.value === 'on') === true ? 'Y' : 'N';
         setParentHasCover(txt_parent_has_cover);
         setTrailerHasCover(txt_trailer_has_cover);
 

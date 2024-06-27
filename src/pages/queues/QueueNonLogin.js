@@ -16,7 +16,7 @@ function QueueNonLogin() {
   return (
     <Grid container spacing={3}>
       <AuthBackground />
-      <Grid item xs={12} sx={{ ml: 3, mt: { xs: 0, md: 2 }, pb: 2, background: '#fff' }} align={'center'}>
+      <Grid item xs={12} sx={{ ml: 3, mt: { xs: 0, md: 2 }, pb: 2, pt: { xs: '39px!important', md: 0 }, background: '#fff' }} align={'center'}>
         <Logo />
       </Grid>
       <Grid item xs={12}>

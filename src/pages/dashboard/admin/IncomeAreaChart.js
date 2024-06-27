@@ -8,7 +8,7 @@ import { useTheme } from '@mui/material/styles';
 
 // third-party
 import ReactApexChart from 'react-apexcharts';
-import moment from 'moment';
+// import moment from 'moment';
 
 // chart options
 const areaChartOptions = {
@@ -33,7 +33,7 @@ const areaChartOptions = {
 
 // ==============================|| INCOME AREA CHART ||============================== //
 
-const IncomeAreaChart = () => {
+const IncomeAreaChart = ({ startDate, endDate }) => {
   const theme = useTheme();
 
   const { primary, secondary } = theme.palette.text;
@@ -42,7 +42,7 @@ const IncomeAreaChart = () => {
   const [options, setOptions] = useState(areaChartOptions);
   const [series, setSeries] = useState([]);
   const [rawdata, setRawData] = useState([]);
-  const currentDate = moment(new Date()).format('YYYY-MM-DD');
+  // const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
   useEffect(() => {
     setOptions((prevState) => ({
@@ -83,13 +83,13 @@ const IncomeAreaChart = () => {
     fetchData();
     const intervalId = setInterval(fetchData, 60000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิdลลิวินาที)
     return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
-  }, []);
+  }, [startDate, endDate]);
 
   const fetchData = async () => {
     getDataChart();
   };
   const getDataChart = async () => {
-    await reportRequest.getDataChart(currentDate).then((respronse) => {
+    await reportRequest.getDataChart(startDate, endDate).then((respronse) => {
       setRawData(respronse);
       setSeries([
         {

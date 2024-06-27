@@ -493,7 +493,7 @@ function ManageTeam({ teamId, onHandleChange, permission }) {
                 <Grid item xs={12} sm={6} md={4}>
                   <MainCard boxShadow={true} contentSX={{ p: 0 }}>
                     <MUIDataTable
-                      title={<Typography variant="h5">ข้อมูลพนักงานจ่ายสินค้า</Typography>}
+                      title={<Typography variant="h5">ข้อมูลพนักงานโฟล์คลิฟท์</Typography>}
                       data={allForklift}
                       columns={forkliftColumns}
                       options={forkliftOptions}

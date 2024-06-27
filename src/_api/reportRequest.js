@@ -25,13 +25,35 @@ export const getOrdersProduct = async (startDate, endDate) => {
   return result;
 };
 
-// ==============================|| รายงานจำนวน QTY ||============================== //
-export const getDataChart = async (date) => {
+export const getOrdersProductByOrder = async (startDate, endDate) => {
   const requestOptions = {
     method: 'GET',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + '/queuechart?start_date=' + date + '&end_date=' + date, requestOptions);
+  // const response = await fetch(apiUrl + '/ordersproducts?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
+  const response = await fetch(apiUrl + '/ordersproducts4/orders?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+export const getOrdersProductItems = async (proId, proReId, date) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  // const response = await fetch(apiUrl + '/ordersproducts?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
+  const response = await fetch(apiUrl + '/ordersproducts4/items?queue_date=' + date + '&product_id=' + proId + '&product_register_id=' + proReId, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// ==============================|| รายงานจำนวน QTY ||============================== //
+export const getDataChart = async (startDate, endDate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/queuechart?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
   const result = await response.json();
   return result;
 };
@@ -60,12 +82,12 @@ export const getQueuesAverageTime = async (date) => {
 };
 
 // ==============================|| รายงานจำนวนคิวประจำวัน ||============================== //
-export const getQueuesCounts = async (date) => {
+export const getQueuesCounts = async (startDate, endDate) => {
   const requestOptions = {
     method: 'GET',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + '/queues/count?start_date=' + date + '&end_date=' + date, requestOptions);
+  const response = await fetch(apiUrl + '/queues/count?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
   const result = await response.json();
   return result;
 };

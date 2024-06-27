@@ -84,7 +84,7 @@ const Navigation = () => {
           const updateData = [...prevList];
 
           if (updateData.length === 0) {
-            response.map((x) => {
+            response.length > 0 && response.map((x) => {
               let data = {
                 id: x.group_name + x.group_id,
                 title: x.group_id === 1 ? '' : x.group_name,

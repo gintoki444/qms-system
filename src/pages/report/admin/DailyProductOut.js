@@ -14,10 +14,10 @@ import moment from 'moment';
 import { SearchOutlined, FileExcelOutlined } from '@ant-design/icons';
 
 import * as stepRequest from '_api/StepRequest';
-import * as reportRequest from '_api/reportRequest';
 
 import QueueTab from 'components/@extended/QueueTab';
-import OrderTable from 'pages/dashboard/admin/OrdersTable';
+// import OrderTable from 'pages/dashboard/admin/OrdersTable';
+import DailyProductOutTable from './DailyProductOutTable';
 
 const DailyProductOut = () => {
   const pageId = 25;
@@ -69,22 +69,14 @@ const DailyProductOut = () => {
   }, [userRole, userPermission]);
 
   const [companyList, setCompanyList] = useState([]);
-  const getProductCompany = () => {
-    stepRequest.getAllProductCompany().then((response) => {
-      setCompanyList(response);
-      waitingGet(response);
-    });
-  };
-
-  const [items, setItems] = useState([]);
-  const [countAllQueue, setCountAllQueue] = useState(0);
-  const [itemList, setItemList] = useState([]);
-  const waitingGet = async (company) => {
-    try {
-      await reportRequest.getOrdersProduct(selectedDate1, selectedDate2).then((response) => {
-        if (company.length > 0) {
-          company.map((x) => {
-            let countCompany = response.filter((i) => i.product_company_id == x.product_company_id).length;
+  const getProductCompany = (dataList) => {
+    if (dataList) {
+      stepRequest.getAllProductCompany().then((response) => {
+        if (response.length > 0) {
+          response.map((x) => {
+            let countCompany = dataList.filter(
+              (i) => i.product_company_id == x.product_company_id
+            ).length;
 
             setItems((prevState) => ({
               ...prevState,
@@ -93,19 +85,47 @@ const DailyProductOut = () => {
           });
         }
 
-        setCountAllQueue(response.length);
-        setItemList(response);
+        setCompanyList(response);
+        setCountAllQueue(dataList.length);
+        // waitingGet(response);
       });
-    } catch (e) {
-      console.log(e);
     }
   };
+
+  const [items, setItems] = useState([]);
+  const [countAllQueue, setCountAllQueue] = useState(0);
+  const [itemList, setItemList] = useState([]);
+  // const waitingGet = async (company) => {
+  //   try {
+  //     await reportRequest.getOrdersProduct(selectedDate1, selectedDate2).then((response) => {
+  //       if (company.length > 0) {
+  //         company.map((x) => {
+  //           let countCompany = response.filter((i) => i.product_company_id == x.product_company_id).length;
+
+  //           setItems((prevState) => ({
+  //             ...prevState,
+  //             [x.product_company_id]: countCompany
+  //           }));
+  //         });
+  //       }
+
+  //       setCountAllQueue(response.length);
+  //       setItemList(response);
+  //     });
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
 
   const [valueFilter, setValueFilter] = useState('');
   const handleChange = (newValue) => {
     setValueFilter(newValue);
   };
 
+  const handleQueueData = (data) => {
+    setItemList(data);
+    getProductCompany(data);
+  }
   // const handleExport = (data, filter) => {
   //   if (filter !== '') {
   //     data = data.filter((x) => x.product_company_id === filter);
@@ -135,9 +155,9 @@ const DailyProductOut = () => {
                   name="pickup_date"
                   value={selectedDate1}
                   onChange={handleDateChange1}
-                  // inputProps={{
-                  //   min: currentDate
-                  // }}
+                // inputProps={{
+                //   min: currentDate
+                // }}
                 />
               </Stack>
             </Grid>
@@ -151,9 +171,9 @@ const DailyProductOut = () => {
                   name="pickup_date"
                   value={selectedDate2}
                   onChange={handleDateChange2}
-                  // inputProps={{
-                  //   min: currentDate
-                  // }}
+                // inputProps={{
+                //   min: currentDate
+                // }}
                 />
               </Stack>
             </Grid>
@@ -183,7 +203,7 @@ const DailyProductOut = () => {
                   numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                   txtLabel={company.product_company_name_th2}
                   onSelect={() => handleChange(company.product_company_id)}
-                  // {...a11yProps(company.product_company_id)}
+                // {...a11yProps(company.product_company_id)}
                 />
               ))}
           </Tabs>
@@ -216,7 +236,7 @@ const DailyProductOut = () => {
                       variant="contained"
                       sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }}
                       onClick={onDownload}
-                      // onClick={() => handleExport(itemList, valueFilter)}
+                    // onClick={() => handleExport(itemList, valueFilter)}
                     >
                       <FileExcelOutlined />
                     </Button>
@@ -225,11 +245,12 @@ const DailyProductOut = () => {
               >
                 <Divider></Divider>
                 <Box sx={{ pt: 1 }}>
-                  <OrderTable
+                  <DailyProductOutTable
                     startDate={selectedDateRange.startDate}
                     endDate={selectedDateRange.endDate}
                     onFilter={valueFilter}
                     clickDownload={tableRef}
+                    dataList={handleQueueData}
                   />
                 </Box>
               </MainCard>

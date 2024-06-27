@@ -193,7 +193,7 @@ QueueStatus.propTypes = {
   status: PropTypes.string
 };
 
-function Step0Table({ startDate, endDate, onFilter, permission }) {
+function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const userRoles = useSelector((state) => state.auth.roles);
@@ -206,21 +206,19 @@ function Step0Table({ startDate, endDate, onFilter, permission }) {
       getQueue();
     }
 
-    const intervalId = setInterval(() => {
-      getQueue();
-    }, 5000); // Polling every 5 seconds
+    // const intervalId = setInterval(() => {
+    //   getQueue();
+    // }, 60000); // Polling every 5 seconds
 
-    return () => clearInterval(intervalId);
+    // return () => clearInterval(intervalId);
   }, [userId, userRoles, startDate, endDate, onFilter, permission]);
 
   const getQueue = () => {
     try {
       stepRequest.getAllStep0ByDate(startDate, endDate).then((response) => {
-        if (onFilter == 0) {
-          setItems(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed" && x.step2_status !== "cancle"));
-        } else {
-          setItems(response.filter((x) => x.product_company_id == onFilter && x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed" && x.step2_status !== "cancle") || []);
-        }
+        setItems(response.filter((x) => x.product_company_id == (onFilter + 1) && x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed" && x.step2_status !== "cancle") || []);
+
+        step0List(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed" && x.step2_status !== "cancle") || []);
         setLoading(false);
       });
     } catch (e) {

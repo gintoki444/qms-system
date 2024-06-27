@@ -33,16 +33,16 @@ const headCells = [
     label: 'ลำดับ'
   },
   {
-    id: 'queue',
-    align: 'center',
-    disablePadding: true,
-    label: 'คิวที่'
-  },
-  {
     id: 'queueNum',
     align: 'left',
     disablePadding: true,
     label: 'หมายเลขคิว'
+  },
+  {
+    id: 'queue',
+    align: 'center',
+    disablePadding: true,
+    label: 'คิวเดิม'
   },
   {
     id: 'timeIn',
@@ -118,7 +118,7 @@ OrderTableHead.propTypes = {
   orderBy: PropTypes.string
 };
 
-export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }) {
+export default function CarsTimeInOutTable({ startDate, endDate, clickDownload, dataList, onFilter }) {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [loading, setLoading] = useState(true);
@@ -127,17 +127,15 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }
   // const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
 
   // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
-  const padZero = (num) => {
-    return num < 10 ? `0${num}` : num;
-  };
+  // const padZero = (num) => {
+  //   return num < 10 ? `0${num}` : num;
+  // };
   useEffect(() => {
     fetchData();
-    console.log('clickDownload', clickDownload);
-
     // const intervalId = setInterval(fetchData, 6000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิลลิวินาที)
 
     // return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
-  }, [startDate, endDate]);
+  }, [startDate, endDate, onFilter]);
 
   const [items, setItems] = useState([]);
 
@@ -154,8 +152,18 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }
     fetch(apiUrl + '/carstimeinout?start_date=' + startDate + '&end_date=' + endDate, requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        setItems(result);
-        setLoading(false);
+        console.log('onFilter ', onFilter)
+        if (onFilter !== 0) {
+          setItems(result.filter((x) => x.product_company_id === onFilter));
+          dataList(result)
+          setLoading(false);
+        } else {
+          console.log('result ', result);
+          setItems(result);
+          dataList(result)
+          setLoading(false);
+        }
+
       })
       .catch((error) => console.error(error));
   };
@@ -195,8 +203,8 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }
                 items.map((row, index) => (
                   <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                     <TableCell align="center">{index + 1}</TableCell>
-                    <TableCell align="center">{padZero(row.queue_number)}</TableCell>
                     <TableCell align="center">{row.token}</TableCell>
+                    <TableCell align="center">{row.reserve_description ? row.reserve_description : '-'}</TableCell>
                     <TableCell align="left">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
                         {/* {row.start_time ? row.start_time.slice(11, 19) : '-'} */}
@@ -216,31 +224,31 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload }
                     <TableCell align="left">{row.driver_name}</TableCell>
                     <TableCell align="center">
                       {row.parent_has_cover == 'Y' ? (
-                        <Typography sx={{ fontSize: 24, color: 'green' }}>
+                        <Typography sx={{ fontSize: 18, color: 'green' }}>
                           <CheckCircleOutlined color="success" />
-                          <span style={{ fontSize: 16, color: 'green', display: 'none', textAlign: 'center' }}>
+                          <span style={{ fontSize: 14, color: 'green', display: 'none', textAlign: 'center' }}>
                             {row.trailer_has_cover}
                           </span>
                         </Typography>
                       ) : (
-                        <Typography sx={{ fontSize: 24, color: 'red' }}>
+                        <Typography sx={{ fontSize: 18, color: 'red' }}>
                           <CloseCircleOutlined />
-                          <span style={{ fontSize: 16, color: 'red', display: 'none', textAlign: 'center' }}>N</span>
+                          <span style={{ fontSize: 14, color: 'red', display: 'none', textAlign: 'center' }}>N</span>
                         </Typography>
                       )}
                     </TableCell>
                     <TableCell align="center">
                       {row.trailer_has_cover == 'Y' ? (
-                        <Typography sx={{ fontSize: 24, color: 'green' }}>
+                        <Typography sx={{ fontSize: 18, color: 'green' }}>
                           <CheckCircleOutlined color="success" />
-                          <span style={{ fontSize: 16, color: 'green', display: 'none', textAlign: 'center' }}>
+                          <span style={{ fontSize: 14, color: 'green', display: 'none', textAlign: 'center' }}>
                             {row.trailer_has_cover}
                           </span>
                         </Typography>
                       ) : (
-                        <Typography sx={{ fontSize: 24, color: 'red' }}>
+                        <Typography sx={{ fontSize: 18, color: 'red' }}>
                           <CloseCircleOutlined />
-                          <span style={{ fontSize: 16, color: 'red', display: 'none', textAlign: 'center' }}>N</span>
+                          <span style={{ fontSize: 14, color: 'red', display: 'none', textAlign: 'center' }}>N</span>
                         </Typography>
                       )}
                     </TableCell>

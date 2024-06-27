@@ -418,6 +418,11 @@ function AddReserve() {
                               top: 'calc(50% - 18px)'
                             }
                           }}
+                          renderOption={(props, option) => (
+                            <li {...props} key={option.company_id}>
+                              {option.name}
+                            </li>
+                          )}
                           renderInput={(params) => (
                             <TextField
                               {...params}
@@ -492,7 +497,16 @@ function AddReserve() {
                             เลือกบริษัท
                           </MenuItem>
                           {productCompany.map((companias) => (
-                            <MenuItem key={companias.product_company_id} value={companias.product_company_id}>
+                            <MenuItem key={companias.product_company_id}
+                              sx={
+                                (companias.product_company_id === 1 && {
+                                  backgroundColor: 'rgb(246 139 113 / 47%)'
+                                }) ||
+                                (companias.product_company_id === 2 && {
+                                  backgroundColor: '#1890ff59'
+                                })
+                              }
+                              value={companias.product_company_id}>
                               {companias.product_company_name_th}
                             </MenuItem>
                           ))}
@@ -543,7 +557,6 @@ function AddReserve() {
                       <InputLabel>รถบรรทุก *</InputLabel>
                       <FormControl fullWidth>
                         <Autocomplete
-                          // disablePortal
                           id="car-list"
                           options={carList}
                           onChange={(e, value) => {
@@ -553,16 +566,11 @@ function AddReserve() {
                           }}
                           // value={newCar.length > 0 ? newCar[0] : null}
                           value={values.car_id ? carList.find((x) => x.car_id === values.car_id) : null}
-                          filterOptions={(options, { inputValue }) => {
-                            if (!inputValue) {
-                              return options;
-                            }
-                            const filtered = options.filter(option =>
-                              option.registration_no.toLowerCase().includes(inputValue.toLowerCase())
-                            );
-                            return filtered;
-                          }}
-                          getOptionSelected={(option, value) => option.registration_no === value.registration_no}
+                          renderOption={(props, option) => (
+                            <li {...props} key={option.car_id}>
+                              {option.car_id !== 1 ? option.registration_no : 'ไม่ระบุรถบรรทุก'}
+                            </li>
+                          )}
 
                           getOptionLabel={(option) => {
                             if (option.car_id !== 1) {
@@ -618,6 +626,11 @@ function AddReserve() {
                             setFieldValue('driver_id', newValue);
                             setNewDriver([driverList.find((x) => x.driver_id === newValue)]);
                           }}
+                          renderOption={(props, option) => (
+                            <li {...props} key={option.driver_id}>
+                              {option.driver_id !== 1 ? option.firstname + ' ' + option.lastname : 'ไม่ระบุคนขับรถ'}
+                            </li>
+                          )}
                           getOptionLabel={(option) => {
                             if (option.driver_id !== 1) {
                               return option.firstname + ' ' + option.lastname;

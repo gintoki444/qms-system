@@ -190,16 +190,19 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
   const dispatch = useDispatch();
 
   useEffect(() => {
-    getStation();
+    // getStation();
     fetchData();
 
     const intervalId = setInterval(() => {
       fetchData();
-    }, 5000); // Polling every 5 seconds
+    }, 120000); // Polling every 5 seconds
 
     return () => clearInterval(intervalId);
   }, [status, onStatusChange, onFilter, permission]);
 
+  useEffect(() => {
+    getStation();
+  }, []);
   const fetchData = async () => {
     try {
       // Use different API functions based on the status
@@ -219,6 +222,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
   const waitingGet = async () => {
     try {
       await queueReques.getStep3Waitting().then((response) => {
+        console.log('waitingGet', response);
         if (onFilter == 0) {
           setItems(response);
         } else {
@@ -234,6 +238,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
   const processingGet = async () => {
     try {
       await queueReques.getStep3Processing().then((response) => {
+        console.log('processingGet', response);
         const step3 = response;
         queueReques.getStep1Processing().then((response) => {
           if (response.length > 0) {
@@ -691,7 +696,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
             alert('กรุณาใสน้ำหนักจากการชั่งหนัก');
             setLoading(false);
             return;
-          } else if (weight < parseFloat(reserves[0].total_quantity) + parseFloat(queuesDetial[0].weight1)) {
+          } else if (weight < parseFloat(parseFloat(reserves[0].total_quantity) + parseFloat(queuesDetial[0].weight1)).toFixed(2)) {
             alert('น้ำหนักจากการชั่งหนักต้องไม่น้อยกว่า น้ำหนักชั่งเบา + น้ำหนักสินค้า');
             setLoading(false);
             return;
@@ -825,9 +830,13 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
   };
 
   const [stations, setStations] = useState([]); // ใช้ state สำหรับการเก็บสถานีที่ถูกเลือกในแต่ละแถว
+  useEffect(() => {
+    getStation();
+  }, []);
   const getStation = () => {
     try {
       stepRequest.getAllStations().then((response) => {
+        console.log(response);
         if (response) {
           setStations(response.filter((x) => x.station_group_id == 4));
         }

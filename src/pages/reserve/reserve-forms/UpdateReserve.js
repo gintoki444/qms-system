@@ -357,8 +357,6 @@ function UpdateReserve() {
       values.brand_group_id = values.product_company_id;
       values.description = values.reserve_description;
 
-      console.log('put ', values)
-
       await reserveRequest
         .putReserById(id, values)
         .then((result) => {
@@ -741,8 +739,6 @@ function UpdateReserve() {
           newTran.transactions[1].status = 'completed'
         }
         var raw = JSON.stringify(newTran);
-        console.log('newTran :', newTran)
-        console.log('raw :', raw)
 
         // var raw = JSON.stringify({
         //   transactions: [
@@ -835,8 +831,7 @@ function UpdateReserve() {
       queue_remain: true
     };
     try {
-      reserveRequest.putQueueRemainByID(reserve_id, queueRemain).then((response) => {
-        console.log(response);
+      reserveRequest.putQueueRemainByID(reserve_id, queueRemain).then(() => {
         setLoading(false);
         setOnClickSubmit(false);
       });
@@ -967,6 +962,11 @@ function UpdateReserve() {
                                   const newValue = value ? value.company_id : '';
                                   setFieldValue('company_id', newValue);
                                 }}
+                                renderOption={(props, option) => (
+                                  <li {...props} key={option.company_id}>
+                                    {option.name}
+                                  </li>
+                                )}
                                 getOptionLabel={(option) => (option.name !== undefined ? option.name : '')}
                                 sx={{
                                   width: '100%',
@@ -1118,16 +1118,11 @@ function UpdateReserve() {
                                   const newValue = value ? value.car_id : '';
                                   setFieldValue('car_id', newValue);
                                 }}
-                                filterOptions={(options, { inputValue }) => {
-                                  if (!inputValue) {
-                                    return options;
-                                  }
-                                  const filtered = options.filter(option =>
-                                    option.registration_no.toLowerCase().includes(inputValue.toLowerCase())
-                                  );
-                                  return filtered;
-                                }}
-                                getOptionSelected={(option, value) => option.registration_no === value.registration_no}
+                                renderOption={(props, option) => (
+                                  <li {...props} key={option.car_id}>
+                                    {option.car_id !== 1 ? option.registration_no : 'ไม่ระบุรถบรรทุก'}
+                                  </li>
+                                )}
                                 getOptionLabel={(option) => {
                                   if (option.car_id !== undefined) {
                                     if (option.car_id !== 1) {
@@ -1165,7 +1160,8 @@ function UpdateReserve() {
                               </FormHelperText>
                             )}
                           </Stack>
-                          {reservationData.status !== 'completed' &&
+                          {
+                            // reservationData.status !== 'completed' &&
                             pageDetail.length > 0 &&
                             (pageDetail[0].permission_name === 'manage_everything' ||
                               pageDetail[0].permission_name === 'add_edit_delete_data') && (
@@ -1188,6 +1184,11 @@ function UpdateReserve() {
                                   const newValue = value ? value.driver_id : '';
                                   setFieldValue('driver_id', newValue);
                                 }}
+                                renderOption={(props, option) => (
+                                  <li {...props} key={option.driver_id}>
+                                    {option.driver_id !== 1 ? option.firstname + ' ' + option.lastname : 'ไม่ระบุคนขับรถ'}
+                                  </li>
+                                )}
                                 getOptionLabel={(option) => {
                                   if (option.driver_id !== 1 && option.driver_id !== undefined) {
                                     return option.firstname ? option.firstname + ' ' + option.lastname : '';
@@ -1221,7 +1222,8 @@ function UpdateReserve() {
                               </FormHelperText>
                             )}
                           </Stack>
-                          {reservationData.status !== 'completed' &&
+                          {
+                            // reservationData.status !== 'completed' &&
                             pageDetail.length > 0 &&
                             (pageDetail[0].permission_name === 'manage_everything' ||
                               pageDetail[0].permission_name === 'add_edit_delete_data') && (

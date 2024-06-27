@@ -3,6 +3,7 @@ import { lazy } from 'react';
 // project import
 import Loadable from 'components/Loadable';
 import MainLayout from 'layout/MainLayout';
+import ManageTeamNew from 'pages/admin/manageTeam/ManageTeamNew';
 
 // render - Admins
 const Users = Loadable(lazy(() => import('pages/User/Users')));
@@ -98,6 +99,11 @@ const AdminsRoutes = {
         {
           path: '',
           element: <ManageTeamLoading />
+          // element: <ManageTeamNew />
+        },
+        {
+          path: 'manage-page-own',
+          element: <ManageTeamNew />
         },
         {
           path: 'manage-page',
@@ -110,11 +116,11 @@ const AdminsRoutes = {
         {
           path: 'add',
           element: <AddManageTeam />
+        },
+        {
+          path: 'add/:id',
+          element: <AddManageTeam />
         }
-        // {
-        //   path: 'update/:id',
-        //   element: <UpdateUser />
-        // }
       ]
     },
     {

@@ -728,7 +728,7 @@ function ManageTeamLoading() {
                                 <ForkliftTableHead status="selected" />
                                 {!loading ? (
                                   <TableBody>
-                                    {select_forklift_items.map((row, index) => (
+                                    {select_forklift_items.length > 0 && select_forklift_items.map((row, index) => (
                                       <TableRow key={row.index}>
                                         <TableCell align="center">{index + 1}</TableCell>
                                         <TableCell align="left">{row.forklift_name}</TableCell>

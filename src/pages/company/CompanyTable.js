@@ -153,9 +153,9 @@ function CompanyTable({ permission }) {
   const getCompany = () => {
     setLoading(true);
     let user_id = '';
-    if (permission !== "manage_everything") {
-      user_id = userId;
-    }
+    // if (permission !== "manage_everything") {
+    //   user_id = userId;
+    // }
     companyRequest
       .getAllCompanyByuserId(user_id)
       .then((response) => {

@@ -74,8 +74,8 @@ const MainLayout = () => {
   const getPagePermission = (userRole) => {
     try {
       permissionsRequest.getPagesPermissionByRole(userRole).then((response) => {
-        response = response.filter((x) => x.permission_name !== 'no_access_to_view_data');
         if (response.length > 0) {
+          response = response.filter((x) => x.permission_name !== 'no_access_to_view_data');
           if (userRole === 11) {
             // const addnew = {
             //   page_id: 4,

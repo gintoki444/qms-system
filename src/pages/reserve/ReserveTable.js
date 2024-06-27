@@ -73,7 +73,7 @@ const headCells = [
     id: 'registration_no',
     align: 'center',
     disablePadding: true,
-    label: 'ทะเบียนรถ'
+    label: 'ทะเบียนรถ',
   },
   {
     id: 'brandCode',
@@ -85,7 +85,7 @@ const headCells = [
     id: 'description',
     align: 'left',
     disablePadding: true,
-    width: '12%',
+    width: '5%',
     label: 'รหัสคิวเดิม'
   },
   {
@@ -222,6 +222,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     }
 
     reserveRequest.getAllReserveByUrl(urlGet).then((response) => {
+      console.log('getReserve ', response)
       if (onFilter) {
         setItems(response.filter((x) => x.product_company_id === onFilter));
       } else {
@@ -829,7 +830,11 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
                         <Chip color={'primary'} label={moment(row.pickup_date.slice(0, 10)).format('DD/MM/YY')} sx={{ minWidth: 95 }} />
                       </TableCell>
                       <TableCell align="center">
-                        <Chip color={'primary'} label={row.registration_no} sx={{ width: 122, border: 1 }} />
+                        <Tooltip title={row.registration_no}>
+                          <span>
+                            <Chip color={'primary'} label={row.registration_no} sx={{ width: 140, border: 1 }} />
+                          </span>
+                        </Tooltip>
                       </TableCell>
                       <TableCell align="center">
                         {row.queue_token ? <QueueTag id={row.product_company_id} token={row.queue_token} /> : getTokenCompany(row.product_company_id)}

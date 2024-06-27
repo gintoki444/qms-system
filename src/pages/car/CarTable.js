@@ -68,9 +68,9 @@ function CarTable({ permission }) {
     setLoading(true);
     try {
       let user_id = '';
-      if (permission !== "manage_everything") {
-        user_id = userId;
-      }
+      // if (permission !== "manage_everything") {
+      //   user_id = userId;
+      // }
       carRequest.getAllCars(user_id).then((response) => {
         const newData = response.map((item, index) => {
           return {

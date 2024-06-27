@@ -143,21 +143,6 @@ function AddQueue() {
       .catch((err) => console.log(err));
   };
 
-  // =============== Get Brand ===============//
-  // const [brandList, setBrandList] = useState([]);
-  // const getBrandList = () => {
-  //   var requestOptions = {
-  //     method: 'GET',
-  //     redirect: 'follow'
-  //   };
-  //   fetch(apiUrl + '/allproductbrandgroup', requestOptions)
-  //     .then((response) => response.json())
-  //     .then((result) => {
-  //       setBrandList(result);
-  //     })
-  //     .catch((error) => console.log('error', error));
-  // };
-
   // =============== Get Product Company ===============//
   const [productCompany, setProductCompany] = useState([]);
   const getProductCompany = () => {
@@ -186,30 +171,6 @@ function AddQueue() {
     }
   };
 
-  // =============== Get Warehouses ===============//
-  // const [selectWarehouse, setSelectWareHouse] = useState('');
-  const [warehousesList, setWarehousesList] = useState([]);
-  const getWarehouses = async (selectId) => {
-    await adminRequest
-      .getAllWareHouse()
-      .then((result) => {
-        // console.log(
-        //   'result filter:',
-        //   result.filter((x) => x.warehouse_id == selectId)
-        // );
-
-        setWarehousesList(result.filter((x) => x.warehouse_id == selectId));
-      })
-      .catch((error) => console.log('error', error));
-  };
-
-  const handleChangeWarehouse = (e) => {
-    setTeamLoading([]);
-    setTeamLoadingList([]);
-    getStation(e.target.value);
-    getTeamloading(e.target.value);
-  };
-
   // =============== Get order ===============//
   const [orderList, setOrderList] = useState([]);
   const getOrders = async () => {
@@ -223,25 +184,44 @@ function AddQueue() {
       .catch((err) => console.log(err));
   };
 
+  // =============== Get Warehouses ===============//
+  // const [selectWarehouse, setSelectWareHouse] = useState('');
+  // const [warehousesList, setWarehousesList] = useState([]);
+  // const getWarehouses = async (selectId) => {
+  //   await adminRequest
+  //     .getAllWareHouse()
+  //     .then((result) => {
+  //       setWarehousesList(result.filter((x) => x.warehouse_id === selectId));
+  //     })
+  //     .catch((error) => console.log('error', error));
+  // };
+
+  // const handleChangeWarehouse = (e) => {
+  //   setTeamLoading([]);
+  //   setTeamLoadingList([]);
+  //   getStation(e.target.value);
+  //   getTeamloading();
+  // };
   // =============== Get Stations ===============//
-  const [stationsList, setStationsList] = useState([]);
-  const getStation = (id, selectId) => {
-    try {
-      adminRequest.getStationsByWareHouse(id).then((response) => {
-        setStationsList(response.filter((x) => x.station_id == selectId));
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const [stationsList, setStationsList] = useState([]);
+  // const getStation = (id, selectId) => {
+  //   try {
+  //     adminRequest.getStationsByWareHouse(id).then((response) => {
+  //       setStationsList(response.filter((x) => x.station_id == selectId));
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   // =============== Get TeamLoanding ===============//
   // const [team_id, setTeamId] = useState([]);
   const [teamloadingList, setTeamLoadingList] = useState([]);
-  const getTeamloading = () => {
+  const getTeamloading = (teamId) => {
     try {
       adminRequest.getAllLoadingTeamByStation().then((result) => {
-        setTeamLoadingList(result.filter((x) => x.station_status == 'waiting'));
+        setTeamLoadingList(result.filter((x) => (x.station_status == 'waiting' || x.station_status == null || x.team_id === teamId)));
+        console.log(result.filter((x) => (x.station_status == 'waiting' || x.station_status == null || x.team_id === teamId)))
       });
     } catch (error) {
       console.log(error);
@@ -263,11 +243,14 @@ function AddQueue() {
 
   const [teamData, setTeamData] = useState([]);
   const getTeamloadingByIds = (id) => {
+    setLoading(true);
     try {
       adminRequest.getLoadingTeamById(id).then((result) => {
         setTeamData(result);
+        setLoading(false);
       });
     } catch (error) {
+      setLoading(false);
       console.log(error);
     }
   };
@@ -279,19 +262,22 @@ function AddQueue() {
   // };
 
   const handleChangeTeam = (e) => {
-    const filterTeam = teamloadingList.filter((x) => x.team_id == e);
-    if (filterTeam.length > 0) {
-      filterTeam.map((data) => {
-        getWarehouses(data.warehouse_id);
-        getTeamManagers(data.team_id);
-        getStation(data.warehouse_id, data.station_id);
+    // const filterTeam = teamloadingList.filter((x) => x.team_id == e);
+    getTeamloadingByIds(e);
+    getTeamManagers(e);
 
-        // setWareHouse(data.warehouse_id);
-        // setTeam_id(e);
-        getTeamloadingByIds(e);
-        // setSelectedStation(data.station_id);
-      });
-    }
+    // if (filterTeam.length > 0) {
+    //   filterTeam.map((data) => {
+    //     getWarehouses(data.warehouse_id);
+    //     getTeamManagers(data.team_id);
+    //     getStation(data.warehouse_id, data.station_id);
+
+    //     // setWareHouse(data.warehouse_id);
+    //     // setTeam_id(e);
+    //     getTeamloadingByIds(e);
+    //     // setSelectedStation(data.station_id);
+    //   });
+    // }
   };
 
   // =============== Get Contractor ===============//
@@ -314,9 +300,11 @@ function AddQueue() {
   const [layborLineList, setLayborLineList] = useState([]);
   const getLaborLine = (id) => {
     try {
-      adminRequest.getContractorById(id).then((result) => {
-        setLayborLineList(result.labor_lines);
-      });
+      if (id) {
+        adminRequest.getContractorById(id).then((result) => {
+          setLayborLineList(result.labor_lines);
+        });
+      }
     } catch (error) {
       console.log(error);
     }
@@ -352,8 +340,14 @@ function AddQueue() {
             getCompanyList();
             getProductBrand(result.product_company_id);
 
+            // if (result.team_id && result.warehouse_id && result.reserve_station_id) {
+            // getWarehouses(result.warehouse_id);
+            // getTeamManagers(result.team_id);
+            // getStation(result.warehouse_id, result.reserve_station_id);
+            // }
+
             // if (userRole === 9 || userRole === 1) {
-            getTeamloading(result.warehouse_id);
+            getTeamloading(result.team_id);
             getTeamManagers(result.team_id);
             getLaborLine(result.contractor_id);
             // }
@@ -375,11 +369,12 @@ function AddQueue() {
     pickup_date: moment(reservationData.pickup_date).format('YYYY-MM-DD'),
     status: reservationData.status,
     total_quantity: reservationData.total_quantity,
-    reserve_station_id: '',
-    warehouse_id: '',
-    contractor_id: '',
-    team_id: '',
-    labor_line_id: 0
+
+    reserve_station_id: reservationData.reserve_station_id !== 1 ? reservationData.reserve_station_id : '',
+    warehouse_id: reservationData.warehouse_id && reservationData.team_id ? reservationData.warehouse_id : '',
+    contractor_id: reservationData.contractor_id ? reservationData.contractor_id : '',
+    team_id: reservationData.team_id ? reservationData.team_id : '',
+    labor_line_id: reservationData.labor_line_id ? reservationData.labor_line_id : ''
   };
 
   // =============== Validate Forms ===============//
@@ -880,7 +875,7 @@ function AddQueue() {
                                   </Stack>
                                 </Grid>
 
-                                <Grid item xs={12} md={6}>
+                                {/* <Grid item xs={12} md={6}>
                                   <Stack spacing={1}>
                                     <InputLabel>โกดังสินค้า</InputLabel>
                                     <FormControl>
@@ -946,7 +941,7 @@ function AddQueue() {
                                       </FormHelperText>
                                     )}
                                   </Stack>
-                                </Grid>
+                                </Grid> */}
 
                                 <Grid item xs={12} md={6}>
                                   <Stack spacing={1}>

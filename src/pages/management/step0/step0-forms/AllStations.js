@@ -27,17 +27,37 @@ import moment from 'moment-timezone';
 function AllStations({ permission }) {
   const [loading, setLoading] = useState(true);
   const [stations, setStations] = useState([]);
+  const [stations2, setStations2] = useState([]);
+  const [stations3, setStations3] = useState([]);
+  const [stationsSpacial, setStationsSpacial] = useState([]);
 
   useEffect(() => {
     getAllStation();
     getWarehouses();
+
+    // const intervalId = setInterval(() => {
+    //   getAllStation();
+    // }, 60000); // Polling every 5 seconds
+
+    // return () => clearInterval(intervalId);
   }, [permission]);
 
   const getAllStation = () => {
     setLoading(true);
     try {
       stepRequest.getAllStations().then((response) => {
-        setStations(response.filter((x) => x.station_group_id == 3));
+        console.log(response);
+        const stationGroup1 = response.filter((x) => x.station_group_id === 3 && x.station_id !== 32 && x.station_id !== 33 && x.station_id !== 34 && x.station_id !== 35 && x.station_id !== 36 && x.station_id !== 15 && x.station_id !== 16 && x.station_id !== 17 && x.warehouse_id != 8);
+
+        const stationGroup2 = response.filter((x) => x.station_group_id === 3 && x.warehouse_id === 8);
+
+        const stationGroup3 = response.filter((x) => x.station_group_id === 3 && (x.station_id === 15 || x.station_id === 16 || x.station_id === 17));
+
+        const stationGroup4 = response.filter((x) => x.station_group_id === 3 && (x.station_id === 32 || x.station_id === 33 || x.station_id === 34 || x.station_id === 35 || x.station_id === 36));
+        setStations(stationGroup1);
+        setStations2(stationGroup2);
+        setStations3(stationGroup3);
+        setStationsSpacial(stationGroup4);
         setLoading(false);
       });
     } catch (error) {
@@ -195,7 +215,7 @@ function AllStations({ permission }) {
                 sm={2}
                 md={2}
                 lg={1}
-                sx={{ minWidth: { sm: '10%!important', lg: '10%!important' }, maxWidth: { sm: '10%!important', lg: '10%!important' } }}
+                // sx={{ minWidth: { sm: '10%!important', lg: '10%!important' }, maxWidth: { sm: '10%!important', lg: '10%!important' } }}
                 align="center"
                 key={index}
               >
@@ -219,7 +239,131 @@ function AllStations({ permission }) {
                   onClick={() => handleClickOpen(row)}
                 >
                   <Stack spacing={0}>
-                    <Typography variant="h5">
+                    <Typography variant="h5" sx={{ fontSize: { sm: '1rem!important', lg: '0.8vw!important' } }}>
+                      {row.station_description.length > 4
+                        ? `${row.station_description.substring(0, 4)} #${index < 9 ? '0' + (index + 1) : index + 1}`
+                        : row.station_description}
+                    </Typography>
+                  </Stack>
+                </Paper>
+              </Grid>
+            ))}
+          {stations2.length > 0 &&
+            stations2.map((row, index) => (
+              <Grid
+                item
+                xs={3}
+                sm={2}
+                md={2}
+                lg={1}
+                // sx={{ minWidth: { sm: '10%!important', lg: '10%!important' }, maxWidth: { sm: '10%!important', lg: '10%!important' } }}
+                align="center"
+                key={index}
+              >
+                {row.time_update && getDateFormat(row.time_update) === moment(new Date()).format('DD/MM/YYYY')
+                  ? row.time_update.slice(11, 16)
+                  : '--:--'}
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: '8px 16px',
+                    bgcolor: styleStation(row.station_status) + '.main',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s',
+                    '&:hover': {
+                      bgcolor: styleStation(row.station_status) + '.light'
+                    },
+                    '&:active': {
+                      bgcolor: styleStation(row.station_status) + '.dark'
+                    }
+                  }}
+                  onClick={() => handleClickOpen(row)}
+                >
+                  <Stack spacing={0}>
+                    <Typography variant="h5" sx={{ fontSize: { sm: '1rem!important', lg: '0.8vw!important' } }}>
+                      {row.station_description.length > 4
+                        ? `${row.station_description.substring(0, 4)} #${index < 9 ? (index + 16) : index + 1}`
+                        : row.station_description}
+                    </Typography>
+                  </Stack>
+                </Paper>
+              </Grid>
+            ))}
+          {stations3.length > 0 &&
+            stations3.map((row, index) => (
+              <Grid
+                item
+                xs={3}
+                sm={2}
+                md={2}
+                lg={1}
+                sx={index === 0 && { ml: '3%' }}
+                // sx={{ minWidth: { sm: '10%!important', lg: '10%!important' }, maxWidth: { sm: '10%!important', lg: '10%!important' } }}
+                align="center"
+                key={index}
+              >
+                {row.time_update && getDateFormat(row.time_update) === moment(new Date()).format('DD/MM/YYYY')
+                  ? row.time_update.slice(11, 16)
+                  : '--:--'}
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: '8px 16px',
+                    bgcolor: styleStation(row.station_status) + '.main',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s',
+                    '&:hover': {
+                      bgcolor: styleStation(row.station_status) + '.light'
+                    },
+                    '&:active': {
+                      bgcolor: styleStation(row.station_status) + '.dark'
+                    }
+                  }}
+                  onClick={() => handleClickOpen(row)}
+                >
+                  <Stack spacing={0}>
+                    <Typography variant="h5" sx={{ fontSize: { sm: '1rem!important', lg: '0.8vw!important' } }}>
+                      {row.station_description.length > 4
+                        ? `${row.station_description.substring(0, 4)} #${index < 9 ? (index + 13) : index + 1}`
+                        : row.station_description}
+                    </Typography>
+                  </Stack>
+                </Paper>
+              </Grid>
+            ))}
+          {stationsSpacial.length > 0 &&
+            stationsSpacial.map((row, index) => (
+              <Grid
+                item
+                xs={3}
+                sm={2}
+                md={2}
+                lg={1}
+                sx={index === 0 && { ml: '3%', minWidth: { sm: '5%!important', lg: '5%!important' }, maxWidth: { sm: '5%!important', lg: '5%!important' } } || { minWidth: { sm: '5%!important', lg: '5%!important' }, maxWidth: { sm: '5%!important', lg: '5%!important' } }}
+                align="center"
+                key={index}
+              >
+                {row.time_update && getDateFormat(row.time_update) === moment(new Date()).format('DD/MM/YYYY')
+                  ? row.time_update.slice(11, 16)
+                  : '--:--'}
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: '8px 16px',
+                    bgcolor: styleStation(row.station_status) + '.main',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s',
+                    '&:hover': {
+                      bgcolor: styleStation(row.station_status) + '.light'
+                    },
+                    '&:active': {
+                      bgcolor: styleStation(row.station_status) + '.dark'
+                    }
+                  }}
+                  onClick={() => handleClickOpen(row)}
+                >
+                  <Stack spacing={0}>
+                    <Typography variant="h5" sx={{ fontSize: { sm: '1rem!important', lg: '0.8vw!important' } }}>
                       {row.station_description.length > 4
                         ? `${row.station_description.substring(0, 4)} #${index < 9 ? '0' + (index + 1) : index + 1}`
                         : row.station_description}

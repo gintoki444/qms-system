@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-import { Grid, Stack, Button, Box, TextField, Alert, Badge } from '@mui/material';
+import {
+  Grid, Stack, Button, Box, TextField, Alert, Typography
+  // , Badge 
+} from '@mui/material';
 import MainCard from 'components/MainCard';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 
 import moment from 'moment';
 
@@ -17,7 +20,7 @@ import { Divider } from '../../../../node_modules/@mui/material/index';
 
 // import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+// import Tab from '@mui/material/Tab';
 import QueueTab from 'components/@extended/QueueTab';
 
 import * as stepRequest from '_api/StepRequest';
@@ -27,26 +30,40 @@ function Step0() {
   const userRole = useSelector((state) => state.auth?.roles);
   const userPermission = useSelector((state) => state.auth?.user_permissions);
 
+  let startDate = localStorage.getItem('step0_startDate');
+  let endDate = localStorage.getItem('step0_endDate');
+
+  // const navigate = useNavigate();
   const [pageDetail, setPageDetail] = useState([]);
   // const navigate = useNavigate();
 
-  const [selectedDate1, setSelectedDate1] = useState(currentDate);
-  const [selectedDate2, setSelectedDate2] = useState(currentDate);
+
+  if (!startDate) {
+    startDate = currentDate;
+  }
+  if (!endDate) {
+    endDate = currentDate;
+  }
+
+  const [selectedDate1, setSelectedDate1] = useState(startDate);
+  const [selectedDate2, setSelectedDate2] = useState(endDate);
   const [selectedDateRange, setSelectedDateRange] = useState({
-    startDate: currentDate,
-    endDate: currentDate
+    startDate: selectedDate1,
+    endDate: selectedDate2
   });
   const [companyList, setCompanyList] = useState([]);
   const handleDateChange1 = (event) => {
     setSelectedDate1(event.target.value);
+    localStorage.setItem('step0_startDate', event.target.value);
   };
 
   const handleDateChange2 = (event) => {
     setSelectedDate2(event.target.value);
+    localStorage.setItem('step0_endDate', event.target.value);
   };
 
   const handleSearch = () => {
-    waitingGet(companyList, selectedDate1, selectedDate2);
+    // waitingGet(companyList, selectedDate1, selectedDate2);
 
     setSelectedDateRange({
       startDate: selectedDate1,
@@ -57,86 +74,50 @@ function Step0() {
   useEffect(() => {
     if (Object.keys(userPermission).length > 0) {
       setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
-      getProductCompany();
     }
 
+    // const intervalId = setInterval(() => {
+    //   waitingGet(companyList, selectedDate1, selectedDate2);
+    // }, 60000); // Polling every 5 seconds
 
-    const intervalId = setInterval(() => {
-      waitingGet(companyList, selectedDate1, selectedDate2);
-    }, 5000); // Polling every 5 seconds
-
-    return () => clearInterval(intervalId);
-  }, [userRole, userPermission, companyList]);
-
-  const getProductCompany = () => {
-    stepRequest.getAllProductCompany().then((response) => {
-      if (response) {
-        waitingGet(response, selectedDate1, selectedDate2);
-      }
-    });
-  };
+    // return () => clearInterval(intervalId);
+  }, [userRole, userPermission, startDate, endDate]);
 
   const [items, setItems] = useState([]);
-  const [countAllQueue, setCountAllQueue] = useState(0);
-  const waitingGet = async (company, startDate, endDate) => {
-    try {
-      try {
-        stepRequest.getAllStep0ByDate(startDate, endDate).then((response) => {
-          if (company.length > 0) {
-            company.map((x) => {
-              let countCompany = response.filter(
-                (i) =>
-                  i.token !== null &&
-                  i.product_company_id == x.product_company_id &&
-                  parseFloat(i.total_quantity) > 0 &&
-                  i.step2_status !== "completed" &&
-                  i.step2_status !== "cancle"
-              ).length;
+  const getProductCompany = (dataList) => {
+    stepRequest.getAllProductCompany().then((response) => {
 
-              setItems((prevState) => ({
-                ...prevState,
-                [x.product_company_id]: countCompany
-              }));
-            });
-          }
+      if (response.length > 0) {
+        response.map((x) => {
+          let countCompany = dataList.filter(
+            (i) => i.product_company_id == x.product_company_id
+          ).length;
 
-          setCompanyList(company);
-          setCountAllQueue(response.filter((x) =>
-            x.token !== null &&
-            parseFloat(x.total_quantity) > 0 &&
-            x.step2_status !== "completed" &&
-            x.step2_status !== "cancle").length
-          );
+          setItems((prevState) => ({
+            ...prevState,
+            [x.product_company_id]: countCompany
+          }));
         });
-      } catch (e) {
-        console.log(e);
       }
-      // await getQueues.getStep1Waitting().then((response) => {
-      //   if (company.length > 0) {
-      //     company.map((x) => {
-      //       let countCompany = response.filter(
-      //         (i) => i.product_company_id == x.product_company_id && parseFloat(i.total_quantity) > 0
-      //       ).length;
-
-      //       setItems((prevState) => ({
-      //         ...prevState,
-      //         [x.product_company_id]: countCompany
-      //       }));
-      //     });
-      //   }
-
-      //   setCompanyList(company);
-      //   setCountAllQueue(response.filter((x) => parseFloat(x.total_quantity) > 0).length);
-      // });
-    } catch (e) {
-      console.log(e);
-    }
+      setCompanyList(response);
+    });
   };
-
   const [valueFilter, setValueFilter] = useState(0);
   const handleChange = (newValue) => {
-    setValueFilter(newValue);
+    setValueFilter(newValue - 1);
   };
+
+  const [sumWaiting, setSumWaiting] = useState(0);
+  const [sumProcessing, setSumProcessing] = useState(0);
+  const handleReserveData = (data) => {
+    getProductCompany(data);
+    setSumWaiting(data.filter((x) => x.step2_status !== "processing")?.length)
+    setSumProcessing(data.filter((x) => x.step2_status === "processing")?.length)
+  }
+
+  const handleRefresh = () => {
+    window.location = '/admin/step0/';
+  }
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
       {userRole === 5 && (
@@ -189,12 +170,20 @@ function Step0() {
                 />
               </Stack>
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={2}>
               <Button size="mediam" color="primary" variant="contained" onClick={() => handleSearch()} startIcon={<SearchOutlined />}>
                 ค้นหา
               </Button>
+              <Button size="mediam" color="info" variant="contained" onClick={() => handleRefresh()} startIcon={<ReloadOutlined />}>
+                รีเฟรช
+              </Button>
             </Grid>
-            <Grid item xs={12} md={3} align="right"></Grid>
+            <Grid item xs={12} md={4} align="right">
+              <Stack justifyContent="row" flexDirection="row">
+                <Typography variant="h5" sx={{ p: '0 20px' }}>กำลังขึ้นสินค้า :<span style={{ padding: '0 20px', borderBottom: 'solid 2px', color: 'green' }}>{sumProcessing}</span> คัน</Typography>
+                <Typography variant="h5">กำลังรอขึ้นสินค้า :<span style={{ padding: '0 20px', borderBottom: 'solid 2px', color: 'red' }}>{sumWaiting}</span> คัน</Typography>
+              </Stack>
+            </Grid>
           </Grid>
 
           <Grid item xs={12} sx={{ mt: 1.5 }}>
@@ -206,7 +195,7 @@ function Step0() {
           <MainCard content={false} sx={{ mt: 1.5 }}>
             <Box sx={{ pt: 1, pr: 2 }}>
               <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
-                {companyList.length > 0 && (
+                {/* {companyList.length > 0 && (
                   <Tab
                     label={
                       <Badge badgeContent={countAllQueue > 0 ? countAllQueue : '0'} color="error">
@@ -216,13 +205,13 @@ function Step0() {
                     color="primary"
                     onClick={() => handleChange(0)}
                   />
-                )}
+                )} */}
 
                 {companyList.length > 0 &&
                   companyList.map((company, index) => (
                     <QueueTab
                       key={index}
-                      id={company.product_company_id}
+                      id={(company.product_company_id)}
                       numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                       txtLabel={company.product_company_name_th2}
                       onSelect={() => handleChange(company.product_company_id)}
@@ -235,7 +224,7 @@ function Step0() {
 
           <MainCard content={false} sx={{ mt: 1.5 }}>
             <Box>
-              <Step0Table startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} onFilter={valueFilter} permission={pageDetail[0].permission_name} />
+              <Step0Table startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} onFilter={valueFilter} permission={pageDetail[0].permission_name} step0List={handleReserveData} />
             </Box>
           </MainCard>
         </Grid>

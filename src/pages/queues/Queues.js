@@ -19,21 +19,35 @@ function Queues() {
   const pageId = 9;
   const userRole = useSelector((state) => state.auth?.roles);
   const userPermission = useSelector((state) => state.auth?.user_permissions);
+
+  let startDate = localStorage.getItem('queue_startDate');
+  let endDate = localStorage.getItem('queue_endDate');
+
   const [loading, setLoading] = useState(false);
   const [pageDetail, setPageDetail] = useState([]);
 
-  const [selectedDate1, setSelectedDate1] = useState(currentDate);
-  const [selectedDate2, setSelectedDate2] = useState(currentDate);
+
+  if (!startDate) {
+    startDate = currentDate;
+  }
+  if (!endDate) {
+    endDate = currentDate;
+  }
+
+  const [selectedDate1, setSelectedDate1] = useState(startDate);
+  const [selectedDate2, setSelectedDate2] = useState(endDate);
   const [selectedDateRange, setSelectedDateRange] = useState({
     startDate: currentDate,
     endDate: currentDate
   });
   const handleDateChange1 = (event) => {
     setSelectedDate1(event.target.value);
+    localStorage.setItem('queue_startDate', event.target.value);
   };
 
   const handleDateChange2 = (event) => {
     setSelectedDate2(event.target.value);
+    localStorage.setItem('queue_endDate', event.target.value);
   };
 
   const handleSearch = () => {
@@ -42,7 +56,6 @@ function Queues() {
       endDate: selectedDate2
     });
   };
-
 
   const [companyList, setCompanyList] = useState([]);
   const [items, setItems] = useState([]);
@@ -73,7 +86,7 @@ function Queues() {
       setLoading(false);
       setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
     }
-  }, [userRole, userPermission]);
+  }, [userRole, userPermission, startDate, endDate]);
 
 
   const [valueFilter, setValueFilter] = useState(0);

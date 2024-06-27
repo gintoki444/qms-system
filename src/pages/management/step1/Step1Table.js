@@ -175,12 +175,11 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
   }
 
   useEffect(() => {
-    getStation();
     fetchData();
 
     const intervalId = setInterval(() => {
       fetchData();
-    }, 5000); // Polling every 5 seconds
+    }, 120000); // Polling every 5 seconds
 
     return () => clearInterval(intervalId);
   }, [status, onStatusChange, onFilter, permission]);
@@ -201,6 +200,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
   const waitingGet = async () => {
     try {
       await queueReques.getStep1Waitting().then((response) => {
+        console.log('getStep1Waitting', response);
         if (onFilter == 0) {
           setItems(response.filter((x) => parseFloat(x.total_quantity) > 0));
         } else {
@@ -216,6 +216,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
   const processingGet = async () => {
     try {
       await queueReques.getStep1Processing().then((response) => {
+        console.log('getStep1Processing', response);
         const step1 = response;
         queueReques.getStep3Processing().then((response) => {
           if (response.length > 0)
@@ -689,9 +690,14 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
   };
 
   const [stations, setStations] = useState([]); // ใช้ state สำหรับการเก็บสถานีที่ถูกเลือกในแต่ละแถว
+
+  useEffect(() => {
+    getStation();
+  }, []);
   const getStation = () => {
     try {
       stepRequest.getAllStations().then((response) => {
+        console.log(response);
         if (response) {
           setStations(response.filter((x) => x.station_group_id == 2));
         }

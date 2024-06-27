@@ -18,13 +18,15 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
-  Typography
+  Typography,
+  // Button,
+  // Stack
   // Button
 } from '@mui/material';
 
 // import { useDownloadExcel } from 'react-export-table-to-excel';
-
-import moment from 'moment';
+// import OrdersByItems from './OrdersByItems';
+// import moment from 'moment';
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
@@ -39,59 +41,59 @@ const headCells = [
     disablePadding: false,
     label: 'สินค้า'
   },
-  {
-    id: 'product_register',
-    align: 'left',
-    disablePadding: true,
-    label: 'ทะเบียน'
-  },
-  {
-    id: 'setup_pile_date',
-    align: 'left',
-    disablePadding: true,
-    label: 'วันที่ตั้งกอง'
-  },
-  {
-    id: 'total_sold',
-    align: 'right',
-    disablePadding: true,
-    label: 'ยอดตั้งต้น (ตัน)'
-  },
+  // {
+  //   id: 'product_register',
+  //   align: 'left',
+  //   disablePadding: true,
+  //   label: 'ทะเบียน'
+  // },
+  // {
+  //   id: 'setup_pile_date',
+  //   align: 'left',
+  //   disablePadding: true,
+  //   label: 'วันที่ตั้งกอง'
+  // },
+  // {
+  //   id: 'total_sold',
+  //   align: 'right',
+  //   disablePadding: true,
+  //   label: 'ยอดตั้งต้น (ตัน)'
+  // },
   {
     id: 'total_yok_sold',
     align: 'right',
     disablePadding: true,
-    label: 'ยอดยกมา (ตัน)'
+    label: 'ยอดรวมทั้งหมด (ตัน)'
   },
-  {
-    id: 'total_receive',
-    align: 'right',
-    disablePadding: true,
-    label: 'ยอดรับ (ตัน)'
-  },
-  {
-    id: 'total_cutoff',
-    align: 'right',
-    disablePadding: true,
-    label: 'ยอดเบิก (ตัน)'
-  },
-  {
-    id: 'remaining_total',
-    align: 'center',
-    disablePadding: false,
-    label: 'จ่าย (ตัน)'
-  },
-  {
-    id: 'total_sold_1',
-    align: 'right',
-    disablePadding: false,
-    label: 'รวมจ่าย (กระสอบ)'
-  },
+  // {
+  //   id: 'total_receive',
+  //   align: 'right',
+  //   disablePadding: true,
+  //   label: 'ยอดรับ (ตัน)'
+  // },
+  // {
+  //   id: 'total_cutoff',
+  //   align: 'right',
+  //   disablePadding: true,
+  //   label: 'ยอดเบิก (ตัน)'
+  // },
+  // {
+  //   id: 'remaining_total',
+  //   align: 'center',
+  //   disablePadding: false,
+  //   label: 'จ่าย (ตัน)'
+  // },
+  // {
+  //   id: 'total_sold_1',
+  //   align: 'right',
+  //   disablePadding: false,
+  //   label: 'รวมจ่าย (กระสอบ)'
+  // },
   {
     id: 'total_sold_2',
     align: 'right',
     disablePadding: false,
-    label: 'รวมจ่าย (ตัน)'
+    label: 'ยอดจ่ายทั้งหมด (ตัน)'
   },
   {
     id: 'total_sold_3',
@@ -126,7 +128,7 @@ OrderTableHead.propTypes = {
   orderBy: PropTypes.string
 };
 
-export default function OrderTable({ startDate, endDate, clickDownload, onFilter }) {
+export default function OrderTable({ startDate, endDate, clickDownload, onFilter, dataList }) {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [loading, setLoading] = useState(true);
@@ -144,15 +146,11 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
 
   const getOrderSumQty = () => {
     setLoading(true);
-
     reportRequest
-      .getOrdersProduct(startDate, endDate)
+      .getOrdersProductByOrder(startDate, endDate)
       .then((result) => {
-        if (onFilter) {
-          setItems(result.filter((x) => x.product_company_id == onFilter));
-        } else {
-          setItems(result);
-        }
+        setItems(result.filter((x) => x.product_company_id === (onFilter + 1)));
+        dataList(result);
         setLoading(false);
       })
       .catch((error) => console.error(error));
@@ -163,6 +161,15 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
     return acc + parseFloat(item.total_sold);
   }, 0);
 
+
+  // const [onclickShow, setOnClickShow] = useState(false);
+  // const handleClickShow = () => {
+  //   if (onclickShow == false) {
+  //     setOnClickShow(true);
+  //   } else {
+  //     setOnClickShow(false);
+  //   }
+  // }
   return (
     <Box>
       {/* <Button color="primary" onClick={onDownload}>
@@ -201,19 +208,24 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
                       <span style={{ display: 'none' }}>{`'`}</span>
                       {row.name}
                     </TableCell>
-                    <TableCell align="left">{row.product_register ? row.product_register : '-'}</TableCell>
-                    <TableCell align="left">{row.setup_pile_date ? moment(row.setup_pile_date).format('DD/MM/yyyy') : '-'}</TableCell>
+                    {/* <TableCell align="left">{row.product_register ? row.product_register : '-'}</TableCell> */}
+                    {/* <TableCell align="left">{row.setup_pile_date ? moment(row.setup_pile_date).format('DD/MM/yyyy') : '-'}</TableCell> */}
                     <TableCell align="right">{parseFloat((row.stock_quantity * 1).toFixed(3)).toLocaleString('en-US')}</TableCell>
-                    <TableCell align="right">
+                    {/* <TableCell align="right">
                       {parseFloat((row.begin_day_stock * 1).toFixed(3)).toLocaleString('en-US')}
-                      {/* 
-                 {(parseFloat(row.total_sold) + parseFloat(row.remaining_quantity)).toLocaleString()}
-                 */}
-                    </TableCell>
-                    <TableCell align="right">{parseFloat(row.total_receive)}</TableCell>
-                    <TableCell align="right">{parseFloat(row.total_cutoff)}</TableCell>
-                    <TableCell align="center">
-                      <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px' }}>
+                    </TableCell> */}
+                    {/* <TableCell align="right">{parseFloat(row.total_receive)}</TableCell> */}
+                    {/* <TableCell align="right">{parseFloat(row.total_cutoff)}</TableCell> */}
+                    {/* <TableCell align="center"> */}
+                    {/* <OrdersByItems productId={row.product_id} productReId={row.product_register_id} dates={startDate} /> */}
+                    {/* <Stack flexDirection="row" alignItems="center" >
+                        <div style={{ marginRight: '10px' }}>
+                          <Button color={!onclickShow ? 'info' : 'error'} variant='outlined' onClick={handleClickShow}>
+                            {!onclickShow ? 'รายละเอียด' : 'ยกเลิก'}
+                          </Button>
+                        </div>
+                        {onclickShow && ( */}
+                    {/* <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', width: '100%' }}>
                         <div>
                           <table border={'0'}>
                             <thead></thead>
@@ -241,28 +253,15 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
                             </tbody>
                           </table>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell align="right">{parseFloat((row.total_sold * 20).toFixed(0)).toLocaleString('en-US')}</TableCell>
+                      </div> */}
+                    {/* )}
+                      </Stack> */}
+                    {/* </TableCell> */}
+                    {/* <TableCell align="right">{parseFloat((row.total_sold * 20).toFixed(0)).toLocaleString('en-US')}</TableCell> */}
                     <TableCell align="right">{parseFloat((row.total_sold * 1).toFixed(3)).toLocaleString('en-US')}</TableCell>
                     <TableCell align="right">{parseFloat((row.remaining_quantity * 1).toFixed(3)).toLocaleString('en-US')}</TableCell>
                   </TableRow>
                 ))}
-              <TableRow>
-                <TableCell colSpan={10} align="right" sx={{ p: 3 }}>
-                  <Typography variant="h5">ยอดรวมจ่าย: </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="h5">
-                    <span style={{ color: 'red' }}>{parseFloat((grandTotalQuantity * 20).toFixed(0)).toLocaleString()}</span> กระสอบ
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="h5">
-                    <span style={{ color: 'red' }}>{parseFloat(grandTotalQuantity.toFixed(3))}</span> ตัน{' '}
-                  </Typography>
-                </TableCell>
-              </TableRow>
 
               {items.length == 0 && (
                 <TableRow>
@@ -271,6 +270,16 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
                   </TableCell>
                 </TableRow>
               )}
+              <TableRow>
+                <TableCell colSpan={4} align="right" sx={{ p: 3 }}>
+                  <Typography variant="h4">ยอดรวมจ่าย :</Typography>
+                </TableCell>
+                <TableCell align="left" sx={{ p: 3, pl: 0 }}>
+                  <Typography variant="h4">
+                    <span style={{ color: 'red' }}>{parseFloat(grandTotalQuantity.toFixed(3))}</span> ตัน
+                  </Typography>
+                </TableCell>
+              </TableRow>
             </TableBody>
           ) : (
             <TableBody>
@@ -284,6 +293,6 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
           )}
         </Table>
       </TableContainer>
-    </Box>
+    </Box >
   );
 }

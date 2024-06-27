@@ -8,9 +8,9 @@ import IconLogo from 'assets/images/logo.png';
 
 // import Step1Queue from './Step1Queue';
 // import Step2Queue from './Step2Queue';
-// import Step3Queue from './Step3Queue';
-import WeighQueue from './WeighQueue';
-import ReceiveQueue from './ReceiveQueue';
+// import WeighQueue from './WeighQueue';
+// import ReceiveQueue from './ReceiveQueue';
+import AllStations from './AllStations';
 import AuthFooter from 'components/cards/AuthFooter';
 import TextSliders from './TextSliders';
 // import InfiniteLooper from './InfiniteLooper';
@@ -38,10 +38,13 @@ function QueuesDisplay() {
   };
   // ========= set Web Socket ========= //
   // const [queueData, setQueueData] = useState([]);
-  const [step1Data, setStep1Data] = useState([]);
-  const [step2Data, setStep2Data] = useState([]);
+  // const [step1Data, setStep1Data] = useState([]);
+  // const [step2Data, setStep2Data] = useState([]);
   // const [step3Data, setStep3Data] = useState([]);
 
+  const [stations, setStations] = useState([]);
+  const [stations2, setStations2] = useState([]);
+  const [stations3, setStations3] = useState([]);
   const currentDate = moment().locale('th').format('LL');
   const nameDate = moment().locale('th').format('dddd');
 
@@ -57,8 +60,34 @@ function QueuesDisplay() {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      setStep1Data(data.filter((x) => x.order == 1 || x.order == 3));
-      setStep2Data(data.filter((x) => x.order == 2));
+      console.log('data', data)
+      // setStep1Data(data.filter((x) => x.order == 1 || x.order == 3));
+      // setStep2Data(data.filter((x) => x.order == 2));
+      const stationGroup1 = data.filter((x) => x.order == 2 && (
+        x.station_id !== 32 &&
+        x.station_id !== 33 &&
+        x.station_id !== 34 &&
+        x.station_id !== 35 &&
+        x.station_id !== 36 &&
+        x.station_id !== 15 &&
+        x.station_id !== 16 &&
+        x.station_id !== 17 &&
+        x.station_id !== 18 &&
+        x.station_id !== 19 &&
+        x.station_id !== 20 &&
+        x.station_id !== 21 &&
+        x.station_id !== 22
+      ));
+      console.log('stationGroup1', stationGroup1);
+
+      const stationGroup2 = data.filter((x) => x.order == 2 && (x.station_id === 18 || x.station_id === 19 || x.station_id === 20 || x.station_id === 21 || x.station_id === 22));
+      console.log('stationGroup2', stationGroup2);
+
+      const stationGroup3 = data.filter((x) => x.order == 2 && (x.station_id === 15 || x.station_id === 16 || x.station_id === 17 || x.station_id === 32 || x.station_id === 33 || x.station_id === 34 || x.station_id === 35 || x.station_id === 36));
+      console.log('stationGroup3', stationGroup3);
+      setStations(stationGroup1);
+      setStations2(stationGroup2);
+      setStations3(stationGroup3);
       // setStep3Data(data.filter((x) => x.order == 3));
       // console.log('Received message from server:', data);
       // setQueueData(data);
@@ -91,13 +120,14 @@ function QueuesDisplay() {
         <Grid container rowSpacing={3} onClick={toggleFullScreen}>
           <Grid item xs={12} sx={{ background: '#fff', pl: '2%', pr: '2%' }}>
             <Grid container alignItems="center">
-              <Grid item xs={2}>
+              <Grid item xs={1}>
                 <Stack sx={{ pb: 2, pt: 2, justifyContent: 'center', alignItems: 'left', width: '100%' }}>
-                  <img src={IconLogo} width={'30%'} alt="logo" />
-                  <Typography variant="h5">บริษัท ไอ ซี พี เฟอทิไลเซอร์ จำกัด</Typography>
+                  <img src={IconLogo} width={'50%'} alt="logo" />
+                  {/* <img src={IconLogo} width={'30%'} alt="logo" /> */}
+                  {/* <Typography variant="h5">บริษัท ไอ ซี พี เฟอทิไลเซอร์ จำกัด</Typography> */}
                 </Stack>
               </Grid>
-              <Grid item xs={3} sx={{ position: 'relative' }}>
+              <Grid item xs={4} sx={{ position: 'relative' }}>
                 <Divider
                   absolute
                   orientation="vertical"
@@ -107,7 +137,7 @@ function QueuesDisplay() {
                     width: 0
                   }}
                 />
-                <Stack>
+                <Stack justifyContent="row" flexDirection="row">
                   <Typography variant="h3">วัน{nameDate + ' ที่ ' + currentDate}</Typography>
                   <ClockTime />
                 </Stack>
@@ -134,20 +164,22 @@ function QueuesDisplay() {
               </Grid>
             </Grid>
           </Grid>
-          {/* <Grid xs={12} md ={6} sx={{ background: '#F9D8C7', minHeight: '89vh' }}>
-                <AllStations />
-              </Grid> */}
-          {/* <Grid xs={12} md={3} sx={{ background: '#C1E5F5', minHeight: '100vh' }}>
-              </Grid>
-              <Grid xs={12} md={3} sx={{ background: '#D9F3D0', minHeight: '100vh' }}>
-              </Grid> */}
+          <Grid xs={12} md={6} sx={{ background: '#F9D8C7', minHeight: '89vh' }}>
+            <AllStations queues={stations} groupStation={1} />
+          </Grid>
+          <Grid xs={12} md={3} sx={{ background: '#C1E5F5', minHeight: '89vh' }}>
+            <AllStations queues={stations2} groupStation={2} />
+          </Grid>
+          <Grid xs={12} md={3} sx={{ background: '#D9F3D0', minHeight: '89vh' }}>
+            <AllStations queues={stations3} groupStation={3} />
+          </Grid>
           <Grid
             xs={12}
             sx={{
               textAlign: 'left'
             }}
           >
-            <WeighQueue queues={step1Data} />
+            {/* <WeighQueue queues={step1Data} /> */}
             {/* <Step1Queue queues={step1Data} /> */}
           </Grid>
           <Grid
@@ -157,7 +189,7 @@ function QueuesDisplay() {
             }}
           >
             {/* <Step2Queue queues={step2Data} /> */}
-            <ReceiveQueue queues={step2Data} />
+            {/* <ReceiveQueue queues={step2Data} /> */}
           </Grid>
           {/* <Grid
             xs={12}

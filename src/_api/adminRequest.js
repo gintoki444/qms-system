@@ -24,8 +24,6 @@ export const putReserveTeamData = async (id, data) => {
   myHeaders.append('Content-Type', 'application/json');
   const raw = JSON.stringify(data);
 
-  console.log('putReserveTeamData :', raw);
-
   const requestOptions = {
     method: 'PUT',
     headers: myHeaders,
@@ -462,6 +460,22 @@ export const getAllLoadingTeam = async () => {
   const result = await response.json();
   return result;
 };
+export const getLoadingTeamByAll = async () => {
+  try {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+    const response = await fetch(apiUrl + `/loadingteamsbyall/`, requestOptions);
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error fetching all teams:', error);
+    return [];
+  }
+
+};
 export const getAllLoadingTeamByStation = async () => {
   const requestOptions = {
     method: 'GET',
@@ -485,13 +499,33 @@ export const getLoadingTeamByIdwh = async (id) => {
 };
 
 export const getLoadingTeamById = async (id) => {
-  const requestOptions = {
-    method: 'GET',
-    redirect: 'follow'
-  };
-  const response = await fetch(apiUrl + `/loadingteambyid/${id}`, requestOptions);
-  const result = await response.json();
-  return result;
+  try {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+    const response = await fetch(apiUrl + `/loadingteambyid/${id}`, requestOptions);
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error fetching loadingteambyid:', error);
+    return [];
+  }
+};
+
+export const getLoadingTeamAll = async () => {
+  try {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+    const response = await fetch(apiUrl + `/loadingteamdetails`, requestOptions);
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error fetching loadingteambyid:', error);
+    return [];
+  }
 };
 
 // ==============================|| Company contractors: (สำหรับข้อมูล บริษัทสายรายงาน) ||============================== //
@@ -566,10 +600,12 @@ export const getContractorById = async (id) => {
     method: 'GET',
     redirect: 'follow'
   };
-  const response = await fetch(apiUrl + `/contractors/${id}`, requestOptions);
+  try {
+    const response = await fetch(apiUrl + `/contractors/${id}`, requestOptions);
 
-  const result = await response.json();
-  return result;
+    const result = await response.json();
+    return result;
+  } catch (e) { console.log(e) }
 };
 
 export const getContractorsById = async (id) => {

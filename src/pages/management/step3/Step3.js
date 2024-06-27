@@ -6,7 +6,7 @@ import * as getQueues from '_api/queueReques';
 
 import { Step3Table } from './Step3Table';
 
-import { Grid, Stack, Box, Typography, Badge, Alert } from '@mui/material';
+import { Grid, Stack, Box, Typography, Badge, Alert, Backdrop, CircularProgress } from '@mui/material';
 import MainCard from 'components/MainCard';
 
 // import PropTypes from 'prop-types';
@@ -16,13 +16,12 @@ import QueueTab from 'components/@extended/QueueTab';
 
 function Step3() {
   const pageId = 14;
-  const userRole = useSelector((state) => state.auth?.roles);
   const userPermission = useSelector((state) => state.auth?.user_permissions);
-
   const [pageDetail, setPageDetail] = useState([]);
-
   const [commonStatus, setCommonStatus] = useState('');
   const [companyList, setCompanyList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const handleStatusChange = (newStatus) => {
     // Change the common status and trigger a data reload in the other instance
     if (newStatus !== commonStatus) {
@@ -36,28 +35,69 @@ function Step3() {
 
   useEffect(() => {
     if (Object.keys(userPermission).length > 0) {
-      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
-      getProductCompany();
+      const filteredPermissions = userPermission.permission.filter((x) => x.page_id === pageId);
+      setPageDetail(filteredPermissions);
+      getProductCompany(filteredPermissions);
     }
+  }, [userPermission, pageId]);
 
+  useEffect(() => {
     const intervalId = setInterval(() => {
       waitingGet(companyList);
-    }, 5000); // Polling every 5 seconds
+    }, 120000); // Polling every 120 seconds
 
     return () => clearInterval(intervalId);
-  }, [commonStatus, userRole, userPermission, companyList]);
+  }, [companyList]);
 
-  const getProductCompany = () => {
-    stepRequest.getAllProductCompany().then((response) => {
-      waitingGet(response);
-    });
+  useEffect(() => {
+    if (commonStatus === 'waiting') {
+      waitingGet(companyList);
+    } else if (commonStatus === 'processing') {
+      waitingGet(companyList);
+    }
+  }, [commonStatus, companyList]);
+
+  const getProductCompany = (permissions) => {
+    // Check if the data has already been fetched to avoid redundant API calls
+    if (permissions.length > 0) {
+      stepRequest.getAllProductCompany().then((response) => {
+        console.log('getAllProductCompany', response);
+        if (response) {
+          waitingGet(response);
+        }
+        setLoading(false);
+      }).catch(() => {
+        setLoading(false);
+      });
+    } else {
+      setLoading(false);
+    }
   };
+  // useEffect(() => {
+  //   if (Object.keys(userPermission).length > 0) {
+  //     setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+  //     getProductCompany();
+  //   }
+
+  //   const intervalId = setInterval(() => {
+  //     waitingGet(companyList);
+  //   }, 120000); // Polling every 5 seconds
+
+  //   return () => clearInterval(intervalId);
+  // }, [commonStatus, userRole, userPermission, companyList]);
+
+  // const getProductCompany = () => {
+  //   stepRequest.getAllProductCompany().then((response) => {
+  //     waitingGet(response);
+  //   });
+  // };
 
   const [items, setItems] = useState({});
   const [countAllQueue, setCountAllQueue] = useState(0);
   const waitingGet = async (company) => {
     try {
       await getQueues.getStep3Waitting().then((response) => {
+        console.log('getStep3Waitting', response)
         if (company.length > 0) {
           company.map((x) => {
             let countCompany = response.filter((i) => i.product_company_id == x.product_company_id).length;
@@ -88,6 +128,14 @@ function Step3() {
             <Stack direction="row" alignItems="center" spacing={0}></Stack>
           </Grid>
         </Grid>
+        {loading && (
+          <Backdrop
+            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+            open={loading}
+          >
+            <CircularProgress color="primary" />
+          </Backdrop>
+        )}
 
         {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
           <Grid item xs={12}>

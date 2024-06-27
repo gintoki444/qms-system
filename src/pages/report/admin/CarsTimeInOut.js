@@ -10,11 +10,12 @@ import {
   Divider,
   Alert,
   Backdrop,
-  CircularProgress
+  CircularProgress, Badge, Tabs, Tab
   // Typography
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 // import OrderSumQtyTable from './OrderSumQtyTable';
+import QueueTab from 'components/@extended/QueueTab';
 
 import moment from 'moment';
 import { SearchOutlined, FileExcelOutlined } from '@ant-design/icons';
@@ -23,6 +24,7 @@ import { useDownloadExcel } from 'react-export-table-to-excel';
 
 import CarsTimeInOutTable from './CarsTimeInOutTable';
 import { Tooltip } from '../../../../node_modules/@mui/material/index';
+import * as stepRequest from '_api/StepRequest';
 const CarsTimeInOut = () => {
   const pageId = 27;
   const userRole = useSelector((state) => state.auth?.roles);
@@ -62,6 +64,30 @@ const CarsTimeInOut = () => {
     });
   };
 
+
+  const [companyList, setCompanyList] = useState([]);
+  const [items, setItems] = useState([]);
+  const [countAllQueue, setCountAllQueue] = useState(0);
+  const getProductCompany = (dataList) => {
+    stepRequest.getAllProductCompany().then((response) => {
+
+      if (response.length > 0) {
+        response.map((x) => {
+          let countCompany = dataList.filter(
+            (i) => i.product_company_id == x.product_company_id
+          ).length;
+
+          setItems((prevState) => ({
+            ...prevState,
+            [x.product_company_id]: countCompany
+          }));
+        });
+      }
+
+      setCompanyList(response);
+      setCountAllQueue(dataList.length);
+    });
+  };
   useEffect(() => {
     setLoading(true);
     if (Object.keys(userPermission).length > 0) {
@@ -69,6 +95,15 @@ const CarsTimeInOut = () => {
       setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
     }
   }, [userRole, userPermission]);
+
+  const [valueFilter, setValueFilter] = useState(0);
+  const handleChange = (newValue) => {
+    setValueFilter(newValue);
+  };
+  const handleQueueData = (data) => {
+    console.log('handleQueueData ', data)
+    getProductCompany(data);
+  }
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -92,9 +127,9 @@ const CarsTimeInOut = () => {
                   name="pickup_date"
                   value={selectedDate1}
                   onChange={handleDateChange1}
-                  // inputProps={{
-                  //   min: currentDate
-                  // }}
+                // inputProps={{
+                //   min: currentDate
+                // }}
                 />
               </Stack>
             </Grid>
@@ -108,9 +143,9 @@ const CarsTimeInOut = () => {
                   name="pickup_date"
                   value={selectedDate2}
                   onChange={handleDateChange2}
-                  // inputProps={{
-                  //   min: currentDate
-                  // }}
+                // inputProps={{
+                //   min: currentDate
+                // }}
                 />
               </Stack>
             </Grid>
@@ -136,32 +171,63 @@ const CarsTimeInOut = () => {
               (pageDetail[0].permission_name !== 'view_data' ||
                 pageDetail[0].permission_name !== 'manage_everything' ||
                 pageDetail[0].permission_name !== 'add_edit_delete_data') && (
-                <MainCard
-                  title={'ตารางข้อมูลรถเข้า-ออกโรงงาน'}
-                  content={false}
-                  sx={{ mt: 1.5 }}
-                  secondary={
-                    <Tooltip title="Export Excel">
-                      <Button
-                        color="success"
-                        variant="contained"
-                        sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }}
-                        onClick={onDownload}
-                      >
-                        <FileExcelOutlined />
-                      </Button>
-                    </Tooltip>
-                  }
-                >
-                  <Divider></Divider>
-                  <Box sx={{ pt: 1, pr: 2 }}>
-                    <CarsTimeInOutTable
-                      startDate={selectedDateRange.startDate}
-                      endDate={selectedDateRange.endDate}
-                      clickDownload={tableRef}
-                    />
-                  </Box>
-                </MainCard>
+                <>
+                  <MainCard content={false} sx={{ mt: 1.5 }}>
+                    <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
+                      {companyList.length > 0 && (
+                        <Tab
+                          label={
+                            <Badge badgeContent={countAllQueue > 0 ? countAllQueue : '0'} color="error">
+                              ทั้งหมด
+                            </Badge>
+                          }
+                          color="primary"
+                          onClick={() => handleChange(0)}
+                        />
+                      )}
+
+                      {companyList.length > 0 &&
+                        companyList.map((company, index) => (
+                          <QueueTab
+                            key={index}
+                            id={company.product_company_id}
+                            numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
+                            txtLabel={company.product_company_name_th2}
+                            onSelect={() => handleChange(company.product_company_id)}
+                          // {...a11yProps(company.product_company_id)}
+                          />
+                        ))}
+                    </Tabs>
+                  </MainCard>
+                  <MainCard
+                    title={'ตารางข้อมูลรถเข้า-ออกโรงงาน'}
+                    content={false}
+                    sx={{ mt: 1.5 }}
+                    secondary={
+                      <Tooltip title="Export Excel">
+                        <Button
+                          color="success"
+                          variant="contained"
+                          sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }}
+                          onClick={onDownload}
+                        >
+                          <FileExcelOutlined />
+                        </Button>
+                      </Tooltip>
+                    }
+                  >
+                    <Divider></Divider>
+                    <Box sx={{ pt: 1, pr: 2 }}>
+                      <CarsTimeInOutTable
+                        startDate={selectedDateRange.startDate}
+                        endDate={selectedDateRange.endDate}
+                        clickDownload={tableRef}
+                        onFilter={valueFilter}
+                        dataList={handleQueueData}
+                      />
+                    </Box>
+                  </MainCard>
+                </>
               )}
           </Grid>
         </Grid>
