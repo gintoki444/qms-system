@@ -637,17 +637,20 @@ function QueueDetail({ sx }) {
                       <Grid container>
                         <Grid item xs={6}>
                           <Typography variant="h4">หมายเลขคิว : <span style={{ color: 'red' }}>{queue_token}</span></Typography>
-                          {userId && (
-                            <Typography variant="h4">
-                              เลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>
-                            </Typography>
-                          )}
-                        </Grid>
-                        <Grid item xs={6} align="right">
                           {(queues.step2_status === "waiting" || queues.step2_status === "none") && (
                             <QueueNow productComId={queues.product_company_id} />
                           )}
+                          {/* {userId && (
+                            <Typography variant="h4">
+                              เลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>
+                            </Typography>
+                          )} */}
                         </Grid>
+                        {/* <Grid item xs={6} align="right">
+                          {(queues.step2_status === "waiting" || queues.step2_status === "none") && (
+                            <QueueNow productComId={queues.product_company_id} />
+                          )}
+                        </Grid> */}
                         <Grid item xs={12} align="right">
                           <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 2 }} />
                         </Grid>
@@ -666,17 +669,17 @@ function QueueDetail({ sx }) {
                     ) : (
                       <div>
                         <Grid item xs={12}>
-                          <Stack justifyContent="space-between" flexDirection="row">
-                            <Typography variant="h4">
-                              หมายเลขคิว : {' '} <span style={{ color: 'red' }}> {queue_token}</span>{'  '}
+                          {/* <Stack justifyContent="space-between" flexDirection="row"> */}
+                          <Typography variant="h4">
+                            หมายเลขคิว : {' '} <span style={{ color: 'red' }}> {queue_token}</span>{'  '}
 
-                              (เลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>)
-                              {/* <span style={{ color: 'red' }}>{queueNumber}</span> */}
-                            </Typography>
-                            {(queues.step2_status === "waiting" || queues.step2_status === "none") && (
-                              <QueueNow productComId={queues.product_company_id} />
-                            )}
-                          </Stack>
+                            {/* (เลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>) */}
+                            {/* <span style={{ color: 'red' }}>{queueNumber}</span> */}
+                          </Typography>
+                          {(queues.step2_status === "waiting" || queues.step2_status === "none") && (
+                            <QueueNow productComId={queues.product_company_id} />
+                          )}
+                          {/* </Stack> */}
                           <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                         </Grid>
 
@@ -905,7 +908,12 @@ const VerticalStepper = ({ activeStep, steps, queue_token, queues, orders, total
         {steps.map((label, index) => (
           <Step key={index}>
             <StepLabel>
-              <Typography variant="h5">{label}</Typography>
+              <Stack flexDirection="row" justifyContent="space-between">
+                <Typography variant="h5">{label}</Typography>
+                <Typography variant="h5" sx={{ mr: '40%' }}>เวลา :
+                  {stepDetail[index]?.end_time ? ' ' + stepDetail[index].end_time.slice(11, 16) + ' น.' : ' -- : -- น.'}
+                </Typography>
+              </Stack>
             </StepLabel>
             {/* <StepContent>
             {activeStep < 3 && (
@@ -941,10 +949,14 @@ const HorizontalStepper = ({ activeStep, steps, queue_token, queues, orders, tot
   <div>
     <MainCard>
       <Stepper activeStep={activeStep} alternativeLabel sx={{ ml: '-8%' }}>
+
         {steps.map((label, index) => (
           <Step key={index}>
             <StepLabel>
               <Typography variant="h5">{label}</Typography>
+              <Typography variant="h5">เวลา :
+                {stepDetail[index]?.end_time ? ' ' + stepDetail[index].end_time.slice(11, 16) + ' น.' : ' -- : --'}
+              </Typography>
             </StepLabel>
           </Step>
         ))}

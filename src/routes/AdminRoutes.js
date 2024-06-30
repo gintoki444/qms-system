@@ -98,12 +98,12 @@ const AdminsRoutes = {
       children: [
         {
           path: '',
-          element: <ManageTeamLoading />
-          // element: <ManageTeamNew />
+          // element: <ManageTeamLoading />
+          element: <ManageTeamNew />
         },
         {
           path: 'manage-page-own',
-          element: <ManageTeamNew />
+          element: <ManageTeamLoading />
         },
         {
           path: 'manage-page',

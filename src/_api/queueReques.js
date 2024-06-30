@@ -14,7 +14,6 @@ export const getQueueTokenByIdCom = async (id, startDate, endDate) => {
   const result = await response.json();
   return result;
 };
-
 // ==============================|| ข้อมูลคิว แสดงข้อมูลคิวด้วย ID ||============================== //
 export const getQueueDetailID = async (id) => {
   const requestOptions = {
@@ -26,6 +25,18 @@ export const getQueueDetailID = async (id) => {
   return result;
 };
 
+export const getQueueNowByComId = async (stateDate, endDate, id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  console.log(stateDate);
+  console.log(endDate);
+  const response = await fetch(apiUrl + `/queues/countcompanycode?start_date=${stateDate}&end_date=${endDate}&company_id=${id}`, requestOptions);
+  // const response = await fetch(apiUrl + `/queues/countcompanycode?start_date=2024-06-29&end_date=2024-06-29&company_id=${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
 // ==============================|| ข้อมูลทุกสเตป ด้วย ID คิว ||============================== //
 export const getAllStepById = async (id) => {
   const requestOptions = {

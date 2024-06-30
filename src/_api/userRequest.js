@@ -87,3 +87,16 @@ export const postLogin = async (data) => {
   const result = await response.json();
   return result;
 };
+
+
+// ==============================|| ลบข้อมูล user By userID ||============================== //
+export const deleteUser = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/deleteuser/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};

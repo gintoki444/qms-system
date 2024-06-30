@@ -34,6 +34,7 @@ import {
 import { EditOutlined } from '@ant-design/icons';
 
 import CancleTeamStation from 'components/@extended/CancleTeamStation';
+import AddTeamLoading from './step0-forms/AddTeamLoading';
 
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
@@ -232,6 +233,7 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
 
   const handleSetReload = (refresh) => {
     if (refresh === true) {
+      setLoading(true);
       getQueue();
     }
   }
@@ -298,11 +300,16 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
                       )}
                       <TableCell align="center">
                         <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
+                          <AddTeamLoading
+                            id={row.reserve_id}
+                            handleReload={handleSetReload}
+                            token={<QueueTag id={row.product_company_id} token={row.token} />}
+                          />
                           <Tooltip title="แก้ไข">
                             <span>
                               <Button
                                 variant="contained"
-                                sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                                sx={{ minWidth: '33px!important', p: '6px 0px', display: 'none' }}
                                 size="medium"
                                 color="primary"
                                 disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}

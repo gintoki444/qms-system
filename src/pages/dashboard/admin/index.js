@@ -31,7 +31,8 @@ const AdminDashboard = () => {
   const currentDate = moment(new Date()).format('YYYY-MM-DD');
   // const getNowDate = moment(new Date()).format('YYYY-MM-DD');
 
-  const currentDateTH = moment().locale('th').format('LL');
+  // const currentDateTH = moment().locale('th').format('LL');
+  const [queueSummary, setQueueSummary] = useState({});
 
   // const [value, setValue] = useState('today');
   // const [slot, setSlot] = useState('week');
@@ -52,20 +53,19 @@ const AdminDashboard = () => {
     // const intervalId = setInterval(fetchData, 6000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิลลิวินาที)
 
     // return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
-  }, [selectedDateRange]);
+  }, [selectedDateRange, queueSummary]);
 
   const fetchData = async () => {
-    getQueuesSummary();
+    // getQueuesSummary();
     getQueuesSummTimes();
     getQueuesSummTimeStep2();
   };
 
-  const [queueSummary, setQueueSummary] = useState({});
-  const getQueuesSummary = () => {
-    dashboardRequest.getQueuesSummary(selectedDateRange.startDate, selectedDateRange.endDate).then((response) => {
-      setQueueSummary(response);
-    });
-  };
+  // const getQueuesSummary = () => {
+  //   dashboardRequest.getQueuesSummary(selectedDateRange.startDate, selectedDateRange.endDate).then((response) => {
+  //     setQueueSummary(response);
+  //   });
+  // };
 
   const [queueSumTime, setQueueSumTime] = useState('');
   const getQueuesSummTimes = () => {
@@ -129,6 +129,28 @@ const AdminDashboard = () => {
   const handleGetData = (data) => {
     getProductCompany(data);
   }
+
+  // const [queueSummary, setQueueSummary] = useState({});
+  const handleGetSummary = async (data) => {
+    const dataList = data;
+    const summaryData = {
+      sum_no_order: 0,
+      sum_cars_count: 0,
+      sum_total_quantity: 0,
+      sum_total_order: 0,
+    }
+    if (dataList.length > 0) {
+      await dataList.map((x) => {
+        const setnumber = parseFloat(x.step2_total_quantity);
+        summaryData.sum_no_order = summaryData.sum_no_order + (x.no_order_queues_count - x.step1_cancel_count_no_order);
+        summaryData.sum_cars_count = summaryData.sum_cars_count + x.queues_counts;
+        summaryData.sum_total_quantity = (summaryData.sum_total_quantity + setnumber);
+        summaryData.sum_total_order = summaryData.sum_total_order + x.queues_counts_orderonly;
+      })
+    }
+    // console.log(summaryData);
+    setQueueSummary(summaryData);
+  }
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
       <Grid item xs={12} sm={12} md={12} lg={12}>
@@ -136,7 +158,7 @@ const AdminDashboard = () => {
           <Grid container rowSpacing={4.5} columnSpacing={2.75}>
             {/* row 1 */}
             <Grid item xs={12} sx={{ mb: -2.25 }}>
-              <Typography variant="h5">แดชบอร์ด : วันที่ {currentDateTH}</Typography>
+              <Typography variant="h5">แดชบอร์ด : วันที่  {moment(selectedDateRange.startDate).locale('th').format('LL')}</Typography>
             </Grid>
 
             <Grid item xs={12} >
@@ -182,16 +204,28 @@ const AdminDashboard = () => {
             </Grid>
             <Grid item xs={12} sx={{ mb: -2.25 }}>
               <Stack justifyContent="row" flexDirection="row">
-                <Typography variant="h5" sx={{ p: '0 20px' }}>
+                <Typography variant="h5" sx={{ p: '0 10px' }}>
                   จำนวนรถทั้งหมด :
                   <span style={{ padding: '5px 20px', margin: '10px', border: 'solid 1px #eee', borderRadius: 5 }}>
-                    {queueSummary?.cars_count ? queueSummary.cars_count : '0'}
+                    {queueSummary?.sum_cars_count ? queueSummary.sum_cars_count : '0'}
                   </span>
                   คัน
                 </Typography>
-                <Typography variant="h5">จำนวนเข้ารับสินค้าทั้งหมด :
+                <Typography variant="h5" sx={{ p: '0 10px' }}>รอคำสั่งซื้อทั้งหมด :
                   <span style={{ padding: '5px 20px', margin: '10px', border: 'solid 1px #eee', borderRadius: 5 }}>
-                    {queueSummary?.total_quantity ? parseFloat(queueSummary.total_quantity) : '0'}
+                    {queueSummary?.sum_no_order ? parseFloat(queueSummary.sum_no_order) : '0'}
+                  </span>
+                  คัน
+                </Typography>
+                <Typography variant="h5" sx={{ p: '0 10px' }}>จำนวนรถที่ได้รับคำสั่งซื้อ :
+                  <span style={{ padding: '5px 20px', margin: '10px', border: 'solid 1px #eee', borderRadius: 5 }}>
+                    {queueSummary?.sum_total_order ? parseFloat(queueSummary.sum_total_order) : '0'}
+                  </span>
+                  คัน
+                </Typography>
+                <Typography variant="h5" sx={{ p: '0 10px' }}> จำนวน
+                  <span style={{ padding: '5px 20px', margin: '10px', border: 'solid 1px #eee', borderRadius: 5 }}>
+                    {queueSummary?.sum_total_quantity ? parseFloat(queueSummary.sum_total_quantity) : '0'}
                   </span>
                   ตัน
                 </Typography>
@@ -225,8 +259,8 @@ const AdminDashboard = () => {
                     title={`เวลาการขึ้นสินค้า : ${queueSumTimeStep2?.step2_total_duration_minutes && queueSumTimeStep2?.step2_total_duration_minutes !== null ?
                       parseFloat(queueSumTimeStep2.step2_total_duration_minutes).toFixed(2)
                       : '0'} นาที`}
-                    count={`เฉลี่ย ${queueSumTimeStep2 ? parseFloat(queueSumTimeStep2.step2_average_minutes).toFixed(2) : '0'} นาที/คัน`}
-                    extra={`${queueSumTimeStep2 && queueSumTimeStep2?.step2_total_quantity !== null ? parseFloat(queueSumTimeStep2?.step2_total_quantity).toFixed(2) : '0'}`}
+                    count={`เฉลี่ย ${queueSumTimeStep2.step2_average_minutes ? parseFloat(queueSumTimeStep2.step2_average_minutes).toFixed(2) : '0'} นาที/คัน`}
+                    extra={`${queueSumTimeStep2?.step2_total_quantity && queueSumTimeStep2?.step2_total_quantity !== null ? parseFloat(queueSumTimeStep2?.step2_total_quantity).toFixed(2) : '0'}`}
                     subtitle="ยอดรวมสินค้าที่จ่าย : "
                     color="warning"
                     unit=" ตัน"
@@ -237,7 +271,7 @@ const AdminDashboard = () => {
             {/* row 2 */}
             <Grid item xs={12} md={12} lg={12}>
               <MainCard sx={{ mt: 2 }} content={false}>
-                <SummaryQueueList startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} />
+                <SummaryQueueList startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} dataList={handleGetSummary} />
               </MainCard>
             </Grid>
 
@@ -245,7 +279,7 @@ const AdminDashboard = () => {
             <Grid item xs={12} md={12} lg={12}>
               <Grid container alignItems="center" justifyContent="space-between">
                 <Grid item xs={12} >
-                  <Typography variant="h4">รายการจ่ายสินค้าประจำวัน {moment().locale('th').format('LL')}</Typography>
+                  <Typography variant="h4">รายการจ่ายสินค้าประจำวัน {moment(selectedDateRange.startDate).locale('th').format('LL')}</Typography>
                 </Grid>
                 <Grid item xs={12} sx={{ mt: 2 }}>
                   <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">

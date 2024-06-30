@@ -144,7 +144,7 @@ OrderTableHead.propTypes = {
     orderBy: PropTypes.string
 };
 
-function SummaryQueueList({ startDate, endDate }) {
+function SummaryQueueList({ startDate, endDate, dataList }) {
     // const [order] = useState('asc');
     // const [orderBy] = useState('trackingNo');
     // const [selected] = useState([]);
@@ -167,6 +167,7 @@ function SummaryQueueList({ startDate, endDate }) {
         try {
             dashboardRequest.getCompanyCounts(startDate, endDate).then((response) => {
                 setItems(response);
+                dataList(response);
             })
         } catch (error) {
             console.log(error)
@@ -216,10 +217,10 @@ function SummaryQueueList({ startDate, endDate }) {
                                             <Typography variant='body1'>{row.queues_counts}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
-                                            <Typography variant='body1'>{'-'}</Typography>
+                                            <Typography variant='body1'>{row.step1_cancel_count}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
-                                            <Typography variant='body1'>{row.no_order_queues_count}</Typography>
+                                            <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
                                             <Typography variant='body1'>{row.step1_waiting_count}</Typography>
@@ -255,7 +256,7 @@ function SummaryQueueList({ startDate, endDate }) {
                                             <Typography variant='h5'>{row.step2_cars_count + ' คัน'}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="right" colSpan={2}>
-                                            <strong>จำนวนเข้ารับสินค้าทั้งหมด </strong>
+                                            <strong>จำนวนสินค้าที่เข้ารับทั้งหมด </strong>
                                         </StyledTableCell>
                                         <StyledTableCell align="left" colSpan={2}>
                                             <Typography variant='h5'>

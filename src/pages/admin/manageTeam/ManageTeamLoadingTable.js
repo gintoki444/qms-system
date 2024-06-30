@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import {
   Table,
   TableHead,
@@ -9,20 +9,22 @@ import {
   TableContainer,
   Box,
   ButtonGroup,
-  Button,
-  Tooltip,
+  // Button,
+  // Tooltip,
   Typography,
   CircularProgress
 } from '@mui/material';
 
-import {
-  EditOutlined
-  // , DeleteOutlined
-} from '@ant-design/icons';
+// import {
+//   EditOutlined
+//   // , DeleteOutlined
+// } from '@ant-design/icons';
 // import moment from 'moment';
 
 // Link api url
 import * as adminRequest from '_api/adminRequest';
+import ResetTeamLoading from './manage-team-form/ResetTeamLoading';
+import AddManageTeam from './manage-team-form/AddManageTeam';
 // import * as addminRequest from '_api/adminRequest';
 
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
@@ -114,32 +116,22 @@ function ManageTeamLoadingTable({ permission }) {
         setTeamDataList(response);
         setOpen(false);
       });
-      // const teamDataList = await adminRequest.getAllLoadingTeam();
-      // console.log(teamDataList)
-      // if (teamDataList.length === 0) {
-      //   return [];
-      // }
-
-      // const detailedTeamsPromises = teamDataList.map(async (team) => {
-      //   const teamDetails = await adminRequest.getLoadingTeamById(team.team_id);
-      //   setOpen(false);
-      //   return { ...team, ...teamDetails };
-      // });
-
-      // const detailedTeams = await Promise.all(detailedTeamsPromises);
-      // console.log('detailedTeams :', detailedTeams)
-
-      // setOpen(false);
-      // return detailedTeams;
     } catch (error) {
       console.log(error);
     }
   };
 
-  const navigate = useNavigate();
-  const updateWareHouse = (id) => {
-    navigate('/admin/manage-team-loading/add/' + id);
-  };
+  const handleResetClick = (onReload) => {
+    if (onReload) {
+      setOpen(true);
+      getAllTeamLoading();
+    }
+  }
+
+  // const navigate = useNavigate();
+  // const updateWareHouse = (id) => {
+  //   navigate('/admin/manage-team-loading/add/' + id);
+  // };
 
   return (
     <Box>
@@ -173,7 +165,7 @@ function ManageTeamLoadingTable({ permission }) {
                   <TableRow key={index}>
                     <TableCell align="center">{index + 1}</TableCell>
                     <TableCell align="left">{row.team_name}</TableCell>
-                    <TableCell align="left">{row.description}</TableCell>
+                    <TableCell align="left">{row.team_warehouse_name}</TableCell>
                     <TableCell align="left">
                       {row.team_managers.length > 0 ?
                         row.team_managers.map((teamCheck, indexCheck) => (
@@ -214,7 +206,8 @@ function ManageTeamLoadingTable({ permission }) {
                     </TableCell>
                     <TableCell align="center">
                       <ButtonGroup variant="contained" aria-label="Basic button group">
-                        <Tooltip title="แก้ไข">
+                        <AddManageTeam id={row.team_id} handleClickReset={handleResetClick} />
+                        {/* <Tooltip title="แก้ไข">
                           <Button
                             variant="contained"
                             size="medium"
@@ -224,7 +217,8 @@ function ManageTeamLoadingTable({ permission }) {
                           >
                             <EditOutlined />
                           </Button>
-                        </Tooltip>
+                        </Tooltip> */}
+                        <ResetTeamLoading dataList={row} handleClickReset={handleResetClick} />
                         {/* <Tooltip title="ลบ">
                           <Button
                             variant="contained"
