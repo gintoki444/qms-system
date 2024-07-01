@@ -141,7 +141,7 @@ const AdminDashboard = () => {
     }
     if (dataList.length > 0) {
       await dataList.map((x) => {
-        const setnumber = parseFloat(x.step2_total_quantity);
+        const setnumber = x.step2_total_quantity ? parseFloat(x.step2_total_quantity) : 0;
         summaryData.sum_no_order = summaryData.sum_no_order + (x.no_order_queues_count - x.step1_cancel_count_no_order);
         summaryData.sum_cars_count = summaryData.sum_cars_count + x.queues_counts;
         summaryData.sum_total_quantity = (summaryData.sum_total_quantity + setnumber);
