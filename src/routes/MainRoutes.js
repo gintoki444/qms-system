@@ -11,7 +11,9 @@ const Reserve = Loadable(lazy(() => import('pages/reserve/Reserve')));
 const ReserveDetail = Loadable(lazy(() => import('pages/reserve/ReserveDetail')));
 const AddReserve = Loadable(lazy(() => import('pages/reserve/reserve-forms/AddReserve')));
 const UpdateReserve = Loadable(lazy(() => import('pages/reserve/reserve-forms/UpdateReserve')));
+
 const AddOrder = Loadable(lazy(() => import('pages/order/order-forms/AddOrder')));
+const GetOrderNavision = Loadable(lazy(() => import('pages/order/order-forms/GetOrderNavision')));
 
 // Queues List
 const Queues = Loadable(lazy(() => import('pages/queues/Queues')));
@@ -90,6 +92,10 @@ const MainRoutes = {
         {
           path: 'add/:id',
           element: <AddOrder />
+        },
+        {
+          path: 'getOrderNavtion',
+          element: <GetOrderNavision />
         }
       ]
     },

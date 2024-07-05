@@ -25,6 +25,7 @@ import SummaryQueueList from './SummaryQueueList';
 import QueueTab from 'components/@extended/QueueTab';
 
 import { SearchOutlined } from '@ant-design/icons';
+import { filterProductCom } from 'components/Function/FilterProductCompany';
 // ==============================|| DASHBOARD - DEFAULT ||============================== //
 
 const AdminDashboard = () => {
@@ -103,14 +104,30 @@ const AdminDashboard = () => {
 
   const [items, setItems] = useState([]);
   const [companyList, setCompanyList] = useState([]);
-  const getProductCompany = (dataList) => {
-    stepRequest.getAllProductCompany().then((response) => {
+  // const getProductCompany = (dataList) => {
+  //   stepRequest.getAllProductCompany().then((response) => {
+  //     if (response.length > 0) {
+  //       response.map((x) => {
+  //         let countCompany = dataList.filter((i) => i.product_company_id == x.product_company_id).length;
+
+  //         setItems((prevState) => ({
+  //           ...prevState,
+  //           [x.product_company_id]: countCompany
+  //         }));
+  //       });
+  //     }
+  //     setCompanyList(response);
+  //   });
+  // };
+  const getProductCompany = async (dataList) => {
+    try {
+      const response = await stepRequest.getAllProductCompany(); // รอการดึงข้อมูลจาก API
+      const companyList = await filterProductCom(response); // รอการเรียงลำดับ
+      // console.log('companyList :', companyList);
 
       if (response.length > 0) {
         response.map((x) => {
-          let countCompany = dataList.filter(
-            (i) => i.product_company_id == x.product_company_id
-          ).length;
+          let countCompany = dataList.filter((i) => i.product_company_id == x.product_company_id).length;
 
           setItems((prevState) => ({
             ...prevState,
@@ -118,17 +135,23 @@ const AdminDashboard = () => {
           }));
         });
       }
-      setCompanyList(response);
-    });
+      setCompanyList(companyList);
+      return companyList;
+    } catch (error) {
+      console.error('Error fetching product companies:', error);
+      return [];
+    }
   };
   const [valueFilter, setValueFilter] = useState(0);
-  const handleChange = (newValue) => {
-    setValueFilter(newValue - 1);
+  const [dataFilter, setDataFilter] = useState(1);
+  const handleChange = (newValue, proId) => {
+    setValueFilter(newValue);
+    setDataFilter(proId);
   };
 
   const handleGetData = (data) => {
     getProductCompany(data);
-  }
+  };
 
   // const [queueSummary, setQueueSummary] = useState({});
   const handleGetSummary = async (data) => {
@@ -137,20 +160,20 @@ const AdminDashboard = () => {
       sum_no_order: 0,
       sum_cars_count: 0,
       sum_total_quantity: 0,
-      sum_total_order: 0,
-    }
+      sum_total_order: 0
+    };
     if (dataList.length > 0) {
       await dataList.map((x) => {
-        const setnumber = x.step2_total_quantity ? parseFloat(x.step2_total_quantity) : 0;
+        const setnumber = x.total_quantity_orderonly ? parseFloat(x.total_quantity_orderonly) : 0;
         summaryData.sum_no_order = summaryData.sum_no_order + (x.no_order_queues_count - x.step1_cancel_count_no_order);
-        summaryData.sum_cars_count = summaryData.sum_cars_count + x.queues_counts;
-        summaryData.sum_total_quantity = (summaryData.sum_total_quantity + setnumber);
+        summaryData.sum_cars_count = summaryData.sum_cars_count + (x.queues_counts - x.step1_cancel_count);
+        summaryData.sum_total_quantity = summaryData.sum_total_quantity + setnumber;
         summaryData.sum_total_order = summaryData.sum_total_order + x.queues_counts_orderonly;
-      })
+      });
     }
     // console.log(summaryData);
     setQueueSummary(summaryData);
-  }
+  };
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
       <Grid item xs={12} sm={12} md={12} lg={12}>
@@ -211,13 +234,15 @@ const AdminDashboard = () => {
                   </span>
                   คัน
                 </Typography>
-                <Typography variant="h5" sx={{ p: '0 10px' }}>รอคำสั่งซื้อทั้งหมด :
+                <Typography variant="h5" sx={{ p: '0 10px' }}>
+                  รอคำสั่งซื้อทั้งหมด :
                   <span style={{ padding: '5px 20px', margin: '10px', border: 'solid 1px #eee', borderRadius: 5 }}>
                     {queueSummary?.sum_no_order ? parseFloat(queueSummary.sum_no_order) : '0'}
                   </span>
                   คัน
                 </Typography>
-                <Typography variant="h5" sx={{ p: '0 10px' }}>จำนวนรถที่ได้รับคำสั่งซื้อ :
+                <Typography variant="h5" sx={{ p: '0 10px' }}>
+                  จำนวนรถที่ได้รับคำสั่งซื้อ :
                   <span style={{ padding: '5px 20px', margin: '10px', border: 'solid 1px #eee', borderRadius: 5 }}>
                     {queueSummary?.sum_total_order ? parseFloat(queueSummary.sum_total_order) : '0'}
                   </span>
@@ -225,7 +250,7 @@ const AdminDashboard = () => {
                 </Typography>
                 <Typography variant="h5" sx={{ p: '0 10px' }}> จำนวน
                   <span style={{ padding: '5px 20px', margin: '10px', border: 'solid 1px #eee', borderRadius: 5 }}>
-                    {queueSummary?.sum_total_quantity ? parseFloat(queueSummary.sum_total_quantity) : '0'}
+                    {queueSummary?.sum_total_quantity ? parseFloat(queueSummary.sum_total_quantity).toFixed(2) : '0'}
                   </span>
                   ตัน
                 </Typography>
@@ -256,8 +281,8 @@ const AdminDashboard = () => {
                 </Grid>
                 <Grid item xs={12}>
                   <AnalyticQueues
-                    title={`เวลาการขึ้นสินค้า : ${queueSumTimeStep2?.step2_total_duration_minutes && queueSumTimeStep2?.step2_total_duration_minutes !== null ?
-                      parseFloat(queueSumTimeStep2.step2_total_duration_minutes).toFixed(2)
+                    title={`เวลาการขึ้นสินค้า : ${queueSumTimeStep2?.step2_total_duration_minutes &&
+                      queueSumTimeStep2?.step2_total_duration_minutes !== null ? parseFloat(queueSumTimeStep2.step2_total_duration_minutes).toFixed(2)
                       : '0'} นาที`}
                     count={`เฉลี่ย ${queueSumTimeStep2.step2_average_minutes ? parseFloat(queueSumTimeStep2.step2_average_minutes).toFixed(2) : '0'} นาที/คัน`}
                     extra={`${queueSumTimeStep2?.step2_total_quantity && queueSumTimeStep2?.step2_total_quantity !== null ? parseFloat(queueSumTimeStep2?.step2_total_quantity).toFixed(2) : '0'}`}
@@ -290,14 +315,20 @@ const AdminDashboard = () => {
                           id={(company.product_company_id)}
                           numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                           txtLabel={company.product_company_name_th2}
-                          onSelect={() => handleChange(company.product_company_id)}
+                          onSelect={() => handleChange(index, company.product_company_id)}
+                        // onSelect={() => handleChange(company.product_company_id)}
                         />
                       ))}
                   </Tabs>
                 </Grid>
               </Grid>
               <MainCard sx={{ mt: 2 }} content={false}>
-                <OrderTable startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} onFilter={valueFilter} dataList={handleGetData} />
+                <OrderTable
+                  startDate={selectedDateRange.startDate}
+                  endDate={selectedDateRange.endDate}
+                  onFilter={dataFilter}
+                  dataList={handleGetData}
+                />
               </MainCard>
             </Grid>
           </Grid>

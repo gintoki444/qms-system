@@ -149,7 +149,7 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
     reportRequest
       .getOrdersProductByOrder(startDate, endDate)
       .then((result) => {
-        setItems(result.filter((x) => x.product_company_id === (onFilter + 1)));
+        setItems(result.filter((x) => x.product_company_id === onFilter));
         dataList(result);
         setLoading(false);
       })

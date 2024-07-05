@@ -26,6 +26,9 @@ const QueueTab = ({ id, numQueue, txtLabel, onSelect }) => {
     case 6:
       main = '#17cf6c';
       break;
+    case 9:
+      main = '#17cf6c';
+      break;
     case 7:
       main = '#f9acc0';
       break;

@@ -148,7 +148,7 @@ function StepCompletedForm({ stepId, startDate, endDate }) {
                     key={headCell.id}
                     align={headCell.align}
                     padding={headCell.disablePadding ? 'none' : 'normal'}
-                    // sortDirection={orderBy === headCell.id ? order : false}
+                  // sortDirection={orderBy === headCell.id ? order : false}
                   >
                     {headCell.label}
                   </TableCell>
@@ -249,7 +249,7 @@ function StepCompletedForm({ stepId, startDate, endDate }) {
                     <TableCell align="center">
                       <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px' }}>
                         {/* {moment(row.end_time).tz('America/Los_Angeles').format('DD/MM/yyyy')} */}
-                        {moment(row.end_time.slice(0, 10)).format('DD/MM/yyyy')}
+                        {row.end_time ? moment(row.end_time.slice(0, 10)).format('DD/MM/yyyy') : '-'}
                       </div>
                     </TableCell>
                     <TableCell align="center">
@@ -269,7 +269,11 @@ function StepCompletedForm({ stepId, startDate, endDate }) {
                     <TableCell align="center">{row.elapsed_time ? row.elapsed_time : '-'}</TableCell>
                     {(stepId === 1 || stepId === 3) && <TableCell align="center">{stepId === 1 ? row.weight1 : row.weight2}</TableCell>}
                     <TableCell align="center">
-                      <Chip color={'success'} label={'สำเร็จ'} sx={{ minWidth: '78.7px!important' }} />
+                      {row.status === 'completed' ? (
+                        <Chip color={'success'} label={'สำเร็จ'} sx={{ minWidth: '78.7px!important' }} />
+                      ) : (
+                        <Chip color={'error'} label={'ยกเลิก'} sx={{ minWidth: '78.7px!important' }} />
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

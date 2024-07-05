@@ -28,15 +28,16 @@ import * as Yup from 'yup';
 import { Formik } from 'formik';
 
 // project import
-import AnimateButton from 'components/@extended/AnimateButton';
+// import AnimateButton from 'components/@extended/AnimateButton';
 // import { strengthColor, strengthIndicator } from 'utils/password-strength';
 import moment from 'moment';
 
 // assets
-// import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { SaveOutlined, RollbackOutlined } from '@ant-design/icons';
 
 // Link api user
 import * as getUsers from '_api/userRequest';
+import ResetPassword from './ResetPassword';
 
 function UpdateUser() {
   const pageId = 16;
@@ -145,6 +146,10 @@ function UpdateUser() {
       setErrors({ submit: err.message });
       setSubmitting(false);
     }
+  };
+
+  const backToPages = () => {
+    navigate('/admin/users/');
   };
   return (
     <>
@@ -278,22 +283,34 @@ function UpdateUser() {
                             <FormHelperText error>{errors.submit}</FormHelperText>
                           </Grid>
                         )}
-                        <Grid item xs={12}>
-                          <AnimateButton>
-                            <Button
-                              disabled={
-                                isSubmitting ||
-                                (pageDetail[0].permission_name !== 'manage_everything' &&
-                                  pageDetail[0].permission_name !== 'add_edit_delete_data')
-                              }
-                              size="large"
-                              type="submit"
-                              variant="contained"
-                              color="primary"
-                            >
-                              บันทึกข้อมูล
-                            </Button>
-                          </AnimateButton>
+                        <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
+                          <Button
+                            disabled={
+                              isSubmitting ||
+                              (pageDetail[0].permission_name !== 'manage_everything' &&
+                                pageDetail[0].permission_name !== 'add_edit_delete_data')
+                            }
+                            size="mediam"
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            startIcon={<SaveOutlined />}
+                          >
+                            บันทึกข้อมูล
+                          </Button>
+                          <ResetPassword userData={initialValue} />
+
+                          <Button
+                            size="mediam"
+                            variant="contained"
+                            color="error"
+                            onClick={() => {
+                              backToPages();
+                            }}
+                            startIcon={<RollbackOutlined />}
+                          >
+                            ยกเลิก
+                          </Button>
                         </Grid>
                       </Grid>
                     </form>

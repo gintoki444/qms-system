@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-import { Grid, Stack, Button, Box, TextField, Alert, Badge, Tabs, Tab } from '@mui/material';
+import {
+  Grid, Stack, Button, Box, TextField, Alert, Badge, Tabs, Tab, Checkbox, FormControlLabel
+} from '@mui/material';
 import MainCard from 'components/MainCard';
 import { SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import QueueTab from 'components/@extended/QueueTab';
@@ -14,13 +16,17 @@ const currentDate = moment(new Date()).format('YYYY-MM-DD');
 import ReserveTable from './ReserveTable';
 import * as stepRequest from '_api/StepRequest';
 
+import { filterProductCom } from 'components/Function/FilterProductCompany';
+
 function Reserve() {
   const pageId = 8;
   const userRole = useSelector((state) => state.auth?.roles);
   const userPermission = useSelector((state) => state.auth?.user_permissions);
 
-  let startDate = localStorage.getItem('reserve_startDate');
-  let endDate = localStorage.getItem('reserve_endDate');
+  // let startDate = localStorage.getItem('reserve_startDate');
+  // let endDate = localStorage.getItem('reserve_endDate');
+  let startDate = '';
+  let endDate = '';
   const [pageDetail, setPageDetail] = useState([]);
 
   useEffect(() => {
@@ -29,18 +35,38 @@ function Reserve() {
     }
   }, [userRole, userPermission, startDate, endDate]);
 
-
   const [companyList, setCompanyList] = useState([]);
   const [items, setItems] = useState([]);
   const [countAllQueue, setCountAllQueue] = useState(0);
-  const getProductCompany = (dataList) => {
-    stepRequest.getAllProductCompany().then((response) => {
+  // const getProductCompany = async (dataList) => {
+  //   await stepRequest.getAllProductCompany().then((response) => {
+
+  //     const companyList = filterProductCom(response);
+  //     console.log('companyList :', companyList);
+  //     if (response.length > 0) {
+  //       response.map((x) => {
+  //         let countCompany = dataList.filter((i) => i.product_company_id == x.product_company_id).length;
+
+  //         setItems((prevState) => ({
+  //           ...prevState,
+  //           [x.product_company_id]: countCompany
+  //         }));
+  //       });
+  //     }
+
+  //     setCompanyList(companyList);
+  //     setCountAllQueue(dataList.length);
+  //   });
+  // };
+  const getProductCompany = async (dataList) => {
+    try {
+      const response = await stepRequest.getAllProductCompany(); // รอการดึงข้อมูลจาก API
+      const companyList = await filterProductCom(response); // รอการเรียงลำดับ
+      // console.log('companyList :', companyList);
 
       if (response.length > 0) {
         response.map((x) => {
-          let countCompany = dataList.filter(
-            (i) => i.product_company_id == x.product_company_id
-          ).length;
+          let countCompany = dataList.filter((i) => i.product_company_id == x.product_company_id).length;
 
           setItems((prevState) => ({
             ...prevState,
@@ -48,43 +74,15 @@ function Reserve() {
           }));
         });
       }
-
-      setCompanyList(response);
+      setCompanyList(companyList);
+      // console.log(dataList.length)
       setCountAllQueue(dataList.length);
-    });
+      return companyList;
+    } catch (error) {
+      console.error('Error fetching product companies:', error);
+      return [];
+    }
   };
-
-  // const waitingGet = async (company) => {
-  //   try {
-
-  //     let urlGet = '';
-  //     if (pageDetail.length > 0 && pageDetail[0].permission_name !== 'no_access_to_view_data') {
-  //       urlGet = '/allreservesrange?pickup_date1=' + startDate + '&pickup_date2=' + endDate;
-  //     } else {
-  //       urlGet = '/allreservespickup2?user_id=' + userId + '&pickup_date1=' + startDate + '&pickup_date2=' + endDate;
-  //     }
-
-  //     await reserveRequest.getAllReserveByUrl(urlGet).then((response) => {
-  //       if (company.length > 0) {
-  //         company.map((x) => {
-  //           let countCompany = response.filter(
-  //             (i) => i.product_company_id == x.product_company_id
-  //           ).length;
-
-  //           setItems((prevState) => ({
-  //             ...prevState,
-  //             [x.product_company_id]: countCompany
-  //           }));
-  //         });
-  //       }
-
-  //       setCompanyList(company);
-  //       setCountAllQueue(response.length);
-  //     });
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // };
 
   if (!startDate) {
     startDate = currentDate;
@@ -123,13 +121,33 @@ function Reserve() {
   };
 
   const [valueFilter, setValueFilter] = useState(0);
-  const handleChange = (newValue) => {
+  const [dataFilter, setDataFilter] = useState(0);
+  const handleChange = (newValue, proId) => {
     setValueFilter(newValue);
+    setDataFilter(proId);
   };
 
   const handleReserveData = (data) => {
     getProductCompany(data);
-  }
+  };
+
+  const [statusFilter, setStatusFilter] = useState({
+    completed: false,
+    cancle: false,
+    waiting: false,
+    waiting_order: false
+  });
+  const handleCheckboxChange = (event) => {
+    setStatusFilter({
+      ...statusFilter,
+      [event.target.name]: event.target.checked
+    });
+  };
+
+  // const [checkedSuccess, setCheckedSuccess] = useState(false);
+  // const handleCheckboxChange = (event) => {
+  //   setCheckedSuccess(event.target.checked);
+  // };
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
       {userRole === 5 && (
@@ -169,17 +187,141 @@ function Reserve() {
               />
             </Stack>
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={1}>
             <Button size="mediam" color="primary" variant="contained" onClick={() => handleSearch()} startIcon={<SearchOutlined />}>
               ค้นหา
             </Button>
           </Grid>
-          <Grid item xs={12} md={3} align="right">
+          <Grid item xs={12} md={5} align="right">
             {pageDetail.length > 0 &&
               (pageDetail[0].permission_name === 'manage_everything' || pageDetail[0].permission_name === 'add_edit_delete_data') && (
-                <Button size="mediam" color="success" variant="outlined" onClick={() => addReserve()} startIcon={<PlusCircleOutlined />}>
-                  เพิ่มข้อมูล
-                </Button>
+                <>
+                  {/* <FormControlLabel
+                    control={
+                      // <Checkbox
+                      //   checked={checkedSuccess}
+                      //   onChange={handleCheckboxChange}
+                      //   color="primary"
+                      //   inputProps={{ 'aria-label': 'Checkbox' }}
+                      // />
+                      <Checkbox
+                        checked={checkedSuccess}
+                        onChange={handleCheckboxChange}
+                        sx={{
+                          fontSize: '2rem',
+                          color: '#52c41a', // สีเริ่มต้น
+                          '&.Mui-checked': {
+                            color: '#52c41a' // สีเมื่อถูกเลือก
+                          },
+                          '& .MuiSvgIcon-root': { fontSize: '2rem' }
+                        }}
+                      />
+                    }
+                    color="success"
+                    label={<span style={{ fontSize: '18px', color: '#52c41a' }}>สำเร็จ</span>}
+                  /> */}
+                  <FormControlLabel
+                    control={<Checkbox
+                      checked={statusFilter.completed}
+                      onChange={handleCheckboxChange}
+                      name="completed"
+                      sx={{
+                        p: 0,
+                        mt: -0.4,
+                        fontSize: '2rem',
+                        color: '#52c41a', // สีเริ่มต้น
+                        '&.Mui-checked': {
+                          color: '#52c41a' // สีเมื่อถูกเลือก
+                        },
+                        '& .MuiSvgIcon-root': { fontSize: '2rem' }
+                      }}
+                    />}
+                    label={<span style={{
+                      color: '#52c41a',
+                      border: 'solid 1px',
+                      padding: '2px 5px',
+                      borderRadius: '6px',
+                      marginRight: '10px'
+                    }}>สำเร็จ</span>}
+                  // label={(<Button color='success' variant="outlined" size='medium'>สำเร็จ</Button>)}
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={statusFilter.cancle} onChange={handleCheckboxChange} name="cancle"
+                      sx={{
+                        p: 0,
+                        mt: -0.4,
+                        fontSize: '2rem',
+                        color: '#8c8c8c', // สีเริ่มต้น
+                        '&.Mui-checked': {
+                          color: '#8c8c8c' // สีเมื่อถูกเลือก
+                        },
+                        '& .MuiSvgIcon-root': { fontSize: '2rem' }
+                      }}
+                    />}
+                    label={<span style={{
+                      color: '#8c8c8c',
+                      border: 'solid 1px',
+                      padding: '2px 5px',
+                      borderRadius: '6px',
+                      marginRight: '5px'
+                    }}>ยกเลิกคิว</span>}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={statusFilter.waiting}
+                        onChange={handleCheckboxChange}
+                        name="waiting"
+                        sx={{
+                          p: 0,
+                          mt: -0.4,
+                          fontSize: '2rem',
+                          color: '#faad14', // สีเริ่มต้น
+                          '&.Mui-checked': {
+                            color: '#faad14' // สีเมื่อถูกเลือก
+                          },
+                          '& .MuiSvgIcon-root': { fontSize: '2rem' }
+                        }}
+                      />}
+                    // label="รอออกคิว"
+                    label={<span style={{
+                      color: '#faad14',
+                      border: 'solid 1px',
+                      padding: '2px 5px',
+                      borderRadius: '6px',
+                      marginRight: '5px'
+                    }}>รอออกคิว</span>}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={statusFilter.waiting_order}
+                        onChange={handleCheckboxChange}
+                        name="waiting_order"
+                        sx={{
+                          p: 0,
+                          mt: -0.4,
+                          fontSize: '2rem',
+                          color: '#ff4d4f', // สีเริ่มต้น
+                          '&.Mui-checked': {
+                            color: '#ff4d4f' // สีเมื่อถูกเลือก
+                          },
+                          '& .MuiSvgIcon-root': { fontSize: '2rem' }
+                        }}
+                      />}
+                    label={<span style={{
+                      color: '#ff4d4f',
+                      border: 'solid 1px',
+                      padding: '2px 5px',
+                      borderRadius: '6px',
+                      marginRight: '5px'
+                    }}>รอคำสั่งซื้อ</span>}
+                  />
+
+                  <Button size="mediam" color="success" variant="outlined" onClick={() => addReserve()} startIcon={<PlusCircleOutlined />}>
+                    เพิ่มข้อมูล
+                  </Button>
+                </>
               )}
           </Grid>
         </Grid>
@@ -217,7 +359,8 @@ function Reserve() {
                       id={company.product_company_id}
                       numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                       txtLabel={company.product_company_name_th2}
-                      onSelect={() => handleChange(company.product_company_id)}
+                      // onSelect={() => handleChange(company.product_company_id)}
+                      onSelect={() => handleChange(index + 1, company.product_company_id)}
                     // {...a11yProps(company.product_company_id)}
                     />
                   ))}
@@ -230,8 +373,9 @@ function Reserve() {
                   startDate={selectedDateRange.startDate}
                   endDate={selectedDateRange.endDate}
                   permission={pageDetail[0].permission_name}
-                  onFilter={valueFilter}
+                  onFilter={dataFilter}
                   reserList={handleReserveData}
+                  checkFilter={statusFilter}
                 />
               </Box>
             </MainCard>

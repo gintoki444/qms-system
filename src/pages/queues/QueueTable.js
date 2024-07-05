@@ -98,16 +98,23 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
     try {
       if (userRoles == 8) {
         queueRequest.getAllqueueUserByDate(userID, startDate, endDate).then((response) => {
-          const newData = response.map((item, index) => {
-            return {
-              ...item,
-              No: index + 1
-            };
-          });
 
           if (onFilter) {
-            setItems(response.filter((x) => x.product_company_id === onFilter));
+            const filter = response.filter((x) => x.product_company_id === onFilter);
+            const newData = filter.map((item, index) => {
+              return {
+                ...item,
+                No: index + 1
+              };
+            });
+            setItems(newData.filter((x) => x.product_company_id === onFilter));
           } else {
+            const newData = response.map((item, index) => {
+              return {
+                ...item,
+                No: index + 1
+              };
+            });
             queusList(newData)
             setItems(newData);
           }
@@ -115,16 +122,23 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
         });
       } else {
         queueRequest.getAllqueueByDateV2(startDate, endDate).then((response) => {
-          const newData = response.map((item, index) => {
-            return {
-              ...item,
-              No: index + 1
-            };
-          });
 
           if (onFilter) {
-            setItems(response.filter((x) => x.product_company_id === onFilter));
+            const filter = response.filter((x) => x.product_company_id === onFilter);
+            const newData = filter.map((item, index) => {
+              return {
+                ...item,
+                No: index + 1
+              };
+            });
+            setItems(newData.filter((x) => x.product_company_id === onFilter));
           } else {
+            const newData = response.map((item, index) => {
+              return {
+                ...item,
+                No: index + 1
+              };
+            });
             queusList(newData)
             setItems(newData);
           }

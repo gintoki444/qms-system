@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Box, Button, Typography, CircularProgress,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Box,
+  Button,
+  Typography,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -12,9 +21,7 @@ import {
   ButtonGroup
 } from '@mui/material';
 
-import {
-  EditOutlined, DeleteOutlined
-} from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 // Get api
 
@@ -99,16 +106,23 @@ function UsersTable({ permission }) {
 
   const deleteUsers = (id) => {
     try {
-      userRequest.deleteUser(id).then((result) => {
-        // console.log(result);
-        if (result.status === 'ok') {
-          // alert(result.message);
-          getUsers();
+      userRequest.deleteUserRoles(id).then((response) => {
+        if (response.status === 'ok') {
+          userRequest.deleteUser(id).then((result) => {
+            // console.log(result);
+            if (result.status === 'ok') {
+              // alert(result.message);
+              getUsers();
+            } else {
+              setLoading(false);
+              alert(result.message);
+            }
+          });
         } else {
           setLoading(false);
           alert(result.message);
         }
-      })
+      });
     } catch (error) {
       console.log(error);
     }
@@ -237,13 +251,13 @@ function UsersTable({ permission }) {
                             <EditOutlined />
                           </Button>
                         </Tooltip>
-                        <Tooltip title="ลบ" sx={{ display: 'none' }}>
+                        <Tooltip title="ลบ">
                           <Button
                             variant="contained"
                             size="medium"
                             color="error"
                             disabled={permission !== 'manage_everything'}
-                            sx={{ minWidth: '33px!important', p: '6px 0px', display: 'none' }}
+                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => handleClickOpen(row.user_id)}
                           >
                             <DeleteOutlined />

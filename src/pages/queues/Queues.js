@@ -14,6 +14,7 @@ const currentDate = moment(new Date()).format('YYYY-MM-DD');
 import QueueTable from './QueueTable';
 
 import * as stepRequest from '_api/StepRequest';
+import { filterProductCom } from 'components/Function/FilterProductCompany';
 
 function Queues() {
   const pageId = 9;
@@ -60,14 +61,35 @@ function Queues() {
   const [companyList, setCompanyList] = useState([]);
   const [items, setItems] = useState([]);
   const [countAllQueue, setCountAllQueue] = useState(0);
-  const getProductCompany = (dataList) => {
-    stepRequest.getAllProductCompany().then((response) => {
+  // const getProductCompany = (dataList) => {
+  //   stepRequest.getAllProductCompany().then((response) => {
+
+  //     if (response.length > 0) {
+  //       response.map((x) => {
+  //         let countCompany = dataList.filter(
+  //           (i) => i.product_company_id == x.product_company_id
+  //         ).length;
+
+  //         setItems((prevState) => ({
+  //           ...prevState,
+  //           [x.product_company_id]: countCompany
+  //         }));
+  //       });
+  //     }
+
+  //     setCompanyList(response);
+  //     setCountAllQueue(dataList.length);
+  //   });
+  // };
+  const getProductCompany = async (dataList) => {
+    try {
+      const response = await stepRequest.getAllProductCompany(); // รอการดึงข้อมูลจาก API
+      const companyList = await filterProductCom(response); // รอการเรียงลำดับ
+      // console.log('companyList :', companyList);
 
       if (response.length > 0) {
         response.map((x) => {
-          let countCompany = dataList.filter(
-            (i) => i.product_company_id == x.product_company_id
-          ).length;
+          let countCompany = dataList.filter((i) => i.product_company_id == x.product_company_id).length;
 
           setItems((prevState) => ({
             ...prevState,
@@ -75,10 +97,14 @@ function Queues() {
           }));
         });
       }
-
-      setCompanyList(response);
+      setCompanyList(companyList);
+      // console.log(dataList.length)
       setCountAllQueue(dataList.length);
-    });
+      return companyList;
+    } catch (error) {
+      console.error('Error fetching product companies:', error);
+      return [];
+    }
   };
   useEffect(() => {
     setLoading(true);
@@ -90,8 +116,10 @@ function Queues() {
 
 
   const [valueFilter, setValueFilter] = useState(0);
-  const handleChange = (newValue) => {
+  const [dataFilter, setDataFilter] = useState(0);
+  const handleChange = (newValue, proId) => {
     setValueFilter(newValue);
+    setDataFilter(proId);
   };
   const handleQueueData = (data) => {
     getProductCompany(data);
@@ -176,7 +204,7 @@ function Queues() {
                       id={company.product_company_id}
                       numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                       txtLabel={company.product_company_name_th2}
-                      onSelect={() => handleChange(company.product_company_id)}
+                      onSelect={() => handleChange(index + 1, company.product_company_id)}
                     // {...a11yProps(company.product_company_id)}
                     />
                   ))}
@@ -188,7 +216,7 @@ function Queues() {
                   startDate={selectedDateRange.startDate}
                   endDate={selectedDateRange.endDate}
                   permission={pageDetail[0].permission_name}
-                  onFilter={valueFilter}
+                  onFilter={dataFilter}
                   queusList={handleQueueData}
                 />
               </Box>

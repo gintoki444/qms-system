@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import {
-  useMediaQuery,
+  // useMediaQuery,
   Grid,
   Box,
   Table,
@@ -24,8 +24,8 @@ import {
   DialogActions
   // ButtonGroup
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-
+// import { useTheme } from '@mui/material/styles';
+import MainCard from 'components/MainCard';
 // Link api queues
 import * as getQueues from '_api/queueReques';
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -34,6 +34,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { RightSquareOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import QueueTag from 'components/@extended/QueueTag';
+import AddtimeStep from './AddtimeStep';
 
 export const Step4Table = ({ status, title, onStatusChange, onFilter, permission }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
@@ -122,20 +123,20 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       width: '5%',
       label: 'สถานะ'
     },
-    {
-      id: 'checkBox1',
-      align: 'center',
-      disablePadding: false,
-      width: '5%',
-      label: 'คลุมผ้าใบ (ตัวแม่)'
-    },
-    {
-      id: 'checkBox2',
-      align: 'center',
-      disablePadding: false,
-      width: '5%',
-      label: 'คลุมผ้าใบ (ตัวลูก)'
-    },
+    // {
+    //   id: 'checkBox1',
+    //   align: 'center',
+    //   disablePadding: false,
+    //   width: '5%',
+    //   label: 'คลุมผ้าใบ (ตัวแม่)'
+    // },
+    // {
+    //   id: 'checkBox2',
+    //   align: 'center',
+    //   disablePadding: false,
+    //   width: '5%',
+    //   label: 'คลุมผ้าใบ (ตัวลูก)'
+    // },
     {
       id: 'action',
       align: 'right',
@@ -180,8 +181,8 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
 
   const [items, setItems] = useState([]);
   const [open, setOpen] = React.useState(false);
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  // const theme = useTheme();
+  // const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [id_update, setUpdate] = useState(0);
   // const [id_update_next, setUpdateNext] = useState(0);
   const [fr, setFrom] = useState('');
@@ -324,13 +325,6 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       setText('เรียกคิว');
     } else {
       if (fr === 'close') {
-
-
-        const txt_parent_has_cover = checked.some((x) => x.id === step_id && x.value === 'on') === true ? 'Y' : 'N';
-        const txt_trailer_has_cover = checked2.some((x) => x.id === step_id && x.value === 'on') === true ? 'Y' : 'N';
-        setParentHasCover(txt_parent_has_cover);
-        setTrailerHasCover(txt_trailer_has_cover);
-
         setMessage('เสร็จสิ้น(ประตูทางออก)–STEP4 เปิดคิว');
         setText('ปิดคิว');
       } else {
@@ -386,14 +380,33 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
   //Update start_time of step
   const updateEndTime = (step_id) => {
     //alert("updateEndTime")
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
+    let currentDateNew = '';
+    if (selectedDate && selectedTime) {
+      const date = moment(selectedDate);
+      const time = moment(selectedTime);
+      const dateTime = moment(date)
+        .set({
+          hour: time.get('hour'),
+          minute: time.get('minute'),
+          second: time.get('second'),
+        })
+        .format('YYYY-MM-DD HH:mm:ss');
+      currentDateNew = dateTime;
+      // setSubmittedDateTime(dateTime);
+    } else {
+      currentDateNew = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    }
+
+    // console.log('currentDateNew :', currentDateNew);
+    // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    // if (currentDateNew === 9999) {
     return new Promise((resolve, reject) => {
       const myHeaders = new Headers();
       myHeaders.append('Content-Type', 'application/json');
 
       const raw = JSON.stringify({
-        start_time: currentDate
+        start_time: currentDateNew
       });
 
       const requestOptions = {
@@ -415,6 +428,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
         })
         .catch((error) => console.error(error));
     });
+    // }
   };
 
   const handleClose = (flag) => {
@@ -446,7 +460,6 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       } else {
         if (fr === 'close') {
           // การใช้งาน Line Notify
-
           // if (id_update === 9999) {
           getStepToken(id_update)
             .then(({ queue_id, token }) => {
@@ -486,6 +499,10 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       setLoading(false);
       setOpen(false);
     }
+
+    setSelectedDate(null);
+    setSelectedTime(null);
+    setClickDate(false);
   };
 
   /* แจ้งเตือน Line Notify */
@@ -566,9 +583,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
     setChecked((prevState) => {
       const updatedOptions = [...prevState];
 
-      const index = updatedOptions.findIndex(
-        (option) => option.id === id && option.name === name
-      );
+      const index = updatedOptions.findIndex((option) => option.id === id && option.name === name);
       if (index !== -1) {
         updatedOptions[index] = selectedOption;
       } else {
@@ -592,9 +607,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
     setChecked2((prevState) => {
       const updatedOptions = [...prevState];
 
-      const index = updatedOptions.findIndex(
-        (option) => option.id === id && option.name === name
-      );
+      const index = updatedOptions.findIndex((option) => option.id === id && option.name === name);
       if (index !== -1) {
         updatedOptions[index] = selectedOption;
       } else {
@@ -610,9 +623,15 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       const myHeaders = new Headers();
       myHeaders.append('Content-Type', 'application/json');
 
+      const txt_parent_has_cover = checked.some((x) => x.id === step_id && x.value === 'on') === true ? 'Y' : 'N';
+      const txt_trailer_has_cover = checked2.some((x) => x.id === step_id && x.value === 'on') === true ? 'Y' : 'N';
+      setParentHasCover(txt_parent_has_cover);
+      setTrailerHasCover(txt_trailer_has_cover);
       const raw = JSON.stringify({
-        parent_has_cover: parent_has_cover,
-        trailer_has_cover: trailer_has_cover
+        // parent_has_cover: parent_has_cover,
+        // trailer_has_cover: trailer_has_cover
+        parent_has_cover: txt_parent_has_cover,
+        trailer_has_cover: txt_trailer_has_cover
       });
 
       const requestOptions = {
@@ -621,7 +640,6 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
         body: raw,
         redirect: 'follow'
       };
-
       fetch(apiUrl + '/updatehascover/' + step_id, requestOptions)
         .then((response) => response.json())
         .then((result) => {
@@ -636,23 +654,81 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
           }
         })
         .catch((error) => console.error(error));
+
     });
   };
+
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [clickDate, setClickDate] = useState(false);
+
+  const handleClickAddDate = (event) => {
+    setClickDate(event.target.checked);
+  };
+  // const [submittedTime, setSubmittedTime] = useState(null);
   return (
     <>
       <Box>
-        <Dialog fullScreen={fullScreen} open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-          <DialogTitle id="responsive-dialog-title">{'แจ้งเตือน'}</DialogTitle>
-          <DialogContent>
+        <Dialog
+          // fullScreen={fullScreen}
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="responsive-dialog-title"
+        >
+          <DialogTitle id="responsive-dialog-title" align="center" sx={{ fontSize: '18px' }}>
+            {'แจ้งเตือน : '}
+            {textnotify} ID:{id_update} หรือไม่?
+          </DialogTitle>
+          <DialogContent sx={{ maxWidth: '480px' }}>
             <DialogContentText>
-              ต้องการ {textnotify} ID:{id_update} หรือไม่?
+              <MainCard>
+                <Grid container spacing={2} sx={{ pt: '16px' }}>
+                  <Grid item xs={12}>
+                    {clickDate && (
+                      <AddtimeStep
+                        selectedDate={selectedDate}
+                        setSelectedDate={setSelectedDate}
+                        selectedTime={selectedTime}
+                        setSelectedTime={setSelectedTime}
+                      />
+                    )}
+                    <Typography variant="h5">
+                      <strong>ระบุวันที่ออกจากโรงงาน :</strong>
+                      <Checkbox
+                        checked={clickDate}
+                        onChange={handleClickAddDate}
+                        color="primary"
+                        inputProps={{ 'aria-label': 'Checkbox' }}
+                      />
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} align={'left'}>
+                    <Typography variant="h5">
+                      <strong>คลุมผ้าใบ (ตัวแม่) :</strong>
+                      <Checkbox
+                        checked={checked.find((X) => X.id === id_update)?.value}
+                        onChange={handleCheckboxChange(id_update, 'checked1')}
+                        color="primary"
+                        inputProps={{ 'aria-label': 'Checkbox' }}
+                      />
+                      <strong>คลุมผ้าใบ (ตัวลูก) :</strong>
+                      <Checkbox
+                        checked={checked2.find((X) => X.id === id_update)?.value}
+                        onChange={handleCheckboxChange2(id_update, 'checked2')}
+                        color="primary"
+                        inputProps={{ 'aria-label': 'Checkbox' }}
+                      />
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </MainCard>
             </DialogContentText>
           </DialogContent>
-          <DialogActions>
-            <Button autoFocus onClick={() => handleClose(0)}>
+          <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
+            <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
               ยกเลิก
             </Button>
-            <Button onClick={() => handleClose(1)} autoFocus>
+            <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
               ยืนยัน
             </Button>
           </DialogActions>
@@ -755,18 +831,11 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                           {status == 'waiting' && <Chip color="warning" sx={{ width: '110px' }} label={'รอคิวตรวจสอบ'} />}
                           {status == 'processing' && <Chip color="success" sx={{ width: '110px' }} label={'กำลังตรวจสอบ'} />}
                         </TableCell>
-                        {status == 'processing' && (
+                        {/* {status == 'processing' && (
                           <>
                             <TableCell align="center">
                               <Checkbox
                                 checked={checked.find((X) => X.id === row.step_id)?.value}
-                                // checked={checked}
-                                // checked={checked.some(
-                                //   (item) =>
-                                //     item.step_id == row.step_id &&
-                                //     item.name === 'checked1' &&
-                                //     item.value === 'Y'
-                                // )}
                                 onChange={handleCheckboxChange(row.step_id, 'checked1')}
                                 color="primary"
                                 inputProps={{ 'aria-label': 'Checkbox' }}
@@ -781,7 +850,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                               />
                             </TableCell>
                           </>
-                        )}
+                        )} */}
 
                         <TableCell align="right" width="120" sx={{ pr: '0!important' }}>
                           <ButtonGroup aria-label="button group" sx={{ alignItems: 'center' }}>

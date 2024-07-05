@@ -194,7 +194,7 @@ OrderStatus.propTypes = {
   status: PropTypes.string
 };
 
-export default function ReserveTable({ startDate, endDate, permission, onFilter, reserList }) {
+export default function ReserveTable({ startDate, endDate, permission, onFilter, reserList, checkFilter }) {
   const [loading, setLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
@@ -222,7 +222,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     }
 
     reserveRequest.getAllReserveByUrl(urlGet).then((response) => {
-      console.log('getReserve ', response)
+      console.log('getAllReserveByUrl :', response);
       if (onFilter) {
         setItems(response.filter((x) => x.product_company_id === onFilter));
       } else {
@@ -232,6 +232,45 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
       setLoading(false);
     });
   };
+
+  const [filteredData, setFilteredData] = useState([]);
+  useEffect(() => {
+    console.log('filteredData:', filteredData);
+    console.log('items:', items);
+    if (checkFilter) {
+      const activeFilters = Object.keys(checkFilter).filter(key => checkFilter[key]);
+      if (activeFilters.length === 0) {
+        console.log('filteredData === 0:', items);
+        setFilteredData(items);
+      } else {
+        const filtered = items.filter(item => {
+          // if (activeFilters.includes("waiting_order")) {
+          //   return item.status === "completed" && parseInt(item.total_quantity) === 0;
+          // }
+          if (checkFilter.waiting_order && item.status === "completed" && parseInt(item.total_quantity) === 0) {
+            return true;
+          }
+
+          if (checkFilter.completed && item.status === "completed" && parseInt(item.total_quantity) > 0) {
+            return true;
+          }
+          // return activeFilters.includes(item.status);
+          return activeFilters.includes(item.status) && !(item.status === "completed" && parseInt(item.total_quantity) === 0);
+        });
+        setFilteredData(filtered);
+      }
+      // } else {
+      //   const filtered = items.filter(item => {
+      //     console.log(activeFilters.includes(item.status));
+      //     console.log(item.status);
+      //     console.log(typeof item.status);
+      //     return activeFilters.includes(item.status);
+      //   });
+      //   console.log('filtered !== 0:', filtered);
+      //   setFilteredData(filtered);
+      // }
+    }
+  }, [checkFilter, items]);
 
   const [companys, setCompanys] = useState([]);
   const getCompanys = () => {
@@ -818,8 +857,8 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
           <OrderTableHead order={order} orderBy={orderBy} />
           {!loading ? (
             <TableBody>
-              {items.length > 0 &&
-                items.map((row, index) => {
+              {filteredData.length > 0 &&
+                filteredData.map((row, index) => {
                   return (
                     <TableRow key={index}>
                       <TableCell align="center">{index + 1}</TableCell>
@@ -958,7 +997,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
                   );
                 })}
 
-              {items.length == 0 && (
+              {filteredData.length == 0 && (
                 <TableRow>
                   <TableCell colSpan={13} align="center">
                     ไม่พบข้อมูล
