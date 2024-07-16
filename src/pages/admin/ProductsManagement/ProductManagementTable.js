@@ -15,7 +15,7 @@ import {
   DialogTitle
 } from '@mui/material';
 
-import { FileAddOutlined, EditOutlined, DeleteOutlined, SwitcherOutlined, ContainerOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { FileAddOutlined, EditOutlined, DeleteOutlined, SwitcherOutlined, ContainerOutlined, FileExcelOutlined, HistoryOutlined } from '@ant-design/icons';
 
 // Link api url
 import * as adminRequest from '_api/adminRequest';
@@ -50,7 +50,7 @@ function ProductManagementTable({ onFilter, permission }) {
     try {
       adminRequest.getAllProductRegister().then((response) => {
         if (onFilter) {
-          const filterData = response.filter((x) => x.product_company_id == onFilter);
+          const filterData = response.filter((x) => x.product_company_id == onFilter && x.total_remain > 0);
           const newData = filterData.map((item, index) => {
             return {
               ...item,
@@ -60,6 +60,7 @@ function ProductManagementTable({ onFilter, permission }) {
           // setProductList(response.filter((x) => x.product_company_id == onFilter));
           setProductList(newData);
         } else {
+          response = response.filter((x) => x.total_remain > 0);
           const newData = response.map((item, index) => {
             return {
               ...item,
@@ -91,11 +92,18 @@ function ProductManagementTable({ onFilter, permission }) {
     },
     customToolbar: () => {
       return (
-        <Tooltip title="Export Excel">
-          <Button color="success" variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={onDownload}>
-            <FileExcelOutlined />
-          </Button>
-        </Tooltip>
+        <>
+          <Tooltip title="ประวัติกองสินค้า">
+            <Button color="info" size='small' variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={historyProductManagement}>
+              <HistoryOutlined />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Export Excel">
+            <Button color="success" variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={onDownload}>
+              <FileExcelOutlined />
+            </Button>
+          </Tooltip>
+        </>
       );
     }
   };
@@ -374,6 +382,9 @@ function ProductManagementTable({ onFilter, permission }) {
   const navigate = useNavigate();
   const updateProductManagement = (id) => {
     navigate('/admin/product-register/update/' + id);
+  };
+  const historyProductManagement = () => {
+    navigate('/admin/product-register/historys/');
   };
 
   const addProductReceives = (id) => {

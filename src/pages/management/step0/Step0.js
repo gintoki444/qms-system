@@ -30,8 +30,10 @@ function Step0() {
   const userRole = useSelector((state) => state.auth?.roles);
   const userPermission = useSelector((state) => state.auth?.user_permissions);
 
-  let startDate = localStorage.getItem('step0_startDate');
-  let endDate = localStorage.getItem('step0_endDate');
+  // let startDate = localStorage.getItem('step0_startDate');
+  // let endDate = localStorage.getItem('step0_endDate');
+  let startDate = '';
+  let endDate = '';
 
   // const navigate = useNavigate();
   const [pageDetail, setPageDetail] = useState([]);

@@ -220,14 +220,14 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload, 
                     </TableCell>
                     <TableCell align="left">{row.company_name}</TableCell>
                     <TableCell align="left">{row.registration_no}</TableCell>
-                    <TableCell align="left">{row.driver_mobile}</TableCell>
+                    <TableCell align="left">{`'${row.driver_mobile}`}</TableCell>
                     <TableCell align="left">{row.driver_name}</TableCell>
                     <TableCell align="center">
                       {row.parent_has_cover == 'Y' ? (
                         <Typography sx={{ fontSize: 18, color: 'green' }}>
                           <CheckCircleOutlined color="success" />
                           <span style={{ fontSize: 14, color: 'green', display: 'none', textAlign: 'center' }}>
-                            {row.trailer_has_cover}
+                            {row.parent_has_cover}
                           </span>
                         </Typography>
                       ) : (

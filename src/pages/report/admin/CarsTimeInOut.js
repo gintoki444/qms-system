@@ -25,6 +25,8 @@ import { useDownloadExcel } from 'react-export-table-to-excel';
 import CarsTimeInOutTable from './CarsTimeInOutTable';
 import { Tooltip } from '../../../../node_modules/@mui/material/index';
 import * as stepRequest from '_api/StepRequest';
+// import TestCashInOut from 'pages/admin/TestDemo/TestCashInOut';
+import ExportCarsTimeInOut from './export/ExportCarsTimeInOut';
 const CarsTimeInOut = () => {
   const pageId = 27;
   const userRole = useSelector((state) => state.auth?.roles);
@@ -100,8 +102,10 @@ const CarsTimeInOut = () => {
   const handleChange = (newValue) => {
     setValueFilter(newValue);
   };
+
+  const [dataList, setDataList] = useState([]);
   const handleQueueData = (data) => {
-    console.log('handleQueueData ', data)
+    setDataList(data);
     getProductCompany(data);
   }
   return (
@@ -204,16 +208,31 @@ const CarsTimeInOut = () => {
                     content={false}
                     sx={{ mt: 1.5 }}
                     secondary={
-                      <Tooltip title="Export Excel">
-                        <Button
-                          color="success"
-                          variant="contained"
-                          sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }}
-                          onClick={onDownload}
-                        >
-                          <FileExcelOutlined />
-                        </Button>
-                      </Tooltip>
+                      <>
+                        <Tooltip title="Export Excel">
+                          <ExportCarsTimeInOut
+                            dataList={dataList}
+                            nameCompany={valueFilter !== 0 ? companyList.find((x) => x.product_company_id === valueFilter)?.product_company_name_th2 : ''}
+                            onFilter={valueFilter}
+                          />
+                        </Tooltip>
+                        {/* <TestCashInOut
+                          dataList={dataList}
+                          nameCompany={valueFilter !== 0 ? companyList.find((x) => x.product_company_id === valueFilter)?.product_company_name_th2 : ''}
+                          onFilter={valueFilter} /> */}
+                        {valueFilter === 999 &&
+                          <Tooltip title="Export Excel">
+                            <Button
+                              color="success"
+                              variant="contained"
+                              sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }}
+                              onClick={onDownload}
+                            >
+                              <FileExcelOutlined />
+                            </Button>
+                          </Tooltip>
+                        }
+                      </>
                     }
                   >
                     <Divider></Divider>

@@ -237,7 +237,8 @@ function Reserve() {
                       }}
                     />}
                     label={<span style={{
-                      color: '#52c41a',
+                      color: '#fff',
+                      background: '#52c41a',
                       border: 'solid 1px',
                       padding: '2px 5px',
                       borderRadius: '6px',
@@ -259,7 +260,8 @@ function Reserve() {
                       }}
                     />}
                     label={<span style={{
-                      color: '#8c8c8c',
+                      color: '#fff',
+                      background: '#8c8c8c',
                       border: 'solid 1px',
                       padding: '2px 5px',
                       borderRadius: '6px',
@@ -285,7 +287,8 @@ function Reserve() {
                       />}
                     // label="รอออกคิว"
                     label={<span style={{
-                      color: '#faad14',
+                      color: '#fff',
+                      background: '#faad14',
                       border: 'solid 1px',
                       padding: '2px 5px',
                       borderRadius: '6px',
@@ -310,7 +313,8 @@ function Reserve() {
                         }}
                       />}
                     label={<span style={{
-                      color: '#ff4d4f',
+                      color: '#fff',
+                      background: '#ff4d4f',
                       border: 'solid 1px',
                       padding: '2px 5px',
                       borderRadius: '6px',

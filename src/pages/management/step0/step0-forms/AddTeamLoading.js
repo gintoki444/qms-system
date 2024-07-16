@@ -34,7 +34,10 @@ import * as adminRequest from '_api/adminRequest';
 
 // DateTime
 import moment from 'moment';
+
+import * as functionAddLogs from 'components/Function/AddLog';
 function AddTeamLoading({ id, handleReload, token }) {
+    const userId = localStorage.getItem('user_id');
     const [user_Id, setUserId] = useState(false);
     const [reservationData, setReservationData] = useState({});
     const [loading, setLoading] = useState(false);
@@ -92,8 +95,12 @@ function AddTeamLoading({ id, handleReload, token }) {
     const getTeamloading = (teamId) => {
         try {
             adminRequest.getAllLoadingTeamByStation().then((result) => {
+
+                // const sortedData = sortTeams(result.filter((x) => (x.station_status == 'waiting' || x.station_status == null || x.team_id === teamId)));
+                // console.log('sortedData :', sortedData)
+                // setTeamLoadingList(sortedData);
                 setTeamLoadingList(result.filter((x) => (x.station_status == 'waiting' || x.station_status == null || x.team_id === teamId)));
-                console.log(result.filter((x) => (x.station_status == 'waiting' || x.station_status == null || x.team_id === teamId)))
+                // console.log(result.filter((x) => (x.station_status == 'waiting' || x.station_status == null || x.team_id === teamId)))
             });
         } catch (error) {
             console.log(error);
@@ -137,7 +144,7 @@ function AddTeamLoading({ id, handleReload, token }) {
     const getAllContractor = () => {
         try {
             adminRequest.getAllContractors().then((result) => {
-                setContractorList(result);
+                setContractorList(result.filter((x) => x.status === 'A'));
             });
         } catch (error) {
             console.log(error);
@@ -186,6 +193,15 @@ function AddTeamLoading({ id, handleReload, token }) {
                 .then((result) => {
                     if (result.status === 'ok') {
                         updateTeamLoading(teamValue);
+                        const data = {
+                            audit_user_id: userId,
+                            audit_action: "I",
+                            audit_system_id: id,
+                            audit_system: "step0",
+                            audit_screen: "ข้อมูลทีมขึ้นสินค้า",
+                            audit_description: "เพิ่มข้อมูลทีมขึ้นสินค้า"
+                        }
+                        AddAuditLogs(data);
                         updateTeamData(values.team_data);
                     } else {
                         enqueueSnackbar('บันทึกข้อมูลทีมขึ้นสินค้าไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
@@ -224,6 +240,29 @@ function AddTeamLoading({ id, handleReload, token }) {
             console.log(error);
         }
     };
+    // function sortTeams(data) {
+    //     const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+
+    //     // Function to check if the date string is today's date
+    //     const isToday = (dateStr) => dateStr && dateStr.startsWith(today);
+
+    //     // Separate teams with today's update and others
+    //     const todayTeams = data.filter(team => isToday(team.time_update));
+    //     const otherTeams = data.filter(team => !isToday(team.time_update));
+
+    //     // Sort teams by team_id
+    //     otherTeams.sort((a, b) => a.team_id - b.team_id);
+
+    //     // Sort today's teams by time_update, then by team_id
+    //     todayTeams.sort((a, b) => {
+    //         if (a.time_update < b.time_update) return -1;
+    //         if (a.time_update > b.time_update) return 1;
+    //         return a.team_id - b.team_id;
+    //     });
+
+    //     // Combine the lists
+    //     return [...todayTeams, ...otherTeams];
+    // }
 
     const handleClickOpen = (reserveId) => {
         setOpen(true);
@@ -242,6 +281,9 @@ function AddTeamLoading({ id, handleReload, token }) {
             setOpen(false);
         }
     };
+    const AddAuditLogs = async (data) => {
+        await functionAddLogs.AddAuditLog(data);
+    }
     return (
         <>
             <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">

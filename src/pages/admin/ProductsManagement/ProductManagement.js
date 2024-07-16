@@ -50,6 +50,8 @@ function Product() {
   const waitingGet = async (company) => {
     try {
       await adminRequest.getAllProductRegister().then((response) => {
+
+        response = response.filter((x) => x.total_remain > 0);
         if (company.length > 0) {
           company.map((x) => {
             let countCompany = response.filter((i) => i.product_company_id == x.product_company_id).length;
@@ -109,7 +111,7 @@ function Product() {
                         numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                         txtLabel={company.product_company_name_th2}
                         onSelect={() => handleChange(company.product_company_id)}
-                        // {...a11yProps(company.product_company_id)}
+                      // {...a11yProps(company.product_company_id)}
                       />
                     ))}
                 </Tabs>

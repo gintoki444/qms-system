@@ -14,11 +14,13 @@ import { WarningOutlined } from '@ant-design/icons';
 
 import * as reserveRequest from '_api/reserveRequest';
 import * as adminRequest from '_api/adminRequest';
+import * as functionAddLogs from 'components/Function/AddLog';
 // import * as queueReques from '_api/queueReques';
 
 // import { useSnackbar } from 'notistack';
 
 function CancleTeamStation({ reserveId, handleReload, reserveData }) {
+    const userId = localStorage.getItem('user_id');
     useEffect(() => {
     }, [handleReload])
 
@@ -65,6 +67,15 @@ function CancleTeamStation({ reserveId, handleReload, reserveData }) {
             // if (reserveId === 9999) {
             reserveRequest.putReserById(reserveId, reserveData).then((result) => {
                 if (result.status === 'ok') {
+                    const data = {
+                        audit_user_id: userId,
+                        audit_action: "D",
+                        audit_system_id: reserveId,
+                        audit_system: "step0",
+                        audit_screen: "ข้อมูลทีมขึ้นสินค้า",
+                        audit_description: "ยกเลิกทีมขึ้นสินค้า"
+                    }
+                    AddAuditLogs(data);
                     updateTeamLoading(teamValue);
                     updateTeamData([]);
                 } else {
@@ -82,6 +93,10 @@ function CancleTeamStation({ reserveId, handleReload, reserveData }) {
             setOpen(false);
         }
     };
+
+    const AddAuditLogs = async (data) => {
+        await functionAddLogs.AddAuditLog(data);
+    }
 
     return (
         <>

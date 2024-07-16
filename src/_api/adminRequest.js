@@ -888,3 +888,33 @@ export const getOrdersProductsByIdRegister = async (id) => {
   const result = await response.json();
   return result;
 };
+
+export const getAllProductHistory = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/allproductregisterzero/', requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const AddAuditLogs = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/addauditlogs/', requestOptions);
+  const result = await response.text();
+  console.log('result ', result);
+
+  return result;
+};

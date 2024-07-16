@@ -110,7 +110,7 @@ function UpdateCar() {
   const [carTypeList, setCarTypeList] = useState([]);
   const getCarType = () => {
     carRequest.getAllCarType().then((response) => {
-      setCarTypeList(response);
+      setCarTypeList(response.filter((x) => x.car_type_id === 1 || x.car_type_id === 3 || x.car_type_id === 4 || x.car_type_id === 5 || x.car_type_id === 6 || x.car_type_id === 8));
     });
   };
 
@@ -137,6 +137,7 @@ function UpdateCar() {
   }, [id, userPermission]);
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values, { setErrors, setStatus, setSubmitting }) => {
+    setOpen(true);
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     const formData = new FormData();
 
@@ -172,9 +173,11 @@ function UpdateCar() {
           .then((result) => {
             if (result.data.status === 'ok') {
               enqueueSnackbar('บันทึกข้อมูลรถสำเร็จ!', { variant: 'success' });
-              window.location.href = '/car';
+              setOpen(false);
+              // window.location.href = '/car';
             } else {
               enqueueSnackbar('บันทึกข้อมูลร้านค้า/บริษัท ไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
+              setOpen(false);
               alert(result['message']['sqlMessage']);
             }
 

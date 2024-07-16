@@ -28,6 +28,7 @@ import {
 import MainCard from 'components/MainCard';
 // Link api queues
 import * as getQueues from '_api/queueReques';
+import * as stepRequest from '_api/StepRequest';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 import CircularProgress from '@mui/material/CircularProgress';
@@ -35,6 +36,7 @@ import { RightSquareOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import QueueTag from 'components/@extended/QueueTag';
 import AddtimeStep from './AddtimeStep';
+import * as functionAddLogs from 'components/Function/AddLog';
 
 export const Step4Table = ({ status, title, onStatusChange, onFilter, permission }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
@@ -191,6 +193,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
   const [loading, setLoading] = useState(true); // สร้าง state เพื่อติดตามสถานะการโหลด
   const [team_id, setTeamId] = useState(0);
   const [message, setMessage] = useState('Test');
+  const userId = localStorage.getItem('user_id');
   //เพิ่ม function get จำนวนสถานีของ step 1
   const station_num = 1;
 
@@ -242,10 +245,11 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
     }
   };
 
-  const step1Update = (step_id, statusupdate, station_id) => {
+  const step1Update = async (step_id, statusupdate, station_id) => {
     setLoading(true);
 
-    var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const currentDate = await stepRequest.getCurrentDate();
+    // var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     var myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
@@ -291,6 +295,21 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       .catch((error) => console.log('error', error));
   };
 
+  const [id_update_next, setUpdateNext] = useState(0);
+  const getStepId = (steps_order, queues_id) => {
+    var requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+
+    fetch(apiUrl + '/stepbyqueueid/' + steps_order + '/' + queues_id, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        setUpdateNext(result[0]['step_id']);
+      })
+      .catch((error) => console.log('error', error));
+  };
+
   //Update ทีมขึ้นสินค้าสำหรับ Step4
   const updateLoadingTeam = (step_id) => {
     const myHeaders = new Headers();
@@ -319,7 +338,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       .catch((error) => console.error(error));
   };
 
-  const handleClickOpen = (step_id, fr, team_id) => {
+  const handleClickOpen = (step_id, fr, team_id, queues_id) => {
     if (fr === 'call') {
       setMessage('เสร็จสิ้น(ประตูทางออก)–STEP4 เรียกคิว');
       setText('เรียกคิว');
@@ -328,7 +347,8 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
         setMessage('เสร็จสิ้น(ประตูทางออก)–STEP4 เปิดคิว');
         setText('ปิดคิว');
       } else {
-        setMessage('เสร็จสิ้น(ประตูทางออก)–STEP4 ยกเลิกเรียกคิว');
+        getStepId(3, queues_id);
+        setMessage('ยกเลิกการออกจากโรงงาน');
         setText('ยกเลิก');
       }
     }
@@ -339,10 +359,11 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
   };
 
   //Update start_time of step
-  const updateStartTime = (step_id) => {
+  const updateStartTime = async (step_id) => {
     //alert("updateStartTime")
 
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const currentDate = await stepRequest.getCurrentDate();
+    // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     return new Promise((resolve, reject) => {
       const myHeaders = new Headers();
@@ -378,7 +399,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
   };
 
   //Update start_time of step
-  const updateEndTime = (step_id) => {
+  const updateEndTime = async (step_id) => {
     //alert("updateEndTime")
 
     let currentDateNew = '';
@@ -395,7 +416,8 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       currentDateNew = dateTime;
       // setSubmittedDateTime(dateTime);
     } else {
-      currentDateNew = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+      currentDateNew = await stepRequest.getCurrentDate();
+      // currentDateNew = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     }
 
     // console.log('currentDateNew :', currentDateNew);
@@ -449,6 +471,16 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
               // ทำอะไรกับข้อผิดพลาด
             });
 
+          const data = {
+            audit_user_id: userId,
+            audit_action: "I",
+            audit_system_id: id_update,
+            audit_system: "step4",
+            audit_screen: "ข้อมูลรถออกจากโรงงาน",
+            audit_description: "เรียกรถออกจากโรงงาน"
+          }
+          AddAuditLogs(data);
+
           step1Update(id_update, 'processing', 24);
           updateStartTime(id_update);
           setLoading(false);
@@ -470,6 +502,16 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
               // ทำอะไรกับข้อผิดพลาด
             });
 
+          const data = {
+            audit_user_id: userId,
+            audit_action: "U",
+            audit_system_id: id_update,
+            audit_system: "step4",
+            audit_screen: "ข้อมูลรถออกจากโรงงาน",
+            audit_description: "บันทึกข้อมูลรถออกจากโรงงาน"
+          }
+          AddAuditLogs(data);
+
           updateLoadingTeam(id_update, team_id);
           step1Update(id_update, 'completed', 24);
           updateEndTime(id_update);
@@ -478,6 +520,8 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
           setOpen(false);
           // }
         } else {
+          console.log('id_update_next :', id_update_next);
+          // if (id_update_next === 99999) {
           //ยกเลิก
           // การใช้งาน Line Notify
           getStepToken(id_update)
@@ -489,10 +533,22 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
               // ทำอะไรกับข้อผิดพลาด
             });
 
-          step1Update(id_update, 'waiting', 27);
+          const data = {
+            audit_user_id: userId,
+            audit_action: "D",
+            audit_system_id: id_update,
+            audit_system: "step4",
+            audit_screen: "ข้อมูลรถออกจากโรงงาน",
+            audit_description: "ยกเลิกรถออกจากโรงงาน"
+          }
+
+          AddAuditLogs(data);
+          step1Update(id_update_next, 'waiting', 27);
+          step1Update(id_update, 'none', 27);
           updateStartTime(id_update);
           setLoading(false);
           setOpen(false);
+          // }
         }
       }
     } else if (flag === 0) {
@@ -665,6 +721,10 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
   const handleClickAddDate = (event) => {
     setClickDate(event.target.checked);
   };
+
+  const AddAuditLogs = async (data) => {
+    await functionAddLogs.AddAuditLog(data);
+  }
   // const [submittedTime, setSubmittedTime] = useState(null);
   return (
     <>
@@ -679,51 +739,53 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
             {'แจ้งเตือน : '}
             {textnotify} ID:{id_update} หรือไม่?
           </DialogTitle>
-          <DialogContent sx={{ maxWidth: '480px' }}>
-            <DialogContentText>
-              <MainCard>
-                <Grid container spacing={2} sx={{ pt: '16px' }}>
-                  <Grid item xs={12}>
-                    {clickDate && (
-                      <AddtimeStep
-                        selectedDate={selectedDate}
-                        setSelectedDate={setSelectedDate}
-                        selectedTime={selectedTime}
-                        setSelectedTime={setSelectedTime}
-                      />
-                    )}
-                    <Typography variant="h5">
-                      <strong>ระบุวันที่ออกจากโรงงาน :</strong>
-                      <Checkbox
-                        checked={clickDate}
-                        onChange={handleClickAddDate}
-                        color="primary"
-                        inputProps={{ 'aria-label': 'Checkbox' }}
-                      />
-                    </Typography>
+          {fr === 'close' &&
+            <DialogContent sx={{ maxWidth: '480px' }}>
+              <DialogContentText>
+                <MainCard>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      {clickDate && (
+                        <AddtimeStep
+                          selectedDate={selectedDate}
+                          setSelectedDate={setSelectedDate}
+                          selectedTime={selectedTime}
+                          setSelectedTime={setSelectedTime}
+                        />
+                      )}
+                      <Typography variant="h5">
+                        <strong>ระบุวันที่ออกจากโรงงาน :</strong>
+                        <Checkbox
+                          checked={clickDate}
+                          onChange={handleClickAddDate}
+                          color="primary"
+                          inputProps={{ 'aria-label': 'Checkbox' }}
+                        />
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} align={'left'}>
+                      <Typography variant="h5">
+                        <strong>คลุมผ้าใบ (ตัวแม่) :</strong>
+                        <Checkbox
+                          checked={checked.find((X) => X.id === id_update)?.value}
+                          onChange={handleCheckboxChange(id_update, 'checked1')}
+                          color="primary"
+                          inputProps={{ 'aria-label': 'Checkbox' }}
+                        />
+                        <strong>คลุมผ้าใบ (ตัวลูก) :</strong>
+                        <Checkbox
+                          checked={checked2.find((X) => X.id === id_update)?.value}
+                          onChange={handleCheckboxChange2(id_update, 'checked2')}
+                          color="primary"
+                          inputProps={{ 'aria-label': 'Checkbox' }}
+                        />
+                      </Typography>
+                    </Grid>
                   </Grid>
-                  <Grid item xs={12} align={'left'}>
-                    <Typography variant="h5">
-                      <strong>คลุมผ้าใบ (ตัวแม่) :</strong>
-                      <Checkbox
-                        checked={checked.find((X) => X.id === id_update)?.value}
-                        onChange={handleCheckboxChange(id_update, 'checked1')}
-                        color="primary"
-                        inputProps={{ 'aria-label': 'Checkbox' }}
-                      />
-                      <strong>คลุมผ้าใบ (ตัวลูก) :</strong>
-                      <Checkbox
-                        checked={checked2.find((X) => X.id === id_update)?.value}
-                        onChange={handleCheckboxChange2(id_update, 'checked2')}
-                        color="primary"
-                        inputProps={{ 'aria-label': 'Checkbox' }}
-                      />
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </MainCard>
-            </DialogContentText>
-          </DialogContent>
+                </MainCard>
+              </DialogContentText>
+            </DialogContent>
+          }
           <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
             <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
               ยกเลิก
@@ -862,7 +924,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                                     variant="contained"
                                     size="small"
                                     color="info"
-                                    onClick={() => handleClickOpen(row.step_id, 'call', row.team_id)}
+                                    onClick={() => handleClickOpen(row.step_id, 'call', row.team_id, row.queue_id)}
                                     endIcon={<RightSquareOutlined />}
                                   >
                                     เรียกคิว
@@ -880,7 +942,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                                       variant="contained"
                                       size="small"
                                       color="error"
-                                      onClick={() => handleClickOpen(row.step_id, 'cancel', row.team_id)}
+                                      onClick={() => handleClickOpen(row.step_id, 'cancel', row.team_id, row.queue_id)}
                                     >
                                       ยกเลิก
                                     </Button>

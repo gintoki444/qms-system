@@ -42,6 +42,8 @@ import { useSnackbar } from 'notistack';
 // DateTime
 import moment from 'moment';
 
+import * as functionAddLogs from 'components/Function/AddLog';
+
 function AddReserve() {
   const pageId = 8;
   const userPermission = useSelector((state) => state.auth?.user_permissions);
@@ -245,11 +247,20 @@ function AddReserve() {
       };
 
       // if (userId === 999) {
-      axios
+      await axios
         .request(config)
         .then((result) => {
           if (result.data.status === 'ok') {
             enqueueSnackbar('บันทึกข้อมูลสำเร็จ!', { variant: 'success' });
+            const data = {
+              audit_user_id: userId,
+              audit_action: "I",
+              audit_system_id: result.data.results.insertId,
+              audit_system: "reserves",
+              audit_screen: "ข้อมูลการจองคิว",
+              audit_description: "เพิ่มข้อมูลจองคิวรับสินค้า"
+            }
+            AddAuditLogs(data);
             setMessageCreateReserve(result.data.results.insertId);
           } else {
             alert(result.message.sqlMessage);
@@ -318,6 +329,16 @@ function AddReserve() {
       ...valuesData,
       company_id: formData[0].company_id
     }));
+
+    const data = {
+      audit_user_id: userId,
+      audit_action: "I",
+      audit_system_id: formData[0].company_id,
+      audit_system: "company",
+      audit_screen: "ข้อมูลร้านค้า",
+      audit_description: "เพิ่มข้อมูลร้านค้า"
+    }
+    AddAuditLogs(data);
     // getCompanyLsit();
     // setInitialValue((preViews) => {
     //   let data = preViews;
@@ -334,6 +355,16 @@ function AddReserve() {
       ...valuesData,
       car_id: formData[0].car_id
     }));
+
+    const data = {
+      audit_user_id: userId,
+      audit_action: "I",
+      audit_system_id: formData[0].car_id,
+      audit_system: "cars",
+      audit_screen: "ข้อมูลรถบรรทุก",
+      audit_description: "เพิ่มข้อมูลรถบรรทุก"
+    }
+    AddAuditLogs(data);
     // setNewCar(formData);
     // getCarLsit();
     // setInitialValue((preViews) => {
@@ -351,6 +382,16 @@ function AddReserve() {
       ...valuesData,
       driver_id: formData[0].driver_id
     }));
+
+    const data = {
+      audit_user_id: userId,
+      audit_action: "I",
+      audit_system_id: formData[0].driver_id,
+      audit_system: "drivers",
+      audit_screen: "ข้อมูลคนขับรถ",
+      audit_description: "เพิ่มข้อมูลคนขับรถ"
+    }
+    AddAuditLogs(data);
     // setNewDriver(formData);
     // getDriverLsit();
     // setInitialValue((preViews) => {
@@ -360,6 +401,10 @@ function AddReserve() {
     //   return data
     // })
   };
+
+  const AddAuditLogs = async (data) => {
+    await functionAddLogs.AddAuditLog(data);
+  }
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -415,7 +460,7 @@ function AddReserve() {
                             },
                             '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
                               right: '7px!important',
-                              top: 'calc(50% - 18px)'
+                              top: 'calc(50% - 1px)'
                             }
                           }}
                           renderOption={(props, option) => (
@@ -586,7 +631,7 @@ function AddReserve() {
                             },
                             '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
                               right: '7px!important',
-                              top: 'calc(50% - 18px)'
+                              top: 'calc(50% - 1px)'
                             }
                           }}
                           renderInput={(params) => (
@@ -645,7 +690,7 @@ function AddReserve() {
                             },
                             '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
                               right: '7px!important',
-                              top: 'calc(50% - 18px)'
+                              top: 'calc(50% - 1px)'
                             }
                           }}
                           error={Boolean(touched.driver_id && errors.driver_id)}

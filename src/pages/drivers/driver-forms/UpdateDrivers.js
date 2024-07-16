@@ -146,7 +146,7 @@ function UpdateDrivers() {
             console.log('result :', result);
             if (result.data.status === 'ok') {
               enqueueSnackbar('บันทึกข้อมูลคนขับรถสำเร็จ!', { variant: 'success' });
-              window.location.href = '/drivers';
+              // window.location.href = '/drivers';
             } else {
               enqueueSnackbar('บันทึกข้อมูลคนขับรถไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
               // alert(result['message']['sqlMessage']);

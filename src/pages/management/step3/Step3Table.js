@@ -49,6 +49,7 @@ import SoundCall from 'components/@extended/SoundCall';
 
 import QueueTag from 'components/@extended/QueueTag';
 import ChangeWeight from './ChangeWeight';
+import * as functionAddLogs from 'components/Function/AddLog';
 
 export const Step3Table = ({ status, title, onStatusChange, onFilter, permission }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
@@ -183,6 +184,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
   const [loading, setLoading] = useState(true); // สร้าง state เพื่อติดตามสถานะการโหลด
   const [team_id, setTeamId] = useState(0);
   const [message, setMessage] = useState('');
+  const userId = localStorage.getItem('user_id');
   //เพิ่ม function get จำนวนสถานีของ step 1
   const station_num = 2;
 
@@ -274,8 +276,9 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
     }
   };
 
-  const step1Update = (step_id, statusupdate, station_id) => {
-    var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+  const step1Update = async (step_id, statusupdate, station_id) => {
+    const currentDate = await stepRequest.getCurrentDate();
+    // var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     var myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
@@ -307,8 +310,9 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
       .catch((error) => console.log('error', error));
   };
 
-  const step2Update = (id, statusupdate, station_id) => {
-    var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+  const step2Update = async (id, statusupdate, station_id) => {
+    const currentDate = await stepRequest.getCurrentDate();
+    // var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
     var myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
 
@@ -402,10 +406,11 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
   };
 
   //Update start_time of step
-  const updateStartTime = (step_id) => {
+  const updateStartTime = async (step_id) => {
     //alert("updateStartTime")
 
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const currentDate = await stepRequest.getCurrentDate();
+    // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     return new Promise((resolve, reject) => {
       const myHeaders = new Headers();
@@ -440,9 +445,10 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
   };
 
   //Update start_time of step
-  const updateEndTime = (step_id) => {
+  const updateEndTime = async (step_id) => {
     //alert("updateEndTime")
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const currentDate = await stepRequest.getCurrentDate();
+    // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     return new Promise((resolve, reject) => {
       const myHeaders = new Headers();
@@ -559,8 +565,9 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
     });
   };
 
-  const updateRecall = (step_id, queue_id, queues) => {
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+  const updateRecall = async (step_id, queue_id, queues) => {
+    const currentDate = await stepRequest.getCurrentDate();
+    // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     const recallData = {
       step_id: step_id,
@@ -631,6 +638,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
         setMessage('ชั่งหนัก–STEP3 ปิดคิว');
         setText('ปิดคิว');
         getQueuesDetial(queue_id);
+        setWeight(parseFloat(queuesData.weight2));
         getReserveId(queuesData.reserve_id);
       } else {
         setMessage('ชั่งหนัก–STEP3 ยกเลิกเรียกคิว');
@@ -681,6 +689,16 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
               // ทำอะไรกับข้อผิดพลาด
             });
 
+          const data = {
+            audit_user_id: userId,
+            audit_action: "I",
+            audit_system_id: id_update,
+            audit_system: "step3",
+            audit_screen: "ข้อมูลชั่งหนัก",
+            audit_description: "เรียกชั่งหนัก"
+          }
+          AddAuditLogs(data);
+
           // handleCallQueue(queues);
           step1Update(id_update, 'processing', selectedStations[id_update]);
           updateStartTime(id_update);
@@ -707,6 +725,15 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
           } else {
             if (typeSelect && typeSelect.checked1 == true) {
               // const queu = weight;
+              const data = {
+                audit_user_id: userId,
+                audit_action: "U",
+                audit_system_id: id_update,
+                audit_system: "step3",
+                audit_screen: "ข้อมูลชั่งหนัก",
+                audit_description: "ทวนสอบการขึ้นสินค้า"
+              }
+              AddAuditLogs(data);
               updateRecall(id_update, queues.queue_id, queues);
 
               setOpen(false);
@@ -725,6 +752,15 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
                   console.error('Error:', error);
                   // ทำอะไรกับข้อผิดพลาด
                 });
+              const data = {
+                audit_user_id: userId,
+                audit_action: "U",
+                audit_system_id: id_update,
+                audit_system: "step3",
+                audit_screen: "ข้อมูลชั่งหนัก",
+                audit_description: "บันทึกข้อมูลชั่งหนัก"
+              }
+              AddAuditLogs(data);
 
               updateLoadingTeam(id_update_next, team_id);
               updateLoadingTeam(id_update, team_id);
@@ -754,6 +790,15 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
               // ทำอะไรกับข้อผิดพลาด
             });
 
+          const data = {
+            audit_user_id: userId,
+            audit_action: "D",
+            audit_system_id: id_update,
+            audit_system: "step3",
+            audit_screen: "ข้อมูลชั่งหนัก",
+            audit_description: "ยกเลิกข้อมูลชั่งหนัก"
+          }
+          AddAuditLogs(data);
           step1Update(id_update, 'waiting', 27);
           updateStartTime(id_update);
         }
@@ -859,6 +904,10 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
   }, [queuesDetial])
   const handleChangeWeight1 = (data) => {
     setQueuesDetial(data);
+  }
+
+  const AddAuditLogs = async (data) => {
+    await functionAddLogs.AddAuditLog(data);
   }
   return (
     <>

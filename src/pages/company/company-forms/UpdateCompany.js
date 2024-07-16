@@ -153,7 +153,7 @@ function UpdateCompany() {
         companyRequest.updateCompany(id, values).then((result) => {
           if (result.status === 'ok') {
             enqueueSnackbar('บันทึกข้อมูลร้านค้า/บริษัท สำเร็จ!', { variant: 'success' });
-            window.location.href = '/company';
+            // window.location.href = '/company';
           } else {
             enqueueSnackbar('บันทึกข้อมูลร้านค้า/บริษัท ไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
             // alert(result['message']['sqlMessage']);

@@ -113,8 +113,27 @@ const MainLayout = () => {
               permission_name: 'manage_everything',
               permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
             };
+            const addnewReport = {
+              "page_id": 33,
+              "role_id": 11,
+              "permission_id": 7,
+              "group_id": 5,
+              "page_name": "Report_Step4-completed",
+              "page_title": "รายงานขั้นตอนการทำงาน",
+              "page_url": "/report/step-history",
+              "page_icon": "report",
+              "page_target": 0,
+              "page_type": "item",
+              "group_name": "รายงาน",
+              "group_type": "group",
+              "role_name": "ICP-Administrator",
+              "role_description": "ICP-ผู้ดูแลระบบ Administrator",
+              "permission_name": "manage_everything",
+              "permission_description": "ICP-สามารถจัดการทั้งหมดได้"
+            };
             // response.unshift(addnew);
             response.unshift(addnew2);
+            response.unshift(addnewReport);
           }
           dispatch(setPermission({ key: 'permission', value: response }));
         } else {

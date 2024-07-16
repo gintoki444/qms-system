@@ -46,7 +46,10 @@ import SoundCall from 'components/@extended/SoundCall';
 
 import QueueTag from 'components/@extended/QueueTag';
 
+import * as functionAddLogs from 'components/Function/AddLog';
+
 export const StepTable = ({ status, title, onStatusChange, onFilter, permission }) => {
+  const userId = localStorage.getItem('user_id');
   const [loading, setLoading] = useState(true); // สร้าง state เพื่อติดตามสถานะการโหลด
 
   const station_count = useSelector((state) => state.station.station_count);
@@ -342,6 +345,15 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
               // ทำอะไรกับข้อผิดพลาด
             });
 
+          const data = {
+            audit_user_id: userId,
+            audit_action: "I",
+            audit_system_id: id_update,
+            audit_system: "step1",
+            audit_screen: "ข้อมูลชั่งเบา",
+            audit_description: "เรียกชั่งเบา"
+          }
+          AddAuditLogs(data);
           // handleCallQueue(queues);
           step1Update(id_update, 'processing', selectedStations[id_update]);
           updateStartTime(id_update);
@@ -372,6 +384,15 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
               });
 
             //เพิ่ม update น้ำหนักชั่ง
+            const data = {
+              audit_user_id: userId,
+              audit_action: "U",
+              audit_system_id: id_update,
+              audit_system: "step1",
+              audit_screen: "ข้อมูลชั่งเบา",
+              audit_description: "บันทึกข้อมูลชั่งเบา"
+            }
+            AddAuditLogs(data);
             await step2Update(id_update_next, 'waiting', 27);
             await step1Update(id_update, 'completed', queues.station_id);
             await updateEndTime(id_update);
@@ -400,6 +421,15 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
             console.error('Error:', error);
             // ทำอะไรกับข้อผิดพลาด
           });
+        const data = {
+          audit_user_id: userId,
+          audit_action: "D",
+          audit_system_id: id_update,
+          audit_system: "step1",
+          audit_screen: "ข้อมูลชั่งเบา",
+          audit_description: "ยกเลิกข้อมูลชั่งเบา"
+        }
+        AddAuditLogs(data);
         await step1Update(id_update, 'waiting', 27);
         await updateStartTime(id_update);
         setOpen(false);
@@ -496,10 +526,11 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
   };
 
   //Update step status
-  const step1Update = (id, statusupdate, stations_id) => {
+  const step1Update = async (id, statusupdate, stations_id) => {
+    const currentDate = await stepRequest.getCurrentDate();
     setLoading(true);
     return new Promise((resolve, reject) => {
-      const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+      // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       var myHeaders = new Headers();
       myHeaders.append('Content-Type', 'application/json');
 
@@ -533,9 +564,10 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
   };
 
   //Update step step2Update
-  const step2Update = (id, statusupdate, stations_id) => {
+  const step2Update = async (id, statusupdate, stations_id) => {
+    const currentDate = await stepRequest.getCurrentDate();
     return new Promise((resolve, reject) => {
-      const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+      // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       var myHeaders = new Headers();
       myHeaders.append('Content-Type', 'application/json');
 
@@ -583,10 +615,11 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
   };
 
   //Update start_time of step
-  const updateStartTime = (step_id) => {
+  const updateStartTime = async (step_id) => {
     //alert("updateStartTime")
 
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const currentDate = await stepRequest.getCurrentDate();
+    // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     return new Promise((resolve, reject) => {
       const myHeaders = new Headers();
@@ -622,9 +655,10 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
   };
 
   //Update start_time of step
-  const updateEndTime = (step_id) => {
+  const updateEndTime = async (step_id) => {
     //alert("updateEndTime")
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const currentDate = await stepRequest.getCurrentDate();
+    // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     return new Promise((resolve, reject) => {
       const myHeaders = new Headers();
@@ -715,6 +749,10 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
       [row.step_id]: value // เก็บค่าสถานีที่ถูกเลือกในแต่ละแถวโดยใช้ step_id เป็น key
     }));
   };
+
+  const AddAuditLogs = async (data) => {
+    await functionAddLogs.AddAuditLog(data);
+  }
   return (
     <>
       <Box>

@@ -15,8 +15,10 @@ import { EditOutlined, CloseCircleOutlined, SaveOutlined } from '@ant-design/ico
 
 import * as queueReques from '_api/queueReques'
 import * as stepRequest from '_api/StepRequest'
+import * as functionAddLogs from 'components/Function/AddLog';
 
 function ChangeWeight({ weight1, queueId, changeWeight }) {
+    const userId = localStorage.getItem('user_id');
 
     const [step1Data, setStep1Data] = useState({});
     const [weightTxt, setWeightTxt] = useState({});
@@ -66,6 +68,15 @@ function ChangeWeight({ weight1, queueId, changeWeight }) {
                     weight1: weight
                 }
                 stepRequest.updateWeight1(step1Data.step_id, weightData).then((response) => {
+                    const data = {
+                        audit_user_id: userId,
+                        audit_action: "U",
+                        audit_system_id: step1Data.step_id,
+                        audit_system: "step3",
+                        audit_screen: "ข้อมูลชั่งเบา",
+                        audit_description: "แก้ไขน้ำหนักข้อมูลชั่งเบา"
+                    }
+                    AddAuditLogs(data);
                     if (response['status'] === 'ok') {
                         setWeightTxt(weight);
                         changeWeight(queueData);
@@ -77,6 +88,10 @@ function ChangeWeight({ weight1, queueId, changeWeight }) {
             console.log(error);
         }
     };
+
+    const AddAuditLogs = async (data) => {
+        await functionAddLogs.AddAuditLog(data);
+    }
     return (
         <>
             <Typography variant="body1" sx={{ fontSize: 16 }}>

@@ -21,9 +21,10 @@ function Queues() {
   const userRole = useSelector((state) => state.auth?.roles);
   const userPermission = useSelector((state) => state.auth?.user_permissions);
 
-  let startDate = localStorage.getItem('queue_startDate');
-  let endDate = localStorage.getItem('queue_endDate');
-
+  // let startDate = localStorage.getItem('queue_startDate');
+  // let endDate = localStorage.getItem('queue_endDate');
+  let startDate = '';
+  let endDate = '';
   const [loading, setLoading] = useState(false);
   const [pageDetail, setPageDetail] = useState([]);
 

@@ -151,12 +151,21 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
 
     // const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
     const [items, setItems] = useState([]);
+    const [items1, setItems1] = useState([]);
+    const [items2, setItems2] = useState([]);
+    const [items3, setItems3] = useState([]);
+    const [items4, setItems4] = useState([]);
+    const [items5, setItems5] = useState([]);
+    const [items6, setItems6] = useState([]);
+    const [items7, setItems7] = useState([]);
+    const [items8, setItems8] = useState([]);
+    const [items9, setItems9] = useState([]);
     useEffect(() => {
         fetchData();
 
-        // const intervalId = setInterval(fetchData, 60000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิลลิวินาที)
+        const intervalId = setInterval(fetchData, 60000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิลลิวินาที)
 
-        // return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
+        return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
     }, [startDate, endDate]);
 
     const fetchData = async () => {
@@ -167,6 +176,15 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
         try {
             dashboardRequest.getCompanyCounts(startDate, endDate).then((response) => {
                 setItems(response);
+                setItems1(response.filter((x) => x.product_company_code === "IF"));
+                setItems2(response.filter((x) => x.product_company_code === "II"));
+                setItems3(response.filter((x) => x.product_company_code === "SK"));
+                setItems4(response.filter((x) => x.product_company_code === "JS"));
+                setItems5(response.filter((x) => x.product_company_code === "FC"));
+                setItems6(response.filter((x) => x.product_company_code === "FB"));
+                setItems7(response.filter((x) => x.product_company_code === "IB"));
+                setItems8(response.filter((x) => x.product_company_code === "IC"));
+                setItems9(response.filter((x) => x.product_company_code === "IV"));
                 dataList(response);
             })
         } catch (error) {
@@ -205,13 +223,80 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                     />
 
                     <TableBody>
-                        {items.length > 0 &&
+                        {/* {items.length > 0 &&
                             items.map((row, index) => (
                                 <>
                                     <StyledTableRow key={index}>
                                         <StyledTableCell align="left">
-                                            {/* ICPF */}
                                             <Typography variant='body1'><strong>{row.product_company_name_th}</strong></Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.queues_counts}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_cancel_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_processing_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_completed_count}</Typography>
+                                        </StyledTableCell>
+                                    </StyledTableRow>
+                                    <StyledTableRow sx={{ borderBottom: 'solid 2px' }}>
+                                        <StyledTableCell align="right">
+                                            <strong>
+                                                เวลาขึ้นสินค้าฉลี่ย :
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                นาที/คัน
+                                            </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนรถทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left">
+                                            <Typography variant='h5'>{row.step2_cars_count + ' คัน'}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนสินค้าที่เข้ารับทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left" colSpan={2}>
+                                            <Typography variant='h5'>
+                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                            </Typography>
+                                        </StyledTableCell>
+                                    </StyledTableRow>
+                                </>
+                            ))
+                        } */}
+                        {items.length === 0 && (
+                            <StyledTableRow>
+                                <StyledTableCell align="center" colSpan={9}>
+                                    ไม่พบข้อมูล
+                                </StyledTableCell>
+                            </StyledTableRow>
+                        )}
+                        {/* {items.length > 0 &&
+                            items.map((row, index) => (
+                                <> */}
+                        {items1.length > 0 &&
+                            items1.map((row, index) => (
+                                <>
+                                    <StyledTableRow key={index} style={{ backgroundColor: '#ffbeaf69' }}>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='h5'><strong>ICPF</strong></Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
                                             <Typography variant='body1'>{row.queues_counts}</Typography>
@@ -241,11 +326,11 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                             <Typography variant='body1'>{row.step4_completed_count}</Typography>
                                         </StyledTableCell> */}
                                     </StyledTableRow>
-                                    <StyledTableRow sx={{ borderBottom: 'solid 2px' }}>
+                                    <StyledTableRow sx={{ borderBottom: 'solid 2px', backgroundColor: '#ffbeaf69' }}>
                                         <StyledTableCell align="right">
                                             <strong>
                                                 เวลาขึ้นสินค้าฉลี่ย :
-                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes}</span>
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
                                                 นาที/คัน
                                             </strong>
                                         </StyledTableCell>
@@ -258,7 +343,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         <StyledTableCell align="right" colSpan={2}>
                                             <strong>จำนวนสินค้าที่เข้ารับทั้งหมด </strong>
                                         </StyledTableCell>
-                                        <StyledTableCell align="left" colSpan={2}>
+                                        <StyledTableCell align="left" colSpan={3}>
                                             <Typography variant='h5'>
                                                 {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
                                             </Typography>
@@ -267,350 +352,501 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                 </>
                             ))
                         }
-                        {items.length === 0 && (
-                            <StyledTableRow>
-                                <StyledTableCell align="center" colSpan={9}>
-                                    ไม่พบข้อมูล
-                                </StyledTableCell>
-                            </StyledTableRow>
-                        )}
-                        {/*                         
-                        <>
-                            <StyledTableRow>
-                                <StyledTableCell align="center">
-                                    ICPI
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                            </StyledTableRow>
-                            <StyledTableRow>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนรถทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนเข้ารับสินค้าทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                            </StyledTableRow>
-                        </>
-                        <>
-                            <StyledTableRow>
-                                <StyledTableCell align="center">
-                                    SAHAI KASET
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                            </StyledTableRow>
-                            <StyledTableRow>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนรถทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนเข้ารับสินค้าทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                            </StyledTableRow>
-                        </>
-                        <>
-                            <StyledTableRow>
-                                <StyledTableCell align="center">
-                                    JS888
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                            </StyledTableRow>
-                            <StyledTableRow>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนรถทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนเข้ารับสินค้าทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                            </StyledTableRow>
-                        </>
-                        <>
-                            <StyledTableRow>
-                                <StyledTableCell align="center">
-                                    ICPF ICAM
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                            </StyledTableRow>
-                            <StyledTableRow>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนรถทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนเข้ารับสินค้าทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                            </StyledTableRow>
-                        </>
-                        <>
-                            <StyledTableRow>
-                                <StyledTableCell align="center">
-                                    ICPF ICAM
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                            </StyledTableRow>
-                            <StyledTableRow>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนรถทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนเข้ารับสินค้าทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                            </StyledTableRow>
-                        </>
-                        <>
-                            <StyledTableRow>
-                                <StyledTableCell align="center">
-                                    ICPF BULK
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                            </StyledTableRow>
-                            <StyledTableRow>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนรถทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนเข้ารับสินค้าทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                            </StyledTableRow>
-                        </>
-                        <>
-                            <StyledTableRow>
-                                <StyledTableCell align="center">
-                                    ICPI BULK
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                            </StyledTableRow>
-                            <StyledTableRow>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนรถทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="right" colSpan={2}>
-                                    <strong>จำนวนเข้ารับสินค้าทั้งหมด </strong>
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    -
-                                </StyledTableCell>
-                                <StyledTableCell align="center">
-                                    <strong>คัน</strong>
-                                </StyledTableCell>
-                            </StyledTableRow>
-                        </> */}
+                        {items2.length > 0 &&
+                            items2.map((row, index) => (
+                                <>
+                                    <StyledTableRow key={index} style={{ backgroundColor: '#f4ae4d52' }}>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='h5'><strong>ICPI</strong></Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.queues_counts}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_cancel_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_processing_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_completed_count}</Typography>
+                                        </StyledTableCell>
+                                        {/* <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step4_completed_count}</Typography>
+                                        </StyledTableCell> */}
+                                    </StyledTableRow>
+                                    <StyledTableRow sx={{ borderBottom: 'solid 2px', backgroundColor: '#f4ae4d52' }}>
+                                        <StyledTableCell align="right">
+                                            <strong>
+                                                เวลาขึ้นสินค้าฉลี่ย :
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                นาที/คัน
+                                            </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนรถทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left">
+                                            <Typography variant='h5'>{row.step2_cars_count + ' คัน'}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนสินค้าที่เข้ารับทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left" colSpan={3}>
+                                            <Typography variant='h5'>
+                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                            </Typography>
+                                        </StyledTableCell>
+                                    </StyledTableRow>
+                                </>
+                            ))
+                        }
+                        {items3.length > 0 &&
+                            items3.map((row, index) => (
+                                <>
+                                    <StyledTableRow key={index} style={{ backgroundColor: '#f7dc5063' }}>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='h5'><strong>SAHAI KASET</strong></Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.queues_counts}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_cancel_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_processing_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_completed_count}</Typography>
+                                        </StyledTableCell>
+                                        {/* <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step4_completed_count}</Typography>
+                                        </StyledTableCell> */}
+                                    </StyledTableRow>
+                                    <StyledTableRow sx={{ borderBottom: 'solid 2px', backgroundColor: '#f7dc5063' }}>
+                                        <StyledTableCell align="right">
+                                            <strong>
+                                                เวลาขึ้นสินค้าฉลี่ย :
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                นาที/คัน
+                                            </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนรถทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left">
+                                            <Typography variant='h5'>{row.step2_cars_count + ' คัน'}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนสินค้าที่เข้ารับทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left" colSpan={3}>
+                                            <Typography variant='h5'>
+                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                            </Typography>
+                                        </StyledTableCell>
+                                    </StyledTableRow>
+                                </>
+                            ))
+                        }
+                        {items4.length > 0 &&
+                            items4.map((row, index) => (
+                                <>
+                                    <StyledTableRow key={index} style={{ backgroundColor: '#9cd6ff7a' }}>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='h5'><strong>JS888</strong></Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.queues_counts}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_cancel_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_processing_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_completed_count}</Typography>
+                                        </StyledTableCell>
+                                        {/* <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step4_completed_count}</Typography>
+                                        </StyledTableCell> */}
+                                    </StyledTableRow>
+                                    <StyledTableRow sx={{ borderBottom: 'solid 2px', backgroundColor: '#9cd6ff7a' }}>
+                                        <StyledTableCell align="right">
+                                            <strong>
+                                                เวลาขึ้นสินค้าฉลี่ย :
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                นาที/คัน
+                                            </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนรถทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left">
+                                            <Typography variant='h5'>{row.step2_cars_count + ' คัน'}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนสินค้าที่เข้ารับทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left" colSpan={3}>
+                                            <Typography variant='h5'>
+                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                            </Typography>
+                                        </StyledTableCell>
+                                    </StyledTableRow>
+                                </>
+                            ))
+                        }
+                        {items5.length > 0 &&
+                            items5.map((row, index) => (
+                                <>
+                                    <StyledTableRow key={index} style={{ backgroundColor: '#7609a14f' }}>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='h5'><strong>ICPF ICAM</strong></Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.queues_counts}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_cancel_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_processing_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_completed_count}</Typography>
+                                        </StyledTableCell>
+                                        {/* <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step4_completed_count}</Typography>
+                                        </StyledTableCell> */}
+                                    </StyledTableRow>
+                                    <StyledTableRow sx={{ borderBottom: 'solid 2px', backgroundColor: '#7609a14f' }}>
+                                        <StyledTableCell align="right">
+                                            <strong>
+                                                เวลาขึ้นสินค้าฉลี่ย :
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                นาที/คัน
+                                            </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนรถทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left">
+                                            <Typography variant='h5'>{row.step2_cars_count + ' คัน'}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนสินค้าที่เข้ารับทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left" colSpan={3}>
+                                            <Typography variant='h5'>
+                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                            </Typography>
+                                        </StyledTableCell>
+                                    </StyledTableRow>
+                                </>
+
+                            ))
+                        }
+                        {items6.length > 0 &&
+                            items6.map((row, index) => (
+                                <>
+                                    <StyledTableRow key={index} style={{ backgroundColor: '#17cf6c52' }}>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='h5'><strong>ICPF (BULK)</strong></Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.queues_counts}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_cancel_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_processing_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_completed_count}</Typography>
+                                        </StyledTableCell>
+                                        {/* <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step4_completed_count}</Typography>
+                                        </StyledTableCell> */}
+                                    </StyledTableRow>
+                                    <StyledTableRow sx={{ borderBottom: 'solid 2px', backgroundColor: '#17cf6c52' }}>
+                                        <StyledTableCell align="right">
+                                            <strong>
+                                                เวลาขึ้นสินค้าฉลี่ย :
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                นาที/คัน
+                                            </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนรถทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left">
+                                            <Typography variant='h5'>{row.step2_cars_count + ' คัน'}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนสินค้าที่เข้ารับทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left" colSpan={3}>
+                                            <Typography variant='h5'>
+                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                            </Typography>
+                                        </StyledTableCell>
+                                    </StyledTableRow>
+                                </>
+                            ))
+                        }
+                        {items7.length > 0 &&
+                            items7.map((row, index) => (
+                                <>
+                                    <StyledTableRow key={index} style={{ backgroundColor: '#007737a1' }}>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='h5'><strong>ICPI (BULK)</strong></Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.queues_counts}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_cancel_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_processing_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_completed_count}</Typography>
+                                        </StyledTableCell>
+                                        {/* <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step4_completed_count}</Typography>
+                                        </StyledTableCell> */}
+                                    </StyledTableRow>
+                                    <StyledTableRow sx={{ borderBottom: 'solid 2px', backgroundColor: '#007737a1' }}>
+                                        <StyledTableCell align="right">
+                                            <strong>
+                                                เวลาขึ้นสินค้าฉลี่ย :
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                นาที/คัน
+                                            </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนรถทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left">
+                                            <Typography variant='h5'>{row.step2_cars_count + ' คัน'}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนสินค้าที่เข้ารับทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left" colSpan={3}>
+                                            <Typography variant='h5'>
+                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                            </Typography>
+                                        </StyledTableCell>
+                                    </StyledTableRow>
+                                </>
+
+                            ))
+                        }
+                        {items8.length > 0 &&
+                            items8.map((row, index) => (
+                                <>
+                                    <StyledTableRow key={index} style={{ backgroundColor: '#eebbc9' }}>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='h5'><strong>ICPI ICAM</strong></Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.queues_counts}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_cancel_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_processing_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_completed_count}</Typography>
+                                        </StyledTableCell>
+                                        {/* <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step4_completed_count}</Typography>
+                                        </StyledTableCell> */}
+                                    </StyledTableRow>
+                                    <StyledTableRow sx={{ borderBottom: 'solid 2px', backgroundColor: '#eebbc9' }}>
+                                        <StyledTableCell align="right">
+                                            <strong>
+                                                เวลาขึ้นสินค้าฉลี่ย :
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                นาที/คัน
+                                            </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนรถทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left">
+                                            <Typography variant='h5'>{row.step2_cars_count + ' คัน'}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนสินค้าที่เข้ารับทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left" colSpan={3}>
+                                            <Typography variant='h5'>
+                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                            </Typography>
+                                        </StyledTableCell>
+                                    </StyledTableRow>
+                                </>
+
+                            ))
+                        }
+                        {items9.length > 0 &&
+                            items9.map((row, index) => (
+                                <>
+                                    <StyledTableRow key={index} style={{ backgroundColor: '#fec4a2a3' }}>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='h5'><strong>ICPI IVIET</strong></Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.queues_counts}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_cancel_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step2_processing_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_waiting_count}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step3_completed_count}</Typography>
+                                        </StyledTableCell>
+                                        {/* <StyledTableCell align="center">
+                                            <Typography variant='body1'>{row.step4_completed_count}</Typography>
+                                        </StyledTableCell> */}
+                                    </StyledTableRow>
+                                    <StyledTableRow sx={{ borderBottom: 'solid 2px', backgroundColor: '#fec4a2a3' }}>
+                                        <StyledTableCell align="right">
+                                            <strong>
+                                                เวลาขึ้นสินค้าฉลี่ย :
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                นาที/คัน
+                                            </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนรถทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left">
+                                            <Typography variant='h5'>{row.step2_cars_count + ' คัน'}</Typography>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right" colSpan={2}>
+                                            <strong>จำนวนสินค้าที่เข้ารับทั้งหมด </strong>
+                                        </StyledTableCell>
+                                        <StyledTableCell align="left" colSpan={3}>
+                                            <Typography variant='h5'>
+                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                            </Typography>
+                                        </StyledTableCell>
+                                    </StyledTableRow>
+                                </>
+
+                            ))
+                        }
+                        {/* </>
+                            ))
+                        } */}
                         {/* {items.length > 0 &&
                             items.map((row, index) => (
                                 <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>

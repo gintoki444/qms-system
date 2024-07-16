@@ -50,6 +50,7 @@ import SoundCall from 'components/@extended/SoundCall';
 import { Stack } from '../../../../node_modules/@mui/material/index';
 
 import * as functionCancleTeam from 'components/Function/CancleTeamStation';
+import * as functionAddLogs from 'components/Function/AddLog';
 
 export const Step2Table = ({ status, title, onStatusChange, onFilter, permission }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
@@ -181,6 +182,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     );
   }
 
+  const userId = localStorage.getItem('user_id');
   const [items, setItems] = useState([]);
   const [items2, setItems2] = useState([]);
   const [open, setOpen] = useState(false);
@@ -390,7 +392,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   };
 
   //Update สถานะคิวที่ให้บริการ
-  const step1Update = (step_id, statusupdate, stations_id) => {
+  const step1Update = async (step_id, statusupdate, stations_id) => {
+    const newCurrentDate = await stepRequest.getCurrentDate();
     return new Promise((resolve, reject) => {
       if (stations_id === '') {
         setLoading(false);
@@ -418,7 +421,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           }
         }
       }
-      const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+      // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+      // console.log('newCurrentDate :', newCurrentDate);
 
       var myHeaders = new Headers();
       myHeaders.append('Content-Type', 'application/json');
@@ -426,7 +430,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       var raw = JSON.stringify({
         status: statusupdate,
         station_id: stations_id,
-        updated_at: currentDate
+        updated_at: newCurrentDate
       });
 
       var requestOptions = {
@@ -436,6 +440,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         redirect: 'follow'
       };
 
+      // if (newCurrentDate === 99999) {
       fetch(apiUrl + '/updatestepstatus/' + step_id, requestOptions)
         .then((response) => response.json())
         .then(async (result) => {
@@ -449,6 +454,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         .catch((error) => {
           reject(error);
         });
+      // }
     });
   };
 
@@ -530,8 +536,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
   //Update start_time of step
   const [queues, setQueues] = useState([]);
-  const updateStartTime = (step_id) => {
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+  const updateStartTime = async (step_id) => {
+    const currentDate = await stepRequest.getCurrentDate();
+    // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     return new Promise((resolve, reject) => {
       const myHeaders = new Headers();
@@ -566,9 +573,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   };
 
   //Update start_time of step
-  const updateEndTime = (step_id) => {
+  const updateEndTime = async (step_id) => {
     //alert("updateEndTime")
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const currentDate = await stepRequest.getCurrentDate();
+    // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     return new Promise((resolve, reject) => {
       const myHeaders = new Headers();
@@ -1177,8 +1185,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   };
 
   // =============== ปรับสถานะหัวจ่าย ===============//
-  const updateStation = (id, status) => {
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+  const updateStation = async (id, status) => {
+    // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const currentDate = await stepRequest.getCurrentDate();
 
     try {
       const data = {
@@ -1276,7 +1285,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               //   }
               // });
 
-
               // if (status === 9999) {
               setItems([]);
               setOpen(false);
@@ -1308,6 +1316,16 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 };
                 updateRegisterItems(dataOrder.id, setData);
               });
+
+              const data = {
+                audit_user_id: userId,
+                audit_action: "I",
+                audit_system_id: id_update,
+                audit_system: "step2",
+                audit_screen: "ข้อมูลขึ้นสินค้า",
+                audit_description: "เรียกขึ้นสินค้า"
+              }
+              AddAuditLogs(data);
 
               updateStation(station_id, 'working');
               setStationCount(station_count + 1);
@@ -1456,6 +1474,15 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 // ทำอะไรกับข้อผิดพลาด
               });
 
+            const data = {
+              audit_user_id: userId,
+              audit_action: "U",
+              audit_system_id: id_update,
+              audit_system: "step2",
+              audit_screen: "ข้อมูลขึ้นสินค้า",
+              audit_description: "บันทึกข้อมูลขึ้นสินค้า"
+            }
+            AddAuditLogs(data);
             setStationCount(station_count - 1);
             updateStation(station_id, 'waiting');
 
@@ -1473,7 +1500,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
             // อัปเดตสถานะและข้อมูลของทั้งสองขั้นตอนใน API call เดียว
             const station_id2 = station_id;
-            const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+            const currentDate = await stepRequest.getCurrentDate();
+            // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
             const updates = [
               { step_id: id_update, status: 'completed', station_id: station_id2, updated_at: currentDate },
               { step_id: id_update_next, status: 'waiting', station_id: 27, updated_at: currentDate }
@@ -1498,8 +1526,27 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           // การใช้งาน Line Notify
           setItems([]);
 
+          const data = {
+            audit_user_id: userId,
+            audit_action: "D",
+            audit_system_id: id_update,
+            audit_system: "step2",
+            audit_screen: "ข้อมูลขึ้นสินค้า",
+            audit_description: "ยกเลิกการขึ้นสินค้า"
+          }
+          AddAuditLogs(data);
+
           // console.log('cancle Click');
           if (stationStatus === 'N') {
+            const data = {
+              audit_user_id: userId,
+              audit_action: "D",
+              audit_system_id: queues.reserve_id,
+              audit_system: "step2",
+              audit_screen: "ข้อมูลการจอง",
+              audit_description: "ยกเลิกทีมขึ้นสินค้า"
+            }
+            AddAuditLogs(data);
             updateCancleTeams(queues.reserve_id);
           }
           // if (id_update === 999999) {
@@ -1848,6 +1895,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   // const handleClickOpentest = async () => {
 
   // }
+
+  const AddAuditLogs = async (data) => {
+    await functionAddLogs.AddAuditLog(data);
+  }
   return (
     <>
       <Box>

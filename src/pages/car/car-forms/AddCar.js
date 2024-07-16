@@ -50,7 +50,7 @@ function AddCar() {
   const [carTypeList, setCarTypeList] = useState([]);
   const getCarType = () => {
     carRequest.getAllCarType().then((response) => {
-      setCarTypeList(response);
+      setCarTypeList(response.filter((x) => x.car_type_id === 1 || x.car_type_id === 3 || x.car_type_id === 4 || x.car_type_id === 5 || x.car_type_id === 6 || x.car_type_id === 8));
     });
   };
 

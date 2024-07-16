@@ -288,3 +288,23 @@ export const updateWeight1 = async (id, data) => {
   const response = await fetch(apiUrl + '/updateweight1/' + id, requestOptions);
   return await response.json();
 };
+
+// แสดงข้อมูล กองสินค้าทั้งหมด
+export const getCurrentDate = () => {
+  return new Promise((resolve, reject) => {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+    fetch(apiUrl + '/current-date', requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result)
+        resolve(result.currentDate);
+      })
+      .catch((error) => {
+        console.error(error);
+        reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
+      });
+  });
+};

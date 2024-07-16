@@ -46,7 +46,6 @@ function AllStations({ permission }) {
     setLoading(true);
     try {
       stepRequest.getAllStations().then((response) => {
-        console.log(response);
         const stationGroup1 = response.filter((x) => x.station_group_id === 3 && x.station_id !== 32 && x.station_id !== 33 && x.station_id !== 34 && x.station_id !== 35 && x.station_id !== 36 && x.station_id !== 15 && x.station_id !== 16 && x.station_id !== 17 && x.warehouse_id != 8);
 
         const stationGroup2 = response.filter((x) => x.station_group_id === 3 && x.warehouse_id === 8);

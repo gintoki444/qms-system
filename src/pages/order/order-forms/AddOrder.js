@@ -39,7 +39,9 @@ import { PlusSquareOutlined, MinusSquareOutlined, SaveOutlined, RollbackOutlined
 import moment from 'moment';
 import { useSnackbar } from 'notistack';
 
+import * as functionAddLogs from 'components/Function/AddLog';
 function AddOrder() {
+  const userId = localStorage.getItem('user_id');
   const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
   const sutotal = 0;
   const [items, setItems] = useState([
@@ -286,6 +288,16 @@ function AddOrder() {
 
       // if (values === 999) {
       await createOrder(values);
+
+      const data = {
+        audit_user_id: userId,
+        audit_action: "I",
+        audit_system_id: '',
+        audit_system: "orders",
+        audit_screen: "ข้อมูลคำสั่งซื้อ",
+        audit_description: "เพิ่มข้อมูลคำสั่งซื้อ"
+      }
+      AddAuditLogs(data);
       // }
     } catch (err) {
       console.error(err);
@@ -336,6 +348,10 @@ function AddOrder() {
   const backToReserce = () => {
     navigate('/reserve/update/' + id);
   };
+
+  const AddAuditLogs = async (data) => {
+    await functionAddLogs.AddAuditLog(data);
+  }
   return (
     <Grid alignItems="center" justifyContent="space-between">
       <Grid container rowSpacing={1} columnSpacing={1.75}>
@@ -531,7 +547,7 @@ function AddOrder() {
                                       },
                                       '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
                                         right: '7px!important',
-                                        top: 'calc(50% - 18px)'
+                                        top: 'calc(50% - 1px)'
                                       }
                                     }}
                                     error={Boolean(touched.product_id && errors.product_id)}

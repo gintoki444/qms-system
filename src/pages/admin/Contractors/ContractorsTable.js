@@ -20,7 +20,7 @@ import {
   DialogTitle
 } from '@mui/material';
 
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 
 // Link api url
 import * as adminRequest from '_api/adminRequest';
@@ -97,22 +97,55 @@ function ContractorsTable({ permission }) {
   };
 
   // ลบข้อมูล Forklift
-  const [contractor_id, setcontractor_id] = useState(false);
+  const [contractor, setcontractor] = useState(false);
   const [textnotify, setText] = useState('');
+  const [selected, setSelected] = useState('');
+  // const [changeStatus, setChangeStatus] = useState('');
 
-  const handleClickOpen = (contractor_id) => {
-    setcontractor_id(contractor_id);
-    setText('ลบข้อมูล');
+  const handleClickOpen = (data, onSelect) => {
+    if (onSelect === 'delete') {
+      setText('ลบข้อมูล');
+    } else if (onSelect === 'status') {
+      if (data.status === 'A') {
+        setText('ปิดการใช้งาน');
+      } else {
+        setText('เปิดการใช้งาน');
+      }
+    }
+    setSelected(onSelect);
+    // setChangeStatus(data.status)
+    setcontractor(data);
     setOpen(true);
   };
 
   const handleClose = (flag) => {
     if (flag === 1) {
-      setLoading(true);
-      deteteContractor(contractor_id);
+      if (selected === 'delete') {
+        setLoading(true);
+        deteteContractor(contractor.contractor_id);
+      } else if (selected === 'status') {
+        setLoading(true);
+        ChangeStatusContractor(contractor.contractor_id);
+      }
       setOpen(false);
     } else if (flag === 0) {
       setOpen(false);
+    }
+  };
+
+  const ChangeStatusContractor = (id) => {
+    try {
+      if (contractor.status === 'A') {
+        contractor.status = 'I';
+      } else {
+        contractor.status = 'A';
+      }
+      console.log(contractor)
+      adminRequest.putContractor(id, contractor).then(() => {
+        getContractor();
+      });
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -206,6 +239,19 @@ function ContractorsTable({ permission }) {
                             <EditOutlined />
                           </Button>
                         </Tooltip>
+                        <Tooltip title={row.status == 'A' ? 'ปิดการใช้งาน' : 'เปิดการใช้งาน'}>
+                          <Button
+                            variant="contained"
+                            size="medium"
+                            color={row.status === 'A' ? 'warning' : 'success'}
+                            disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
+                            sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                            onClick={() => handleClickOpen(row, 'status')}
+                          >
+                            {row.status == 'A' ? <CloseCircleOutlined /> : <CheckCircleOutlined />}
+                            {/* <DeleteOutlined /> */}
+                          </Button>
+                        </Tooltip>
                         <Tooltip title="ลบ">
                           <Button
                             variant="contained"
@@ -213,7 +259,7 @@ function ContractorsTable({ permission }) {
                             color="error"
                             disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                            onClick={() => handleClickOpen(row.contractor_id)}
+                            onClick={() => handleClickOpen(row, 'delete')}
                           >
                             <DeleteOutlined />
                           </Button>

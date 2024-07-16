@@ -31,6 +31,8 @@ const Forklifts = Loadable(lazy(() => import('pages/admin/Forklifts/Forklifts'))
 const AddForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklift-forms/AddForklift')));
 const UpdateForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklift-forms/UpdateForklift')));
 
+const TestCashInOut = Loadable(lazy(() => import('pages/admin/TestDemo/TestCashInOut')));
+
 // render -  LayborLine
 // const LaborLines = Loadable(lazy(() => import('pages/admin/LaborLines/LaborLines')));
 // const AddForklift = Loadable(lazy(() => import('pages/admin/Forklifts/forklift-forms/AddForklift')));
@@ -56,6 +58,7 @@ const UpdateProductManagement = Loadable(lazy(() => import('pages/admin/Products
 const AddProductReceive = Loadable(lazy(() => import('pages/admin/ProductsManagement/product-forms/AddProductReceive')));
 const AddCutOffProduct = Loadable(lazy(() => import('pages/admin/ProductsManagement/product-forms/AddCutOffProduct')));
 const ProductsDetails = Loadable(lazy(() => import('pages/admin/ProductsManagement/ProductDetails')));
+const ProductsHistory = Loadable(lazy(() => import('pages/admin/ProductsManagement/ProductHistory')));
 
 // render -  Product management
 const Products = Loadable(lazy(() => import('pages/admin/Products/Products')));
@@ -90,6 +93,19 @@ const AdminsRoutes = {
         {
           path: 'update/:id',
           element: <UpdateUser />
+        }
+      ]
+    },
+    {
+      path: 'tests',
+      children: [
+        // {
+        //   path: '',
+        //   element: <Users />
+        // },
+        {
+          path: 'cash-in-out',
+          element: <TestCashInOut />
         }
       ]
     },
@@ -234,6 +250,10 @@ const AdminsRoutes = {
         {
           path: 'details/:id',
           element: <ProductsDetails />
+        },
+        {
+          path: 'historys',
+          element: <ProductsHistory />
         }
       ]
     },

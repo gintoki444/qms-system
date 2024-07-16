@@ -49,6 +49,8 @@ import CancleQueueButton from 'components/@extended/CancleQueueButton';
 
 import axios from 'axios';
 
+import * as functionAddLogs from 'components/Function/AddLog';
+
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
   {
@@ -301,6 +303,28 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
       reserveRequest.deleteReserById(id).then((response) => {
         if (response.status == 'ok') {
           getReserve();
+          let data = {};
+          if (onclick == 'delete') {
+            data = {
+              audit_user_id: userId,
+              audit_action: "D",
+              audit_system_id: id,
+              audit_system: "reserves",
+              audit_screen: "ข้อมูลการจองคิว",
+              audit_description: "ลบการจองคิว"
+            }
+          } else {
+            data = {
+              audit_user_id: userId,
+              audit_action: "D",
+              audit_system_id: id,
+              audit_system: "reserves",
+              audit_screen: "ข้อมูลการจองคิว",
+              audit_description: "ยกเลิกการจองคิว"
+            }
+          }
+          AddAuditLogs(data);
+
           setSaveLoading(false);
           setOnClickSubmit(false);
         } else {
@@ -646,6 +670,15 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
 
   //สร้าง ขั้นตอนการรับสินค้า
   function createStepsf(queue_id) {
+    const data = {
+      audit_user_id: userId,
+      audit_action: "I",
+      audit_system_id: queue_id,
+      audit_system: "queues",
+      audit_screen: "ข้อมูลคิว",
+      audit_description: "ออกบัตรคิว"
+    }
+    AddAuditLogs(data);
     return new Promise((resolve) => {
       setTimeout(() => {
         const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
@@ -794,6 +827,10 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     if (refresh === true) {
       getReserve();
     }
+  }
+
+  const AddAuditLogs = async (data) => {
+    await functionAddLogs.AddAuditLog(data);
   }
 
   return (

@@ -14,7 +14,7 @@ import * as queuesRequest from '_api/queueReques';
 import * as companyRequest from '_api/companyRequest';
 // import * as adminRequest from '_api/adminRequest';
 
-// const userId = localStorage.getItem('user_id');
+const userId = localStorage.getItem('user_id');
 
 // material-ui
 import {
@@ -69,6 +69,8 @@ import moment from 'moment';
 
 import AddCar from './AddCar';
 import AddDriver from './AddDriver';
+
+import * as functionAddLogs from 'components/Function/AddLog';
 
 function UpdateReserve() {
   const pageId = 8;
@@ -361,6 +363,15 @@ function UpdateReserve() {
         .putReserById(id, values)
         .then((result) => {
           if (result.status === 'ok') {
+            const data = {
+              audit_user_id: userId,
+              audit_action: "U",
+              audit_system_id: id,
+              audit_system: "reserves",
+              audit_screen: "ข้อมูลการจองคิว",
+              audit_description: "แก้ไขข้อมูลจองคิวรับสินค้า"
+            }
+            AddAuditLogs(data);
             enqueueSnackbar('บันทึกข้อมูลสำเร็จ!', { variant: 'success' });
             getReserve();
             // window.location.href = '/reserve';
@@ -684,6 +695,16 @@ function UpdateReserve() {
 
   //สร้าง ขั้นตอนการรับสินค้า
   function createStepsf(queue_id) {
+    const data = {
+      audit_user_id: userId,
+      audit_action: "I",
+      audit_system_id: queue_id,
+      audit_system: "queues",
+      audit_screen: "ข้อมูลคิว",
+      audit_description: "ออกบัตรคิว"
+    }
+    AddAuditLogs(data);
+
     return new Promise((resolve) => {
       setTimeout(() => {
         const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
@@ -871,6 +892,15 @@ function UpdateReserve() {
     setNewCar(formData);
     getReserve();
     getCarLsit();
+    const data = {
+      audit_user_id: userId,
+      audit_action: "I",
+      audit_system_id: formData[0].car_id,
+      audit_system: "cars",
+      audit_screen: "ข้อมูลรถบรรทุก",
+      audit_description: "เพิ่มข้อมูลรถบรรทุก"
+    }
+    AddAuditLogs(data);
   };
 
   // =============== เพิ่มข้อมูลคนขับรถ ===============//
@@ -878,7 +908,21 @@ function UpdateReserve() {
     setNewDriver(formData);
     getReserve();
     getDriverLsit();
+
+    const data = {
+      audit_user_id: userId,
+      audit_action: "I",
+      audit_system_id: formData[0].driver_id,
+      audit_system: "drivers",
+      audit_screen: "ข้อมูลคนขับรถ",
+      audit_description: "เพิ่มข้อมูลคนขับรถ"
+    }
+    AddAuditLogs(data);
   };
+
+  const AddAuditLogs = async (data) => {
+    await functionAddLogs.AddAuditLog(data);
+  }
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -975,7 +1019,7 @@ function UpdateReserve() {
                                   },
                                   '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
                                     right: '7px!important',
-                                    top: 'calc(50% - 18px)'
+                                    top: 'calc(50% - 1px)'
                                   }
                                 }}
                                 renderInput={(params) => (
@@ -1141,7 +1185,7 @@ function UpdateReserve() {
                                   },
                                   '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
                                     right: '7px!important',
-                                    top: 'calc(50% - 18px)'
+                                    top: 'calc(50% - 1px)'
                                   }
                                 }}
                                 renderInput={(params) => (
@@ -1203,7 +1247,7 @@ function UpdateReserve() {
                                   },
                                   '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
                                     right: '7px!important',
-                                    top: 'calc(50% - 18px)'
+                                    top: 'calc(50% - 1px)'
                                   }
                                 }}
                                 error={Boolean(touched.driver_id && errors.driver_id)}
