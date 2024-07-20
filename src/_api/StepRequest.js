@@ -83,6 +83,24 @@ export const getAllContractors = async () => {
   return result;
 };
 
+// แก้ไขสถานะ สายแรงงาน
+export const putContractorStatus = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/updatecontractstatus/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
 // ==============================|| ข้อมูล Reportlines  ||============================== //
 export const getAllReportlines = async () => {
   const requestOptions = {

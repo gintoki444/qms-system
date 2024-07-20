@@ -19,10 +19,10 @@ import * as functionAddLogs from 'components/Function/AddLog';
 
 // import { useSnackbar } from 'notistack';
 
-function CancleTeamStation({ reserveId, handleReload, reserveData }) {
+function CancleTeamStation({ reserveId, handleReload, reserveData, permission }) {
     const userId = localStorage.getItem('user_id');
     useEffect(() => {
-    }, [handleReload])
+    }, [handleReload, permission])
 
     // const { enqueueSnackbar } = useSnackbar();
     const [open, setOpen] = useState(false);
@@ -34,6 +34,21 @@ function CancleTeamStation({ reserveId, handleReload, reserveData }) {
     };
 
     // =============== บันทึกข้อมูล ===============//
+    const updateContractor = async (id, status) => {
+        const currentDate = await stepRequest.getCurrentDate();
+
+        try {
+            const data = {
+                contract_status: status,
+                contract_update: currentDate
+            };
+
+            stepRequest.putContractorStatus(id, data);
+        } catch (error) {
+            console.log(error);
+            setLoading(false);
+        }
+    };
     const updateTeamLoading = (values) => {
         try {
             adminRequest.putReserveTeam(reserveId, values);
@@ -51,6 +66,9 @@ function CancleTeamStation({ reserveId, handleReload, reserveData }) {
 
     const handleClose = (flag) => {
         if (flag === 1) {
+
+            const contractor_id = reserveData.contractor_id;
+            updateContractor(contractor_id, 'waiting');
 
             reserveData.warehouse_id = 1;
             reserveData.reserve_station_id = 1;
@@ -126,7 +144,7 @@ function CancleTeamStation({ reserveId, handleReload, reserveData }) {
                         sx={{ minWidth: '33px!important', p: '6px 0px' }}
                         size="medium"
                         color="warning"
-                        disabled={reserveData.team_id === null}
+                        disabled={reserveData.team_id === null || permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                         // onClick={() => deleteDrivers(row.reserve_id)}
                         onClick={() => handleClickOpen()}
                     >

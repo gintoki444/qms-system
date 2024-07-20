@@ -76,6 +76,7 @@ const MainLayout = () => {
       permissionsRequest.getPagesPermissionByRole(userRole).then((response) => {
         if (response.length > 0) {
           response = response.filter((x) => x.permission_name !== 'no_access_to_view_data');
+          const checkReport = response.filter((x) => x.page_icon === 'report');
           if (userRole === 11) {
             // const addnew = {
             //   page_id: 4,
@@ -113,6 +114,10 @@ const MainLayout = () => {
               permission_name: 'manage_everything',
               permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
             };
+            // response.unshift(addnew);
+            response.unshift(addnew2);
+          }
+          if (checkReport.length > 0) {
             const addnewReport = {
               "page_id": 33,
               "role_id": 11,
@@ -131,8 +136,6 @@ const MainLayout = () => {
               "permission_name": "manage_everything",
               "permission_description": "ICP-สามารถจัดการทั้งหมดได้"
             };
-            // response.unshift(addnew);
-            response.unshift(addnew2);
             response.unshift(addnewReport);
           }
           dispatch(setPermission({ key: 'permission', value: response }));

@@ -218,8 +218,10 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
     try {
       stepRequest.getAllStep0ByDate(startDate, endDate).then((response) => {
         setItems(response.filter((x) => x.product_company_id == (onFilter + 1) && x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed" && x.step2_status !== "cancle") || []);
-
         step0List(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed" && x.step2_status !== "cancle") || []);
+        // setItems(response.filter((x) => x.product_company_id == (onFilter + 1) && x.token !== null && parseFloat(x.total_quantity) > 0));
+
+        // step0List(response.filter((x) => x.product_company_id == (onFilter + 1) && x.token !== null && parseFloat(x.total_quantity) > 0));
         setLoading(false);
       });
     } catch (e) {
@@ -304,6 +306,7 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
                             id={row.reserve_id}
                             handleReload={handleSetReload}
                             token={<QueueTag id={row.product_company_id} token={row.token} />}
+                            permission={permission}
                           />
                           <Tooltip title="แก้ไข">
                             <span>
@@ -319,7 +322,8 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
                               </Button>
                             </span>
                           </Tooltip>
-                          <CancleTeamStation reserveId={row.reserve_id} reserveData={row} handleReload={handleSetReload} />
+                          <CancleTeamStation reserveId={row.reserve_id} reserveData={row} handleReload={handleSetReload}
+                            permission={permission} />
                         </ButtonGroup>
                         {/* <Button 
                     sx={{ minWidth: '33px!important', p: '6px 0px' }}

@@ -218,6 +218,7 @@ function AddOrder() {
           .request(config)
           .then((result) => {
             if (result.data.status === 'ok') {
+              console.log('result ', result);
               //Update total_amount
               updateReserveTotal();
               resolve(result['status']);
@@ -292,10 +293,10 @@ function AddOrder() {
       const data = {
         audit_user_id: userId,
         audit_action: "I",
-        audit_system_id: '',
+        audit_system_id: id,
         audit_system: "orders",
         audit_screen: "ข้อมูลคำสั่งซื้อ",
-        audit_description: "เพิ่มข้อมูลคำสั่งซื้อ"
+        audit_description: `เพิ่มข้อมูลคำสั่งซื้อ : ${values.ref_order_id}`
       }
       AddAuditLogs(data);
       // }

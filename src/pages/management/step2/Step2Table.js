@@ -1202,6 +1202,24 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     }
   };
 
+  // =============== ปรับสถานะ สายแรงงาน ===============//
+  const updateContractor = async (id, status) => {
+    // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const currentDate = await stepRequest.getCurrentDate();
+
+    try {
+      const data = {
+        contract_status: status,
+        contract_update: currentDate
+      };
+
+      stepRequest.putContractorStatus(id, data);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
   const handleClickOpen = (step_id, fr, queues_id, station_id, queuesData) => {
     //ข้อความแจ้งเตือน
     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
@@ -1328,6 +1346,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               AddAuditLogs(data);
 
               updateStation(station_id, 'working');
+              updateContractor(queues.contractor_id, 'working');
               setStationCount(station_count + 1);
               await step1Update(id_update, 'processing', station_id);
               await updateStartTime(id_update);
@@ -1485,6 +1504,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
             AddAuditLogs(data);
             setStationCount(station_count - 1);
             updateStation(station_id, 'waiting');
+            updateContractor(queues.contractor_id, 'waiting');
 
             // await updateLoadingTeam(id_update);
             // await updateLoadingTeam(id_update_next);
@@ -1566,6 +1586,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           });
 
           updateStation(station_id, 'waiting');
+          updateContractor(queues.contractor_id, 'waiting');
           setStationCount(station_count - 1);
           await step1Update(id_update, 'waiting', 27);
           await updateStartTime(id_update);

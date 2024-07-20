@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 // import { styled } from '@mui/material/styles';
 
 // import { Link as RouterLink } from 'react-router-dom';
-const apiUrl = process.env.REACT_APP_API_URL;
+// const apiUrl = process.env.REACT_APP_API_URL;
+import * as reserveRequest from '_api/reserveRequest';
+import * as stepRequest from '_api/StepRequest';
 
 // material-ui
 import {
     Box,
-    // Stack,
+    Tooltip,
     Table,
     TableBody,
     TableCell,
@@ -16,13 +18,14 @@ import {
     TableHead,
     TableRow,
     CircularProgress,
-    Typography
-    // , Chip
+    Typography,
+    // Button,
+    Chip
 } from '@mui/material';
 
-import { CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
+// import { CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 
-import moment from 'moment-timezone';
+// import moment from 'moment-timezone';
 
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
@@ -34,7 +37,7 @@ const headCells = [
     },
     {
         id: 'queueNum',
-        align: 'left',
+        align: 'center',
         disablePadding: true,
         label: 'หมายเลขคิว'
     },
@@ -42,57 +45,47 @@ const headCells = [
         id: 'queue',
         align: 'center',
         disablePadding: true,
-        label: 'คิวเดิม'
+        label: 'หมายเลขคิวเดิม'
     },
     {
-        id: 'timeIn',
-        align: 'left',
+        id: 'status_now',
+        align: 'center',
         disablePadding: true,
-        label: 'เวลาเข้า'
+        label: 'สถานะปัจจุบัน'
     },
     {
-        id: 'timeOut',
-        align: 'left',
+        id: 'reserves',
+        align: 'center',
         disablePadding: true,
-        label: 'เวลาออก'
+        label: 'ข้อมูลการจอง'
     },
     {
-        id: 'company',
-        align: 'left',
-        disablePadding: false,
-        label: 'ชื่อร้าน'
-    },
-    {
-        id: 'registration_no',
-        align: 'left',
-        disablePadding: false,
-        label: 'ทะเบียนรถ'
-    },
-    {
-        id: 'tel',
-        align: 'left',
-        disablePadding: false,
-        label: 'เบอร์โทร'
-    },
-    {
-        id: 'driveName',
-        align: 'left',
-        disablePadding: false,
-        label: 'ชื่อผู้ขับ'
-    },
-    {
-        id: 'checking1',
+        id: 'orders',
         align: 'center',
         disablePadding: false,
-        label: 'คลุมผ้าใบ(ตัวแม่)'
+        label: 'ข้อมูลคำสั่งซื้อ'
     },
     {
-        id: 'checking2',
+        id: 'weigh',
         align: 'center',
         disablePadding: false,
-        label: 'คลุมผ้าใบ(ตัวลูก)'
+        label: 'ข้อมูลการชั่งน้ำหนัก'
+    },
+    {
+        id: 'teamLoading',
+        align: 'center',
+        disablePadding: false,
+        label: 'ข้อมูลทีมจ่ายสินค้า'
+    },
+    {
+        id: 'productManages',
+        align: 'center',
+        disablePadding: false,
+        label: 'ข้อมูลกองสินค้าที่จ่าย'
     }
 ];
+import QueueTag from 'components/@extended/QueueTag';
+import HistoryPopup from './HistoryPopup';
 
 function OrderTableHead({ order, orderBy }) {
     return (
@@ -139,32 +132,78 @@ function StepHistoryTable({ startDate, endDate, clickDownload, dataList, onFilte
     const [items, setItems] = useState([]);
 
     const fetchData = async () => {
+        getCompanys();
+        getBrands();
         getOrderSumQty();
     };
 
     const getOrderSumQty = () => {
-        const requestOptions = {
-            method: 'GET',
-            redirect: 'follow'
-        };
 
-        fetch(apiUrl + '/carstimeinout?start_date=' + startDate + '&end_date=' + endDate, requestOptions)
-            .then((response) => response.json())
-            .then((result) => {
-                console.log('onFilter ', onFilter)
-                if (onFilter !== 0) {
-                    setItems(result.filter((x) => x.product_company_id === onFilter));
-                    dataList(result)
-                    setLoading(false);
-                } else {
-                    console.log('result ', result);
-                    setItems(result);
-                    dataList(result)
-                    setLoading(false);
-                }
+        // stepRequest.getAllStep0ByDate('2024-07-17', '2024-07-17').then((response) => {
+        stepRequest.getAllStep0ByDate(startDate, endDate).then((response) => {
+            response = response.filter((x) => x.step1_status !== "cancle");
+            if (onFilter) {
+                setItems(response.filter((x) => x.product_company_id === onFilter));
+                dataList(response);
+                setLoading(false);
+            } else {
+                setItems(response);
+                dataList(response);
+                setLoading(false);
+            }
+            setLoading(false);
+        });
+        // const requestOptions = {
+        //     method: 'GET',
+        //     redirect: 'follow'
+        // };
 
-            })
-            .catch((error) => console.error(error));
+        // fetch(apiUrl + '/carstimeinout?start_date=' + startDate + '&end_date=' + endDate, requestOptions)
+        //     .then((response) => response.json()) 
+        //     .then((result) => {
+        //         console.log('onFilter ', onFilter)
+        //         if (onFilter !== 0) {
+        //             setItems(result.filter((x) => x.product_company_id === onFilter));
+        //             dataList(result)
+        //             setLoading(false);
+        //         } else {
+        //             console.log('result ', result);
+        //             setItems(result);
+        //             dataList(result)
+        //             setLoading(false);
+        //         }
+
+        //     })
+        //     .catch((error) => console.error(error));
+    };
+
+    const [companys, setCompanys] = useState([]);
+    const getCompanys = () => {
+        try {
+            reserveRequest.getAllproductCompanys().then((response) => {
+                setCompanys(response);
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const [brands, setBrands] = useState([]);
+    const getBrands = () => {
+        try {
+            reserveRequest.getAllproductBrand().then((response) => {
+                setBrands(response);
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+
+    const getTokenCompany = (company_id) => {
+        const token = companys.filter((x) => x.product_company_id == company_id);
+
+        return token[0]?.product_company_code;
     };
 
     // รวม grand total ของ quantity ของทุกรายการ items
@@ -202,54 +241,74 @@ function StepHistoryTable({ startDate, endDate, clickDownload, dataList, onFilte
                                 items.map((row, index) => (
                                     <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                         <TableCell align="center">{index + 1}</TableCell>
-                                        <TableCell align="center">{row.token}</TableCell>
-                                        <TableCell align="center">{row.reserve_description ? row.reserve_description : '-'}</TableCell>
-                                        <TableCell align="left">
-                                            <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
-                                                {/* {row.start_time ? row.start_time.slice(11, 19) : '-'} */}
-                                                {row.start_time ? moment(row.start_time.slice(0, 10)).format('DD/MM/YYYY') : ''}
-                                                {row.start_time ? ' ' + row.start_time.slice(11, 19) : '-'}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell align="left">
-                                            <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', whiteSpace: 'nowrap' }}>
-                                                {row.end_time ? moment(row.end_time.slice(0, 10)).format('DD/MM/YYYY') : ''}
-                                                {row.end_time ? ' ' + row.end_time.slice(11, 19) : '-'}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell align="left">{row.company_name}</TableCell>
-                                        <TableCell align="left">{row.registration_no}</TableCell>
-                                        <TableCell align="left">{`'${row.driver_mobile}`}</TableCell>
-                                        <TableCell align="left">{row.driver_name}</TableCell>
                                         <TableCell align="center">
-                                            {row.parent_has_cover == 'Y' ? (
-                                                <Typography sx={{ fontSize: 18, color: 'green' }}>
-                                                    <CheckCircleOutlined color="success" />
-                                                    <span style={{ fontSize: 14, color: 'green', display: 'none', textAlign: 'center' }}>
-                                                        {row.parent_has_cover}
-                                                    </span>
-                                                </Typography>
-                                            ) : (
-                                                <Typography sx={{ fontSize: 18, color: 'red' }}>
-                                                    <CloseCircleOutlined />
-                                                    <span style={{ fontSize: 14, color: 'red', display: 'none', textAlign: 'center' }}>N</span>
-                                                </Typography>
-                                            )}
+                                            {row.token ? <QueueTag id={row.product_company_id} token={row.token} /> : getTokenCompany(row.product_company_id)}
                                         </TableCell>
                                         <TableCell align="center">
-                                            {row.trailer_has_cover == 'Y' ? (
-                                                <Typography sx={{ fontSize: 18, color: 'green' }}>
-                                                    <CheckCircleOutlined color="success" />
-                                                    <span style={{ fontSize: 14, color: 'green', display: 'none', textAlign: 'center' }}>
-                                                        {row.trailer_has_cover}
-                                                    </span>
-                                                </Typography>
-                                            ) : (
-                                                <Typography sx={{ fontSize: 18, color: 'red' }}>
-                                                    <CloseCircleOutlined />
-                                                    <span style={{ fontSize: 14, color: 'red', display: 'none', textAlign: 'center' }}>N</span>
-                                                </Typography>
-                                            )}
+                                            <strong>{row.r_description ? row.r_description : '-'}</strong>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <CurrentStatus data={row} />
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <HistoryPopup
+                                                data={row}
+                                                types={'reserves'}
+                                                title={'ข้อมูลการจอง'}
+                                                companyData={companys.find((x) => x.product_company_id === row.product_company_id)}
+                                                brandData={brands.find((x) => x.product_brand_id === row.product_brand_id)}
+                                                startDate={startDate}
+                                                endDate={endDate}
+                                            />
+                                            {/* <Button variant="contained" color="info">รายละเอียด</Button> */}
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <HistoryPopup
+                                                data={row}
+                                                types={'orders'}
+                                                title={'ข้อมูลคำสั่งซื้อ'}
+                                                companyData={companys}
+                                                brandData={brands}
+                                                startDate={startDate}
+                                                endDate={endDate}
+                                            />
+                                            {/* <Button variant="contained" >รายละเอียด</Button> */}
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <HistoryPopup
+                                                data={row}
+                                                types={'weight'}
+                                                title={'ข้อมูลการชั่งน้ำหนัก'}
+                                                companyData={companys}
+                                                brandData={brands}
+                                                startDate={startDate}
+                                                endDate={endDate}
+                                            />
+                                            {/* <Button variant="contained" >รายละเอียด</Button> */}
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <HistoryPopup
+                                                data={row}
+                                                types={'teams'}
+                                                title={'ข้อมูลทีมจ่ายสินค้า'}
+                                                companyData={companys}
+                                                brandData={brands}
+                                                startDate={startDate}
+                                                endDate={endDate}
+                                            />
+                                            {/* <Button variant="contained">รายละเอียด</Button> */}
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <HistoryPopup
+                                                data={row}
+                                                types={'products'}
+                                                title={'ข้อมูลกองสินค้า'}
+                                                companyData={companys}
+                                                brandData={brands}
+                                                startDate={startDate}
+                                                endDate={endDate}
+                                            />
+                                            {/* <Button variant="contained" >รายละเอียด</Button> */}
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -278,5 +337,78 @@ function StepHistoryTable({ startDate, endDate, clickDownload, dataList, onFilte
     );
 }
 
+// ==============================|| ORDER TABLE - STATUS ||============================== //
+const QueueStatus = ({ status, title }) => {
+    let color;
+
+    switch (status) {
+        case 'pending':
+            color = 'error';
+            break;
+        case 'processing':
+            color = 'warning';
+            break;
+        case 'completed':
+            color = 'success';
+            break;
+        case 'waiting':
+            color = 'secondary';
+            break;
+        case 'cancle':
+            color = 'error';
+            break;
+        default:
+            color = 'secondary';
+    }
+
+    return (
+        <Tooltip title={title}>
+            <Chip color={color} label={title} sx={{ minWidth: '132px!important' }} />
+        </Tooltip>
+    );
+};
+
+QueueStatus.propTypes = {
+    status: PropTypes.string,
+    title: PropTypes.string
+};
+const CurrentStatus = ({ data }) => {
+    const { step1_status, step2_status, step3_status, step4_status } = data;
+
+    const getCurrentStatus = () => {
+        if (step1_status === 'waiting') {
+            return <QueueStatus status={step1_status} title={'รอชั่งเบา'} />;
+        } else if (step1_status === 'processing') {
+            return <QueueStatus status={step1_status} title={'กำลังชั่งเบา'} />;
+        } else if (step1_status === 'completed') {
+            if (step2_status === 'waiting') {
+                return <QueueStatus status={step2_status} title={'รอขึ้นสินค้า'} />;
+            } else if (step2_status === 'processing') {
+                return <QueueStatus status={step2_status} title={'กำลังขึ้นสินค้า'} />;
+            } else if (step2_status === 'completed') {
+                if (step3_status === 'waiting') {
+                    return <QueueStatus status={step3_status} title={'รอชั่งหนัก'} />;
+                } else if (step3_status === 'processing') {
+                    return <QueueStatus status={step3_status} title={'กำลังชั่งหนัก'} />;
+                } else if (step3_status === 'completed') {
+                    if (step4_status === 'waiting') {
+                        return <QueueStatus status={step4_status} title={'รอออกจากโรงงาน'} />;
+                    } else if (step4_status === 'processing') {
+                        return <QueueStatus status={step4_status} title={'กำลังออกจากโรงงาน'} />;
+                    } else if (step4_status === 'completed') {
+                        return <QueueStatus status={step4_status} title={'สำเร็จ'} />;
+                    }
+                }
+            }
+        }
+        return 'รอออกคิว';
+    };
+
+    return (
+        <>
+            {getCurrentStatus()}
+        </>
+    );
+};
 
 export default StepHistoryTable

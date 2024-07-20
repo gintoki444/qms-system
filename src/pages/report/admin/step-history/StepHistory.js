@@ -203,7 +203,7 @@ function StepHistory() {
                                         </Tabs>
                                     </MainCard>
                                     <MainCard
-                                        title={'ตารางข้อมูลรถเข้า-ออกโรงงาน'}
+                                        title={'ตารางข้อมูลขั้นตอนการทำงาน'}
                                         content={false}
                                         sx={{ mt: 1.5 }}
                                         secondary={

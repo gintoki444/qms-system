@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { useSnackbar } from 'notistack';
@@ -36,7 +36,8 @@ import * as adminRequest from '_api/adminRequest';
 import moment from 'moment';
 
 import * as functionAddLogs from 'components/Function/AddLog';
-function AddTeamLoading({ id, handleReload, token }) {
+function AddTeamLoading({ id, handleReload, token, permission }) {
+
     const userId = localStorage.getItem('user_id');
     const [user_Id, setUserId] = useState(false);
     const [reservationData, setReservationData] = useState({});
@@ -44,6 +45,8 @@ function AddTeamLoading({ id, handleReload, token }) {
     const [open, setOpen] = useState(false);
     const { enqueueSnackbar } = useSnackbar();
 
+    useEffect(() => {
+    }, [permission]);
     const getReserve = async (reserveId) => {
         setLoading(true);
         const urlapi = apiUrl + `/reserve/` + reserveId;
@@ -141,10 +144,16 @@ function AddTeamLoading({ id, handleReload, token }) {
 
     // =============== Get Contractor ===============//
     const [contractorList, setContractorList] = useState([]);
-    const getAllContractor = () => {
+    const getAllContractor = async (contractId) => {
         try {
-            adminRequest.getAllContractors().then((result) => {
-                setContractorList(result.filter((x) => x.status === 'A'));
+            await adminRequest.getAllContractors().then((result) => {
+
+                const sortedData = sortContractors(result.filter((x) => x.status === 'A' && (x.contract_status == 'waiting' || x.contract_status == null || x.contractor_id === contractId)));
+                console.log('getAllContractor sortedData:', sortedData);
+                setContractorList(sortedData);
+                // console.log('getAllContractor :', result);
+                // console.log('getAllContractor filter:', result.filter((x) => x.status === 'A' && (x.contract_status == 'waiting' || x.contract_status == null || x.contractor_id === contractId)));
+                // setContractorList(result.filter((x) => x.status === 'A' && (x.contract_status == 'waiting' || x.contract_status == null || x.contractor_id === contractId)));
             });
         } catch (error) {
             console.log(error);
@@ -172,6 +181,9 @@ function AddTeamLoading({ id, handleReload, token }) {
     const handleSubmits = async (values) => {
         const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
         try {
+            // console.log('test Contractor click:', values);
+
+            // if (values === 9999) {
             values.user_id = user_Id;
             values.pickup_date = moment(values.pickup_date).format('YYYY-MM-DD HH:mm:ss');
             values.created_at = currentDate;
@@ -184,10 +196,6 @@ function AddTeamLoading({ id, handleReload, token }) {
                 labor_line_id: values.labor_line_id
             };
 
-            console.log('handleSubmits values:', values);
-            console.log('handleSubmits teamValue:', teamValue);
-
-            // if (values === 9999) {
             await reserveRequest
                 .putReserById(id, values)
                 .then((result) => {
@@ -240,6 +248,7 @@ function AddTeamLoading({ id, handleReload, token }) {
             console.log(error);
         }
     };
+
     // function sortTeams(data) {
     //     const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
@@ -263,6 +272,54 @@ function AddTeamLoading({ id, handleReload, token }) {
     //     // Combine the lists
     //     return [...todayTeams, ...otherTeams];
     // }
+    // สร้างฟังก์ชันเพื่อดึงวันที่ปัจจุบันใน Time Zone ของประเทศไทย
+    const dateNow = getCurrentDateInThailand();
+    function getCurrentDateInThailand() {
+        const thailandTimezone = 'Asia/Bangkok';
+        const options = { timeZone: thailandTimezone, year: 'numeric', month: '2-digit', day: '2-digit' };
+        const date = new Intl.DateTimeFormat('en-CA', options).format(new Date());
+
+        // แยกวันที่เดือนปี
+        const [year, month, day] = date.split('-');
+        return `${year}-${month}-${day}`;
+    }
+    // function getCurrentDateInThailand() {
+    //     const thailandTimezone = 'Asia/Bangkok';
+    //     const date = new Date().toLocaleDateString('th-TH', {
+    //         timeZone: thailandTimezone,
+    //         year: 'numeric',
+    //         month: '2-digit',
+    //         day: '2-digit'
+    //     });
+
+    //     // แยกวันที่เดือนปี
+    //     const [day, month, year] = date.split('/');
+    //     return `${year}-${month}-${day}`;
+    // }
+
+    function sortContractors(data) {
+        const today = getCurrentDateInThailand(); // Get today's date in YYYY-MM-DD format
+
+        // Function to check if the date string is today's date
+        const isToday = (dateStr) => dateStr && dateStr.startsWith(today);
+
+        // Separate contractor with today's update and others
+        const todayTeams = data.filter(team => isToday(team.contract_update));
+        const otherTeams = data.filter(team => !isToday(team.contract_update));
+
+        // Sort contractor by contractor_id
+        otherTeams.sort((a, b) => a.contractor_id - b.contractor_id);
+
+        // Sort today's contractor by contract_update, then by contractor_id
+        todayTeams.sort((a, b) => {
+            if (a.contract_update < b.contract_update) return -1;
+            if (a.contract_update > b.contract_update) return 1;
+            return a.contractor_id - b.contractor_id;
+        });
+
+        // Combine the lists: otherTeams first, then todayTeams
+        return [...otherTeams, ...todayTeams];
+    }
 
     const handleClickOpen = (reserveId) => {
         setOpen(true);
@@ -375,6 +432,7 @@ function AddTeamLoading({ id, handleReload, token }) {
                                                                 {contractorList.map((contractorList) => (
                                                                     <MenuItem key={contractorList.contractor_id} value={contractorList.contractor_id}>
                                                                         {contractorList.contractor_name}
+                                                                        {contractorList.contract_update && contractorList.contract_update.slice(0, 10) === dateNow && ' (' + contractorList.contract_update.slice(11, 16) + ' น.)'}
                                                                     </MenuItem>
                                                                 ))}
                                                             </Select>
@@ -502,6 +560,7 @@ function AddTeamLoading({ id, handleReload, token }) {
                     size="medium"
                     color="primary"
                     sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                    disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                     onClick={() => handleClickOpen(id)}
                 >
                     <EditOutlined />

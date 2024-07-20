@@ -1,5 +1,6 @@
 import * as reserveRequest from '_api/reserveRequest';
 import * as adminRequest from '_api/adminRequest';
+import * as stepRequest from '_api/StepRequest';
 
 async function getReserveData(id) {
     return await new Promise((resolve) => {
@@ -12,6 +13,21 @@ async function getReserveData(id) {
 }
 
 // =============== บันทึกข้อมูล ===============//
+const updateContractor = async (id, status) => {
+    const currentDate = await stepRequest.getCurrentDate();
+
+    try {
+        const data = {
+            contract_status: status,
+            contract_update: currentDate
+        };
+
+        stepRequest.putContractorStatus(id, data);
+    } catch (error) {
+        console.log(error);
+        setLoading(false);
+    }
+};
 const updateTeamLoading = (reserveId, values) => {
     try {
         adminRequest.putReserveTeam(reserveId, values);
@@ -30,6 +46,8 @@ const updateTeamData = (reserveId, values) => {
 export const updateCancleTeamStation = async (reserveId) => {
     // const [reserData, setReserveData] = useState([]);
     const reserveData = await getReserveData(reserveId);
+    const contractor_id = reserveData[0].contractor_id;
+    await updateContractor(contractor_id, 'waiting');
 
     reserveData[0].warehouse_id = 1;
     reserveData[0].reserve_station_id = 1;

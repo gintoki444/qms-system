@@ -918,3 +918,14 @@ export const AddAuditLogs = async (data) => {
 
   return result;
 };
+
+export const getAllAuditLogs = async (startDate, endDate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + `/auditlogsbydate?start_date=${startDate}&end_date=${endDate}`, requestOptions);
+  const result = await response.json();
+  return result;
+};

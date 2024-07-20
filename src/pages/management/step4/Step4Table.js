@@ -924,6 +924,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                                     variant="contained"
                                     size="small"
                                     color="info"
+                                    disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                                     onClick={() => handleClickOpen(row.step_id, 'call', row.team_id, row.queue_id)}
                                     endIcon={<RightSquareOutlined />}
                                   >
@@ -942,6 +943,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                                       variant="contained"
                                       size="small"
                                       color="error"
+                                      disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                                       onClick={() => handleClickOpen(row.step_id, 'cancel', row.team_id, row.queue_id)}
                                     >
                                       ยกเลิก
@@ -956,6 +958,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                                       variant="contained"
                                       size="small"
                                       color="primary"
+                                      disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                                       onClick={() => handleClickOpen(row.step_id, 'close')}
                                     // endIcon={<RightSquareOutlined />}
                                     >
