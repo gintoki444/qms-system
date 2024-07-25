@@ -59,7 +59,7 @@ const AdminDashboard = () => {
   const fetchData = async () => {
     // getQueuesSummary();
     getQueuesSummTimes();
-    getQueuesSummTimeStep2();
+    // getQueuesSummTimeStep2();
   };
 
   // const getQueuesSummary = () => {
@@ -76,11 +76,11 @@ const AdminDashboard = () => {
   };
 
   const [queueSumTimeStep2, setQueueSumTimeStep2] = useState('');
-  const getQueuesSummTimeStep2 = () => {
-    dashboardRequest.getQueuesSummaryTimeStep2(selectedDateRange.startDate, selectedDateRange.endDate).then((response) => {
-      setQueueSumTimeStep2(response);
-    });
-  };
+  // const getQueuesSummTimeStep2 = () => {
+  //   dashboardRequest.getQueuesSummaryTimeStep2(selectedDateRange.startDate, selectedDateRange.endDate).then((response) => {
+  //     setQueueSumTimeStep2(response);
+  //   });
+  // };
 
   const handleDateChange1 = (event) => {
     setSelectedDate1(event.target.value);
@@ -162,6 +162,13 @@ const AdminDashboard = () => {
       sum_total_quantity: 0,
       sum_total_order: 0
     };
+
+    const summaryTime = {
+      "step2_total_duration_minutes": 0,
+      "step2_cars_count": 0,
+      "step2_average_minutes": 0,
+      "step2_total_quantity": 0
+    }
     if (dataList.length > 0) {
       await dataList.map((x) => {
         const setnumber = x.total_quantity_orderonly ? parseFloat(x.total_quantity_orderonly) : 0;
@@ -169,9 +176,17 @@ const AdminDashboard = () => {
         summaryData.sum_cars_count = summaryData.sum_cars_count + (x.queues_counts - x.step1_cancel_count);
         summaryData.sum_total_quantity = summaryData.sum_total_quantity + setnumber;
         summaryData.sum_total_order = summaryData.sum_total_order + x.queues_counts_orderonly;
+        // console.log('x.total_quantity_orderonly *1  :', typeof (x.total_quantity_orderonly * 1));
+
+        summaryTime.step2_total_duration_minutes = summaryTime.step2_total_duration_minutes + (x.step2_total_duration_minutes2 * 1);
+        summaryTime.step2_cars_count = summaryTime.step2_cars_count + x.queues_counts_orderonly;
+        summaryTime.step2_average_minutes = (summaryTime.step2_total_duration_minutes / summaryTime.step2_cars_count);
+        summaryTime.step2_total_quantity = summaryTime.step2_total_quantity + (x.step2_total_quantity * 1);
       });
     }
     // console.log(summaryData);
+    // console.log('summaryTime :', summaryTime);
+    setQueueSumTimeStep2(summaryTime);
     setQueueSummary(summaryData);
   };
   return (
@@ -244,13 +259,13 @@ const AdminDashboard = () => {
                 <Typography variant="h5" sx={{ p: '0 10px' }}>
                   จำนวนรถที่ได้รับคำสั่งซื้อ :
                   <span style={{ padding: '5px 20px', margin: '10px', border: 'solid 1px #eee', borderRadius: 5 }}>
-                    {queueSummary?.sum_total_order ? parseFloat(queueSummary.sum_total_order) : '0'}
+                    {queueSummary?.sum_total_order ? (parseFloat(queueSummary.sum_total_order) * 1).toLocaleString() : '0'}
                   </span>
                   คัน
                 </Typography>
                 <Typography variant="h5" sx={{ p: '0 10px' }}> จำนวน
                   <span style={{ padding: '5px 20px', margin: '10px', border: 'solid 1px #eee', borderRadius: 5 }}>
-                    {queueSummary?.sum_total_quantity ? parseFloat(queueSummary.sum_total_quantity).toFixed(2) : '0'}
+                    {queueSummary?.sum_total_quantity ? (parseFloat(queueSummary.sum_total_quantity).toFixed(2) * 1).toLocaleString() : '0'}
                   </span>
                   ตัน
                 </Typography>
@@ -271,8 +286,8 @@ const AdminDashboard = () => {
                   <AnalyticQueues
                     title="เวลารวมทั้งหมด"
                     count={`${queueSumTime && queueSumTime?.total_duration_minutes !== null ?
-                      parseFloat(queueSumTime.total_duration_minutes).toFixed(2) : '0'} นาที`}
-                    extra={`${queueSumTime ? parseFloat(queueSumTime.average_minutes).toFixed(2) : '0'}`}
+                      (parseFloat(queueSumTime.total_duration_minutes).toFixed(2) * 1).toLocaleString() : '0'} นาที`}
+                    extra={`${queueSumTime ? (parseFloat(queueSumTime.average_minutes).toFixed(2) * 1).toLocaleString() : '0'}`}
                     subtitle="เฉลี่ย "
                     // percentage={`${queueSumTime ? queueSumTime.average_minutes : '0'}`}
                     color="primary"
@@ -282,10 +297,10 @@ const AdminDashboard = () => {
                 <Grid item xs={12}>
                   <AnalyticQueues
                     title={`เวลาการขึ้นสินค้า : ${queueSumTimeStep2?.step2_total_duration_minutes &&
-                      queueSumTimeStep2?.step2_total_duration_minutes !== null ? parseFloat(queueSumTimeStep2.step2_total_duration_minutes).toFixed(2)
+                      queueSumTimeStep2?.step2_total_duration_minutes !== null ? (parseFloat(queueSumTimeStep2.step2_total_duration_minutes).toFixed(2) * 1).toLocaleString()
                       : '0'} นาที`}
                     count={`เฉลี่ย ${queueSumTimeStep2.step2_average_minutes ? parseFloat(queueSumTimeStep2.step2_average_minutes).toFixed(2) : '0'} นาที/คัน`}
-                    extra={`${queueSumTimeStep2?.step2_total_quantity && queueSumTimeStep2?.step2_total_quantity !== null ? parseFloat(queueSumTimeStep2?.step2_total_quantity).toFixed(2) : '0'}`}
+                    extra={`${queueSumTimeStep2?.step2_total_quantity && queueSumTimeStep2?.step2_total_quantity !== null ? (parseFloat(queueSumTimeStep2?.step2_total_quantity).toFixed(2) * 1).toLocaleString() : '0'}`}
                     subtitle="ยอดรวมสินค้าที่จ่าย : "
                     color="warning"
                     unit=" ตัน"

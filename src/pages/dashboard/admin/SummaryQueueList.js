@@ -259,7 +259,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         <StyledTableCell align="right">
                                             <strong>
                                                 เวลาขึ้นสินค้าฉลี่ย :
-                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{parseFloat(row.step2_total_duration_minutes2 / row.queues_counts_orderonly).toFixed(2)}</span>
                                                 นาที/คัน
                                             </strong>
                                         </StyledTableCell>
@@ -274,7 +274,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         </StyledTableCell>
                                         <StyledTableCell align="left" colSpan={2}>
                                             <Typography variant='h5'>
-                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                                {row.step2_total_quantity ? (parseFloat(row.step2_total_quantity)*1).toLocaleString() + ' ตัน' : '0'}
                                             </Typography>
                                         </StyledTableCell>
                                     </StyledTableRow>
@@ -330,7 +330,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         <StyledTableCell align="right">
                                             <strong>
                                                 เวลาขึ้นสินค้าฉลี่ย :
-                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{parseFloat(row.step2_total_duration_minutes2 / row.queues_counts_orderonly).toFixed(2)}</span>
                                                 นาที/คัน
                                             </strong>
                                         </StyledTableCell>
@@ -345,7 +345,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         </StyledTableCell>
                                         <StyledTableCell align="left" colSpan={3}>
                                             <Typography variant='h5'>
-                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                                {row.step2_total_quantity ? (parseFloat(row.step2_total_quantity) * 1).toLocaleString() + ' ตัน' : '0'}
                                             </Typography>
                                         </StyledTableCell>
                                     </StyledTableRow>
@@ -391,7 +391,8 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         <StyledTableCell align="right">
                                             <strong>
                                                 เวลาขึ้นสินค้าฉลี่ย :
-                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                <span style={{ color: 'red', padding: '0 10px' }}>
+                                                    {parseFloat(row.step2_total_duration_minutes2 / row.queues_counts_orderonly).toFixed(0)}</span>
                                                 นาที/คัน
                                             </strong>
                                         </StyledTableCell>
@@ -406,7 +407,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         </StyledTableCell>
                                         <StyledTableCell align="left" colSpan={3}>
                                             <Typography variant='h5'>
-                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                                {row.step2_total_quantity ? (parseFloat(row.step2_total_quantity) * 1).toLocaleString() + ' ตัน' : '0'}
                                             </Typography>
                                         </StyledTableCell>
                                     </StyledTableRow>
@@ -452,7 +453,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         <StyledTableCell align="right">
                                             <strong>
                                                 เวลาขึ้นสินค้าฉลี่ย :
-                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{parseFloat(row.step2_total_duration_minutes2 / row.queues_counts_orderonly).toFixed(2)}</span>
                                                 นาที/คัน
                                             </strong>
                                         </StyledTableCell>
@@ -467,7 +468,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         </StyledTableCell>
                                         <StyledTableCell align="left" colSpan={3}>
                                             <Typography variant='h5'>
-                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                                {row.step2_total_quantity ? (parseFloat(row.step2_total_quantity) * 1).toLocaleString() + ' ตัน' : '0'}
                                             </Typography>
                                         </StyledTableCell>
                                     </StyledTableRow>
@@ -513,7 +514,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         <StyledTableCell align="right">
                                             <strong>
                                                 เวลาขึ้นสินค้าฉลี่ย :
-                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{parseFloat(row.step2_total_duration_minutes2 / row.queues_counts_orderonly).toFixed(2)}</span>
                                                 นาที/คัน
                                             </strong>
                                         </StyledTableCell>
@@ -528,7 +529,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         </StyledTableCell>
                                         <StyledTableCell align="left" colSpan={3}>
                                             <Typography variant='h5'>
-                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                                {row.step2_total_quantity ? (parseFloat(row.step2_total_quantity) * 1).toLocaleString() + ' ตัน' : '0'}
                                             </Typography>
                                         </StyledTableCell>
                                     </StyledTableRow>
@@ -574,7 +575,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         <StyledTableCell align="right">
                                             <strong>
                                                 เวลาขึ้นสินค้าฉลี่ย :
-                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{parseFloat(row.step2_total_duration_minutes2 / row.queues_counts_orderonly).toFixed(2)}</span>
                                                 นาที/คัน
                                             </strong>
                                         </StyledTableCell>
@@ -589,7 +590,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         </StyledTableCell>
                                         <StyledTableCell align="left" colSpan={3}>
                                             <Typography variant='h5'>
-                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                                {row.step2_total_quantity ? (parseFloat(row.step2_total_quantity) * 1).toLocaleString() + ' ตัน' : '0'}
                                             </Typography>
                                         </StyledTableCell>
                                     </StyledTableRow>
@@ -636,7 +637,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         <StyledTableCell align="right">
                                             <strong>
                                                 เวลาขึ้นสินค้าฉลี่ย :
-                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{parseFloat(row.step2_total_duration_minutes2 / row.queues_counts_orderonly).toFixed(2)}</span>
                                                 นาที/คัน
                                             </strong>
                                         </StyledTableCell>
@@ -651,7 +652,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         </StyledTableCell>
                                         <StyledTableCell align="left" colSpan={3}>
                                             <Typography variant='h5'>
-                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                                {row.step2_total_quantity ? (parseFloat(row.step2_total_quantity) * 1).toLocaleString() + ' ตัน' : '0'}
                                             </Typography>
                                         </StyledTableCell>
                                     </StyledTableRow>
@@ -697,7 +698,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         <StyledTableCell align="right">
                                             <strong>
                                                 เวลาขึ้นสินค้าฉลี่ย :
-                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{parseFloat(row.step2_total_duration_minutes2 / row.queues_counts_orderonly).toFixed(2)}</span>
                                                 นาที/คัน
                                             </strong>
                                         </StyledTableCell>
@@ -712,7 +713,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         </StyledTableCell>
                                         <StyledTableCell align="left" colSpan={3}>
                                             <Typography variant='h5'>
-                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                                {row.step2_total_quantity ? (parseFloat(row.step2_total_quantity) * 1).toLocaleString() + ' ตัน' : '0'}
                                             </Typography>
                                         </StyledTableCell>
                                     </StyledTableRow>
@@ -759,7 +760,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         <StyledTableCell align="right">
                                             <strong>
                                                 เวลาขึ้นสินค้าฉลี่ย :
-                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{parseFloat(row.step2_total_duration_minutes2 / row.queues_counts_orderonly).toFixed(2)}</span>
                                                 นาที/คัน
                                             </strong>
                                         </StyledTableCell>
@@ -774,7 +775,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         </StyledTableCell>
                                         <StyledTableCell align="left" colSpan={3}>
                                             <Typography variant='h5'>
-                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                                {row.step2_total_quantity ? (parseFloat(row.step2_total_quantity) * 1).toLocaleString() + ' ตัน' : '0'}
                                             </Typography>
                                         </StyledTableCell>
                                     </StyledTableRow>
@@ -821,7 +822,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         <StyledTableCell align="right">
                                             <strong>
                                                 เวลาขึ้นสินค้าฉลี่ย :
-                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_average_minutes2}</span>
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{parseFloat(row.step2_total_duration_minutes2 / row.queues_counts_orderonly).toFixed(2)}</span>
                                                 นาที/คัน
                                             </strong>
                                         </StyledTableCell>
@@ -836,7 +837,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         </StyledTableCell>
                                         <StyledTableCell align="left" colSpan={3}>
                                             <Typography variant='h5'>
-                                                {row.step2_total_quantity ? parseFloat(row.step2_total_quantity) + ' ตัน' : '0'}
+                                                {row.step2_total_quantity ? (parseFloat(row.step2_total_quantity) * 1).toLocaleString() + ' ตัน' : '0'}
                                             </Typography>
                                         </StyledTableCell>
                                     </StyledTableRow>

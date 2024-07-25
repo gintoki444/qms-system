@@ -56,7 +56,7 @@ const DailyProductOut = () => {
       startDate: selectedDate1,
       endDate: selectedDate2
     });
-    waitingGet(companyList);
+    // waitingGet(companyList);
   };
 
   useEffect(() => {

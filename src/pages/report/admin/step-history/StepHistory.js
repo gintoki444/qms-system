@@ -24,6 +24,7 @@ import { useDownloadExcel } from 'react-export-table-to-excel';
 
 import StepHistoryTable from './StepHistoryTable';
 import * as stepRequest from '_api/StepRequest';
+import ExportStepHistory from '../export/ExportStepHistory';
 // import TestCashInOut from 'pages/admin/TestDemo/TestCashInOut';
 // import ExportCarsTimeInOut from './export/ExportCarsTimeInOut';
 function StepHistory() {
@@ -209,11 +210,11 @@ function StepHistory() {
                                         secondary={
                                             <>
                                                 <Tooltip title="Export Excel">
-                                                    {/* <ExportCarsTimeInOut
-                                                        dataList={dataList}
-                                                        nameCompany={valueFilter !== 0 ? companyList.find((x) => x.product_company_id === valueFilter)?.product_company_name_th2 : ''}
-                                                        onFilter={valueFilter}
-                                                    /> */}
+                                                    <ExportStepHistory
+
+                                                        startDate={selectedDateRange.startDate}
+                                                        endDate={selectedDateRange.endDate}
+                                                    />
                                                 </Tooltip>
                                                 {valueFilter === 999 &&
                                                     <Tooltip title="Export Excel">

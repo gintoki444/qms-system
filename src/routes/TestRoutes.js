@@ -6,6 +6,7 @@ import MinimalLayout from 'layout/MinimalLayout';
 
 // render - printing
 const ProductManage = Loadable(lazy(() => import('pages/demo/Productmanage')));
+const TestReportLog = Loadable(lazy(() => import('pages/admin/TestDemo/TestReportLog')));
 
 const TestsRoutes = {
   path: '/test',
@@ -14,6 +15,10 @@ const TestsRoutes = {
     {
       path: 'product-manage',
       element: <ProductManage />
+    },
+    {
+      path: 'report-log',
+      element: <TestReportLog />
     }
     //   {
     //     path: 'queues',

@@ -210,7 +210,7 @@ export default function OrderSumQtyTable({ startDate, endDate, clickDownload, on
                 </TableCell>
                 <TableCell align="right">
                   <Typography variant="h5">
-                    <span style={{ color: 'red' }}>{parseFloat(grandTotalQuantity.toFixed(3))}</span> ตัน{' '}
+                    <span style={{ color: 'red' }}>{parseFloat(grandTotalQuantity.toFixed(3)).toLocaleString()}</span> ตัน{' '}
                   </Typography>
                 </TableCell>
               </TableRow>

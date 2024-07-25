@@ -276,7 +276,7 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
                 </TableCell>
                 <TableCell align="left" sx={{ p: 3, pl: 0 }}>
                   <Typography variant="h4">
-                    <span style={{ color: 'red' }}>{parseFloat(grandTotalQuantity.toFixed(3))}</span> ตัน
+                    <span style={{ color: 'red' }}>{parseFloat(grandTotalQuantity.toFixed(3)).toLocaleString()}</span> ตัน
                   </Typography>
                 </TableCell>
               </TableRow>
