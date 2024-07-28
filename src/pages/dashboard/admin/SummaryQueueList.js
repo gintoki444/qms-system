@@ -240,7 +240,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                             <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
-                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                            <Typography variant='body1'>{(row.step1_waiting_count - (row.no_order_queues_count - row.step1_cancel_count_no_order ))}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
                                             <Typography variant='body1'>{row.step2_waiting_count}</Typography>
@@ -308,7 +308,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                             <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
-                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                            <Typography variant='body1'>{(row.step1_waiting_count - (row.no_order_queues_count - row.step1_cancel_count_no_order))}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
                                             <Typography variant='body1'>{row.step2_waiting_count}</Typography>
@@ -369,7 +369,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                             <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
-                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                            <Typography variant='body1'>{(row.step1_waiting_count - (row.no_order_queues_count - row.step1_cancel_count_no_order))}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
                                             <Typography variant='body1'>{row.step2_waiting_count}</Typography>
@@ -431,7 +431,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                             <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
-                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                            <Typography variant='body1'>{(row.step1_waiting_count - (row.no_order_queues_count - row.step1_cancel_count_no_order))}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
                                             <Typography variant='body1'>{row.step2_waiting_count}</Typography>
@@ -492,7 +492,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                             <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
-                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                            <Typography variant='body1'>{(row.step1_waiting_count - (row.no_order_queues_count - row.step1_cancel_count_no_order))}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
                                             <Typography variant='body1'>{row.step2_waiting_count}</Typography>
@@ -553,7 +553,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                             <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
-                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                            <Typography variant='body1'>{(row.step1_waiting_count - (row.no_order_queues_count - row.step1_cancel_count_no_order))}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
                                             <Typography variant='body1'>{row.step2_waiting_count}</Typography>
@@ -615,7 +615,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                             <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
-                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                            <Typography variant='body1'>{(row.step1_waiting_count - (row.no_order_queues_count - row.step1_cancel_count_no_order))}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
                                             <Typography variant='body1'>{row.step2_waiting_count}</Typography>
@@ -676,7 +676,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                             <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
-                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                            <Typography variant='body1'>{(row.step1_waiting_count - (row.no_order_queues_count - row.step1_cancel_count_no_order))}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
                                             <Typography variant='body1'>{row.step2_waiting_count}</Typography>
@@ -738,7 +738,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                             <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
-                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                            <Typography variant='body1'>{(row.step1_waiting_count - (row.no_order_queues_count - row.step1_cancel_count_no_order))}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
                                             <Typography variant='body1'>{row.step2_waiting_count}</Typography>
@@ -800,7 +800,7 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                             <Typography variant='body1'>{(row.no_order_queues_count - row.step1_cancel_count_no_order)}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
-                                            <Typography variant='body1'>{row.step1_waiting_count}</Typography>
+                                            <Typography variant='body1'>{(row.step1_waiting_count - (row.no_order_queues_count - row.step1_cancel_count_no_order))}</Typography>
                                         </StyledTableCell>
                                         <StyledTableCell align="center">
                                             <Typography variant='body1'>{row.step2_waiting_count}</Typography>

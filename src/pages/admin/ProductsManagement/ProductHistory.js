@@ -163,10 +163,10 @@ function ProductHistory({ onFilter, permission }) {
             }
         },
         {
-            name: 'product_register_date',
+            name: 'age_result',
             label: 'อายุกอง',
             options: {
-                customBodyRender: (value) => <Typography variant="body">{value ? calculateAge(value) : '-'}</Typography>
+                customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
             }
         },
         {
@@ -324,31 +324,31 @@ function ProductHistory({ onFilter, permission }) {
         }
     ];
     // =============== Get calculateAge จำนวนวัน  ===============//
-    const calculateAge = (registrationDate) => {
-        if (!registrationDate) return '-';
+    // const calculateAge = (registrationDate) => {
+    //     if (!registrationDate) return '-';
 
-        const currentDate = moment(new Date()).format('YYYY-MM-DD');
-        const regDate = moment(registrationDate).format('YYYY-MM-DD');
-        // const regDate = new Date(registrationDate);
+    //     const currentDate = moment(new Date()).format('YYYY-MM-DD');
+    //     const regDate = moment(registrationDate).format('YYYY-MM-DD');
+    //     // const regDate = new Date(registrationDate);
 
-        const years = moment(currentDate).diff(regDate, 'years');
-        const months = moment(currentDate).diff(regDate, 'months') % 12;
-        const days = moment(currentDate).diff(regDate, 'days') % 30;
+    //     const years = moment(currentDate).diff(regDate, 'years');
+    //     const months = moment(currentDate).diff(regDate, 'months') % 12;
+    //     const days = moment(currentDate).diff(regDate, 'days') % 30;
 
-        let result = '';
+    //     let result = '';
 
-        if (years !== 0) {
-            result = `${years} ปี ${months} เดือน ${days} วัน`;
-        } else {
-            if (months !== 0) {
-                result = `${months} เดือน ${days} วัน`;
-            } else {
-                result = `${days} วัน`;
-            }
-        }
+    //     if (years !== 0) {
+    //         result = `${years} ปี ${months} เดือน ${days} วัน`;
+    //     } else {
+    //         if (months !== 0) {
+    //             result = `${months} เดือน ${days} วัน`;
+    //         } else {
+    //             result = `${days} วัน`;
+    //         }
+    //     }
 
-        return result;
-    };
+    //     return result;
+    // };
 
     // ลบข้อมูล Manager
     const [product_id, setProductId] = useState(false);

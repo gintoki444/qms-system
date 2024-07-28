@@ -183,7 +183,7 @@ function GetOrderNavision() {
     const totalQuantityBag = salesLines.reduce((sum, line) => sum + line.QuantityBag, 0);
 
     return (
-        <Grid rowSpacing={2} columnSpacing={2.75}>
+        <>
             <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
                 <DialogTitle id="responsive-dialog-title" align="center">
                     <h2 style={{ marginBottom: '0!important' }}>รายละเอียด Order : {salesHeader?.No}</h2>
@@ -295,7 +295,7 @@ function GetOrderNavision() {
                     </div>
                 </MainCard>
             </Grid>
-        </Grid>
+        </>
     );
 }
 

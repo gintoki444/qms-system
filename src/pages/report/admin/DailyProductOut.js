@@ -74,9 +74,7 @@ const DailyProductOut = () => {
       stepRequest.getAllProductCompany().then((response) => {
         if (response.length > 0) {
           response.map((x) => {
-            let countCompany = dataList.filter(
-              (i) => i.product_company_id == x.product_company_id
-            ).length;
+            let countCompany = dataList.filter((i) => i.product_company_id == x.product_company_id).length;
 
             setItems((prevState) => ({
               ...prevState,
@@ -125,7 +123,7 @@ const DailyProductOut = () => {
   const handleQueueData = (data) => {
     setItemList(data);
     getProductCompany(data);
-  }
+  };
   // const handleExport = (data, filter) => {
   //   if (filter !== '') {
   //     data = data.filter((x) => x.product_company_id === filter);
@@ -155,9 +153,9 @@ const DailyProductOut = () => {
                   name="pickup_date"
                   value={selectedDate1}
                   onChange={handleDateChange1}
-                // inputProps={{
-                //   min: currentDate
-                // }}
+                  // inputProps={{
+                  //   min: currentDate
+                  // }}
                 />
               </Stack>
             </Grid>
@@ -171,9 +169,9 @@ const DailyProductOut = () => {
                   name="pickup_date"
                   value={selectedDate2}
                   onChange={handleDateChange2}
-                // inputProps={{
-                //   min: currentDate
-                // }}
+                  // inputProps={{
+                  //   min: currentDate
+                  // }}
                 />
               </Stack>
             </Grid>
@@ -203,7 +201,7 @@ const DailyProductOut = () => {
                   numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                   txtLabel={company.product_company_name_th2}
                   onSelect={() => handleChange(company.product_company_id)}
-                // {...a11yProps(company.product_company_id)}
+                  // {...a11yProps(company.product_company_id)}
                 />
               ))}
           </Tabs>
@@ -236,7 +234,7 @@ const DailyProductOut = () => {
                       variant="contained"
                       sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }}
                       onClick={onDownload}
-                    // onClick={() => handleExport(itemList, valueFilter)}
+                      // onClick={() => handleExport(itemList, valueFilter)}
                     >
                       <FileExcelOutlined />
                     </Button>

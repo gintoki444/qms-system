@@ -83,7 +83,6 @@ function ReserveDetail() {
       .catch((err) => console.log(err));
   };
 
-
   // =============== Get Product Company ===============//
   const [productCompany, setProductCompany] = useState([]);
   const getProductCompany = () => {
@@ -100,13 +99,12 @@ function ReserveDetail() {
   const getProductBrandList = async () => {
     reserveRequest.getAllproductBrand().then((response) => {
       if (response.length > 0) {
-        setProductBrandList(response)
+        setProductBrandList(response);
       }
     });
-  }
+  };
 
   useEffect(() => {
-
     getProductBrandList();
     getProductCompany();
     if (Object.keys(userPermission).length > 0) {
@@ -291,7 +289,7 @@ function ReserveDetail() {
 
     fetch(apiUrl + '/updatereservestatus/' + reserve_id, requestOptions)
       .then((response) => response.json())
-      .then(() => { })
+      .then(() => {})
       .catch((error) => console.log('error', error));
   };
 
@@ -500,9 +498,9 @@ function ReserveDetail() {
               updated_at: currentDate
             }
           ]
-        }
+        };
         if (reserveData.product_brand_id === 45 || reserveData.product_brand_id === 46) {
-          newTran.transactions[1].status = 'completed'
+          newTran.transactions[1].status = 'completed';
         }
         var raw = JSON.stringify(newTran);
         // var raw = JSON.stringify({
@@ -747,12 +745,14 @@ function ReserveDetail() {
                         </Grid>
                         <Grid item xs={12} md={6}>
                           <Typography variant="body1">
-                            <strong>บริษัท(สินค้า) : </strong> {productCompany.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}
+                            <strong>บริษัท(สินค้า) : </strong>{' '}
+                            {productCompany.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}
                           </Typography>
                         </Grid>
                         <Grid item xs={12} md={6}>
                           <Typography variant="body1">
-                            <strong>ตราสินค้า : </strong>  {productBrandList.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}
+                            <strong>ตราสินค้า : </strong>{' '}
+                            {productBrandList.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}
                           </Typography>
                         </Grid>
                         <Grid item xs={12} md={6}>
@@ -811,8 +811,7 @@ function ReserveDetail() {
           <Grid item xs={12} sx={{ '& button': { m: 1, mt: 2 } }} align="center">
             {reserveData.status !== 'completed' &&
               pageDetail.length > 0 &&
-              (pageDetail[0].permission_name === 'manage_everything' ||
-                pageDetail[0].permission_name === 'add_edit_delete_data') && (
+              (pageDetail[0].permission_name === 'manage_everything' || pageDetail[0].permission_name === 'add_edit_delete_data') && (
                 // {(userRoles === 9 || userRoles === 1) && reserveData.status !== 'completed' && (
                 <Button
                   size="mediam"
@@ -823,7 +822,8 @@ function ReserveDetail() {
                     currentDate !== moment(reserveData.pickup_date).format('YYYY-MM-DD') ||
                     reserveData.car_id == 1 ||
                     reserveData.driver_id == 1 ||
-                    ((reserveData.product_brand_id === 45 || reserveData.product_brand_id === 46) && parseFloat(reserveData.total_quantity) === 0)
+                    ((reserveData.product_brand_id === 45 || reserveData.product_brand_id === 46) &&
+                      parseFloat(reserveData.total_quantity) === 0)
                   }
                   onClick={() => handleClickOpen(reserveData.reserve_id, reserveData.total_quantity)}
                   startIcon={<DiffOutlined />}

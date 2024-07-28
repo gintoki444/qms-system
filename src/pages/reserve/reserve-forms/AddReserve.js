@@ -78,7 +78,7 @@ function AddReserve() {
   const [companyList, setCompanyList] = useState([]);
   const getCompanyLsit = (permission) => {
     let user_id = '';
-    if (permission !== "manage_everything") {
+    if (permission !== 'manage_everything') {
       user_id = userId;
     }
     const urlapi = apiUrl + `/allcompany/` + user_id;
@@ -96,7 +96,7 @@ function AddReserve() {
   const [carList, setCarList] = useState([]);
   const getCarLsit = (permission) => {
     let user_id = '';
-    if (permission !== "manage_everything") {
+    if (permission !== 'manage_everything') {
       user_id = userId;
     }
     const urlapi = apiUrl + `/allcars/${user_id}`;
@@ -132,7 +132,7 @@ function AddReserve() {
   const [driverList, setDriverList] = useState([]);
   const getDriverLsit = (permission) => {
     let user_id = '';
-    if (permission !== "manage_everything") {
+    if (permission !== 'manage_everything') {
       user_id = userId;
     }
     const urlapi = apiUrl + `/alldrivers/${user_id}`;
@@ -254,12 +254,12 @@ function AddReserve() {
             enqueueSnackbar('บันทึกข้อมูลสำเร็จ!', { variant: 'success' });
             const data = {
               audit_user_id: userId,
-              audit_action: "I",
+              audit_action: 'I',
               audit_system_id: result.data.results.insertId,
-              audit_system: "reserves",
-              audit_screen: "ข้อมูลการจองคิว",
-              audit_description: "เพิ่มข้อมูลจองคิวรับสินค้า"
-            }
+              audit_system: 'reserves',
+              audit_screen: 'ข้อมูลการจองคิว',
+              audit_description: 'เพิ่มข้อมูลจองคิวรับสินค้า'
+            };
             AddAuditLogs(data);
             setMessageCreateReserve(result.data.results.insertId);
           } else {
@@ -332,12 +332,12 @@ function AddReserve() {
 
     const data = {
       audit_user_id: userId,
-      audit_action: "I",
+      audit_action: 'I',
       audit_system_id: formData[0].company_id,
-      audit_system: "company",
-      audit_screen: "ข้อมูลร้านค้า",
-      audit_description: "เพิ่มข้อมูลร้านค้า"
-    }
+      audit_system: 'company',
+      audit_screen: 'ข้อมูลร้านค้า',
+      audit_description: 'เพิ่มข้อมูลร้านค้า'
+    };
     AddAuditLogs(data);
     // getCompanyLsit();
     // setInitialValue((preViews) => {
@@ -358,12 +358,12 @@ function AddReserve() {
 
     const data = {
       audit_user_id: userId,
-      audit_action: "I",
+      audit_action: 'I',
       audit_system_id: formData[0].car_id,
-      audit_system: "cars",
-      audit_screen: "ข้อมูลรถบรรทุก",
-      audit_description: "เพิ่มข้อมูลรถบรรทุก"
-    }
+      audit_system: 'cars',
+      audit_screen: 'ข้อมูลรถบรรทุก',
+      audit_description: 'เพิ่มข้อมูลรถบรรทุก'
+    };
     AddAuditLogs(data);
     // setNewCar(formData);
     // getCarLsit();
@@ -385,12 +385,12 @@ function AddReserve() {
 
     const data = {
       audit_user_id: userId,
-      audit_action: "I",
+      audit_action: 'I',
       audit_system_id: formData[0].driver_id,
-      audit_system: "drivers",
-      audit_screen: "ข้อมูลคนขับรถ",
-      audit_description: "เพิ่มข้อมูลคนขับรถ"
-    }
+      audit_system: 'drivers',
+      audit_screen: 'ข้อมูลคนขับรถ',
+      audit_description: 'เพิ่มข้อมูลคนขับรถ'
+    };
     AddAuditLogs(data);
     // setNewDriver(formData);
     // getDriverLsit();
@@ -404,7 +404,7 @@ function AddReserve() {
 
   const AddAuditLogs = async (data) => {
     await functionAddLogs.AddAuditLog(data);
-  }
+  };
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -449,7 +449,6 @@ function AddReserve() {
                             setFieldValue('company_id', newValue);
                             setNewCompany(companyList.find((x) => x.company_id === newValue));
                           }}
-
                           value={values.company_id ? companyList.find((x) => x.company_id === values.company_id) : null}
                           // value={newCompany.length > 0 ? newCompany[0] : null}
                           getOptionLabel={(option) => option.name}
@@ -494,7 +493,8 @@ function AddReserve() {
                         //   company_id: value[0].company_id
                         // }));
                       }}
-                      companyList={companyList} />
+                      companyList={companyList}
+                    />
                   </Grid>
 
                   <Grid item xs={12} md={6}>
@@ -542,7 +542,8 @@ function AddReserve() {
                             เลือกบริษัท
                           </MenuItem>
                           {productCompany.map((companias) => (
-                            <MenuItem key={companias.product_company_id}
+                            <MenuItem
+                              key={companias.product_company_id}
                               sx={
                                 (companias.product_company_id === 1 && {
                                   backgroundColor: 'rgb(246 139 113 / 47%)'
@@ -551,7 +552,8 @@ function AddReserve() {
                                   backgroundColor: '#1890ff59'
                                 })
                               }
-                              value={companias.product_company_id}>
+                              value={companias.product_company_id}
+                            >
                               {companias.product_company_name_th}
                             </MenuItem>
                           ))}
@@ -616,7 +618,6 @@ function AddReserve() {
                               {option.car_id !== 1 ? option.registration_no : 'ไม่ระบุรถบรรทุก'}
                             </li>
                           )}
-
                           getOptionLabel={(option) => {
                             if (option.car_id !== 1) {
                               return option.registration_no;
@@ -650,9 +651,13 @@ function AddReserve() {
                         </FormHelperText>
                       )}
                     </Stack>
-                    <AddCar userID={userId} onSaves={(value) => {
-                      handleSaveForm(value, values);
-                    }} carsList={carList} />
+                    <AddCar
+                      userID={userId}
+                      onSaves={(value) => {
+                        handleSaveForm(value, values);
+                      }}
+                      carsList={carList}
+                    />
                   </Grid>
 
                   <Grid item xs={12} md={6} align="left">
@@ -705,9 +710,13 @@ function AddReserve() {
                         </FormHelperText>
                       )}
                     </Stack>
-                    <AddDriver userID={userId} onSaves={(value) => {
-                      handleSaveDriverForm(value, values);
-                    }} driverList={driverList} />
+                    <AddDriver
+                      userID={userId}
+                      onSaves={(value) => {
+                        handleSaveDriverForm(value, values);
+                      }}
+                      driverList={driverList}
+                    />
                   </Grid>
 
                   <Grid item xs={12} md={6}>
@@ -753,7 +762,6 @@ function AddReserve() {
                       )}
                     </Stack>
                   </Grid>
-
 
                   <Grid item xs={12}>
                     {pageDetail.length > 0 &&

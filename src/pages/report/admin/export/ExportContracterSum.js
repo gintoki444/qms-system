@@ -116,4 +116,4 @@ async function ExportContracterSum(itemList) {
   saveAs(blob, 'report-step-recall.xlsx');
 }
 
-export default ExportContracterSum
+export default ExportContracterSum;

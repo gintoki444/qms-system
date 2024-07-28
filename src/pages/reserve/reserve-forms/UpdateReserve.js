@@ -136,7 +136,7 @@ function UpdateReserve() {
     if (user_Id) {
       try {
         let user_id = '';
-        if (permission !== "manage_everything") {
+        if (permission !== 'manage_everything') {
           user_id = user_Id;
         }
         companyRequest.getAllCompanyByuserId(user_id).then((response) => {
@@ -154,7 +154,7 @@ function UpdateReserve() {
   const getCarLsit = (permission) => {
     let urlapi = '';
     // if ((userRoles && userRoles == 1) || userRoles == 9 || userRoles == 10) {
-    if (permission !== "manage_everything") {
+    if (permission !== 'manage_everything') {
       urlapi = apiUrl + `/allcars/` + user_Id;
     } else {
       urlapi = apiUrl + `/allcars/`;
@@ -176,7 +176,7 @@ function UpdateReserve() {
   const getDriverLsit = (permission) => {
     let urlapi = '';
     // if ((userRoles && userRoles == 1) || userRoles == 9 || userRoles == 10) {
-    if (permission !== "manage_everything") {
+    if (permission !== 'manage_everything') {
       urlapi = apiUrl + `/alldrivers/` + user_Id;
     } else {
       urlapi = apiUrl + `/alldrivers/`;
@@ -252,10 +252,10 @@ function UpdateReserve() {
   const getProductBrandList = async () => {
     reserveRequest.getAllproductBrand().then((response) => {
       if (response.length > 0) {
-        setProductBrandList(response)
+        setProductBrandList(response);
       }
     });
-  }
+  };
 
   // =============== useEffect ===============//
   useEffect(() => {
@@ -365,12 +365,12 @@ function UpdateReserve() {
           if (result.status === 'ok') {
             const data = {
               audit_user_id: userId,
-              audit_action: "U",
+              audit_action: 'U',
               audit_system_id: id,
-              audit_system: "reserves",
-              audit_screen: "ข้อมูลการจองคิว",
-              audit_description: "แก้ไขข้อมูลจองคิวรับสินค้า"
-            }
+              audit_system: 'reserves',
+              audit_screen: 'ข้อมูลการจองคิว',
+              audit_description: 'แก้ไขข้อมูลจองคิวรับสินค้า'
+            };
             AddAuditLogs(data);
             enqueueSnackbar('บันทึกข้อมูลสำเร็จ!', { variant: 'success' });
             getReserve();
@@ -404,7 +404,6 @@ function UpdateReserve() {
   const [onClick, setOnClick] = useState([]);
   const handleClickOpen = (id, onClick) => {
     try {
-
       if (onClick == 'add-queue') {
         setOnClick(onClick);
         setNotifyText('ต้องการอนุมัติการจองคิวหรือไม่?');
@@ -697,12 +696,12 @@ function UpdateReserve() {
   function createStepsf(queue_id) {
     const data = {
       audit_user_id: userId,
-      audit_action: "I",
+      audit_action: 'I',
       audit_system_id: queue_id,
-      audit_system: "queues",
-      audit_screen: "ข้อมูลคิว",
-      audit_description: "ออกบัตรคิว"
-    }
+      audit_system: 'queues',
+      audit_screen: 'ข้อมูลคิว',
+      audit_description: 'ออกบัตรคิว'
+    };
     AddAuditLogs(data);
 
     return new Promise((resolve) => {
@@ -755,9 +754,9 @@ function UpdateReserve() {
               updated_at: currentDate
             }
           ]
-        }
+        };
         if (reservationData.product_brand_id === 45 || reservationData.product_brand_id === 46) {
-          newTran.transactions[1].status = 'completed'
+          newTran.transactions[1].status = 'completed';
         }
         var raw = JSON.stringify(newTran);
 
@@ -865,7 +864,8 @@ function UpdateReserve() {
   // =============== เพิ่มรายการสินค้า ===============//
   const addOrder = () => {
     // window.location = `/order/add/${id}`;
-    navigate(`/order/add/${id}`);
+    // navigate(`/order/add/${id}`);
+    navigate(`/order/test-add/${id}`);
   };
 
   // =============== ลบรายการสินค้า ===============//
@@ -894,12 +894,12 @@ function UpdateReserve() {
     getCarLsit();
     const data = {
       audit_user_id: userId,
-      audit_action: "I",
+      audit_action: 'I',
       audit_system_id: formData[0].car_id,
-      audit_system: "cars",
-      audit_screen: "ข้อมูลรถบรรทุก",
-      audit_description: "เพิ่มข้อมูลรถบรรทุก"
-    }
+      audit_system: 'cars',
+      audit_screen: 'ข้อมูลรถบรรทุก',
+      audit_description: 'เพิ่มข้อมูลรถบรรทุก'
+    };
     AddAuditLogs(data);
   };
 
@@ -911,18 +911,18 @@ function UpdateReserve() {
 
     const data = {
       audit_user_id: userId,
-      audit_action: "I",
+      audit_action: 'I',
       audit_system_id: formData[0].driver_id,
-      audit_system: "drivers",
-      audit_screen: "ข้อมูลคนขับรถ",
-      audit_description: "เพิ่มข้อมูลคนขับรถ"
-    }
+      audit_system: 'drivers',
+      audit_screen: 'ข้อมูลคนขับรถ',
+      audit_description: 'เพิ่มข้อมูลคนขับรถ'
+    };
     AddAuditLogs(data);
   };
 
   const AddAuditLogs = async (data) => {
     await functionAddLogs.AddAuditLog(data);
-  }
+  };
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -1207,10 +1207,11 @@ function UpdateReserve() {
                           {
                             // reservationData.status !== 'completed' &&
                             pageDetail.length > 0 &&
-                            (pageDetail[0].permission_name === 'manage_everything' ||
-                              pageDetail[0].permission_name === 'add_edit_delete_data') && (
-                              <AddCar userID={user_Id} onSaves={handleSaveForm} carsList={carList} />
-                            )}
+                              (pageDetail[0].permission_name === 'manage_everything' ||
+                                pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                                <AddCar userID={user_Id} onSaves={handleSaveForm} carsList={carList} />
+                              )
+                          }
                         </Grid>
 
                         <Grid item xs={12} md={6} align="left">
@@ -1269,10 +1270,11 @@ function UpdateReserve() {
                           {
                             // reservationData.status !== 'completed' &&
                             pageDetail.length > 0 &&
-                            (pageDetail[0].permission_name === 'manage_everything' ||
-                              pageDetail[0].permission_name === 'add_edit_delete_data') && (
-                              <AddDriver userID={user_Id} onSaves={handleSaveDriverForm} driverList={driverList} />
-                            )}
+                              (pageDetail[0].permission_name === 'manage_everything' ||
+                                pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                                <AddDriver userID={user_Id} onSaves={handleSaveDriverForm} driverList={driverList} />
+                              )
+                          }
                         </Grid>
 
                         <Grid item xs={12} md={6}>
@@ -1351,12 +1353,17 @@ function UpdateReserve() {
                                     </Grid>
                                     <Grid item xs={12} md={6}>
                                       <Typography variant="body1">
-                                        <strong>บริษัท(สินค้า) : </strong> {productCompany.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}
+                                        <strong>บริษัท(สินค้า) : </strong>{' '}
+                                        {
+                                          productCompany.find((x) => x.product_company_id === order.product_company_id)
+                                            ?.product_company_name_th
+                                        }
                                       </Typography>
                                     </Grid>
                                     <Grid item xs={12} md={6}>
                                       <Typography variant="body1">
-                                        <strong>ตราสินค้า : </strong>  {productBrandList.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}
+                                        <strong>ตราสินค้า : </strong>{' '}
+                                        {productBrandList.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}
                                       </Typography>
                                     </Grid>
                                     <Grid item xs={12} md={12}>
@@ -1464,7 +1471,8 @@ function UpdateReserve() {
                                 checkDate == false ||
                                 reservationData.car_id == 1 ||
                                 reservationData.driver_id == 1 ||
-                                ((reservationData.product_brand_id === 45 || reservationData.product_brand_id === 46) && parseFloat(reservationData.total_quantity) === 0)
+                                ((reservationData.product_brand_id === 45 || reservationData.product_brand_id === 46) &&
+                                  parseFloat(reservationData.total_quantity) === 0)
                               }
                               onClick={() => handleClickOpen(reservationData.reserve_id, 'add-queue', reservationData.total_quantity)}
                               startIcon={<DiffOutlined />}

@@ -152,18 +152,17 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload, 
     fetch(apiUrl + '/carstimeinout?start_date=' + startDate + '&end_date=' + endDate, requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        console.log('onFilter ', onFilter)
+        console.log('onFilter ', onFilter);
         if (onFilter !== 0) {
           setItems(result.filter((x) => x.product_company_id === onFilter));
-          dataList(result)
+          dataList(result);
           setLoading(false);
         } else {
           console.log('result ', result);
           setItems(result);
-          dataList(result)
+          dataList(result);
           setLoading(false);
         }
-
       })
       .catch((error) => console.error(error));
   };
@@ -226,9 +225,7 @@ export default function CarsTimeInOutTable({ startDate, endDate, clickDownload, 
                       {row.parent_has_cover == 'Y' ? (
                         <Typography sx={{ fontSize: 18, color: 'green' }}>
                           <CheckCircleOutlined color="success" />
-                          <span style={{ fontSize: 14, color: 'green', display: 'none', textAlign: 'center' }}>
-                            {row.parent_has_cover}
-                          </span>
+                          <span style={{ fontSize: 14, color: 'green', display: 'none', textAlign: 'center' }}>{row.parent_has_cover}</span>
                         </Typography>
                       ) : (
                         <Typography sx={{ fontSize: 18, color: 'red' }}>

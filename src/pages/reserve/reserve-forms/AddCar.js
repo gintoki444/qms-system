@@ -46,7 +46,17 @@ function AddCar({ userID, onSaves, carsList }) {
   const [carTypeList, setCarTypeList] = useState([]);
   const getCarType = () => {
     carRequest.getAllCarType().then((response) => {
-      setCarTypeList(response.filter((x) => x.car_type_id === 1 || x.car_type_id === 3 || x.car_type_id === 4 || x.car_type_id === 5 || x.car_type_id === 6 || x.car_type_id === 8));
+      setCarTypeList(
+        response.filter(
+          (x) =>
+            x.car_type_id === 1 ||
+            x.car_type_id === 3 ||
+            x.car_type_id === 4 ||
+            x.car_type_id === 5 ||
+            x.car_type_id === 6 ||
+            x.car_type_id === 8
+        )
+      );
     });
   };
 
@@ -91,9 +101,10 @@ function AddCar({ userID, onSaves, carsList }) {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     const checkCar = carsList.filter(
-      (x) => x.registration_no == values.registration_no
-        // && x.province_id == values.province_id 
-        && x.car_type_id == values.car_type_id
+      (x) =>
+        x.registration_no == values.registration_no &&
+        // && x.province_id == values.province_id
+        x.car_type_id == values.car_type_id
     );
 
     if (checkCar && checkCar.length <= 0) {
@@ -113,9 +124,9 @@ function AddCar({ userID, onSaves, carsList }) {
             carRequest.getAllCars(userID).then((response) => {
               const result = response.filter(
                 (x) =>
-                  x.registration_no == values.registration_no
-                  // && x.province_id == values.province_id 
-                  && x.car_type_id == values.car_type_id
+                  x.registration_no == values.registration_no &&
+                  // && x.province_id == values.province_id
+                  x.car_type_id == values.car_type_id
               );
 
               enqueueSnackbar('เพิ่มข้อมูลรถสำเร็จ!', { variant: 'success' });

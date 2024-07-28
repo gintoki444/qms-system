@@ -41,7 +41,10 @@ import {
 // project import
 // import Dot from 'components/@extended/Dot';
 import {
-  EditOutlined, DeleteOutlined, DiffOutlined, ProfileOutlined
+  EditOutlined,
+  DeleteOutlined,
+  DiffOutlined,
+  ProfileOutlined
   // , WarningOutlined
 } from '@ant-design/icons';
 
@@ -75,7 +78,7 @@ const headCells = [
     id: 'registration_no',
     align: 'center',
     disablePadding: true,
-    label: 'ทะเบียนรถ',
+    label: 'ทะเบียนรถ'
   },
   {
     id: 'brandCode',
@@ -240,24 +243,24 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     console.log('filteredData:', filteredData);
     console.log('items:', items);
     if (checkFilter) {
-      const activeFilters = Object.keys(checkFilter).filter(key => checkFilter[key]);
+      const activeFilters = Object.keys(checkFilter).filter((key) => checkFilter[key]);
       if (activeFilters.length === 0) {
         console.log('filteredData === 0:', items);
         setFilteredData(items);
       } else {
-        const filtered = items.filter(item => {
+        const filtered = items.filter((item) => {
           // if (activeFilters.includes("waiting_order")) {
           //   return item.status === "completed" && parseInt(item.total_quantity) === 0;
           // }
-          if (checkFilter.waiting_order && item.status === "completed" && parseInt(item.total_quantity) === 0) {
+          if (checkFilter.waiting_order && item.status === 'completed' && parseInt(item.total_quantity) === 0) {
             return true;
           }
 
-          if (checkFilter.completed && item.status === "completed" && parseInt(item.total_quantity) > 0) {
+          if (checkFilter.completed && item.status === 'completed' && parseInt(item.total_quantity) > 0) {
             return true;
           }
           // return activeFilters.includes(item.status);
-          return activeFilters.includes(item.status) && !(item.status === "completed" && parseInt(item.total_quantity) === 0);
+          return activeFilters.includes(item.status) && !(item.status === 'completed' && parseInt(item.total_quantity) === 0);
         });
         setFilteredData(filtered);
       }
@@ -307,21 +310,21 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
           if (onclick == 'delete') {
             data = {
               audit_user_id: userId,
-              audit_action: "D",
+              audit_action: 'D',
               audit_system_id: id,
-              audit_system: "reserves",
-              audit_screen: "ข้อมูลการจองคิว",
-              audit_description: "ลบการจองคิว"
-            }
+              audit_system: 'reserves',
+              audit_screen: 'ข้อมูลการจองคิว',
+              audit_description: 'ลบการจองคิว'
+            };
           } else {
             data = {
               audit_user_id: userId,
-              audit_action: "D",
+              audit_action: 'D',
               audit_system_id: id,
-              audit_system: "reserves",
-              audit_screen: "ข้อมูลการจองคิว",
-              audit_description: "ยกเลิกการจองคิว"
-            }
+              audit_system: 'reserves',
+              audit_screen: 'ข้อมูลการจองคิว',
+              audit_description: 'ยกเลิกการจองคิว'
+            };
           }
           AddAuditLogs(data);
 
@@ -353,7 +356,6 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
   };
 
   const handleClickOpen = (id, click, total_quantity, brand_code, conpany_id, reserveData) => {
-
     if (total_quantity === '0') {
       alert('reserve_id: ' + id + ' ไม่พบข้อมูลสั่งซื้อ กรุณาเพิ่มข้อมูล');
       return;
@@ -364,7 +366,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
         setNotifyText('ต้องการสร้างคิวหรือไม่?');
       }
 
-      setReserveData(reserveData)
+      setReserveData(reserveData);
       setOnClick(click);
       setReserveId(id);
       // setTotalQuantity(total_quantity);
@@ -407,25 +409,27 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
         station_id: 27,
         updated_at: currentDate
       };
-      await queuesRequest.getAllStepById(queueId).then((response) => {
-        response.map((x, index) => {
-          if (index > 0) {
-            statusData.status = 'none';
-          }
-          stepRequest.updateStatusStep(x.step_id, statusData).then();
+      await queuesRequest
+        .getAllStepById(queueId)
+        .then((response) => {
+          response.map((x, index) => {
+            if (index > 0) {
+              statusData.status = 'none';
+            }
+            stepRequest.updateStatusStep(x.step_id, statusData).then();
+          });
         })
-
-      }).then(() => {
-        window.location.href = '/queues/detail/' + queueId;
-      })
+        .then(() => {
+          window.location.href = '/queues/detail/' + queueId;
+        });
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
   async function getQueueIdByReserve(reserve_id) {
     try {
       await reserveRequest.getQueuesByIdReserve(reserve_id).then((response) => {
-        updateQueuesStatus(response[0].queue_id)
+        updateQueuesStatus(response[0].queue_id);
       });
     } catch (error) {
       console.log(error);
@@ -526,7 +530,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
 
     fetch(apiUrl + '/updatereservestatus/' + reserve_id, requestOptions)
       .then((response) => response.json())
-      .then(() => { })
+      .then(() => {})
       .catch((error) => console.log('error', error));
   };
 
@@ -672,12 +676,12 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
   function createStepsf(queue_id) {
     const data = {
       audit_user_id: userId,
-      audit_action: "I",
+      audit_action: 'I',
       audit_system_id: queue_id,
-      audit_system: "queues",
-      audit_screen: "ข้อมูลคิว",
-      audit_description: "ออกบัตรคิว"
-    }
+      audit_system: 'queues',
+      audit_screen: 'ข้อมูลคิว',
+      audit_description: 'ออกบัตรคิว'
+    };
     AddAuditLogs(data);
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -729,9 +733,9 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
               updated_at: currentDate
             }
           ]
-        }
+        };
         if (reserveData.product_brand_id === 45 || reserveData.product_brand_id === 46) {
-          newTran.transactions[1].status = 'completed'
+          newTran.transactions[1].status = 'completed';
         }
         var raw = JSON.stringify(newTran);
         // var raw = JSON.stringify({
@@ -827,11 +831,11 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     if (refresh === true) {
       getReserve();
     }
-  }
+  };
 
   const AddAuditLogs = async (data) => {
     await functionAddLogs.AddAuditLog(data);
-  }
+  };
 
   return (
     <Box>
@@ -913,14 +917,14 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
                         </Tooltip>
                       </TableCell>
                       <TableCell align="center">
-                        {row.queue_token ? <QueueTag id={row.product_company_id} token={row.queue_token} /> : getTokenCompany(row.product_company_id)}
+                        {row.queue_token ? (
+                          <QueueTag id={row.product_company_id} token={row.queue_token} />
+                        ) : (
+                          getTokenCompany(row.product_company_id)
+                        )}
                       </TableCell>
                       <TableCell align="left">
-                        {row.r_description ? (
-                          <strong style={{ color: 'red' }}>{row.r_description}</strong>
-                        ) : (
-                          <>-</>
-                        )}
+                        {row.r_description ? <strong style={{ color: 'red' }}>{row.r_description}</strong> : <>-</>}
                       </TableCell>
                       <TableCell align="left">{row.company}</TableCell>
                       {/* <TableCell align="left">{row.contact_person ? row.contact_person : '-'}</TableCell> */}

@@ -112,13 +112,7 @@ OrderTableHead.propTypes = {
   order: PropTypes.string,
   orderBy: PropTypes.string
 };
-function ConTractorSumTable({
-  startDate,
-  endDate,
-  clickDownload,
-  onFilter,
-  nameCompany
-}) {
+function ConTractorSumTable({ startDate, endDate, clickDownload, onFilter, nameCompany }) {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [loading, setLoading] = useState(true);

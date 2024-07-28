@@ -46,13 +46,31 @@ function AllStations({ permission }) {
     setLoading(true);
     try {
       stepRequest.getAllStations().then((response) => {
-        const stationGroup1 = response.filter((x) => x.station_group_id === 3 && x.station_id !== 32 && x.station_id !== 33 && x.station_id !== 34 && x.station_id !== 35 && x.station_id !== 36 && x.station_id !== 15 && x.station_id !== 16 && x.station_id !== 17 && x.warehouse_id != 8);
+        const stationGroup1 = response.filter(
+          (x) =>
+            x.station_group_id === 3 &&
+            x.station_id !== 32 &&
+            x.station_id !== 33 &&
+            x.station_id !== 34 &&
+            x.station_id !== 35 &&
+            x.station_id !== 36 &&
+            x.station_id !== 15 &&
+            x.station_id !== 16 &&
+            x.station_id !== 17 &&
+            x.warehouse_id != 8
+        );
 
         const stationGroup2 = response.filter((x) => x.station_group_id === 3 && x.warehouse_id === 8);
 
-        const stationGroup3 = response.filter((x) => x.station_group_id === 3 && (x.station_id === 15 || x.station_id === 16 || x.station_id === 17));
+        const stationGroup3 = response.filter(
+          (x) => x.station_group_id === 3 && (x.station_id === 15 || x.station_id === 16 || x.station_id === 17)
+        );
 
-        const stationGroup4 = response.filter((x) => x.station_group_id === 3 && (x.station_id === 32 || x.station_id === 33 || x.station_id === 34 || x.station_id === 35 || x.station_id === 36));
+        const stationGroup4 = response.filter(
+          (x) =>
+            x.station_group_id === 3 &&
+            (x.station_id === 32 || x.station_id === 33 || x.station_id === 34 || x.station_id === 35 || x.station_id === 36)
+        );
         setStations(stationGroup1);
         setStations2(stationGroup2);
         setStations3(stationGroup3);
@@ -101,14 +119,23 @@ function AllStations({ permission }) {
   };
   const handleClose = async (flag) => {
     if (flag == 1) {
+      console.log(stationsData.station_status);
+      console.log(stationStatus);
       if (stationsData.station_status !== stationStatus && stationStatus) {
+        console.log('1');
+        setOpen(false);
+        await updateStation(stationsData.station_id, stationStatus);
         setLoading(true);
-        updateStation(stationsData.station_id, stationStatus);
+      } else if (permission === 'manage_everything') {
+        console.log('2');
+        setOpen(false);
+        setLoading(true);
+        await updateStation(stationsData.station_id, stationStatus, stationsData.time_update);
       }
+    } else if (flag == 0) {
       setOpen(false);
     }
     setStationStatus('');
-    setOpen(false);
   };
 
   // =============== เลือกสถานะ หัวจ่าย ===============//
@@ -118,14 +145,20 @@ function AllStations({ permission }) {
   };
 
   // =============== เลือกสถานะ หัวจ่าย ===============//
-  const updateStation = (id, status) => {
+  const updateStation = async (id, status, timeU) => {
     try {
       const data = {
         station_status: status,
         time_update: null
       };
 
-      stepRequest.putStationStatus(id, data).then(() => {
+      if (timeU) {
+        data.time_update = moment(timeU).format('YYYY-MM-DD');
+      }
+
+      await stepRequest.putStationStatus(id, data).then((response) => {
+        console.log('response', response);
+        console.log('data', data);
         getAllStation();
         setStationStatus('');
       });
@@ -170,7 +203,11 @@ function AllStations({ permission }) {
                   defaultValue={stationsData.station_status == 'closed' ? 'closed' : 'waiting'}
                   onChange={(e) => handleSelectCloseStation(e.target.value)}
                 >
-                  <FormControlLabel value="waiting" control={<Radio />} label={<Chip color="success" label="เปิดหัวจ่าย" />} />
+                  {stationsData.station_status === 'working' && permission === 'manage_everything' ? (
+                    <FormControlLabel value="waiting" control={<Radio />} label={<Chip color="warning" label="รีเซตหัวจ่าย" />} />
+                  ) : (
+                    <FormControlLabel value="waiting" control={<Radio />} label={<Chip color="success" label="เปิดหัวจ่าย" />} />
+                  )}
                   <FormControlLabel
                     value="closed"
                     disabled={stationsData.station_status == 'working'}
@@ -191,7 +228,8 @@ function AllStations({ permission }) {
             color="primary"
             variant="contained"
             disabled={
-              stationsData.station_status == 'working' || (permission !== 'manage_everything' && permission !== 'add_edit_delete_data')
+              (permission !== 'manage_everything' && stationsData.station_status == 'working') ||
+              (permission !== 'manage_everything' && permission !== 'add_edit_delete_data')
             }
             onClick={() => handleClose(1)}
             autoFocus
@@ -281,7 +319,7 @@ function AllStations({ permission }) {
                   <Stack spacing={0}>
                     <Typography variant="h5" sx={{ fontSize: { sm: '1rem!important', lg: '0.8vw!important' } }}>
                       {row.station_description.length > 4
-                        ? `${row.station_description.substring(0, 4)} #${index < 9 ? (index + 16) : index + 1}`
+                        ? `${row.station_description.substring(0, 4)} #${index < 9 ? index + 16 : index + 1}`
                         : row.station_description}
                     </Typography>
                   </Stack>
@@ -323,7 +361,7 @@ function AllStations({ permission }) {
                   <Stack spacing={0}>
                     <Typography variant="h5" sx={{ fontSize: { sm: '1rem!important', lg: '0.8vw!important' } }}>
                       {row.station_description.length > 4
-                        ? `${row.station_description.substring(0, 4)} #${index < 9 ? (index + 13) : index + 1}`
+                        ? `${row.station_description.substring(0, 4)} #${index < 9 ? index + 13 : index + 1}`
                         : row.station_description}
                     </Typography>
                   </Stack>
@@ -338,7 +376,13 @@ function AllStations({ permission }) {
                 sm={2}
                 md={2}
                 lg={1}
-                sx={index === 0 && { ml: '3%', minWidth: { sm: '5%!important', lg: '5%!important' }, maxWidth: { sm: '5%!important', lg: '5%!important' } } || { minWidth: { sm: '5%!important', lg: '5%!important' }, maxWidth: { sm: '5%!important', lg: '5%!important' } }}
+                sx={
+                  (index === 0 && {
+                    ml: '3%',
+                    minWidth: { sm: '5%!important', lg: '5%!important' },
+                    maxWidth: { sm: '5%!important', lg: '5%!important' }
+                  }) || { minWidth: { sm: '5%!important', lg: '5%!important' }, maxWidth: { sm: '5%!important', lg: '5%!important' } }
+                }
                 align="center"
                 key={index}
               >

@@ -10,7 +10,10 @@ import {
   Divider,
   Alert,
   Backdrop,
-  CircularProgress, Badge, Tabs, Tab
+  CircularProgress,
+  Badge,
+  Tabs,
+  Tab
   // Typography
 } from '@mui/material';
 import MainCard from 'components/MainCard';
@@ -66,18 +69,14 @@ const CarsTimeInOut = () => {
     });
   };
 
-
   const [companyList, setCompanyList] = useState([]);
   const [items, setItems] = useState([]);
   const [countAllQueue, setCountAllQueue] = useState(0);
   const getProductCompany = (dataList) => {
     stepRequest.getAllProductCompany().then((response) => {
-
       if (response.length > 0) {
         response.map((x) => {
-          let countCompany = dataList.filter(
-            (i) => i.product_company_id == x.product_company_id
-          ).length;
+          let countCompany = dataList.filter((i) => i.product_company_id == x.product_company_id).length;
 
           setItems((prevState) => ({
             ...prevState,
@@ -107,7 +106,7 @@ const CarsTimeInOut = () => {
   const handleQueueData = (data) => {
     setDataList(data);
     getProductCompany(data);
-  }
+  };
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -131,9 +130,9 @@ const CarsTimeInOut = () => {
                   name="pickup_date"
                   value={selectedDate1}
                   onChange={handleDateChange1}
-                // inputProps={{
-                //   min: currentDate
-                // }}
+                  // inputProps={{
+                  //   min: currentDate
+                  // }}
                 />
               </Stack>
             </Grid>
@@ -147,9 +146,9 @@ const CarsTimeInOut = () => {
                   name="pickup_date"
                   value={selectedDate2}
                   onChange={handleDateChange2}
-                // inputProps={{
-                //   min: currentDate
-                // }}
+                  // inputProps={{
+                  //   min: currentDate
+                  // }}
                 />
               </Stack>
             </Grid>
@@ -198,7 +197,7 @@ const CarsTimeInOut = () => {
                             numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                             txtLabel={company.product_company_name_th2}
                             onSelect={() => handleChange(company.product_company_id)}
-                          // {...a11yProps(company.product_company_id)}
+                            // {...a11yProps(company.product_company_id)}
                           />
                         ))}
                     </Tabs>
@@ -212,7 +211,11 @@ const CarsTimeInOut = () => {
                         <Tooltip title="Export Excel">
                           <ExportCarsTimeInOut
                             dataList={dataList}
-                            nameCompany={valueFilter !== 0 ? companyList.find((x) => x.product_company_id === valueFilter)?.product_company_name_th2 : ''}
+                            nameCompany={
+                              valueFilter !== 0
+                                ? companyList.find((x) => x.product_company_id === valueFilter)?.product_company_name_th2
+                                : ''
+                            }
                             onFilter={valueFilter}
                           />
                         </Tooltip>
@@ -220,7 +223,7 @@ const CarsTimeInOut = () => {
                           dataList={dataList}
                           nameCompany={valueFilter !== 0 ? companyList.find((x) => x.product_company_id === valueFilter)?.product_company_name_th2 : ''}
                           onFilter={valueFilter} /> */}
-                        {valueFilter === 999 &&
+                        {valueFilter === 999 && (
                           <Tooltip title="Export Excel">
                             <Button
                               color="success"
@@ -231,7 +234,7 @@ const CarsTimeInOut = () => {
                               <FileExcelOutlined />
                             </Button>
                           </Tooltip>
-                        }
+                        )}
                       </>
                     }
                   >

@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-import {
-  Grid, Stack, Button, Box, TextField, Alert, Badge, Tabs, Tab, Checkbox, FormControlLabel
-} from '@mui/material';
+import { Grid, Stack, Button, Box, TextField, Alert, Badge, Tabs, Tab, Checkbox, FormControlLabel } from '@mui/material';
 import MainCard from 'components/MainCard';
 import { SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import QueueTab from 'components/@extended/QueueTab';
@@ -168,9 +166,9 @@ function Reserve() {
                 name="pickup_date"
                 value={selectedDate1}
                 onChange={handleDateChange1}
-              // inputProps={{
-              //   min: currentDate
-              // }}
+                // inputProps={{
+                //   min: currentDate
+                // }}
               />
             </Stack>
           </Grid>
@@ -221,52 +219,71 @@ function Reserve() {
                     label={<span style={{ fontSize: '18px', color: '#52c41a' }}>สำเร็จ</span>}
                   /> */}
                   <FormControlLabel
-                    control={<Checkbox
-                      checked={statusFilter.completed}
-                      onChange={handleCheckboxChange}
-                      name="completed"
-                      sx={{
-                        p: 0,
-                        mt: -0.4,
-                        fontSize: '2rem',
-                        color: '#52c41a', // สีเริ่มต้น
-                        '&.Mui-checked': {
-                          color: '#52c41a' // สีเมื่อถูกเลือก
-                        },
-                        '& .MuiSvgIcon-root': { fontSize: '2rem' }
-                      }}
-                    />}
-                    label={<span style={{
-                      color: '#fff',
-                      background: '#52c41a',
-                      border: 'solid 1px',
-                      padding: '2px 5px',
-                      borderRadius: '6px',
-                      marginRight: '10px'
-                    }}>สำเร็จ</span>}
-                  // label={(<Button color='success' variant="outlined" size='medium'>สำเร็จ</Button>)}
+                    control={
+                      <Checkbox
+                        checked={statusFilter.completed}
+                        onChange={handleCheckboxChange}
+                        name="completed"
+                        sx={{
+                          p: 0,
+                          mt: -0.4,
+                          fontSize: '2rem',
+                          color: '#52c41a', // สีเริ่มต้น
+                          '&.Mui-checked': {
+                            color: '#52c41a' // สีเมื่อถูกเลือก
+                          },
+                          '& .MuiSvgIcon-root': { fontSize: '2rem' }
+                        }}
+                      />
+                    }
+                    label={
+                      <span
+                        style={{
+                          color: '#fff',
+                          background: '#52c41a',
+                          border: 'solid 1px',
+                          padding: '2px 5px',
+                          borderRadius: '6px',
+                          marginRight: '10px'
+                        }}
+                      >
+                        สำเร็จ
+                      </span>
+                    }
+                    // label={(<Button color='success' variant="outlined" size='medium'>สำเร็จ</Button>)}
                   />
                   <FormControlLabel
-                    control={<Checkbox checked={statusFilter.cancle} onChange={handleCheckboxChange} name="cancle"
-                      sx={{
-                        p: 0,
-                        mt: -0.4,
-                        fontSize: '2rem',
-                        color: '#8c8c8c', // สีเริ่มต้น
-                        '&.Mui-checked': {
-                          color: '#8c8c8c' // สีเมื่อถูกเลือก
-                        },
-                        '& .MuiSvgIcon-root': { fontSize: '2rem' }
-                      }}
-                    />}
-                    label={<span style={{
-                      color: '#fff',
-                      background: '#8c8c8c',
-                      border: 'solid 1px',
-                      padding: '2px 5px',
-                      borderRadius: '6px',
-                      marginRight: '5px'
-                    }}>ยกเลิกคิว</span>}
+                    control={
+                      <Checkbox
+                        checked={statusFilter.cancle}
+                        onChange={handleCheckboxChange}
+                        name="cancle"
+                        sx={{
+                          p: 0,
+                          mt: -0.4,
+                          fontSize: '2rem',
+                          color: '#8c8c8c', // สีเริ่มต้น
+                          '&.Mui-checked': {
+                            color: '#8c8c8c' // สีเมื่อถูกเลือก
+                          },
+                          '& .MuiSvgIcon-root': { fontSize: '2rem' }
+                        }}
+                      />
+                    }
+                    label={
+                      <span
+                        style={{
+                          color: '#fff',
+                          background: '#8c8c8c',
+                          border: 'solid 1px',
+                          padding: '2px 5px',
+                          borderRadius: '6px',
+                          marginRight: '5px'
+                        }}
+                      >
+                        ยกเลิกคิว
+                      </span>
+                    }
                   />
                   <FormControlLabel
                     control={
@@ -284,16 +301,23 @@ function Reserve() {
                           },
                           '& .MuiSvgIcon-root': { fontSize: '2rem' }
                         }}
-                      />}
+                      />
+                    }
                     // label="รอออกคิว"
-                    label={<span style={{
-                      color: '#fff',
-                      background: '#faad14',
-                      border: 'solid 1px',
-                      padding: '2px 5px',
-                      borderRadius: '6px',
-                      marginRight: '5px'
-                    }}>รอออกคิว</span>}
+                    label={
+                      <span
+                        style={{
+                          color: '#fff',
+                          background: '#faad14',
+                          border: 'solid 1px',
+                          padding: '2px 5px',
+                          borderRadius: '6px',
+                          marginRight: '5px'
+                        }}
+                      >
+                        รอออกคิว
+                      </span>
+                    }
                   />
                   <FormControlLabel
                     control={
@@ -311,15 +335,22 @@ function Reserve() {
                           },
                           '& .MuiSvgIcon-root': { fontSize: '2rem' }
                         }}
-                      />}
-                    label={<span style={{
-                      color: '#fff',
-                      background: '#ff4d4f',
-                      border: 'solid 1px',
-                      padding: '2px 5px',
-                      borderRadius: '6px',
-                      marginRight: '5px'
-                    }}>รอคำสั่งซื้อ</span>}
+                      />
+                    }
+                    label={
+                      <span
+                        style={{
+                          color: '#fff',
+                          background: '#ff4d4f',
+                          border: 'solid 1px',
+                          padding: '2px 5px',
+                          borderRadius: '6px',
+                          marginRight: '5px'
+                        }}
+                      >
+                        รอคำสั่งซื้อ
+                      </span>
+                    }
                   />
 
                   <Button size="mediam" color="success" variant="outlined" onClick={() => addReserve()} startIcon={<PlusCircleOutlined />}>
@@ -341,7 +372,6 @@ function Reserve() {
         )}
         {pageDetail.length !== 0 && (
           <>
-
             <MainCard content={false} sx={{ mt: 1.5 }}>
               <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
                 {companyList.length > 0 && (
@@ -365,7 +395,7 @@ function Reserve() {
                       txtLabel={company.product_company_name_th2}
                       // onSelect={() => handleChange(company.product_company_id)}
                       onSelect={() => handleChange(index + 1, company.product_company_id)}
-                    // {...a11yProps(company.product_company_id)}
+                      // {...a11yProps(company.product_company_id)}
                     />
                   ))}
               </Tabs>
