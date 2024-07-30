@@ -864,8 +864,8 @@ function UpdateReserve() {
   // =============== เพิ่มรายการสินค้า ===============//
   const addOrder = () => {
     // window.location = `/order/add/${id}`;
-    // navigate(`/order/add/${id}`);
-    navigate(`/order/test-add/${id}`);
+    navigate(`/order/add/${id}`);
+    // navigate(`/order/test-add/${id}`);
   };
 
   // =============== ลบรายการสินค้า ===============//

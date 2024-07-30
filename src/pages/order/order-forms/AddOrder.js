@@ -17,6 +17,7 @@ import {
   Grid,
   InputLabel,
   OutlinedInput,
+  Box,
   Stack,
   Typography,
   Divider,
@@ -40,6 +41,8 @@ import moment from 'moment';
 import { useSnackbar } from 'notistack';
 
 import * as functionAddLogs from 'components/Function/AddLog';
+import GetOrderNavision from './GetOrderNavision';
+
 function AddOrder() {
   const userId = localStorage.getItem('user_id');
   const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
@@ -47,6 +50,7 @@ function AddOrder() {
   const [items, setItems] = useState([
     { product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }
   ]);
+  //   const [loading, setLoading] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
 
   let [initialValue, setInitialValue] = useState({
@@ -63,11 +67,13 @@ function AddOrder() {
   const [reservationData, setReservationData] = useState({});
   const { id } = useParams();
   const getReserve = () => {
+    // setLoading(true);
     const urlapi = apiUrl + `/reserve/` + id;
     axios
       .get(urlapi)
       .then((res) => {
         if (res) {
+          //   setLoading(false);
           res.data.reserve.map((result) => {
             setReservationData(result);
             setInitialValue({
@@ -145,34 +151,16 @@ function AddOrder() {
 
   // =============== useEffect ===============//
   useEffect(() => {
-    // getOrder();
     getReserve();
     getProductCompany();
   }, [id]);
 
   // =============== Validate Forms ===============//
-  // const generateItemSchema = () =>
-  //   Yup.object().shape({
-  //     product_id: Yup.string().required('กรุณาระบุสินค้า'),
-  //     quantity: Yup.number().required('กรุณาระบุจำนวนสินค้า').min(0.2, 'กรุณาระบุจำนวนสินค้าอย่างน้อย 0.2 ตัน')
-  //   });
-  // const [validationSchema, setValidationSchema] = useState(
-  //   Yup.object().shape({
-  //     ref_order_id: Yup.string().required('กรุณาระบุหมายเลขคำสั่งซื้อ'),
-  //     description: Yup.string().required('กรุณาระบุรายละเอียด'),
-  //     order_date: Yup.string().required('กรุณาระบุวันที่สั่งซื้อสินค้า'),
-  //     product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
-  //     product_brand_id: Yup.string().required('กรุณาระบุตรา(สินค้า)')
-  //     items: Yup.array().of(generateItemSchema())
-  //   })
-  // );
   const validationSchema = Yup.object().shape({
     ref_order_id: Yup.string().required('กรุณาระบุหมายเลขคำสั่งซื้อ'),
-    // description: Yup.string().required('กรุณาระบุรายละเอียด'),
     order_date: Yup.string().required('กรุณาระบุวันที่สั่งซื้อสินค้า'),
     product_company_id: Yup.string().required('กรุณาระบุบริษัท(สินค้า)'),
     product_brand_id: Yup.string().required('กรุณาระบุตรา(สินค้า)')
-    // items: Yup.array().of(generateItemSchema())
   });
   // =============== บันทึกข้อมูล ===============//
   //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
@@ -287,19 +275,19 @@ function AddOrder() {
         return;
       }
 
-      // if (values === 999) {
+      //   if (values === 999) {
       await createOrder(values);
 
       const data = {
         audit_user_id: userId,
-        audit_action: "I",
+        audit_action: 'I',
         audit_system_id: id,
-        audit_system: "orders",
-        audit_screen: "ข้อมูลคำสั่งซื้อ",
-        audit_description: `เพิ่มข้อมูลคำสั่งซื้อ : ${values.ref_order_id}`
-      }
+        audit_system: 'orders',
+        audit_screen: `เพิ่มข้อมูลคำสั่งซื้อ : ${values.ref_order_id} `,
+        audit_description: JSON.stringify(onSetOrder)
+      };
       AddAuditLogs(data);
-      // }
+      //   }
     } catch (err) {
       console.error(err);
     }
@@ -352,7 +340,40 @@ function AddOrder() {
 
   const AddAuditLogs = async (data) => {
     await functionAddLogs.AddAuditLog(data);
-  }
+  };
+
+  const [SoNumber, setSoNumber] = useState('');
+  const handleChangeSO = (e) => {
+    console.log('handleChangeSO', e.target.value);
+    setSoNumber(e.target.value);
+  };
+
+  const [onSetOrder, setOnSetOrder] = useState({});
+  const handleOnSetOrder = (data) => {
+    console.log('data :', data);
+
+    let itemList = [];
+    if (data) {
+      data.item_list.map((item) => {
+        if (item.items.Detial !== undefined && productList.filter((x) => x.product_id === item.items.Detial.product_id).length > 0) {
+          const newItem = {
+            product_id: item.items.Detial.product_id,
+            quantity: item.Quantity,
+            subtotal: sutotal,
+            created_at: currentDate,
+            updated_at: currentDate
+          };
+          itemList.push(newItem);
+        } else {
+          item.status = false;
+        }
+        return item;
+      });
+      setOnSetOrder(data);
+      setItems(itemList);
+      console.log(onSetOrder);
+    }
+  };
   return (
     <Grid alignItems="center" justifyContent="space-between">
       <Grid container rowSpacing={1} columnSpacing={1.75}>
@@ -384,48 +405,6 @@ function AddOrder() {
                       <Typography variant="h5">เพิ่มข้อมูลการสั่งซื้อสินค้า</Typography>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
                     </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>เลขที่คำสั่งซื้อ *</InputLabel>
-                        <OutlinedInput
-                          id="ref_order_id"
-                          type="text"
-                          value={values.ref_order_id}
-                          name="ref_order_id"
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          placeholder="เลขที่คำสั่งซื้อ *"
-                          error={Boolean(touched.ref_order_id && errors.ref_order_id)}
-                        />
-
-                        {touched.ref_order_id && errors.ref_order_id && (
-                          <FormHelperText error id="helper-text-ref_order_id">
-                            {errors.ref_order_id}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <InputLabel>วันที่สั่งซื้อสินค้า *</InputLabel>
-                        <TextField
-                          required
-                          fullWidth
-                          type="date"
-                          id="order_date"
-                          name="order_date"
-                          onBlur={handleBlur}
-                          value={values.order_date}
-                          onChange={handleChange}
-                        />
-                        {touched.order_date && errors.order_date && (
-                          <FormHelperText error id="helper-text-order_date">
-                            {errors.order_date}
-                          </FormHelperText>
-                        )}
-                      </Stack>
-                    </Grid>
 
                     <Grid item xs={12} md={6}>
                       <InputLabel>บริษัท (สินค้า) *</InputLabel>
@@ -434,6 +413,7 @@ function AddOrder() {
                           displayEmpty
                           variant="outlined"
                           name="product_company_id"
+                          disabled={Object.keys(onSetOrder).length > 0}
                           value={values.product_company_id}
                           onChange={(e) => {
                             setFieldValue('product_company_id', e.target.value);
@@ -468,6 +448,7 @@ function AddOrder() {
                           displayEmpty
                           variant="outlined"
                           name="product_brand_id"
+                          disabled={Object.keys(onSetOrder).length > 0}
                           value={values.product_brand_id}
                           onChange={(e) => {
                             handleChange(e);
@@ -494,6 +475,64 @@ function AddOrder() {
                       )}
                     </Grid>
 
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
+                        <InputLabel>เลขที่คำสั่งซื้อ *</InputLabel>
+                        <Box display="flex" alignItems="center">
+                          <OutlinedInput
+                            id="ref_order_id"
+                            type="text"
+                            value={values.ref_order_id}
+                            name="ref_order_id"
+                            onBlur={handleBlur}
+                            onChange={(e) => {
+                              setFieldValue('ref_order_id', e.target.value);
+                              handleChangeSO(e);
+                            }}
+                            placeholder="เลขที่คำสั่งซื้อ *"
+                            sx={{ width: '100%' }}
+                            error={Boolean(touched.ref_order_id && errors.ref_order_id)}
+                          />
+                          <Box marginLeft={2}>
+                            <GetOrderNavision soNumber={SoNumber} onSetData={handleOnSetOrder} proCompanyID={values.product_company_id} />
+                            {/* <Button variant="outlined" disabled={loading} onClick={() => handleSearch(values.ref_order_id)}>
+                              {loading ? 'Loading...' : 'Navision...API'}
+                            </Button> */}
+                          </Box>
+                        </Box>
+
+                        {touched.ref_order_id && errors.ref_order_id && (
+                          <FormHelperText error id="helper-text-ref_order_id">
+                            {errors.ref_order_id}
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={1}>
+                        <InputLabel>วันที่สั่งซื้อสินค้า *</InputLabel>
+                        <TextField
+                          required
+                          fullWidth
+                          type="date"
+                          id="order_date"
+                          name="order_date"
+                          onBlur={handleBlur}
+                          value={
+                            (Object.keys(onSetOrder).length > 0 && moment(onSetOrder.Posting_Date).format('YYYY-MM-DD')) ||
+                            values.order_date
+                          }
+                          onChange={handleChange}
+                        />
+                        {touched.order_date && errors.order_date && (
+                          <FormHelperText error id="helper-text-order_date">
+                            {errors.order_date}
+                          </FormHelperText>
+                        )}
+                      </Stack>
+                    </Grid>
+
                     <Grid item xs={12} md={12}>
                       <Stack spacing={1}>
                         <InputLabel>รายละเอียดการสั่งซื้อสินค้า </InputLabel>
@@ -515,7 +554,7 @@ function AddOrder() {
                       </Stack>
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={5}>
                       <Table size="small">
                         <TableHead>
                           <TableRow>
@@ -534,9 +573,7 @@ function AddOrder() {
                                     id="product-list"
                                     options={productList}
                                     value={item.product_id ? productList.find((x) => x.product_id === item.product_id) : null}
-                                    // onChange={(e, value) => setFieldValue('driver_id', value.driver_id)}
                                     onChange={(e, value) => {
-                                      // const newValue = value ? value.product_id : (value.product_id = '');
                                       setFieldValue(item.product_id, value);
                                       handleInputChangeSelect(value, index);
                                     }}
@@ -560,30 +597,6 @@ function AddOrder() {
                                       />
                                     )}
                                   />
-                                  {/* <Select
-                                    displayEmpty
-                                    labelId="demo-simple-select-label"
-                                    id={`items.${index}.product_id`}
-                                    placeholder="สินค้า"
-                                    size="small"
-                                    value={item.product_id || ''}
-                                    onChange={(e) => {
-                                      handleInputChange(e, index);
-                                      console.log(e);
-                                    }}
-                                    name={`product_id`}
-                                    error={Boolean(touched.items && errors.items)}
-                                  >
-                                    <MenuItem disabled value="">
-                                      เลือกสินค้า
-                                    </MenuItem>
-                                    {productList.map((product) => (
-                                      <MenuItem key={product.product_id} value={product.product_id}>
-                                        {product.name}
-                                      </MenuItem>
-                                    ))}
-                                  </Select> */}
-
                                   {touched.items && touched.items[index] && errors.items && errors.items[index] && (
                                     <>
                                       {touched.items[index].product_id && errors.items[index].product_id && (
@@ -593,11 +606,6 @@ function AddOrder() {
                                       )}
                                     </>
                                   )}
-                                  {/* {touched.items && touched.items[index] && errors.items && errors.items[index] && (
-                                <FormHelperText error id="helper-text-description">
-                                  {errors.items[index].product_id}
-                                </FormHelperText>
-                              )} */}
                                 </FormControl>
                               </TableCell>
                               <TableCell>
@@ -621,11 +629,6 @@ function AddOrder() {
                                     )}
                                   </>
                                 )}
-                                {/* {touched.items && touched.items[index] && errors.items && errors.items[index] && (
-                              <FormHelperText error id="helper-text-description">
-                                {errors.items[index].quantity}
-                              </FormHelperText>
-                            )} */}
                               </TableCell>
                               <TableCell align="center" sx={{ '& button': { m: 1 } }}>
                                 {coutRowsProduct === index + 1 && (
@@ -634,7 +637,6 @@ function AddOrder() {
                                     color="info"
                                     sx={{ p: '6px 0', minWidth: '33px!important', fontSize: '24px', m: '0!important' }}
                                     onClick={() => {
-                                      // items.push({ product_id: '', quantity: 0 });
                                       addItem();
                                     }}
                                   >
@@ -660,6 +662,45 @@ function AddOrder() {
                         </TableBody>
                       </Table>
                     </Grid>
+
+                    {/* รายการสินค้าจาก Navitions */}
+                    {Object.keys(onSetOrder).length > 0 && (
+                      <Grid item xs={12} md={6} sx={{ borderLeft: 'solid 1px ', ml: 2 }}>
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>รหัสสินค้า</TableCell>
+                              <TableCell>ชื่อสินค้า</TableCell>
+                              <TableCell align="left">จำนวน (ตัน)</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {onSetOrder.item_list?.map((item, index) => (
+                              <TableRow key={index}>
+                                <TableCell>
+                                  <Typography variant="body1" sx={item?.status === false && { color: 'red' }}>
+                                    {item.No}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Typography variant="body1" sx={item?.status === false && { color: 'red' }}>
+                                    {item.items.Description}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell align="center">
+                                  <Typography variant="body1" sx={item?.status === false && { color: 'red' }}>
+                                    {item.Quantity}
+                                  </Typography>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            <TableRow>
+                              <TableBody xs={12} sx={{ '& button': { m: 1 } }}></TableBody>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </Grid>
+                    )}
 
                     <Grid item xs={12} sx={{ '& button': { m: 1 } }}>
                       <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 1 }} />
@@ -696,5 +737,6 @@ function AddOrder() {
     </Grid>
   );
 }
+
 
 export default AddOrder;

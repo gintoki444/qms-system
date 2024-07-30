@@ -1,8 +1,9 @@
 {
   "projects": {
     "default": "qms-testing-01",
-    "build": "icp-qms"
+    "build": "qms-icp-testing"
   },
   "targets": {},
-  "etags": {}
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
 }
