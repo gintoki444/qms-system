@@ -85,17 +85,22 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
   };
 
   // =============== Get All product register ===============//
-  const [productList, setProductList] = useState([]);
-  const getProductRegister = async () => {
-    try {
-      adminRequest.getAllProductRegister().then((response) => {
-        setProductList(response);
-        // setProductList(response.filter((x) => parseFloat(x.total_remain) > 0));
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const [productList, setProductList] = useState([]);
+  // const getProductRegister = async (id) => {
+  //   return await new Promise((resolve) => {
+  //     adminRequest.getProductRegisterById(id).then((response) => {
+  //       resolve(response);
+  //     });
+  //   });
+  //   // try {
+  //   //   adminRequest.getAllProductRegister().then((response) => {
+  //   //     setProductList(response);
+  //   //     // setProductList(response.filter((x) => parseFloat(x.total_remain) > 0));
+  //   //   });
+  //   // } catch (error) {
+  //   //   console.log(error);
+  //   // }
+  // };
 
   // =============== Get All log ===============//
   const [auditlogList, setAuditlogList] = useState([]);
@@ -157,7 +162,7 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
       setTxtTitle('ข้อมูลกองสินค้าที่จ่าย');
       setLoading(true);
       await getAllSteps(data.queue_id);
-      await getProductRegister();
+      // await getProductRegister();
       await getOrders(data.reserve_id);
       setLoading(false);
     }
@@ -170,40 +175,13 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
     }
   };
 
-  // =============== Get calculateAge จำนวนวัน  ===============//
-  const calculateAge = (registrationDate) => {
-    if (!registrationDate) return '-';
-
-    const currentDate = moment(new Date()).format('YYYY-MM-DD');
-    const regDate = moment(registrationDate).format('YYYY-MM-DD');
-    // const regDate = new Date(registrationDate);
-
-    const years = moment(currentDate).diff(regDate, 'years');
-    const months = moment(currentDate).diff(regDate, 'months') % 12;
-    const days = moment(currentDate).diff(regDate, 'days') % 30;
-
-    let result = '';
-
-    if (years !== 0) {
-      result = `${years} ปี ${months} เดือน ${days} วัน`;
-    } else {
-      if (months !== 0) {
-        result = `${months} เดือน ${days} วัน`;
-      } else {
-        result = `${days} วัน`;
-      }
-    }
-
-    return result;
-    //return `${years} ปี ${months} เดือน ${days} วัน`;
-  };
-
-  const getWarhouseDate = (id) => {
-    const proWare = productList.find((x) => x.product_register_id === id);
-    const numDate = proWare?.product_register_date ? ` (${calculateAge(proWare?.product_register_date)}) ` : '-';
-    const txt = proWare?.warehouse_name + ' ' + proWare?.product_register_name + ' ' + numDate;
-    return txt;
-  };
+  // const getWarhouseDate = async (id) => {
+  //   const productList = await getProductRegister(id);
+  //   const proWare = productList[0];
+  //   const numDate = proWare?.product_register_date ? ` (${calculateAge(proWare?.product_register_date)}) ` : '-';
+  //   const txt = proWare?.warehouse_name + ' ' + proWare?.product_register_name + ' ' + numDate;
+  //   return txt;
+  // };
 
   const [sumWeight, setSumWeight] = useState(0);
   const summaryWeight = (data) => {
@@ -211,8 +189,6 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
     data.map((order) => {
       order.items.map((items) => {
         const setNumber = parseFloat(items.quantity);
-        console.log(setNumber);
-        console.log(typeof setNumber);
         sum = sum + setNumber;
       });
     });
@@ -241,34 +217,54 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
           {!loading && types === 'reserves' && (
             <Grid container spacing={1}>
               <Grid item xs={12}>
-                <Typography variant="h5">บริษัท/ร้านค้า : {data.company}</Typography>
+                <Typography variant="body">
+                  บริษัท/ร้านค้า : <strong>{data.company}</strong>
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">วันที่เข้ารับสินค้า : {moment(data.pickup_date).format('DD/MM/YYYY')}</Typography>
+                <Typography variant="body">
+                  วันที่เข้ารับสินค้า : <strong>{moment(data.pickup_date).format('DD/MM/YYYY')}</strong>
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">บริษัท (สินค้า) : {companyData?.product_company_name_th}</Typography>
+                <Typography variant="body">
+                  บริษัท (สินค้า) : <strong>{companyData?.product_company_name_th}</strong>
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">ตรา (สินค้า) : {brandData?.product_brand_name}</Typography>
+                <Typography variant="body">
+                  ตรา (สินค้า) : <strong>{brandData?.product_brand_name}</strong>
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">รถบรรทุก : {data.registration_no}</Typography>
+                <Typography variant="body">
+                  รถบรรทุก : <strong>{data.registration_no}</strong>
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">คนขับรถ : {data.driver}</Typography>
+                <Typography variant="body">
+                  คนขับรถ : <strong>{data.driver}</strong>
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">เบอร์โทร : {data.mobile_no}</Typography>
+                <Typography variant="body">
+                  เบอร์โทร : <strong>{data.mobile_no}</strong>
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">เลขบัตรประชาชน : {data.id_card_no}</Typography>
+                <Typography variant="body">
+                  เลขบัตรประชาชน : <strong>{data.id_card_no}</strong>
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">เวลาที่กด : {auditlogList?.audit_datetime?.slice(11, 19) + ' น.'}</Typography>
+                <Typography variant="body">
+                  เวลาที่กด : <strong>{auditlogList?.audit_datetime?.slice(11, 19) + ' น.'}</strong>
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">Create By : {auditlogList?.firstname}</Typography>
+                <Typography variant="body">
+                  Create By : <strong>{auditlogList?.firstname}</strong>
+                </Typography>
               </Grid>
             </Grid>
           )}
@@ -277,45 +273,57 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
             ? orderList.map((order, index) => (
                 <Grid container spacing={1} key={index} sx={{ mb: 2 }}>
                   <Grid item xs={12}>
-                    <Typography variant="h5">เลขที่คำสั่งซื้อ : {order.ref_order_id}</Typography>
+                    <Typography variant="body">
+                      เลขที่คำสั่งซื้อ : <strong>{order.ref_order_id}</strong>
+                    </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography variant="h5">วันที่สั่งซื้อ : {moment(order.order_date.slice(0, 10)).format('DD/MM/YYYY')}</Typography>
+                    <Typography variant="body">
+                      วันที่สั่งซื้อ : <strong>{moment(order.order_date.slice(0, 10)).format('DD/MM/YYYY')}</strong>
+                    </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography variant="h5">
+                    <Typography variant="body">
                       บริษัท (สินค้า) :{' '}
-                      {companyData.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}
+                      <strong>{companyData.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}</strong>
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography variant="h5">
-                      ตรา (สินค้า) : {brandData.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}
+                    <Typography variant="body">
+                      ตรา (สินค้า) :{' '}
+                      <strong>{brandData.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}</strong>
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography variant="h5">รายละเอียด : {order.description ? order.description : '-'}</Typography>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography variant="h5">
-                      เวลาที่กด : {auditlogList[index]?.audit_datetime ? auditlogList[index]?.audit_datetime?.slice(11, 19) + ' น.' : '-'}
+                    <Typography variant="body">
+                      รายละเอียด : <strong>{order.description ? order.description : '-'}</strong>
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography variant="h5">
-                      Create By : {auditlogList[index]?.firstname ? auditlogList[index]?.firstname : '-'}
+                    <Typography variant="body">
+                      เวลาที่กด :{' '}
+                      <strong>
+                        {auditlogList[index]?.audit_datetime ? auditlogList[index]?.audit_datetime?.slice(11, 19) + ' น.' : '-'}
+                      </strong>
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography variant="h5">สูตรสินค้า</Typography>
+                    <Typography variant="body">
+                      Create By : <strong>{auditlogList[index]?.firstname ? auditlogList[index]?.firstname : '-'}</strong>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="h5" sx={{ mb: 1 }}>
+                      สูตรสินค้า
+                    </Typography>
                     {order.items.length > 0 &&
                       order.items.map((items, oItems) => (
                         <Grid container justifyContent="flex-end" spacing={1} key={oItems}>
                           <Grid item xs={6}>
-                            <Typography variant="body">{items.name}</Typography>
+                            <Typography variant="h5">{items.name}</Typography>
                           </Grid>
                           <Grid item xs={6}>
-                            <Typography variant="body">{items.quantity && parseFloat(items.quantity * 1).toFixed(3)} (ตัน)</Typography>
+                            <Typography variant="h5">{items.quantity && parseFloat(items.quantity * 1).toFixed(3)} (ตัน)</Typography>
                           </Grid>
                         </Grid>
                       ))}
@@ -342,27 +350,38 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
                   {orderList.map((order, index) => (
                     <Grid container spacing={1} key={index} sx={{ mb: 2 }}>
                       <Grid item xs={12}>
-                        <Typography variant="h5">เลขที่คำสั่งซื้อ : {order.ref_order_id}</Typography>
+                        <Typography variant="body">
+                          เลขที่คำสั่งซื้อ : <strong>{order.ref_order_id}</strong>
+                        </Typography>
                       </Grid>
                       <Grid item xs={12}>
-                        <Typography variant="h5">วันที่สั่งซื้อ : {order.ref_order_id}</Typography>
+                        <Typography variant="body">
+                          วันที่สั่งซื้อ : <strong>{order.ref_order_id}</strong>
+                        </Typography>
                       </Grid>
                       <Grid item xs={12}>
-                        <Typography variant="h5">
+                        <Typography variant="body">
                           บริษัท (สินค้า) :{' '}
-                          {companyData.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}
+                          <strong>
+                            {companyData.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}
+                          </strong>
                         </Typography>
                       </Grid>
                       <Grid item xs={12}>
-                        <Typography variant="h5">
-                          ตรา (สินค้า) : {brandData.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}
+                        <Typography variant="body">
+                          ตรา (สินค้า) :
+                          <strong>{brandData.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}</strong>
                         </Typography>
                       </Grid>
                       <Grid item xs={12}>
-                        <Typography variant="h5">รายละเอียด : {order.description ? order.description : '-'}</Typography>
+                        <Typography variant="body">
+                          รายละเอียด :<strong>{order.description ? order.description : '-'}</strong>
+                        </Typography>
                       </Grid>
                       <Grid item xs={12}>
-                        <Typography variant="h5">ข้อมูลคำสั่งซื้อ</Typography>
+                        <Typography variant="h5" sx={{ mb: 1 }}>
+                          ข้อมูลคำสั่งซื้อ
+                        </Typography>
                         {order.items.length > 0 &&
                           order.items.map((items, oItems) => (
                             <Grid container justifyContent="flex-end" spacing={1} key={oItems}>
@@ -391,29 +410,33 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
                 <Grid item xs={12}>
                   <Grid container spacing={1}>
                     <Grid item xs={6}>
-                      <Typography variant="h5">น้ำหนักก่อนรับสินค้า : </Typography>
+                      <Typography variant="body">น้ำหนักก่อนรับสินค้า : </Typography>
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="h5" align="right">
-                        <span style={{ color: 'red' }}>{parseFloat(stepList[0]?.weight1).toFixed(3)}</span> (ตัน)
+                        <strong>
+                          <span style={{ color: 'red' }}>{parseFloat(stepList[0]?.weight1).toFixed(3)}</span> (ตัน)
+                        </strong>
                       </Typography>
                     </Grid>
                     <Grid item xs={12}>
                       <Typography variant="body">
-                        เวลาที่ชั่งเสร็จ : {stepList[0]?.end_time ? stepList[0]?.end_time.slice(11, 19) + ' น.' : '- น.'}
+                        เวลาที่ชั่งเสร็จ :<strong>{stepList[0]?.end_time ? stepList[0]?.end_time.slice(11, 19) + ' น.' : '- น.'}</strong>
                       </Typography>
                     </Grid>
                     <Grid item xs={12}>
                       <Typography variant="body">
                         สถานีขึ้นชั่ง :{' '}
-                        {stepList[0]?.station_description
-                          ? 'สถานีที่ ' + stepList[0]?.station_description.replace(/ชั่งเบาที่ /g, '')
-                          : '-'}
+                        <strong>
+                          {stepList[0]?.station_description
+                            ? 'สถานีที่ ' + stepList[0]?.station_description.replace(/ชั่งเบาที่ /g, '')
+                            : '-'}
+                        </strong>
                       </Typography>
                     </Grid>
                     <Grid item xs={12}>
                       <Typography variant="body">
-                        Create By : {auditlogList[0]?.firstname ? auditlogList[0]?.firstname : '-'}
+                        Create By : <strong>{auditlogList[0]?.firstname ? auditlogList[0]?.firstname : '-'}</strong>
                         {/* Create By : { } */}
                       </Typography>
                     </Grid>
@@ -425,7 +448,7 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
                 <Grid item xs={12}>
                   <Grid container justifyContent="flex-end" spacing={1}>
                     <Grid item xs={6}>
-                      <Typography variant="h5">น้ำหนักหลังรับสินค้า : </Typography>
+                      <Typography variant="body">น้ำหนักหลังรับสินค้า : </Typography>
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="h5" align="right">
@@ -435,19 +458,24 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
                     </Grid>
                     <Grid item xs={12}>
                       <Typography variant="body">
-                        เวลาที่ชั่งเสร็จ : {stepList[2]?.end_time ? stepList[2]?.end_time.slice(11, 19) + ' น.' : '- น.'}
+                        เวลาที่ชั่งเสร็จ : <strong>{stepList[2]?.end_time ? stepList[2]?.end_time.slice(11, 19) + ' น.' : '- น.'}</strong>
                       </Typography>
                     </Grid>
                     <Grid item xs={12}>
                       <Typography variant="body">
                         สถานีขึ้นชั่ง :{' '}
-                        {stepList[2]?.station_id !== 27 && stepList[2]?.station_description
-                          ? 'สถานีที่ ' + stepList[2]?.station_description.replace(/ชั่งหนักที่ /g, '')
-                          : '-'}
+                        <strong>
+                          {' '}
+                          {stepList[2]?.station_id !== 27 && stepList[2]?.station_description
+                            ? 'สถานีที่ ' + stepList[2]?.station_description.replace(/ชั่งหนักที่ /g, '')
+                            : '-'}
+                        </strong>
                       </Typography>
                     </Grid>
                     <Grid item xs={12}>
-                      <Typography variant="body">Create By : {auditlogList[1]?.firstname ? auditlogList[1]?.firstname : '-'}</Typography>
+                      <Typography variant="body">
+                        Create By :<strong> {auditlogList[1]?.firstname ? auditlogList[1]?.firstname : '-'}</strong>
+                      </Typography>
                     </Grid>
                   </Grid>
                 </Grid>
@@ -466,68 +494,82 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
           {!loading && types === 'teams' && (
             <Grid container spacing={1}>
               <Grid item xs={12}>
-                <Typography variant="h5">
-                  ทีมจ่ายสินค้า : {teamData?.team_name ? teamData?.team_name.replace(/ทีมขึ้นสินค้า /g, '') : '-'}
+                <Typography variant="body">
+                  ทีมจ่ายสินค้า : <strong>{teamData?.team_name ? teamData?.team_name.replace(/ทีมขึ้นสินค้า /g, '') : '-'}</strong>
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">โกดัง : {teamData?.team_warehouse_name ? teamData?.team_warehouse_name : '-'}</Typography>
+                <Typography variant="body">
+                  โกดัง : <strong>{teamData?.team_warehouse_name ? teamData?.team_warehouse_name : '-'}</strong>
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">หัวจ่าย : {data.station_name ? data.station_name : '-'}</Typography>
+                <Typography variant="body">
+                  หัวจ่าย : <strong>{data.station_name ? data.station_name : '-'}</strong>
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">สายแรงงาน : {data?.contractor_id ? data?.contractor_id : '-'}</Typography>
+                <Typography variant="body">
+                  สายแรงงาน : <strong>{data?.contractor_id ? data?.contractor_id : '-'}</strong>
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">
+                <Typography variant="body">
                   หัวหน้าโกดัง :{' '}
-                  {teamData &&
-                    teamData.team_managers &&
-                    teamData.team_managers.map((manager, index) => {
-                      if (index + 1 !== teamData.team_managers.length) {
-                        return manager.manager_name + ' , ';
-                      } else {
-                        return manager.manager_name;
-                      }
-                    })}
+                  <strong>
+                    {teamData &&
+                      teamData.team_managers &&
+                      teamData.team_managers.map((manager, index) => {
+                        if (index + 1 !== teamData.team_managers.length) {
+                          return manager.manager_name + ' , ';
+                        } else {
+                          return manager.manager_name;
+                        }
+                      })}
+                  </strong>
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">
+                <Typography variant="body">
                   พนักงานจ่ายสินค้า :{' '}
-                  {teamData &&
-                    teamData.team_checkers &&
-                    teamData.team_checkers.map((checker, index) => {
-                      if (index + 1 !== teamData.team_checkers.length) {
-                        return checker.checker_name + ' , ';
-                      } else {
-                        return checker.checker_name;
-                      }
-                    })}
+                  <strong>
+                    {teamData &&
+                      teamData.team_checkers &&
+                      teamData.team_checkers.map((checker, index) => {
+                        if (index + 1 !== teamData.team_checkers.length) {
+                          return checker.checker_name + ' , ';
+                        } else {
+                          return checker.checker_name;
+                        }
+                      })}
+                  </strong>
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">
+                <Typography variant="body">
                   โฟล์คลิฟท์ :{' '}
-                  {teamData &&
-                    teamData.team_forklifts &&
-                    teamData.team_forklifts.map((forklift, index) => {
-                      if (index + 1 !== teamData.team_forklifts.length) {
-                        return forklift.forklift_name + ' , ';
-                      } else {
-                        return forklift.forklift_name;
-                      }
-                    })}
+                  <strong>
+                    {teamData &&
+                      teamData.team_forklifts &&
+                      teamData.team_forklifts.map((forklift, index) => {
+                        if (index + 1 !== teamData.team_forklifts.length) {
+                          return forklift.forklift_name + ' , ';
+                        } else {
+                          return forklift.forklift_name;
+                        }
+                      })}
+                  </strong>
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">
-                  เวลาที่กด : {auditlogList?.audit_datetime ? auditlogList?.audit_datetime?.slice(11, 19) + ' น.' : '-'}
+                <Typography variant="body">
+                  เวลาที่กด : <strong>{auditlogList?.audit_datetime ? auditlogList?.audit_datetime?.slice(11, 19) + ' น.' : '-'}</strong>
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">Create By : {auditlogList?.firstname ? auditlogList?.firstname : '-'}</Typography>
+                <Typography variant="body">
+                  Create By : <strong>{auditlogList?.firstname ? auditlogList?.firstname : '-'}</strong>
+                </Typography>
               </Grid>
             </Grid>
           )}
@@ -535,14 +577,14 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
           {!loading && types === 'products' && (
             <Grid container spacing={1}>
               <Grid item xs={12}>
-                <Typography variant="h5">
-                  เวลาที่เข้าหัว : {stepList[1]?.start_time ? stepList[1]?.start_time.slice(11, 19) + ' น.' : '- น.'}
+                <Typography variant="body">
+                  เวลาที่เข้าหัว : <strong>{stepList[1]?.start_time ? stepList[1]?.start_time.slice(11, 19) + ' น.' : '- น.'}</strong>
                   {/* {teamData?.team_name ? teamData?.team_name.replace(/ทีมขึ้นสินค้า /g, '') : '-'} */}
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">
-                  เวลาที่เสร็จ : {stepList[1]?.end_time ? stepList[1]?.end_time.slice(11, 19) + ' น.' : '- น.'}
+                <Typography variant="body">
+                  เวลาที่เสร็จ : <strong>{stepList[1]?.end_time ? stepList[1]?.end_time.slice(11, 19) + ' น.' : '- น.'}</strong>
                   {/* {teamData?.team_warehouse_name ? teamData?.team_warehouse_name : '-'} */}
                 </Typography>
               </Grid>
@@ -554,20 +596,17 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
                         order.items.map((items, oItems) => (
                           <Grid container justifyContent="flex-end" spacing={1} key={oItems}>
                             <Grid item xs={12}>
-                              <Typography variant="h5">ข้อมูลกองสินค้า : {items.name ? items.name : '-'}</Typography>
-                            </Grid>
-                            <Grid item xs={12}>
-                              <Typography variant="h5">จำนวน : {items?.quantity ? items?.quantity : '-'}</Typography>
-                            </Grid>
-                            <Grid item xs={12}>
-                              <Typography variant="h5">
-                                โกดัง :{' '}
-                                {
-                                  getWarhouseDate(items.product_register_id)
-                                  // product_register_id
-                                  // items.name ? items.name : '-'
-                                }
+                              <Typography variant="body">
+                                ข้อมูลกองสินค้า : <strong>{items.name ? items.name : '-'}</strong>
                               </Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                              <Typography variant="body">
+                                จำนวน : <strong>{items?.quantity ? items?.quantity : '-'}</strong>
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                              <WarehouseInfo productRegisterId={items.product_register_id} />
                             </Grid>
                             {items.smash_quantity !== '0.0000' &&
                               items.sling_hook_quantity !== '0.0000' &&
@@ -575,16 +614,19 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
                               items.jumbo_hook_quantity !== '0.0000' && (
                                 <Grid item xs={12}>
                                   <Typography variant="h5">ประเภท :{/* {data?.contractor_id ? data?.contractor_id : '-'} */}</Typography>
-                                  <Typography variant="h5">
+                                  <Typography variant="body">
                                     <Grid container justifyContent="flex-end" spacing={1} sx={{ p: '0 16px' }}>
                                       {items.smash_quantity !== '0.0000' && (
                                         <>
                                           <Grid item xs={6}>
-                                            <Typography variant="h5">ทุบปุ๋ย</Typography>
+                                            <Typography variant="body">ทุบปุ๋ย</Typography>
                                           </Grid>
                                           <Grid item xs={6}>
-                                            <Typography variant="h5" align="right">
-                                              <span style={{ color: 'red' }}>{parseFloat(items.smash_quantity * 1).toFixed(3)}</span> (ตัน)
+                                            <Typography variant="body" align="right">
+                                              <strong>
+                                                <span style={{ color: 'red' }}>{parseFloat(items.smash_quantity * 1).toFixed(3)}</span>
+                                              </strong>{' '}
+                                              (ตัน)
                                             </Typography>
                                           </Grid>
                                         </>
@@ -592,11 +634,13 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
                                       {items.sling_hook_quantity !== '0.0000' && (
                                         <>
                                           <Grid item xs={6}>
-                                            <Typography variant="h5">เกี่ยวสลิง</Typography>
+                                            <Typography variant="body">เกี่ยวสลิง</Typography>
                                           </Grid>
                                           <Grid item xs={6}>
-                                            <Typography variant="h5" align="right">
-                                              <span style={{ color: 'red' }}>{parseFloat(items.sling_hook_quantity * 1).toFixed(3)}</span>{' '}
+                                            <Typography variant="body" align="right">
+                                              <strong>
+                                                <span style={{ color: 'red' }}>{parseFloat(items.sling_hook_quantity * 1).toFixed(3)}</span>{' '}
+                                              </strong>
                                               (ตัน)
                                             </Typography>
                                           </Grid>
@@ -605,11 +649,13 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
                                       {items.sling_sort_quantity !== '0.0000' && (
                                         <>
                                           <Grid item xs={6}>
-                                            <Typography variant="h5">เรียงสลิง</Typography>
+                                            <Typography variant="body">เรียงสลิง</Typography>
                                           </Grid>
                                           <Grid item xs={6}>
-                                            <Typography variant="h5" align="right">
-                                              <span style={{ color: 'red' }}>{parseFloat(items.sling_sort_quantity * 1).toFixed(3)}</span>{' '}
+                                            <Typography variant="body" align="right">
+                                              <strong>
+                                                <span style={{ color: 'red' }}>{parseFloat(items.sling_sort_quantity * 1).toFixed(3)}</span>{' '}
+                                              </strong>
                                               (ตัน)
                                             </Typography>
                                           </Grid>
@@ -618,11 +664,13 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
                                       {items.jumbo_hook_quantity !== '0.0000' && (
                                         <>
                                           <Grid item xs={6}>
-                                            <Typography variant="h5">เกี่ยวจัมโบ้</Typography>
+                                            <Typography variant="body">เกี่ยวจัมโบ้</Typography>
                                           </Grid>
                                           <Grid item xs={6}>
-                                            <Typography variant="h5" align="right">
-                                              <span style={{ color: 'red' }}>{parseFloat(items.jumbo_hook_quantity * 1).toFixed(3)}</span>{' '}
+                                            <Typography variant="body" align="right">
+                                              <strong>
+                                                <span style={{ color: 'red' }}>{parseFloat(items.jumbo_hook_quantity * 1).toFixed(3)}</span>{' '}
+                                              </strong>
                                               (ตัน)
                                             </Typography>
                                           </Grid>
@@ -654,12 +702,14 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
                 ))}
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">
-                  เวลาที่กด : {auditlogList?.audit_datetime ? auditlogList?.audit_datetime?.slice(11, 19) + ' น.' : '-'}
+                <Typography variant="body">
+                  เวลาที่กด : <strong>{auditlogList?.audit_datetime ? auditlogList?.audit_datetime?.slice(11, 19) + ' น.' : '-'}</strong>
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h5">Create By : {auditlogList?.firstname ? auditlogList?.firstname : '-'}</Typography>
+                <Typography variant="body">
+                  Create By : <strong>{auditlogList?.firstname ? auditlogList?.firstname : '-'}</strong>
+                </Typography>
               </Grid>
             </Grid>
           )}
@@ -696,5 +746,63 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
     </>
   );
 }
+
+const WarehouseInfo = ({ productRegisterId }) => {
+  const [warehouseData, setWarehouseData] = useState(null);
+
+  // =============== Get calculateAge จำนวนวัน  ===============//
+  const calculateAge = (registrationDate) => {
+    if (!registrationDate) return '-';
+
+    const currentDate = moment(new Date()).format('YYYY-MM-DD');
+    const regDate = moment(registrationDate).format('YYYY-MM-DD');
+    // const regDate = new Date(registrationDate);
+
+    const years = moment(currentDate).diff(regDate, 'years');
+    const months = moment(currentDate).diff(regDate, 'months') % 12;
+    const days = moment(currentDate).diff(regDate, 'days') % 30;
+
+    let result = '';
+
+    if (years !== 0) {
+      result = `${years} ปี ${months} เดือน ${days} วัน`;
+    } else {
+      if (months !== 0) {
+        result = `${months} เดือน ${days} วัน`;
+      } else {
+        result = `${days} วัน`;
+      }
+    }
+
+    return result;
+    //return `${years} ปี ${months} เดือน ${days} วัน`;
+  };
+
+  const getWarhouseDate = async (id) => {
+    const productList = await getProductRegister(id);
+    const proWare = productList[0];
+    const numDate = proWare?.product_register_date ? ` (${calculateAge(proWare?.product_register_date)}) ` : '-';
+    const txt = proWare?.warehouse_name + ' ' + proWare?.product_register_name + ' ' + numDate;
+    setWarehouseData(txt);
+  };
+
+  const getProductRegister = async (id) => {
+    return await new Promise((resolve) => {
+      adminRequest.getProductRegisterById(id).then((response) => {
+        resolve(response);
+      });
+    });
+  };
+  if (!warehouseData) {
+    getWarhouseDate(productRegisterId);
+    return <Typography variant="body">โกดัง : กำลังโหลด...</Typography>;
+  }
+
+  return (
+    <Typography variant="body">
+      โกดัง : <strong>{warehouseData}</strong>
+    </Typography>
+  );
+};
 
 export default HistoryPopup;

@@ -493,12 +493,14 @@ function AddOrder() {
                             sx={{ width: '100%' }}
                             error={Boolean(touched.ref_order_id && errors.ref_order_id)}
                           />
-                          <Box marginLeft={2}>
-                            <GetOrderNavision soNumber={SoNumber} onSetData={handleOnSetOrder} proCompanyID={values.product_company_id} />
-                            {/* <Button variant="outlined" disabled={loading} onClick={() => handleSearch(values.ref_order_id)}>
+                          {values.ref_order_id === 9999 && (
+                            <Box marginLeft={2}>
+                              <GetOrderNavision soNumber={SoNumber} onSetData={handleOnSetOrder} proCompanyID={values.product_company_id} />
+                              {/* <Button variant="outlined" disabled={loading} onClick={() => handleSearch(values.ref_order_id)}>
                               {loading ? 'Loading...' : 'Navision...API'}
                             </Button> */}
-                          </Box>
+                            </Box>
+                          )}
                         </Box>
 
                         {touched.ref_order_id && errors.ref_order_id && (
@@ -737,6 +739,5 @@ function AddOrder() {
     </Grid>
   );
 }
-
 
 export default AddOrder;

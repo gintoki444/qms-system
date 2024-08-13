@@ -217,8 +217,15 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
   const getQueue = () => {
     try {
       stepRequest.getAllStep0ByDate(startDate, endDate).then((response) => {
-        setItems(response.filter((x) => x.product_company_id == (onFilter + 1) && x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed" && x.step2_status !== "cancle") || []);
-        step0List(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed" && x.step2_status !== "cancle") || []);
+        setItems(
+          response.filter(
+            (x) => x.product_company_id == onFilter + 1 && x.token !== null && parseFloat(x.total_quantity) > 0
+            // && x.step2_status !== 'completed' &&
+            // x.step2_status !== 'cancle'
+          ) || []
+        );
+        // step0List(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed" && x.step2_status !== "cancle") || []);
+        step0List(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0) || []);
         // setItems(response.filter((x) => x.product_company_id == (onFilter + 1) && x.token !== null && parseFloat(x.total_quantity) > 0));
 
         // step0List(response.filter((x) => x.product_company_id == (onFilter + 1) && x.token !== null && parseFloat(x.total_quantity) > 0));
@@ -238,7 +245,7 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
       setLoading(true);
       getQueue();
     }
-  }
+  };
   return (
     <Box>
       <TableContainer
@@ -322,8 +329,12 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
                               </Button>
                             </span>
                           </Tooltip>
-                          <CancleTeamStation reserveId={row.reserve_id} reserveData={row} handleReload={handleSetReload}
-                            permission={permission} />
+                          <CancleTeamStation
+                            reserveId={row.reserve_id}
+                            reserveData={row}
+                            handleReload={handleSetReload}
+                            permission={permission}
+                          />
                         </ButtonGroup>
                         {/* <Button 
                     sx={{ minWidth: '33px!important', p: '6px 0px' }}

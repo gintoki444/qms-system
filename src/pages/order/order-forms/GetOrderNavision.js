@@ -148,6 +148,7 @@ function GetOrderNavision({ soNumber, onSetData, proCompanyID }) {
     const salesLineResult = await measureTime('GET: /OdataSalesLine' + companyName, () => getSaleLine(orderNo));
 
     const setSaleLines = [];
+    const keysToRemove = ['@odata.etag', 'ETag'];
     await salesLineResult.result.map((line) => {
       const items = itemFerResult.result.find((i) => i.No === line.No);
       line.items = items;
@@ -160,9 +161,17 @@ function GetOrderNavision({ soNumber, onSetData, proCompanyID }) {
         .catch((error) => {
           console.error('Error:', error);
         });
+
+      line = Object.keys(line).reduce((acc, key) => {
+        if (!keysToRemove.includes(key)) {
+          acc[key] = line[key];
+        }
+        return acc;
+      }, {});
       setSaleLines.push(line);
     });
-
+    console.log(salesHeaderResult.result);
+    console.log(setSaleLines);
     setItems(itemFerResult.result);
     setSalesHeader(salesHeaderResult.result);
     setSalesLines(setSaleLines);

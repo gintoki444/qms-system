@@ -164,11 +164,11 @@ const AdminDashboard = () => {
     };
 
     const summaryTime = {
-      "step2_total_duration_minutes": 0,
-      "step2_cars_count": 0,
-      "step2_average_minutes": 0,
-      "step2_total_quantity": 0
-    }
+      step2_total_duration_minutes: 0,
+      step2_cars_count: 0,
+      step2_average_minutes: 0,
+      step2_total_quantity: 0
+    };
     if (dataList.length > 0) {
       await dataList.map((x) => {
         const setnumber = x.total_quantity_orderonly ? parseFloat(x.total_quantity_orderonly) : 0;
@@ -178,10 +178,10 @@ const AdminDashboard = () => {
         summaryData.sum_total_order = summaryData.sum_total_order + x.queues_counts_orderonly;
         // console.log('x.total_quantity_orderonly *1  :', typeof (x.total_quantity_orderonly * 1));
 
-        summaryTime.step2_total_duration_minutes = summaryTime.step2_total_duration_minutes + (x.step2_total_duration_minutes2 * 1);
-        summaryTime.step2_cars_count = summaryTime.step2_cars_count + x.queues_counts_orderonly;
-        summaryTime.step2_average_minutes = (summaryTime.step2_total_duration_minutes / summaryTime.step2_cars_count);
-        summaryTime.step2_total_quantity = summaryTime.step2_total_quantity + (x.step2_total_quantity * 1);
+        summaryTime.step2_total_duration_minutes = summaryTime.step2_total_duration_minutes + x.step2_total_duration_minutes2 * 1;
+        summaryTime.step2_cars_count = summaryTime.step2_cars_count + x.step2_cars_count;
+        summaryTime.step2_average_minutes = summaryTime.step2_total_duration_minutes / summaryTime.step2_cars_count;
+        summaryTime.step2_total_quantity = summaryTime.step2_total_quantity + x.step2_total_quantity * 1;
       });
     }
     // console.log(summaryData);
@@ -196,10 +196,10 @@ const AdminDashboard = () => {
           <Grid container rowSpacing={4.5} columnSpacing={2.75}>
             {/* row 1 */}
             <Grid item xs={12} sx={{ mb: -2.25 }}>
-              <Typography variant="h5">แดชบอร์ด : วันที่  {moment(selectedDateRange.startDate).locale('th').format('LL')}</Typography>
+              <Typography variant="h5">แดชบอร์ด : วันที่ {moment(selectedDateRange.startDate).locale('th').format('LL')}</Typography>
             </Grid>
 
-            <Grid item xs={12} >
+            <Grid item xs={12}>
               <Grid container alignItems="center" spacing={2}>
                 <Grid item xs={12} md={3}>
                   <Stack spacing={1}>
@@ -214,9 +214,9 @@ const AdminDashboard = () => {
                       inputProps={{
                         max: currentDate
                       }}
-                    // inputProps={{
-                    //   min: currentDate
-                    // }}
+                      // inputProps={{
+                      //   min: currentDate
+                      // }}
                     />
                   </Stack>
                 </Grid>
@@ -263,7 +263,9 @@ const AdminDashboard = () => {
                   </span>
                   คัน
                 </Typography>
-                <Typography variant="h5" sx={{ p: '0 10px' }}> จำนวน
+                <Typography variant="h5" sx={{ p: '0 10px' }}>
+                  {' '}
+                  จำนวน
                   <span style={{ padding: '5px 20px', margin: '10px', border: 'solid 1px #eee', borderRadius: 5 }}>
                     {queueSummary?.sum_total_quantity ? (parseFloat(queueSummary.sum_total_quantity).toFixed(2) * 1).toLocaleString() : '0'}
                   </span>
@@ -285,8 +287,11 @@ const AdminDashboard = () => {
                 <Grid item xs={12}>
                   <AnalyticQueues
                     title="เวลารวมทั้งหมด"
-                    count={`${queueSumTime && queueSumTime?.total_duration_minutes !== null ?
-                      (parseFloat(queueSumTime.total_duration_minutes).toFixed(2) * 1).toLocaleString() : '0'} นาที`}
+                    count={`${
+                      queueSumTime && queueSumTime?.total_duration_minutes !== null
+                        ? (parseFloat(queueSumTime.total_duration_minutes).toFixed(2) * 1).toLocaleString()
+                        : '0'
+                    } นาที`}
                     extra={`${queueSumTime ? (parseFloat(queueSumTime.average_minutes).toFixed(2) * 1).toLocaleString() : '0'}`}
                     subtitle="เฉลี่ย "
                     // percentage={`${queueSumTime ? queueSumTime.average_minutes : '0'}`}
@@ -296,11 +301,19 @@ const AdminDashboard = () => {
                 </Grid>
                 <Grid item xs={12}>
                   <AnalyticQueues
-                    title={`เวลาการขึ้นสินค้า : ${queueSumTimeStep2?.step2_total_duration_minutes &&
-                      queueSumTimeStep2?.step2_total_duration_minutes !== null ? (parseFloat(queueSumTimeStep2.step2_total_duration_minutes).toFixed(2) * 1).toLocaleString()
-                      : '0'} นาที`}
-                    count={`เฉลี่ย ${queueSumTimeStep2.step2_average_minutes ? parseFloat(queueSumTimeStep2.step2_average_minutes).toFixed(2) : '0'} นาที/คัน`}
-                    extra={`${queueSumTimeStep2?.step2_total_quantity && queueSumTimeStep2?.step2_total_quantity !== null ? (parseFloat(queueSumTimeStep2?.step2_total_quantity).toFixed(2) * 1).toLocaleString() : '0'}`}
+                    title={`เวลาการขึ้นสินค้า : ${
+                      queueSumTimeStep2?.step2_total_duration_minutes && queueSumTimeStep2?.step2_total_duration_minutes !== null
+                        ? (parseFloat(queueSumTimeStep2.step2_total_duration_minutes).toFixed(2) * 1).toLocaleString()
+                        : '0'
+                    } นาที`}
+                    count={`เฉลี่ย ${
+                      queueSumTimeStep2.step2_average_minutes ? parseFloat(queueSumTimeStep2.step2_average_minutes).toFixed(2) : '0'
+                    } นาที/คัน`}
+                    extra={`${
+                      queueSumTimeStep2?.step2_total_quantity && queueSumTimeStep2?.step2_total_quantity !== null
+                        ? (parseFloat(queueSumTimeStep2?.step2_total_quantity).toFixed(2) * 1).toLocaleString()
+                        : '0'
+                    }`}
                     subtitle="ยอดรวมสินค้าที่จ่าย : "
                     color="warning"
                     unit=" ตัน"
@@ -318,8 +331,10 @@ const AdminDashboard = () => {
             {/* row 4 */}
             <Grid item xs={12} md={12} lg={12}>
               <Grid container alignItems="center" justifyContent="space-between">
-                <Grid item xs={12} >
-                  <Typography variant="h4">รายการจ่ายสินค้าประจำวัน {moment(selectedDateRange.startDate).locale('th').format('LL')}</Typography>
+                <Grid item xs={12}>
+                  <Typography variant="h4">
+                    รายการจ่ายสินค้าประจำวัน {moment(selectedDateRange.startDate).locale('th').format('LL')}
+                  </Typography>
                 </Grid>
                 <Grid item xs={12} sx={{ mt: 2 }}>
                   <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">
@@ -327,11 +342,11 @@ const AdminDashboard = () => {
                       companyList.map((company, index) => (
                         <QueueTab
                           key={index}
-                          id={(company.product_company_id)}
+                          id={company.product_company_id}
                           numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                           txtLabel={company.product_company_name_th2}
                           onSelect={() => handleChange(index, company.product_company_id)}
-                        // onSelect={() => handleChange(company.product_company_id)}
+                          // onSelect={() => handleChange(company.product_company_id)}
                         />
                       ))}
                   </Tabs>

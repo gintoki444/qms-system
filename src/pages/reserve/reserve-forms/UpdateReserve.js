@@ -356,7 +356,14 @@ function UpdateReserve() {
     try {
       values.user_id = user_Id;
       values.updated_at = currentDate;
-      values.brand_group_id = values.product_company_id;
+      // values.brand_group_id = values.product_company_id;
+
+      if (values.product_company_id > 7) {
+        values.brand_group_id = 7;
+      } else {
+        values.brand_group_id = values.product_company_id;
+      }
+
       values.description = values.reserve_description;
 
       await reserveRequest
