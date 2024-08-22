@@ -42,7 +42,10 @@ export const getOrdersProductItems = async (proId, proReId, date) => {
     redirect: 'follow'
   };
   // const response = await fetch(apiUrl + '/ordersproducts?start_date=' + startDate + '&end_date=' + endDate, requestOptions);
-  const response = await fetch(apiUrl + '/ordersproducts4/items?queue_date=' + date + '&product_id=' + proId + '&product_register_id=' + proReId, requestOptions);
+  const response = await fetch(
+    apiUrl + '/ordersproducts4/items?queue_date=' + date + '&product_id=' + proId + '&product_register_id=' + proReId,
+    requestOptions
+  );
   const result = await response.json();
   return result;
 };

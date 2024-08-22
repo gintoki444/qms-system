@@ -219,13 +219,19 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
       stepRequest.getAllStep0ByDate(startDate, endDate).then((response) => {
         setItems(
           response.filter(
-            (x) => x.product_company_id == onFilter + 1 && x.token !== null && parseFloat(x.total_quantity) > 0
-            // && x.step2_status !== 'completed' &&
-            // x.step2_status !== 'cancle'
+            (x) =>
+              x.product_company_id == onFilter + 1 &&
+              x.token !== null &&
+              parseFloat(x.total_quantity) > 0 &&
+              x.step2_status !== 'completed' &&
+              x.step2_status !== 'cancle'
           ) || []
         );
-        // step0List(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== "completed" && x.step2_status !== "cancle") || []);
-        step0List(response.filter((x) => x.token !== null && parseFloat(x.total_quantity) > 0) || []);
+        step0List(
+          response.filter(
+            (x) => x.token !== null && parseFloat(x.total_quantity) > 0 && x.step2_status !== 'completed' && x.step2_status !== 'cancle'
+          ) || []
+        );
         // setItems(response.filter((x) => x.product_company_id == (onFilter + 1) && x.token !== null && parseFloat(x.total_quantity) > 0));
 
         // step0List(response.filter((x) => x.product_company_id == (onFilter + 1) && x.token !== null && parseFloat(x.total_quantity) > 0));
