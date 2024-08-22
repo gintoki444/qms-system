@@ -88,7 +88,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
     warehouse_id: reservationData.warehouse_id && reservationData.team_id ? reservationData.warehouse_id : '',
     contractor_id: reservationData.contractor_id ? reservationData.contractor_id : '',
     team_id: reservationData.team_id ? reservationData.team_id : '',
-    labor_line_id: reservationData.labor_line_id ? reservationData.labor_line_id : ''
+    labor_line_id: reservationData.labor_line_id ? reservationData.labor_line_id : 0
   };
 
   // =============== Validate Forms ===============//
@@ -203,12 +203,17 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
         contractor_id: values.contractor_id,
         labor_line_id: values.labor_line_id
       };
+      console.log(teamValue);
+      console.log(values);
 
+      // if (values.contractor_id === 9999) {
       await reserveRequest
         .putReserById(id, values)
         .then((result) => {
           if (result.status === 'ok') {
+            console.log(result.status);
             updateTeamLoading(teamValue);
+            // if (values.contractor_id === 9999) {
             const data = {
               audit_user_id: userId,
               audit_action: 'I',
@@ -219,6 +224,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
             };
             AddAuditLogs(data);
             updateTeamData(values.team_data);
+            // }
           } else {
             enqueueSnackbar('บันทึกข้อมูลทีมขึ้นสินค้าไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
           }
@@ -235,8 +241,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
   // =============== บันทึกข้อมูล ===============//
   const updateTeamLoading = (values) => {
     try {
-      adminRequest.putReserveTeam(id, values);
-      // .then((response) => console.log('updateTeamLoading :', response));
+      adminRequest.putReserveTeam(id, values).then((response) => console.log('updateTeamLoading :', response));
     } catch (error) {
       console.log(error);
     }

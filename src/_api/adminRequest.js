@@ -474,7 +474,6 @@ export const getLoadingTeamByAll = async () => {
     console.error('Error fetching all teams:', error);
     return [];
   }
-
 };
 export const getAllLoadingTeamByStation = async () => {
   const requestOptions = {
@@ -605,7 +604,9 @@ export const getContractorById = async (id) => {
 
     const result = await response.json();
     return result;
-  } catch (e) { console.log(e) }
+  } catch (e) {
+    console.log(e);
+  }
 };
 
 export const getContractorsById = async (id) => {
@@ -670,6 +671,17 @@ export const getAllProductRegister = async () => {
     redirect: 'follow'
   };
   const response = await fetch(apiUrl + '/allproductregister2/', requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+export const getAllProductRegisters = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/allproductregister/', requestOptions);
 
   const result = await response.json();
   return result;
