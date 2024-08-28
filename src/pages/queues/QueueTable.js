@@ -91,14 +91,12 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
   useEffect(() => {
     setLoading(true);
     if (userRoles) getQueue();
-
   }, [startDate, endDate, userRoles, permission, onFilter]);
 
   const getQueue = () => {
     try {
       if (userRoles == 8) {
         queueRequest.getAllqueueUserByDate(userID, startDate, endDate).then((response) => {
-
           if (onFilter) {
             const filter = response.filter((x) => x.product_company_id === onFilter);
             const newData = filter.map((item, index) => {
@@ -115,14 +113,13 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
                 No: index + 1
               };
             });
-            queusList(newData)
+            queusList(newData);
             setItems(newData);
           }
           setLoading(false);
         });
       } else {
         queueRequest.getAllqueueByDateV2(startDate, endDate).then((response) => {
-
           if (onFilter) {
             const filter = response.filter((x) => x.product_company_id === onFilter);
             const newData = filter.map((item, index) => {
@@ -139,7 +136,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
                 No: index + 1
               };
             });
-            queusList(newData)
+            queusList(newData);
             setItems(newData);
           }
           setLoading(false);
@@ -159,7 +156,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
     elevation: 0,
     rowsPerPage: 100,
     responsive: 'standard',
-    sort: false,
+    // sort: false,
     rowsPerPageOptions: [100, 200, 300]
   };
 
@@ -168,6 +165,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       name: 'No',
       label: 'ลำดับ',
       options: {
+        sort: true,
         setCellHeaderProps: () => ({
           style: { textAlign: 'center' }
         }),
@@ -180,6 +178,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       name: 'queue_date',
       label: 'วันที่เข้ารับสินค้า',
       options: {
+        sort: true,
         customBodyRender: (value) => <Typography variant="body">{moment(value.slice(0, 10)).format('DD/MM/YY')}</Typography>
       }
     },
@@ -187,6 +186,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       name: 'token',
       label: 'หมายเลขคิว',
       options: {
+        sort: true,
         customBodyRender: (value) => <Chip color={'primary'} label={value} sx={{ width: 70, border: 1 }} />
       }
     },
@@ -194,18 +194,23 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       name: 'reserve_description',
       label: 'รหัสคิวเดิม',
       options: {
-        customBodyRender: (value) => value ? <strong style={{ color: 'red' }}>{value}</strong> : '-'
+        sort: true,
+        customBodyRender: (value) => (value ? <strong style={{ color: 'red' }}>{value}</strong> : '-')
       }
     },
     {
       name: 'company_name',
       label: 'ร้านค้า/บริษัท',
-      options: { customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography> }
+      options: {
+        sort: true,
+        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+      }
     },
     {
       name: 'registration_no',
       label: 'ทะเบียนรถ',
       options: {
+        sort: true,
         customBodyRender: (value) => <Chip color={'primary'} label={value} sx={{ width: 122, border: 1 }} />
       }
     },
@@ -213,6 +218,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       name: 'driver_name',
       label: 'ชื่อผู้ขับ',
       options: {
+        sort: true,
         customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
       }
     },
@@ -220,6 +226,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       name: 'driver_mobile',
       label: 'เบอร์โทรศัพท์',
       options: {
+        sort: true,
         customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
       }
     },
@@ -227,6 +234,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       name: 'step1_status',
       label: 'ชั่งเบา(S1)',
       options: {
+        // sort: true,
         customBodyRender: (value) =>
           value !== 'none' ? <>{parseFloat(value) <= 0 ? <QueueStatus status={'pending'} /> : <QueueStatus status={value} />}</> : '-'
       }
@@ -235,6 +243,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       name: 'step2_status',
       label: 'ขึ้นสินค้า(S2)',
       options: {
+        // sort: true,
         customBodyRender: (value) => (value !== 'none' ? <QueueStatus status={value} /> : '-')
       }
     },
@@ -242,6 +251,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       name: 'step3_status',
       label: 'ชั่งหนัก(S3)',
       options: {
+        // sort: true,
         customBodyRender: (value) => (value !== 'none' ? <QueueStatus status={value} /> : '-')
       }
     },
@@ -249,6 +259,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       name: 'step4_status',
       label: 'เสร็จสิ้น(S4)',
       options: {
+        // sort: true,
         customBodyRender: (value) => (value !== 'none' ? <QueueStatus status={value} /> : '-')
       }
     },
@@ -261,7 +272,9 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
           const prurl = window.location.href + '/detail/';
           return (
             <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
-              {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && <CopyLinkButton link={prurl} data={value} shortButton={true} />}
+              {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && (
+                <CopyLinkButton link={prurl} data={value} shortButton={true} />
+              )}
 
               <Tooltip title="รายละเอียด">
                 <span>
@@ -280,7 +293,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
               {/* {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && permission=== 9999 && ( */}
 
               {permission === 9999 && (
-                < Tooltip title="ลบ">
+                <Tooltip title="ลบ">
                   <span>
                     <Button
                       variant="contained"
@@ -294,9 +307,8 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
                     </Button>
                   </span>
                 </Tooltip>
-              )
-              }
-            </ButtonGroup >
+              )}
+            </ButtonGroup>
           );
         },
 

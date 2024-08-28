@@ -47,7 +47,7 @@ import QueueTag from 'components/@extended/QueueTag';
 
 // Sound Call
 import SoundCall from 'components/@extended/SoundCall';
-import { Stack } from '../../../../node_modules/@mui/material/index';
+// import { Stack } from '../../../../node_modules/@mui/material/index';
 
 import * as functionCancleTeam from 'components/Function/CancleTeamStation';
 import * as functionAddLogs from 'components/Function/AddLog';
@@ -658,10 +658,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
   // =============== Get Order Product ===============//
   const [orders, setOrders] = useState([]);
-  const [loadOrders, setLoadOrder] = useState(false);
+  // const [loadOrders, setLoadOrder] = useState(false);
 
   const getOrderOfReserve = async (id) => {
-    setLoadOrder(true);
+    // setLoadOrder(true);
     await reserveRequest.getOrderByReserveId(id).then((response) => {
       if (response.length > 0) {
         response.map((result) => {
@@ -723,7 +723,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         });
 
         setOrders(response);
-        setLoadOrder(false);
+        // setLoadOrder(false);
       }
     });
   };
@@ -731,13 +731,22 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   const [productList, setProductList] = useState([]);
   const getProductRegisters = async () => {
     try {
-      adminRequest.getAllProductRegisters().then((response) => {
-        if (onFilter) {
-          setProductList(response.filter((x) => x.product_company_id == onFilter));
-        } else {
-          setProductList(response);
-        }
-        setOnClickSubmit(false);
+      adminRequest.getAllProductRegister().then((response) => {
+        adminRequest.getAllProductHistory().then((response0) => {
+          let allRespon = [...response, ...response0];
+          if (onFilter) {
+            setProductList(allRespon.filter((x) => x.product_company_id == onFilter));
+          } else {
+            setProductList(allRespon);
+          }
+          setOnClickSubmit(false);
+        });
+        // if (onFilter) {
+        //   setProductList(response.filter((x) => x.product_company_id == onFilter));
+        // } else {
+        //   setProductList(response);
+        // }
+        // setOnClickSubmit(false);
       });
     } catch (error) {
       console.log(error);
@@ -1943,173 +1952,229 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
                     <Grid item xs={12}>
-                      <Stack spacing={1}>
-                        <Typography variant="h5">
-                          ข้อมูลกองสินค้า:
-                          {queues.recall_status == 'Y' && <Chip color="error" sx={{ width: '80px' }} label={'ทวนสอบ'} />}
-                        </Typography>
-                        <Typography variant="body1">บริษัท (สินค้า): {queues.product_company_name}</Typography>
-                        <Typography variant="body1">ตรา (สินค้า): {queues.product_brand_name}</Typography>
-                      </Stack>
+                      <Typography variant="h4" sx={{ textDecoration: 'underline' }}>
+                        <strong>ข้อมูลเข้ารับสินค้า</strong>
+                      </Typography>
+
+                      <Grid container spacing={2} sx={{ p: 2 }}>
+                        <Grid item xs={12} md={6}>
+                          <Typography variant="h5">
+                            โกดังสินค้า:{' '}
+                            <strong style={{ color: 'red' }}>
+                              {warehousesList.find((x) => x.warehouse_id === warehouseId)?.description}
+                            </strong>
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Typography variant="h5">
+                            หัวจ่าย:{' '}
+                            <strong style={{ color: 'red' }}>
+                              {stationsList.find((x) => x.station_id === stationsId)?.station_description}
+                            </strong>
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
+                          <Typography variant="h5" sx={{ textDecoration: 'underline' }}>
+                            <strong>{teamloadingList.find((x) => x.team_id === teamId)?.team_name}</strong>
+                          </Typography>
+                        </Grid>
+                        {teamLoading &&
+                          teamLoading.map((item, index) => (
+                            <Grid item xs={12} key={index}>
+                              <Typography variant="h5">
+                                {item.manager_name && 'หัวหน้าโกดัง'}
+                                {item.checker_name && 'พนักงานจ่ายสินค้า'}
+                                {item.forklift_name && 'โฟล์คลิฟท์'}:{' '}
+                                <strong>
+                                  {item.manager_name && item.manager_name}
+                                  {item.checker_name && item.checker_name}
+                                  {item.forklift_name && item.forklift_name}
+                                </strong>
+                              </Typography>
+                            </Grid>
+                          ))}
+
+                        <Grid item xs={12} md={6}>
+                          <Typography variant="h5">
+                            สายแรงงาน : <strong>{contractorList.find((x) => x.contractor_id === contractorId)?.contractor_name}</strong>
+                          </Typography>
+                        </Grid>
+                      </Grid>
                     </Grid>
 
-                    {orders.map((ordersItems, orderId) => (
-                      <div key={orderId}>
-                        {ordersItems.product_brand_id !== null && ordersItems.product_company_id && (
-                          <Grid container spacing={2} sx={{ mt: '0px' }}>
-                            {ordersItems.items.map((orderItem, orderItemId) => (
-                              <Grid item xs={12} md={12} key={orderItemId}>
-                                <InputLabel sx={{ mt: 1, mb: 1 }}>สูตรสินค้า : {orderItem.name}</InputLabel>
-                                <InputLabel sx={{ mt: 1, mb: 1 }}>
-                                  จำนวน : <strong>{orderItem.quantity}</strong> (ตัน)
-                                </InputLabel>
-                                {!loadOrders ? (
-                                  <>
-                                    {loopSelect.length > 0 &&
-                                      loopSelect.map(
-                                        (onLoop, index) =>
-                                          onLoop.order_id === orderItem.order_id &&
-                                          onLoop.item_id === orderItem.item_id && (
-                                            <>
-                                              {queues.recall_status !== 'Y' || onLoop.product_register_id === '' ? (
-                                                <FormControl sx={{ width: '100%', mb: 2 }} size="small" key={index}>
-                                                  <Select
-                                                    displayEmpty
-                                                    variant="outlined"
-                                                    value={onLoop.product_register_id}
-                                                    onChange={(e) => {
-                                                      handleChangeProduct(e, orderItem.item_id, orderItem, onLoop.id);
-                                                      onLoop.product_register_id = e.target.value;
+                    <Grid item xs={12} sx={{ mt: 1 }}>
+                      {orders.length > 0 && (
+                        <Grid container spacing={2} sx={{ p: 2 }}>
+                          <Typography variant="h4" sx={{ textDecoration: 'underline' }}>
+                            <strong>ข้อมูลกองสินค้า:</strong>
+                          </Typography>
+                          {orders.map((ordersItems, orderId) => (
+                            <Grid item xs={12} key={orderId}>
+                              {ordersItems.product_brand_id !== null && ordersItems.product_company_id && (
+                                <Grid container spacing={0} sx={{ mt: '0px' }}>
+                                  {ordersItems.items.map((orderItem, orderItemId) => (
+                                    <Grid item xs={12} key={orderItemId}>
+                                      <Grid container spacing={2}>
+                                        <Grid item xs={12}>
+                                          <Typography variant="h5">บริษัท (สินค้า): {queues.product_company_name}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                          <Typography variant="h5">ตรา (สินค้า): {queues.product_brand_name}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                          <Typography variant="h5">กองสินค้า : {orderItem.name}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                          <Typography variant="h5">
+                                            จำนวน : <strong>{orderItem.quantity}</strong> (ตัน)
+                                          </Typography>
+                                        </Grid>
+                                      </Grid>
+                                      {loopSelect.length > 0 &&
+                                        loopSelect.map(
+                                          (onLoop, index) =>
+                                            onLoop.order_id === orderItem.order_id &&
+                                            onLoop.item_id === orderItem.item_id && (
+                                              <>
+                                                {queues.recall_status !== 'Y' || onLoop.product_register_id === '' ? (
+                                                  <FormControl sx={{ width: '100%', mb: 2 }} size="small" key={index}>
+                                                    <Select
+                                                      displayEmpty
+                                                      variant="outlined"
+                                                      value={onLoop.product_register_id}
+                                                      onChange={(e) => {
+                                                        handleChangeProduct(e, orderItem.item_id, orderItem, onLoop.id);
+                                                        onLoop.product_register_id = e.target.value;
 
-                                                      // ข้อมูลกองเก่า
-                                                      orderItem.product_register_id = e.target.value;
-                                                    }}
-                                                  >
-                                                    <MenuItem disabled value="">
-                                                      เลือกกองสินค้า
-                                                    </MenuItem>
-                                                    {orderItem.productRegis &&
-                                                      orderItem.productRegis.map(
-                                                        (productRegis) =>
-                                                          parseFloat(productRegis.total_remain) > 0 && (
-                                                            <MenuItem
-                                                              key={productRegis.product_register_id}
-                                                              value={productRegis.product_register_id}
-                                                              disabled={
-                                                                loopSelect.find(
-                                                                  (x) =>
-                                                                    x.order_id == onLoop.order_id &&
-                                                                    x.item_id == onLoop.item_id &&
-                                                                    x.product_register_id == productRegis.product_register_id &&
-                                                                    index > 0
-                                                                ) ||
-                                                                sumStock(
-                                                                  productRegis.product_register_id,
-                                                                  parseFloat(productRegis.total_remain).toFixed(3)
-                                                                ) <= 0
-                                                              }
-                                                            >
-                                                              {'โกดัง : ' + productRegis.warehouse_name + ' '}
-                                                              {productRegis.product_register_name}
-                                                              {productRegis.product_register_date
-                                                                ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                                    'DD/MM/YY'
-                                                                  )}) `
-                                                                : '-'}
-                                                              {productRegis.product_register_date
-                                                                ? ` (${calculateAge(productRegis.product_register_date)}) `
-                                                                : '-'}
-                                                              {productRegis.product_register_remark ? (
-                                                                <span style={{ color: 'red' }}>
-                                                                  {' '}
-                                                                  ({productRegis.product_register_remark})
-                                                                </span>
-                                                              ) : (
-                                                                ''
-                                                              )}
-                                                              <strong> ({parseFloat(productRegis.total_remain).toFixed(3)} ตัน)</strong>
-                                                              {stockSelect.filter(
-                                                                (x) => x.product_register_id === productRegis.product_register_id
-                                                              ).length > 0 &&
-                                                                ' คงเหลือ ' +
-                                                                  parseFloat(
-                                                                    sumStock(productRegis.product_register_id, productRegis.total_remain)
-                                                                  ).toFixed(3)}
-                                                            </MenuItem>
-                                                          )
-                                                      )}
-                                                  </Select>
-                                                </FormControl>
-                                              ) : (
-                                                <FormControl sx={{ width: '100%', mb: 2 }} size="small" key={index}>
-                                                  <Select
-                                                    displayEmpty
-                                                    variant="outlined"
-                                                    value={onLoop.product_register_id}
-                                                    onChange={(e) => {
-                                                      handleChangeProduct(e, orderItem.item_id, orderItem);
-                                                      onLoop.product_register_id = e.target.value;
+                                                        // ข้อมูลกองเก่า
+                                                        orderItem.product_register_id = e.target.value;
+                                                      }}
+                                                    >
+                                                      <MenuItem disabled value="">
+                                                        เลือกกองสินค้า
+                                                      </MenuItem>
+                                                      {orderItem.productRegis &&
+                                                        orderItem.productRegis.map(
+                                                          (productRegis) =>
+                                                            parseFloat(productRegis.total_remain) > 0 && (
+                                                              <MenuItem
+                                                                key={productRegis.product_register_id}
+                                                                value={productRegis.product_register_id}
+                                                                disabled={
+                                                                  loopSelect.find(
+                                                                    (x) =>
+                                                                      x.order_id == onLoop.order_id &&
+                                                                      x.item_id == onLoop.item_id &&
+                                                                      x.product_register_id == productRegis.product_register_id &&
+                                                                      index > 0
+                                                                  ) ||
+                                                                  sumStock(
+                                                                    productRegis.product_register_id,
+                                                                    parseFloat(productRegis.total_remain).toFixed(3)
+                                                                  ) <= 0
+                                                                }
+                                                              >
+                                                                {'โกดัง : ' + productRegis.warehouse_name + ' '}
+                                                                {productRegis.product_register_name}
+                                                                {productRegis.product_register_date
+                                                                  ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
+                                                                      'DD/MM/YY'
+                                                                    )}) `
+                                                                  : '-'}
+                                                                {productRegis.product_register_date
+                                                                  ? ` (${calculateAge(productRegis.product_register_date)}) `
+                                                                  : '-'}
+                                                                {productRegis.product_register_remark ? (
+                                                                  <span style={{ color: 'red' }}>
+                                                                    {' '}
+                                                                    ({productRegis.product_register_remark})
+                                                                  </span>
+                                                                ) : (
+                                                                  ''
+                                                                )}
+                                                                <strong> ({parseFloat(productRegis.total_remain).toFixed(3)} ตัน)</strong>
+                                                                {stockSelect.filter(
+                                                                  (x) => x.product_register_id === productRegis.product_register_id
+                                                                ).length > 0 &&
+                                                                  ' คงเหลือ ' +
+                                                                    parseFloat(
+                                                                      sumStock(productRegis.product_register_id, productRegis.total_remain)
+                                                                    ).toFixed(3)}
+                                                              </MenuItem>
+                                                            )
+                                                        )}
+                                                    </Select>
+                                                  </FormControl>
+                                                ) : (
+                                                  <FormControl sx={{ width: '100%', mb: 2 }} size="small" key={index}>
+                                                    <Select
+                                                      displayEmpty
+                                                      variant="outlined"
+                                                      value={onLoop.product_register_id}
+                                                      onChange={(e) => {
+                                                        handleChangeProduct(e, orderItem.item_id, orderItem);
+                                                        onLoop.product_register_id = e.target.value;
 
-                                                      // ข้อมูลกองเก่า
-                                                      orderItem.product_register_id = e.target.value;
-                                                    }}
-                                                  >
-                                                    <MenuItem disabled value="">
-                                                      เลือกกองสินค้า
-                                                    </MenuItem>
-                                                    {orderItem.productRegis &&
-                                                      // orderItem.productRegis.length > 0 &&
-                                                      orderItem.productRegis.map(
-                                                        (productRegis) =>
-                                                          productRegis.product_register_id === onLoop.product_register_id && (
-                                                            <MenuItem
-                                                              key={productRegis.product_register_id}
-                                                              value={productRegis.product_register_id}
-                                                              disabled
-                                                            >
-                                                              {'โกดัง : ' + productRegis.warehouse_name + ' '}
-                                                              {productRegis.product_register_name}
-                                                              {productRegis.product_register_date
-                                                                ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                                    'DD/MM/YY'
-                                                                  )}) `
-                                                                : '-'}
-                                                              {productRegis.product_register_date
-                                                                ? ` (${calculateAge(productRegis.product_register_date)}) `
-                                                                : '-'}
-                                                              {productRegis.product_register_remark ? (
-                                                                <span style={{ color: 'red' }}>
+                                                        // ข้อมูลกองเก่า
+                                                        orderItem.product_register_id = e.target.value;
+                                                      }}
+                                                    >
+                                                      <MenuItem disabled value="">
+                                                        เลือกกองสินค้า
+                                                      </MenuItem>
+                                                      {orderItem.productRegis &&
+                                                        // orderItem.productRegis.length > 0 &&
+                                                        orderItem.productRegis.map(
+                                                          (productRegis) =>
+                                                            productRegis.product_register_id === onLoop.product_register_id && (
+                                                              <MenuItem
+                                                                key={productRegis.product_register_id}
+                                                                value={productRegis.product_register_id}
+                                                                disabled
+                                                              >
+                                                                {'โกดัง : ' + productRegis.warehouse_name + ' '}
+                                                                {productRegis.product_register_name}
+                                                                {productRegis.product_register_date
+                                                                  ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
+                                                                      'DD/MM/YY'
+                                                                    )}) `
+                                                                  : '-'}
+                                                                {productRegis.product_register_date
+                                                                  ? ` (${calculateAge(productRegis.product_register_date)}) `
+                                                                  : '-'}
+                                                                {productRegis.product_register_remark ? (
+                                                                  <span style={{ color: 'red' }}>
+                                                                    {' '}
+                                                                    ({productRegis.product_register_remark})
+                                                                  </span>
+                                                                ) : (
+                                                                  ''
+                                                                )}
+                                                                <strong> ({parseFloat(productRegis.total_remain).toFixed(3)} ตัน)</strong>
+                                                                <strong>
                                                                   {' '}
-                                                                  ({productRegis.product_register_remark})
-                                                                </span>
-                                                              ) : (
-                                                                ''
-                                                              )}
-                                                              <strong> ({parseFloat(productRegis.total_remain).toFixed(3)} ตัน)</strong>
-                                                              <strong>
-                                                                {' '}
-                                                                (เลือกแล้ว {parseFloat(onLoop.product_register_quantity).toFixed(3)} ตัน)
-                                                              </strong>
-                                                              {/* {sumStock(productRegis.product_register_id , parseFloat(productRegis.total_remain))} */}
-                                                            </MenuItem>
-                                                          )
-                                                      )}
-                                                  </Select>
-                                                </FormControl>
-                                              )}
-                                            </>
-                                          )
-                                      )}
-                                  </>
-                                ) : (
-                                  <CircularProgress />
-                                )}
-                              </Grid>
-                            ))}
-                          </Grid>
-                        )}
-                      </div>
-                    ))}
+                                                                  (เลือกแล้ว {parseFloat(onLoop.product_register_quantity).toFixed(3)} ตัน)
+                                                                </strong>
+                                                                {/* {sumStock(productRegis.product_register_id , parseFloat(productRegis.total_remain))} */}
+                                                              </MenuItem>
+                                                            )
+                                                        )}
+                                                    </Select>
+                                                  </FormControl>
+                                                )}
+                                              </>
+                                            )
+                                        )}
+                                    </Grid>
+                                  ))}
+                                </Grid>
+                              )}
+                            </Grid>
+                          ))}
+                        </Grid>
+                      )}
+                      {/* </Stack> */}
+                    </Grid>
                   </Grid>
                 </Grid>
               </MainCard>
