@@ -941,3 +941,79 @@ export const getAllAuditLogs = async (startDate, endDate) => {
   const result = await response.json();
   return result;
 };
+
+// ==============================|| New contractors: (สำหรับข้อมูล บริษัทสายรายงานใหม่) ||============================== //
+
+// แสดงข้อมูลตามทั้งหมด
+export const getContractorOtherAll = async () => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/contractors-other/`, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+// เพิ่มข้อมูลตาม
+export const AddContractorOther = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/contractors-other/', requestOptions);
+  const result = await response.text();
+  console.log('result ', result);
+
+  return result;
+};
+
+// แสดงข้อมูลตาม id
+export const getContractorOtherByID = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/contractors-other/${id}`, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+// ลบข้อมูล
+export const deleteContractorOtherByID = async (id) => {
+  const requestOptions = {
+    method: 'DELETE',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/contractors-other/${id}`, requestOptions);
+
+  const result = await response.json();
+  return result;
+};
+
+// แก้ไขข้อมูล
+export const putContractorOther = async (id, data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + '/contractors-other/' + id, requestOptions);
+
+  const result = await response.json();
+  return result;
+};

@@ -611,10 +611,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   };
 
   // =============== Get Reserve ===============//
+  const [reservesData, setReservesData] = useState([]);
   const getReserveId = async (id) => {
     stepRequest.getReserveById(id).then((response) => {
       if (response) {
-        response.reserve.map((result) => {
+        console.log('getReserveId :', response);
+        response?.reserve.map((result) => {
           getStationById(result.warehouse_id);
           getTeamloadingByIdwh(result.warehouse_id);
 
@@ -645,7 +647,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               // }
             }
           }
-
+          setReservesData(result);
           setWareHouseId(result.warehouse_id);
           setStationsId(result.reserve_station_id);
           setTeamId(result.team_id);
@@ -674,7 +676,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                   x.product_company_id == result.product_company_id
               );
               data.productRegis = getProductRegis;
-              console.log(data.productRegis);
 
               const getItemsRegisData = allProductRegis.filter(
                 (option) => option.order_id === data.order_id && option.item_id === data.item_id
@@ -1263,6 +1264,20 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
   const handleClose = async (flag) => {
     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
+    const currentDate = await stepRequest.getCurrentDate();
+
+    const contracOtherValue = {
+      reserve_id: reservesData.reserve_id,
+      contractor_id: reservesData.contractor_id_to_other,
+      contract_other_status: 'working',
+      contract_other_update: currentDate
+    };
+
+    console.log('reservesData :', reservesData);
+    console.log('reservesData.contractor_other_id :', reservesData.contractor_other_id);
+    console.log('contracOtherValue :', contracOtherValue);
+    console.log('currentDate :', currentDate);
+
     if (flag === 1) {
       setOnClickSubmit(true);
       if (fr === 'call') {
@@ -1341,7 +1356,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 audit_description: 'เรียกขึ้นสินค้า'
               };
               AddAuditLogs(data);
-
+              if (reservesData.contractor_other_id) {
+                updateContractorOthers(reservesData.contractor_other_id, contracOtherValue);
+              }
               updateStation(station_id, 'working');
               updateContractor(queues.contractor_id, 'working');
               setStationCount(station_count + 1);
@@ -1424,6 +1441,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 updateItemsRegister(x.item_register_id, x);
               }
             });
+
             if (status === 'processing') setOnClickSubmit(true);
             if (orderSelect.length > 0 || typeSelect.length !== 0) {
               orders.map((order) => {
@@ -1490,6 +1508,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 // ทำอะไรกับข้อผิดพลาด
               });
 
+            contracOtherValue.contract_other_status = 'completed';
+
+            if (reservesData.contractor_other_id) {
+              updateContractorOthers(reservesData.contractor_other_id, contracOtherValue);
+            }
+
             const data = {
               audit_user_id: userId,
               audit_action: 'U',
@@ -1535,6 +1559,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
             // จัดการข้อผิดพลาดตามที่ต้องการ
             alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
             setStockSelect([]);
+            setReservesData([]);
             setLoopSelect([]);
           }
           // }
@@ -1589,6 +1614,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           await updateStartTime(id_update);
           await getProductRegisters();
           setStockSelect([]);
+          setReservesData([]);
           setLoopSelect([]);
           // }
           // Trigger the parent to reload the other instance with the common status
@@ -1596,6 +1622,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       }
     } else if (flag === 0) {
       setLoopSelect([]);
+      setReservesData([]);
       setOrders([]);
       setStockSelect([]);
       setOpen(false);
@@ -1664,6 +1691,25 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     // .then((response) => {
     //   console.log('response', response);
     // });
+  };
+
+  // =============== บันทึกข้อมูล สายแรงงานใหม่ ===============//
+  // const deleteContractorOthers = async (id) => {
+  //   try {
+  //     await adminRequest.deleteContractorOtherByID(id);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  const updateContractorOthers = async (id, value) => {
+    try {
+      await adminRequest.putContractorOther(id, value).then((response) => {
+        console.log('updateContractorOthers', response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   //Update lineNotify Message
@@ -1997,6 +2043,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                         <Grid item xs={12} md={6}>
                           <Typography variant="h5">
                             สายแรงงาน : <strong>{contractorList.find((x) => x.contractor_id === contractorId)?.contractor_name}</strong>
+                            {reservesData?.contractor_name_to_other && (
+                              <>
+                                {' '}
+                                , <span style={{ color: 'red' }}>Pre-sling</span> : <strong>{reservesData.contractor_name_to_other}</strong>
+                              </>
+                            )}
                           </Typography>
                         </Grid>
                       </Grid>

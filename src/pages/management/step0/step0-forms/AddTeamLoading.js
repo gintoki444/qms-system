@@ -23,7 +23,9 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
+  FormControlLabel,
+  Checkbox
   // DialogTitle,
 } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
@@ -65,6 +67,10 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
             getTeamManagers(result.team_id);
             getLaborLine(result.contractor_id);
             getAllContractor(result.contractor_id);
+
+            if (result.contractor_id_to_other !== null) {
+              setCheckPreSling(true);
+            }
           });
           setLoading(false);
         }
@@ -88,13 +94,37 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
     warehouse_id: reservationData.warehouse_id && reservationData.team_id ? reservationData.warehouse_id : '',
     contractor_id: reservationData.contractor_id ? reservationData.contractor_id : '',
     team_id: reservationData.team_id ? reservationData.team_id : '',
-    labor_line_id: reservationData.labor_line_id ? reservationData.labor_line_id : 0
+    labor_line_id: reservationData.labor_line_id ? reservationData.labor_line_id : 0,
+    contractor_id_to_other: reservationData.contractor_id_to_other ? reservationData.contractor_id_to_other : null,
+    contractor_other_id: reservationData.contractor_other_id ? reservationData.contractor_other_id : null,
+    checkPreSling: reservationData.contractor_other_id !== null ? true : false
   };
 
   // =============== Validate Forms ===============//
   const validations = Yup.object().shape({
     contractor_id: Yup.string().required('กรุณาเลือกสายแรงงาน'),
-    team_id: Yup.string().required('กรุณาเลือกทีมขึ้นสินค้า')
+    team_id: Yup.string().required('กรุณาเลือกทีมขึ้นสินค้า'),
+    contractor_id_to_other: Yup.lazy((value, context) => {
+      console.log('checkPreSling:', context.parent.checkPreSling); // ตรวจสอบค่าของ checkPreSling
+      return context.parent.checkPreSling
+        ? Yup.number()
+            .required('กรุณาเลือกทีมขึ้นสินค้า Pre-sling')
+            .typeError('กรุณาเลือกทีมขึ้นสินค้า Pre-sling')
+            .nullable()
+            .test('is-not-null', 'กรุณาเลือกทีมขึ้นสินค้า Pre-sling', (value) => value !== null)
+        : Yup.mixed().notRequired(); // ไม่ทำการ Validate เมื่อ checkPreSling เป็น false
+    })
+    // contractor_id_to_other: Yup.number()
+    //   .nullable() // กำหนดให้สามารถเป็น null ได้
+    //   .transform((value, originalValue) => (String(originalValue).trim() === '' ? null : value))
+    //   .when('checkPreSling', {
+    //     is: true, // เมื่อ checkPreSling เป็น true
+    //     then: Yup.number()
+    //       .required('กรุณาเลือกทีมขึ้นสินค้า Pre-sling')
+    //       .typeError('กรุณาเลือกทีมขึ้นสินค้า Pre-sling') // แสดงข้อความเมื่อค่าไม่ใช่ number
+    //       .test('is-not-null', 'กรุณาเลือกทีมขึ้นสินค้า Pre-sling', (value) => value !== null), // ตรวจสอบว่าค่าไม่เป็น null
+    //     otherwise: Yup.number().nullable().typeError('กรุณาเลือกทีมขึ้นสินค้า Pre-sling') // ถ้าไม่ใช่ true ก็ให้เป็น nullable
+    //   })
   });
 
   // =============== Get TeamLoanding ===============//
@@ -188,9 +218,9 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
 
   const handleSubmits = async (values) => {
     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    console.log('values :', values);
+    console.log('initialValue :', initialValue);
     try {
-      // console.log('test Contractor click:', values);
-
       // if (values === 9999) {
       values.user_id = user_Id;
       values.pickup_date = moment(values.pickup_date).format('YYYY-MM-DD HH:mm:ss');
@@ -203,8 +233,50 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
         contractor_id: values.contractor_id,
         labor_line_id: values.labor_line_id
       };
-      console.log(teamValue);
-      console.log(values);
+
+      const contracOtherValue = {
+        reserve_id: id,
+        contractor_id: values.contractor_id_to_other,
+        contract_other_status: 'waiting',
+        contract_other_update: currentDate
+      };
+
+      // ตรวจสอบการแก้ไขข้อมูล Contractor Other
+      if (values.contractor_other_id && checkPreSling === false) {
+        await deleteContractorOthers(values.contractor_other_id);
+        const data = {
+          audit_user_id: userId,
+          audit_action: 'I',
+          audit_system_id: id,
+          audit_system: 'step0',
+          audit_screen: 'ข้อมูลสายแรงงาน Pre-Sling : เพิ่มข้อมูลทีมขึ้นสินค้า',
+          audit_description: JSON.stringify(teamValue)
+        };
+
+        AddAuditLogs(data);
+      } else if (values.contractor_other_id && checkPreSling === true) {
+        await updateContractorOthers(values.contractor_other_id, contracOtherValue);
+        const data = {
+          audit_user_id: userId,
+          audit_action: 'I',
+          audit_system_id: id,
+          audit_system: 'step0',
+          audit_screen: 'ข้อมูลสายแรงงาน Pre-Sling : แก้ไขข้อมูล',
+          audit_description: JSON.stringify(teamValue)
+        };
+        AddAuditLogs(data);
+      } else if (!values.contractor_other_id && checkPreSling === true) {
+        await addContractorOthers(contracOtherValue);
+        const data = {
+          audit_user_id: userId,
+          audit_action: 'I',
+          audit_system_id: id,
+          audit_system: 'step0',
+          audit_screen: 'ข้อมูลสายแรงงาน Pre-Sling : เพิ่มข้อมูล',
+          audit_description: JSON.stringify(teamValue)
+        };
+        AddAuditLogs(data);
+      }
 
       // if (values.contractor_id === 9999) {
       await reserveRequest
@@ -219,10 +291,11 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
               audit_action: 'I',
               audit_system_id: id,
               audit_system: 'step0',
-              audit_screen: 'ข้อมูลทีมขึ้นสินค้า',
-              audit_description: 'เพิ่มข้อมูลทีมขึ้นสินค้า'
+              audit_screen: 'ข้อมูลทีมขึ้นสินค้า : เพิ่มข้อมูลทีมขึ้นสินค้า',
+              audit_description: JSON.stringify(teamValue)
             };
             AddAuditLogs(data);
+            setCheckPreSling(false);
             updateTeamData(values.team_data);
             // }
           } else {
@@ -258,6 +331,42 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
       });
     } catch (error) {
       enqueueSnackbar('บันทึกข้อมูลทีมขึ้นสินค้าไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
+      console.log(error);
+    }
+  };
+
+  // =============== บันทึกข้อมูล สายแรงงานใหม่ ===============//
+  const [contractorOtherList, setContractorOtherList] = useState([]);
+  const getContractorOthers = async () => {
+    try {
+      await adminRequest.getContractorOtherAll().then((response) => {
+        setContractorOtherList(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const addContractorOthers = async (values) => {
+    try {
+      await adminRequest.AddContractorOther(values);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const deleteContractorOthers = async (id) => {
+    try {
+      await adminRequest.deleteContractorOtherByID(id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateContractorOthers = async (id, value) => {
+    try {
+      await adminRequest.putContractorOther(id, value);
+    } catch (error) {
       console.log(error);
     }
   };
@@ -340,11 +449,18 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
     setLoading(true);
     if (reserveId) {
       getReserve(reserveId);
+      getContractorOthers();
     }
+  };
+
+  const [checkPreSling, setCheckPreSling] = useState(false);
+  const handleClickCheckbox = (checked) => {
+    setCheckPreSling(!checked);
   };
 
   const handleClose = async (flag) => {
     if (flag === 0) {
+      setCheckPreSling(false);
       setReservationData({});
       setTeamLoading([]);
       setOpen(false);
@@ -445,7 +561,10 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
                                     {contractorList.contractor_name}
                                     {contractorList.contract_update &&
                                       contractorList.contract_update.slice(0, 10) === dateNow &&
-                                      ' (' + contractorList.contract_update.slice(11, 16) + ' น.)'}
+                                      ' (' + contractorList.contract_update.slice(11, 16) + ' น.)'}{' '}
+                                    {contractorOtherList.filter(
+                                      (x) => x.contractor_id === contractorList.contractor_id && x.contract_other_status !== 'completed'
+                                    )?.length > 0 && <span style={{ color: 'green' }}> (กำลัง Pre-sling)</span>}
                                   </MenuItem>
                                 ))}
                               </Select>
@@ -456,6 +575,62 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
                               </FormHelperText>
                             )}
                           </Stack>
+                        </Grid>
+
+                        <Grid item xs={12} md={12}>
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={checkPreSling}
+                                onChange={() => {
+                                  if (checkPreSling === true) {
+                                    setFieldValue('contractor_id_to_other', null);
+                                  }
+                                  setFieldValue('checkPreSling', !checkPreSling);
+                                  handleClickCheckbox(checkPreSling);
+                                }}
+                                name="checked1"
+                              />
+                            }
+                            label="Pre-Sling"
+                          />
+
+                          {checkPreSling && (
+                            <Stack spacing={1}>
+                              <FormControl>
+                                <Select
+                                  displayEmpty
+                                  variant="outlined"
+                                  name="contractor_id_to_other"
+                                  value={values.contractor_id_to_other || ''}
+                                  onChange={(e) => {
+                                    setFieldValue('contractor_id_to_other', e.target.value);
+                                    handleChangeContractor(e);
+                                  }}
+                                  placeholder="สายแรงงาน Pre-Sling"
+                                  fullWidth
+                                  error={Boolean(touched.contractor_id_to_other && errors.contractor_id_to_other)}
+                                >
+                                  <MenuItem disabled value="">
+                                    เลือกสายแรงงาน
+                                  </MenuItem>
+                                  {contractorList.map((contractorList) => (
+                                    <MenuItem key={contractorList.contractor_id} value={contractorList.contractor_id}>
+                                      {contractorList.contractor_name}
+                                      {contractorList.contract_update &&
+                                        contractorList.contract_update.slice(0, 10) === dateNow &&
+                                        ' (' + contractorList.contract_update.slice(11, 16) + ' น.)'}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                              {touched.contractor_id_to_other && errors.contractor_id_to_other && (
+                                <FormHelperText error id="helper-text-contractor_id_to_other">
+                                  {errors.contractor_id_to_other}
+                                </FormHelperText>
+                              )}
+                            </Stack>
+                          )}
                         </Grid>
 
                         <Grid item xs={12} md={6} sx={{ display: 'none' }}>

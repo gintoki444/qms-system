@@ -15,7 +15,15 @@ import {
   DialogTitle
 } from '@mui/material';
 
-import { FileAddOutlined, EditOutlined, DeleteOutlined, SwitcherOutlined, ContainerOutlined, FileExcelOutlined, HistoryOutlined } from '@ant-design/icons';
+import {
+  FileAddOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SwitcherOutlined,
+  ContainerOutlined,
+  FileExcelOutlined,
+  HistoryOutlined
+} from '@ant-design/icons';
 
 // Link api url
 import * as adminRequest from '_api/adminRequest';
@@ -84,7 +92,7 @@ function ProductManagementTable({ onFilter, permission }) {
     elevation: 0,
     rowsPerPage: 50,
     responsive: 'standard',
-    sort: false,
+    sort: true,
     rowsPerPageOptions: [50, 100, 150, 200],
     download: false,
     customBodyRender: (value) => {
@@ -94,7 +102,13 @@ function ProductManagementTable({ onFilter, permission }) {
       return (
         <>
           <Tooltip title="ประวัติกองสินค้า">
-            <Button color="info" size='small' variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={historyProductManagement}>
+            <Button
+              color="info"
+              size="small"
+              variant="contained"
+              sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }}
+              onClick={historyProductManagement}
+            >
               <HistoryOutlined />
             </Button>
           </Tooltip>
@@ -114,7 +128,7 @@ function ProductManagementTable({ onFilter, permission }) {
       label: 'ลำดับ',
       options: {
         setCellHeaderProps: () => ({
-          style: { textAlign: 'center' }
+          style: { textAlign: 'center', width: '5%' }
         }),
         setCellProps: () => ({
           style: { textAlign: 'center' }

@@ -132,16 +132,15 @@ function UpdateReserve() {
 
   // =============== Get Company ===============//
   const [companyList, setCompanyList] = useState([]);
-  const getCompanyList = (permission) => {
+  const getCompanyList = async (permission) => {
     if (user_Id) {
       try {
         let user_id = '';
         if (permission !== 'manage_everything') {
           user_id = user_Id;
         }
-        companyRequest.getAllCompanyByuserId(user_id).then((response) => {
+        await companyRequest.getAllCompanyByuserId(user_id).then((response) => {
           setCompanyList(response);
-          getCarLsit(permission);
         });
       } catch (error) {
         console.log(error);
@@ -151,7 +150,7 @@ function UpdateReserve() {
 
   // =============== Get Car ===============//
   const [carList, setCarList] = useState([]);
-  const getCarLsit = (permission) => {
+  const getCarLsit = async (permission) => {
     let urlapi = '';
     // if ((userRoles && userRoles == 1) || userRoles == 9 || userRoles == 10) {
     if (permission !== 'manage_everything') {
@@ -159,13 +158,12 @@ function UpdateReserve() {
     } else {
       urlapi = apiUrl + `/allcars/`;
     }
-    axios
+    await axios
       .get(urlapi)
       .then((res) => {
         if (res) {
           // setCarList(res.data.filter((x) => x.user_id == userID || x.user_id == user_Id || x.user_id == 1));
           setCarList(res.data);
-          getDriverLsit(permission);
         }
       })
       .catch((err) => console.log(err));
@@ -173,7 +171,7 @@ function UpdateReserve() {
 
   // =============== Get Driver ===============//
   const [driverList, setDriverList] = useState([]);
-  const getDriverLsit = (permission) => {
+  const getDriverLsit = async (permission) => {
     let urlapi = '';
     // if ((userRoles && userRoles == 1) || userRoles == 9 || userRoles == 10) {
     if (permission !== 'manage_everything') {
@@ -181,14 +179,13 @@ function UpdateReserve() {
     } else {
       urlapi = apiUrl + `/alldrivers/`;
     }
-    axios
+    await axios
       .get(urlapi)
       .then((res) => {
         if (res) {
           // setDriverList(res.data.filter((x) => x.user_id == userID || x.user_id == user_Id || x.user_id == 1));
           setDriverList(res.data);
-          setLoading(false);
-          getOrders();
+          // getOrders();
         }
       })
       .catch((err) => console.log(err));
@@ -196,9 +193,9 @@ function UpdateReserve() {
 
   // =============== Get Product Company ===============//
   const [productCompany, setProductCompany] = useState([]);
-  const getProductCompany = () => {
+  const getProductCompany = async () => {
     try {
-      reserveRequest.getAllproductCompanys().then((response) => {
+      await reserveRequest.getAllproductCompanys().then((response) => {
         setProductCompany(response);
       });
     } catch (error) {
@@ -230,18 +227,23 @@ function UpdateReserve() {
       .get(urlapi)
       .then((res) => {
         setOrderList(res.data);
-        setLoading(false);
       })
       .catch((err) => {
         console.log(err);
-        setLoading(false);
       });
   };
 
   const updateReserveTotal = async (id) => {
     try {
-      reserveRequest.getReserTotalByID(id).then(() => {
-        getReserve();
+      await reserveRequest.getReserTotalByID(id).then(() => {
+        Promise.all([getReserve()])
+          .then(() => {
+            setLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
+          })
+          .catch((error) => {
+            console.error('Error loading data:', error);
+            setLoading(false); // ปิดการแสดง Loading แม้จะเกิดข้อผิดพลาด
+          });
       });
     } catch (error) {
       console.log(error);
@@ -259,83 +261,82 @@ function UpdateReserve() {
 
   // =============== useEffect ===============//
   useEffect(() => {
-    setLoading(true);
-    getProductBrandList();
-    getProductCompany();
-    if (Object.keys(userPermission).length > 0) {
-      if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
-        const permissionName = userPermission.permission.find((x) => x.page_id === pageId);
-        setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
-        getReserve();
+    const loadData = async () => {
+      setLoading(true);
 
-        if (user_Id) {
-          getCompanyList(permissionName.permission_name);
+      if (Object.keys(userPermission).length > 0) {
+        if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
+          const permissionName = userPermission.permission.find((x) => x.page_id === pageId);
+          setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+
+          try {
+            // รอให้ getReserve ทำงานเสร็จก่อน
+            await getReserve();
+            await getProductBrandList();
+            await getProductCompany();
+            if (user_Id) {
+              await getCompanyList(permissionName.permission_name);
+              // หลังจาก getReserve เสร็จแล้ว รอให้ฟังก์ชันที่เหลือทำงานเสร็จพร้อมกัน
+              await Promise.all([
+                await getCarLsit(permissionName.permission_name),
+                await getDriverLsit(permissionName.permission_name)
+              ]).then(() => {
+                setLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
+              });
+            }
+          } catch (error) {
+            console.error('Error loading data:', error);
+            setLoading(false); // ปิดการแสดง Loading แม้จะเกิดข้อผิดพลาด
+          }
+        } else {
+          setLoading(false);
         }
-      } else {
-        setLoading(false);
       }
-    }
+    };
+
+    loadData();
   }, [user_Id, newCar, newDriver, userPermission]);
 
-  const getReserve = () => {
-    setLoading(true);
+  const getReserve = async () => {
     const urlapi = apiUrl + `/reserve/` + id;
-    axios
-      .get(urlapi)
-      .then((res) => {
-        if (res) {
-          res.data.reserve.map((result) => {
-            setUserId(result.user_id);
+    try {
+      const res = await axios.get(urlapi);
+      if (res) {
+        const promises = res.data.reserve.map(async (result) => {
+          setUserId(result.user_id);
 
-            if (dateNow == moment(result.pickup_date).format('YYYY-MM-DD')) {
-              setCheckDate(true);
-            }
+          if (dateNow === moment(result.pickup_date).format('YYYY-MM-DD')) {
+            setCheckDate(true);
+          }
 
-            if (newCar.length > 0) {
-              newCar.map((x) => {
-                result.car_id = x.car_id;
-              });
+          if (newCar.length > 0) {
+            newCar.forEach((x) => {
+              result.car_id = x.car_id;
+            });
+            await reserveRequest.putReserById(id, result);
+          }
 
-              reserveRequest.putReserById(id, result);
-            }
+          if (newDriver.length > 0) {
+            newDriver.forEach((x) => {
+              result.driver_id = x.driver_id;
+            });
+            await reserveRequest.putReserById(id, result);
+          }
 
-            if (newDriver.length > 0) {
-              newDriver.map((x) => {
-                result.driver_id = x.driver_id;
-              });
-              reserveRequest.putReserById(id, result);
-            }
+          result.pickup_date = moment(result.pickup_date).format('YYYY-MM-DD');
+          setReservationData(result);
+          setCompanyId(result.product_company_id);
 
-            result.pickup_date = moment(result.pickup_date).format('YYYY-MM-DD');
-            setReservationData(result);
-            setCompanyId(result.product_company_id);
-            checkQueueCompanyCount(result.product_company_id);
-            getProductBrand(result.product_company_id);
-            getOrders();
-          });
-        }
-      })
-      .catch((err) => console.log(err));
+          // รวมการเรียกใช้ฟังก์ชันสองตัวนี้ใน Promise.all
+          return Promise.all([checkQueueCompanyCount(result.product_company_id), getProductBrand(result.product_company_id), getOrders()]);
+        });
+
+        await Promise.all(promises);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
-
-  // =============== InitialValue ===============//
-  // const  [initialValue,setInitialValue] = useState({
-  //   company_id: reservationData.company_id,
-  //   car_id: reservationData.car_id,
-  //   brand_group_id: reservationData.brand_group_id,
-  //   product_company_id: reservationData.product_company_id || '',
-  //   product_brand_id: reservationData.product_brand_id || '',
-  //   driver_id: reservationData.driver_id,
-  //   description: reservationData.description,
-  //   pickup_date: moment(reservationData.pickup_date).format('YYYY-MM-DD'),
-  //   status: reservationData.status,
-  //   total_quantity: reservationData.total_quantity,
-  //   reserve_station_id: reservationData.reserve_station_id,
-  //   warehouse_id: reservationData.warehouse_id,
-  //   contractor_id: reservationData.contractor_id,
-  //   team_id: reservationData.team_id,
-  //   labor_line_id: ''
-  // });
 
   // =============== Validate Forms ===============//
   const validationSchema = Yup.object().shape({
@@ -623,7 +624,9 @@ function UpdateReserve() {
     link = link + '/queues/detail/' + queue_id;
 
     const messageLine = queue_info + 'รายการสินค้า:-' + '\n' + orderProducts + '\n' + link;
+    // if (queue_id === 9999) {
     lineNotify(messageLine);
+    // }
   };
 
   //แสดงข้อมูลคิว

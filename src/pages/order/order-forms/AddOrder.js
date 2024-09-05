@@ -27,6 +27,8 @@ import {
   TableBody,
   TableCell,
   FormControl,
+  Backdrop,
+  CircularProgress,
   Autocomplete
 } from '@mui/material';
 import MainCard from 'components/MainCard';
@@ -50,7 +52,7 @@ function AddOrder() {
   const [items, setItems] = useState([
     { product_id: '', quantity: 1, subtotal: sutotal, created_at: currentDate, updated_at: currentDate }
   ]);
-  //   const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
 
   let [initialValue, setInitialValue] = useState({
@@ -66,32 +68,33 @@ function AddOrder() {
   // =============== Get Reserve ID ===============//
   const [reservationData, setReservationData] = useState({});
   const { id } = useParams();
-  const getReserve = () => {
+  const getReserve = async () => {
     // setLoading(true);
     const urlapi = apiUrl + `/reserve/` + id;
-    axios
-      .get(urlapi)
-      .then((res) => {
-        if (res) {
-          //   setLoading(false);
-          res.data.reserve.map((result) => {
-            setReservationData(result);
-            setInitialValue({
-              ref_order_id: '',
-              company_id: result.company_id,
-              product_company_id: result.product_company_id,
-              product_brand_id: result.product_brand_id,
-              description: '',
-              order_date: moment(new Date()).format('YYYY-MM-DD'),
-              items: items
-            });
-            setSelectIdCom(result.product_company_id);
-            getProductBrand(result.product_company_id);
-            getProduct(result.product_company_id, result.product_brand_id);
+    const res = await axios.get(urlapi);
+    try {
+      if (res) {
+        const promises = res.data.reserve.map((result) => {
+          setReservationData(result);
+          setInitialValue({
+            ref_order_id: '',
+            company_id: result.company_id,
+            product_company_id: result.product_company_id,
+            product_brand_id: result.product_brand_id,
+            description: '',
+            order_date: moment(new Date()).format('YYYY-MM-DD'),
+            items: items
           });
-        }
-      })
-      .catch((err) => console.log(err));
+          setSelectIdCom(result.product_company_id);
+          // รวมการเรียกใช้ฟังก์ชันสองตัวนี้ใน Promise.all
+          return Promise.all([getProduct(result.product_company_id, result.product_brand_id), getProductBrand(result.product_company_id)]);
+        });
+
+        await Promise.all(promises);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // =============== Get Product ===============//
@@ -151,8 +154,15 @@ function AddOrder() {
 
   // =============== useEffect ===============//
   useEffect(() => {
-    getReserve();
-    getProductCompany();
+    setLoading(true); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
+    Promise.all([getReserve(), getProductCompany()])
+      .then(() => {
+        setLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
+      })
+      .catch((error) => {
+        console.error('Error loading data:', error);
+        setLoading(false); // ปิดการแสดง Loading แม้จะเกิดข้อผิดพลาด
+      });
   }, [id]);
 
   // =============== Validate Forms ===============//
@@ -240,6 +250,7 @@ function AddOrder() {
 
   const handleSubmits = async (values, { setErrors, setSubmitting }) => {
     try {
+      setLoading(true); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
       let coutItemId = 0;
       let coutItemsTotal = 0;
       items.map((x) => {
@@ -376,6 +387,14 @@ function AddOrder() {
   };
   return (
     <Grid alignItems="center" justifyContent="space-between">
+      {loading && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={loading}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
       <Grid container rowSpacing={1} columnSpacing={1.75}>
         <Grid item xs={12} lg={12}>
           <Grid sx={{ m: 3, ml: 0 }} container spacing={1}>

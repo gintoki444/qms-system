@@ -347,12 +347,12 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
 
           const data = {
             audit_user_id: userId,
-            audit_action: "I",
+            audit_action: 'I',
             audit_system_id: id_update,
-            audit_system: "step1",
-            audit_screen: "ข้อมูลชั่งเบา",
-            audit_description: "เรียกชั่งเบา"
-          }
+            audit_system: 'step1',
+            audit_screen: 'ข้อมูลชั่งเบา',
+            audit_description: 'เรียกชั่งเบา'
+          };
           AddAuditLogs(data);
           // handleCallQueue(queues);
           step1Update(id_update, 'processing', selectedStations[id_update]);
@@ -386,12 +386,12 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
             //เพิ่ม update น้ำหนักชั่ง
             const data = {
               audit_user_id: userId,
-              audit_action: "U",
+              audit_action: 'U',
               audit_system_id: id_update,
-              audit_system: "step1",
-              audit_screen: "ข้อมูลชั่งเบา",
-              audit_description: "บันทึกข้อมูลชั่งเบา"
-            }
+              audit_system: 'step1',
+              audit_screen: 'ข้อมูลชั่งเบา',
+              audit_description: 'บันทึกข้อมูลชั่งเบา'
+            };
             AddAuditLogs(data);
             await step2Update(id_update_next, 'waiting', 27);
             await step1Update(id_update, 'completed', queues.station_id);
@@ -423,12 +423,12 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
           });
         const data = {
           audit_user_id: userId,
-          audit_action: "D",
+          audit_action: 'D',
           audit_system_id: id_update,
-          audit_system: "step1",
-          audit_screen: "ข้อมูลชั่งเบา",
-          audit_description: "ยกเลิกข้อมูลชั่งเบา"
-        }
+          audit_system: 'step1',
+          audit_screen: 'ข้อมูลชั่งเบา',
+          audit_description: 'ยกเลิกข้อมูลชั่งเบา'
+        };
         AddAuditLogs(data);
         await step1Update(id_update, 'waiting', 27);
         await updateStartTime(id_update);
@@ -480,7 +480,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
 
     var link = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
     link = link + '/queues/detail/' + queue_id;
-
+    // if (queue_id === 99999) {
     const myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
 
@@ -498,6 +498,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
     fetch(apiUrl + '/line-notify', requestOptions)
       .then((response) => response.text())
       .catch((error) => console.error(error));
+    // }
   };
 
   // Get Step Token
@@ -752,7 +753,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
 
   const AddAuditLogs = async (data) => {
     await functionAddLogs.AddAuditLog(data);
-  }
+  };
   return (
     <>
       <Box>
@@ -886,9 +887,9 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
                             <TableCell align="left">
                               {row.reserve_datetime &&
                                 moment(row.reserve_datetime.slice(0, 10)).format('DD/MM/YY') +
-                                ' - ' +
-                                row.reserve_datetime.slice(11, 16) +
-                                'น.'}
+                                  ' - ' +
+                                  row.reserve_datetime.slice(11, 16) +
+                                  'น.'}
                             </TableCell>
                           )}
                           <TableCell align="left">
@@ -1020,7 +1021,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
                                           row.station_id === 30
                                         }
                                         onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row)}
-                                      // endIcon={<RightSquareOutlined />}
+                                        // endIcon={<RightSquareOutlined />}
                                       >
                                         ปิดคิว
                                       </Button>

@@ -209,7 +209,6 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
   }, [status, onStatusChange, onFilter, permission]);
 
   const fetchData = async () => {
-
     if (status === 'waiting') {
       await waitingGet();
     } else if (status === 'processing') {
@@ -410,7 +409,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
         .set({
           hour: time.get('hour'),
           minute: time.get('minute'),
-          second: time.get('second'),
+          second: time.get('second')
         })
         .format('YYYY-MM-DD HH:mm:ss');
       currentDateNew = dateTime;
@@ -473,12 +472,12 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
 
           const data = {
             audit_user_id: userId,
-            audit_action: "I",
+            audit_action: 'I',
             audit_system_id: id_update,
-            audit_system: "step4",
-            audit_screen: "ข้อมูลรถออกจากโรงงาน",
-            audit_description: "เรียกรถออกจากโรงงาน"
-          }
+            audit_system: 'step4',
+            audit_screen: 'ข้อมูลรถออกจากโรงงาน',
+            audit_description: 'เรียกรถออกจากโรงงาน'
+          };
           AddAuditLogs(data);
 
           step1Update(id_update, 'processing', 24);
@@ -504,12 +503,12 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
 
           const data = {
             audit_user_id: userId,
-            audit_action: "U",
+            audit_action: 'U',
             audit_system_id: id_update,
-            audit_system: "step4",
-            audit_screen: "ข้อมูลรถออกจากโรงงาน",
-            audit_description: "บันทึกข้อมูลรถออกจากโรงงาน"
-          }
+            audit_system: 'step4',
+            audit_screen: 'ข้อมูลรถออกจากโรงงาน',
+            audit_description: 'บันทึกข้อมูลรถออกจากโรงงาน'
+          };
           AddAuditLogs(data);
 
           updateLoadingTeam(id_update, team_id);
@@ -535,12 +534,12 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
 
           const data = {
             audit_user_id: userId,
-            audit_action: "D",
+            audit_action: 'D',
             audit_system_id: id_update,
-            audit_system: "step4",
-            audit_screen: "ข้อมูลรถออกจากโรงงาน",
-            audit_description: "ยกเลิกรถออกจากโรงงาน"
-          }
+            audit_system: 'step4',
+            audit_screen: 'ข้อมูลรถออกจากโรงงาน',
+            audit_description: 'ยกเลิกรถออกจากโรงงาน'
+          };
 
           AddAuditLogs(data);
           step1Update(id_update_next, 'waiting', 27);
@@ -566,7 +565,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
     const protocol = window.location.protocol;
     const hostname = window.location.hostname;
     const port = window.location.port;
-
+    // if (queue_id === 99999) {
     var link = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
     link = link + '/queues/detail/' + queue_id;
 
@@ -598,6 +597,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
     fetch(apiUrl + '/line-notify', requestOptions)
       .then((response) => response.text())
       .catch((error) => console.error(error));
+    // }
   };
 
   const getStepToken = (step_id) => {
@@ -710,7 +710,6 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
           }
         })
         .catch((error) => console.error(error));
-
     });
   };
 
@@ -724,7 +723,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
 
   const AddAuditLogs = async (data) => {
     await functionAddLogs.AddAuditLog(data);
-  }
+  };
   // const [submittedTime, setSubmittedTime] = useState(null);
   return (
     <>
@@ -739,7 +738,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
             {'แจ้งเตือน : '}
             {textnotify} ID:{id_update} หรือไม่?
           </DialogTitle>
-          {fr === 'close' &&
+          {fr === 'close' && (
             <DialogContent sx={{ maxWidth: '480px' }}>
               <DialogContentText>
                 <MainCard>
@@ -785,7 +784,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                 </MainCard>
               </DialogContentText>
             </DialogContent>
-          }
+          )}
           <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
             <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
               ยกเลิก
@@ -960,7 +959,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                                       color="primary"
                                       disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                                       onClick={() => handleClickOpen(row.step_id, 'close')}
-                                    // endIcon={<RightSquareOutlined />}
+                                      // endIcon={<RightSquareOutlined />}
                                     >
                                       ปิดคิว
                                     </Button>

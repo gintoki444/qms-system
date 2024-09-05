@@ -135,11 +135,13 @@ function ConTractorSumTable({ startDate, endDate, clickDownload, onFilter, nameC
   const getOrderSumQty = () => {
     try {
       reportRequest.getContractorSummary(startDate, endDate).then((response) => {
-        // setCompanyName(response.filter((x) => x.contract_company_id == onFilter + 1)[0]);
-        // console.log(response.length > 0?response.find((x) => x.contract_company_id == onFilter + 1).contract_company_name);
-        setItems(response.filter((x) => x.contract_company_id == onFilter + 1));
-        sumaryItems(response.filter((x) => x.contract_company_id == onFilter + 1));
-        setLoading(false);
+        if (response.status != 'error') {
+          // setCompanyName(response.filter((x) => x.contract_company_id == onFilter + 1)[0]);
+          // console.log(response.length > 0?response.find((x) => x.contract_company_id == onFilter + 1).contract_company_name);
+          setItems(response.filter((x) => x.contract_company_id == onFilter + 1));
+          sumaryItems(response.filter((x) => x.contract_company_id == onFilter + 1));
+          setLoading(false);
+        }
       });
     } catch (error) {
       console.log(error);

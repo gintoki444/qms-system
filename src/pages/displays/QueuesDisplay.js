@@ -60,30 +60,46 @@ function QueuesDisplay() {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log('data', data)
+      console.log('data', data);
       // setStep1Data(data.filter((x) => x.order == 1 || x.order == 3));
       // setStep2Data(data.filter((x) => x.order == 2));
-      const stationGroup1 = data.filter((x) => x.order == 2 && (
-        x.station_id !== 32 &&
-        x.station_id !== 33 &&
-        x.station_id !== 34 &&
-        x.station_id !== 35 &&
-        x.station_id !== 36 &&
-        x.station_id !== 15 &&
-        x.station_id !== 16 &&
-        x.station_id !== 17 &&
-        x.station_id !== 18 &&
-        x.station_id !== 19 &&
-        x.station_id !== 20 &&
-        x.station_id !== 21 &&
-        x.station_id !== 22
-      ));
+      const stationGroup1 = data.filter(
+        (x) =>
+          x.order == 2 &&
+          x.station_id !== 32 &&
+          x.station_id !== 33 &&
+          x.station_id !== 34 &&
+          x.station_id !== 35 &&
+          x.station_id !== 36 &&
+          x.station_id !== 15 &&
+          x.station_id !== 16 &&
+          x.station_id !== 17 &&
+          x.station_id !== 18 &&
+          x.station_id !== 19 &&
+          x.station_id !== 20 &&
+          x.station_id !== 21 &&
+          x.station_id !== 22
+      );
       console.log('stationGroup1', stationGroup1);
 
-      const stationGroup2 = data.filter((x) => x.order == 2 && (x.station_id === 18 || x.station_id === 19 || x.station_id === 20 || x.station_id === 21 || x.station_id === 22));
+      const stationGroup2 = data.filter(
+        (x) =>
+          x.order == 2 && (x.station_id === 18 || x.station_id === 19 || x.station_id === 20 || x.station_id === 21 || x.station_id === 22)
+      );
       console.log('stationGroup2', stationGroup2);
 
-      const stationGroup3 = data.filter((x) => x.order == 2 && (x.station_id === 15 || x.station_id === 16 || x.station_id === 17 || x.station_id === 32 || x.station_id === 33 || x.station_id === 34 || x.station_id === 35 || x.station_id === 36));
+      const stationGroup3 = data.filter(
+        (x) =>
+          x.order == 2 &&
+          (x.station_id === 15 ||
+            x.station_id === 16 ||
+            x.station_id === 17 ||
+            x.station_id === 32 ||
+            x.station_id === 33 ||
+            x.station_id === 34 ||
+            x.station_id === 35 ||
+            x.station_id === 36)
+      );
       console.log('stationGroup3', stationGroup3);
       setStations(stationGroup1);
       setStations2(stationGroup2);

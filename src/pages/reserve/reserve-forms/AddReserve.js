@@ -195,16 +195,39 @@ function AddReserve() {
         const permissionName = userPermission.permission.find((x) => x.page_id === pageId);
         setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
 
-        getCompanyLsit(permissionName?.permission_name);
-        getCarLsit(permissionName?.permission_name);
-        getDriverLsit(permissionName?.permission_name);
-
-        getProductCompany();
-        setLoading(false);
+        // เรียกใช้ฟังก์ชันต่าง ๆ แล้วใช้ Promise.all() เพื่อรอให้ทั้งหมดทำงานเสร็จ
+        Promise.all([
+          getCompanyLsit(permissionName?.permission_name),
+          getCarLsit(permissionName?.permission_name),
+          getDriverLsit(permissionName?.permission_name),
+          getProductCompany()
+        ])
+          .then(() => {
+            setLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
+          })
+          .catch((error) => {
+            console.error('Error loading data:', error);
+            setLoading(false); // ปิดการแสดง Loading แม้จะเกิดข้อผิดพลาด
+          });
       } else {
         setLoading(false);
       }
     }
+    // if (userRoles && Object.keys(userPermission).length > 0) {
+    //   if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
+    //     const permissionName = userPermission.permission.find((x) => x.page_id === pageId);
+    //     setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+
+    //     getCompanyLsit(permissionName?.permission_name);
+    //     getCarLsit(permissionName?.permission_name);
+    //     getDriverLsit(permissionName?.permission_name);
+
+    //     getProductCompany();
+    //     setLoading(false);
+    //   } else {
+    //     setLoading(false);
+    //   }
+    // }
   }, [userRoles, userPermission, newCar, newCompany, newDriver]);
 
   // =============== Validate Forms ===============//

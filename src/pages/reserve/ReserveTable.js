@@ -19,12 +19,12 @@ import {
   Box,
   Stack,
   Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  // Table,
+  // TableBody,
+  // TableCell,
+  // TableContainer,
+  // TableHead,
+  // TableRow,
   Tooltip,
   ButtonGroup,
   Button,
@@ -39,7 +39,6 @@ import {
 } from '@mui/material';
 
 // project import
-// import Dot from 'components/@extended/Dot';
 import {
   EditOutlined,
   DeleteOutlined,
@@ -47,117 +46,116 @@ import {
   ProfileOutlined
   // , WarningOutlined
 } from '@ant-design/icons';
-
 import CancleQueueButton from 'components/@extended/CancleQueueButton';
-
 import axios from 'axios';
-
 import * as functionAddLogs from 'components/Function/AddLog';
 
+import MUIDataTable from 'mui-datatables';
+
 // ==============================|| ORDER TABLE - HEADER CELL ||============================== //
-const headCells = [
-  {
-    id: 'No',
-    align: 'center',
-    disablePadding: true,
-    label: 'ลำดับ'
-  },
-  {
-    id: 'dateReserve',
-    align: 'center',
-    disablePadding: true,
-    label: 'วันที่จอง'
-  },
-  {
-    id: 'dateQueue',
-    align: 'center',
-    disablePadding: true,
-    label: 'วันที่เข้ารับ'
-  },
-  {
-    id: 'registration_no',
-    align: 'center',
-    disablePadding: true,
-    label: 'ทะเบียนรถ'
-  },
-  {
-    id: 'brandCode',
-    align: 'center',
-    disablePadding: true,
-    label: 'เบรน Code'
-  },
-  {
-    id: 'description',
-    align: 'left',
-    disablePadding: true,
-    width: '5%',
-    label: 'รหัสคิวเดิม'
-  },
-  {
-    id: 'Company',
-    align: 'left',
-    disablePadding: false,
-    width: '15%',
-    label: 'บริษัท'
-  },
-  // {
-  //   id: 'names',
-  //   align: 'left',
-  //   disablePadding: false,
-  //   label: 'ชื่อผู้ติดต่อ'
-  // },
-  {
-    id: 'driverName',
-    align: 'left',
-    disablePadding: false,
-    label: 'คนขับรถ'
-  },
-  {
-    id: 'tels',
-    align: 'left',
-    disablePadding: false,
-    label: 'เบอร์โทรคนขับรถ'
-  },
-  {
-    id: 'totalQuantity',
-    align: 'right',
-    disablePadding: false,
-    label: 'จำนวน (ตัน)'
-  },
-  {
-    id: 'status',
-    align: 'center',
-    disablePadding: false,
-    label: 'สถานะออกคิว'
-  },
-  {
-    id: 'action',
-    align: 'center',
-    width: '10%',
-    disablePadding: false,
-    label: 'Actions'
-  }
-];
+// const headCells = [
+//   {
+//     id: 'No',
+//     align: 'center',
+//     disablePadding: true,
+//     label: 'ลำดับ'
+//   },
+//   {
+//     id: 'dateReserve',
+//     align: 'center',
+//     disablePadding: true,
+//     label: 'วันที่จอง'
+//   },
+//   {
+//     id: 'dateQueue',
+//     align: 'center',
+//     disablePadding: true,
+//     label: 'วันที่เข้ารับ'
+//   },
+//   {
+//     id: 'registration_no',
+//     align: 'center',
+//     disablePadding: true,
+//     label: 'ทะเบียนรถ'
+//   },
+//   {
+//     id: 'brandCode',
+//     align: 'center',
+//     disablePadding: true,
+//     label: 'เบรน Code'
+//   },
+//   {
+//     id: 'description',
+//     align: 'left',
+//     disablePadding: true,
+//     width: '5%',
+//     label: 'รหัสคิวเดิม'
+//   },
+//   {
+//     id: 'Company',
+//     align: 'left',
+//     disablePadding: false,
+//     width: '15%',
+//     label: 'บริษัท'
+//   },
+//   // {
+//   //   id: 'names',
+//   //   align: 'left',
+//   //   disablePadding: false,
+//   //   label: 'ชื่อผู้ติดต่อ'
+//   // },
+//   {
+//     id: 'driverName',
+//     align: 'left',
+//     disablePadding: false,
+//     label: 'คนขับรถ'
+//   },
+//   {
+//     id: 'tels',
+//     align: 'left',
+//     disablePadding: false,
+//     label: 'เบอร์โทรคนขับรถ'
+//   },
+//   {
+//     id: 'totalQuantity',
+//     align: 'right',
+//     disablePadding: false,
+//     label: 'จำนวน (ตัน)'
+//   },
+//   {
+//     id: 'status',
+//     align: 'center',
+//     disablePadding: false,
+//     label: 'สถานะออกคิว'
+//   },
+//   {
+//     id: 'action',
+//     align: 'center',
+//     width: '10%',
+//     disablePadding: false,
+//     label: 'Actions'
+//   }
+// ];
 
 // ==============================|| ORDER TABLE - HEADER ||============================== //
-function OrderTableHead() {
-  return (
-    <TableHead>
-      <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'} width={headCell.width}>
-            {headCell.label}
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
+// function OrderTableHead() {
+//   return (
+//     <TableHead>
+//       <TableRow>
+//         {headCells.map((headCell) => (
+//           <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'} width={headCell.width}>
+//             {headCell.label}
+//           </TableCell>
+//         ))}
+//       </TableRow>
+//     </TableHead>
+//   );
+// }
 
-OrderTableHead.propTypes = {
-  order: PropTypes.string,
-  orderBy: PropTypes.string
-};
+// OrderTableHead.propTypes = {
+//   order: PropTypes.string,
+//   orderBy: PropTypes.string
+// };
 
 // ==============================|| ORDER TABLE - STATUS ||============================== //
 const OrderStatus = ({ status }) => {
@@ -200,25 +198,25 @@ OrderStatus.propTypes = {
 };
 
 export default function ReserveTable({ startDate, endDate, permission, onFilter, reserList, checkFilter }) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
   const userRoles = useSelector((state) => state.auth.roles);
   const [items, setItems] = useState([]);
-  const [order] = useState('asc');
-  const [orderBy] = useState('trackingNo');
+  // const [order] = useState('asc');
+  // const [orderBy] = useState('trackingNo');
   const currentDate = moment(new Date()).format('YYYY-MM-DD');
 
   const userId = localStorage.getItem('user_id');
 
   useEffect(() => {
+    setLoading(true);
     getCompanys();
     if (userRoles && permission) {
       getReserve();
     }
   }, [userRoles, startDate, endDate, permission, onFilter]);
 
-  const getReserve = () => {
-    setLoading(true);
+  const getReserve = async () => {
     let urlGet = '';
     if (userRoles == 1 || userRoles == 10 || (permission && permission !== 'no_access_to_view_data')) {
       urlGet = '/allreservesrange?pickup_date1=' + startDate + '&pickup_date2=' + endDate;
@@ -226,26 +224,41 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
       urlGet = '/allreservespickup2?user_id=' + userId + '&pickup_date1=' + startDate + '&pickup_date2=' + endDate;
     }
 
-    reserveRequest.getAllReserveByUrl(urlGet).then((response) => {
-      console.log('getAllReserveByUrl :', response);
+    await reserveRequest.getAllReserveByUrl(urlGet).then((response) => {
+      // console.log('getAllReserveByUrl :', response);
       if (onFilter) {
-        setItems(response.filter((x) => x.product_company_id === onFilter));
+        const filter = response.filter((x) => x.product_company_id === onFilter);
+        const newData = filter.map((item, index) => {
+          return {
+            ...item,
+            No: index + 1
+          };
+        });
+        setItems(newData.filter((x) => x.product_company_id === onFilter));
+        setLoading(false);
       } else {
-        reserList(response);
-        setItems(response);
+        const newData = response.map((item, index) => {
+          return {
+            ...item,
+            No: index + 1
+          };
+        });
+        reserList(newData);
+        setItems(newData);
+        setLoading(false);
       }
-      setLoading(false);
     });
   };
 
   const [filteredData, setFilteredData] = useState([]);
   useEffect(() => {
-    console.log('filteredData:', filteredData);
-    console.log('items:', items);
+    // console.log('filteredData:', filteredData);
+    // console.log('items:', items);
     if (checkFilter) {
       const activeFilters = Object.keys(checkFilter).filter((key) => checkFilter[key]);
       if (activeFilters.length === 0) {
-        console.log('filteredData === 0:', items);
+        // console.log('filteredData === 0:', items);
+        console.log('items', items);
         setFilteredData(items);
       } else {
         const filtered = items.filter((item) => {
@@ -262,6 +275,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
           // return activeFilters.includes(item.status);
           return activeFilters.includes(item.status) && !(item.status === 'completed' && parseInt(item.total_quantity) === 0);
         });
+        console.log('filtered', filtered);
         setFilteredData(filtered);
       }
       // } else {
@@ -738,50 +752,6 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
           newTran.transactions[1].status = 'completed';
         }
         var raw = JSON.stringify(newTran);
-        // var raw = JSON.stringify({
-        //   transactions: [
-        //     {
-        //       order: 1,
-        //       description: 'ชั่งเบา',
-        //       queue_id: queue_id,
-        //       status: 'waiting',
-        //       station_id: 27,
-        //       remark: 'ทดสอบ-ชั่งเบา',
-        //       created_at: currentDate,
-        //       updated_at: currentDate
-        //     },
-        //     {
-        //       order: 2,
-        //       description: 'ขึ้นสินค้า',
-        //       queue_id: queue_id,
-        //       status: 'none',
-        //       station_id: 27,
-        //       remark: 'ทดสอบ-ขึ้นสินค้า',
-        //       created_at: currentDate,
-        //       updated_at: currentDate
-        //     },
-        //     {
-        //       order: 3,
-        //       description: 'ชั่งหนัก',
-        //       queue_id: queue_id,
-        //       status: 'none',
-        //       station_id: 27,
-        //       remark: 'ทดสอบ-ชั่งหนัก ',
-        //       created_at: currentDate,
-        //       updated_at: currentDate
-        //     },
-        //     {
-        //       order: 4,
-        //       description: 'เสร็จสิ้น',
-        //       queue_id: queue_id,
-        //       status: 'none',
-        //       station_id: 27,
-        //       remark: 'ทดสอบ-เสร็จสิ้น',
-        //       created_at: currentDate,
-        //       updated_at: currentDate
-        //     }
-        //   ]
-        // });
 
         var requestOptions = {
           method: 'POST',
@@ -837,6 +807,294 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     await functionAddLogs.AddAuditLog(data);
   };
 
+  // =============== Get Reserve New DataTable ===============//
+  const options = {
+    viewColumns: false,
+    print: false,
+    download: false,
+    selectableRows: 'none',
+    elevation: 0,
+    rowsPerPage: 100,
+    responsive: 'standard',
+    // sort: false,
+    rowsPerPageOptions: [100, 200, 300],
+    customBodyRender: (value) => {
+      return <div style={{ whiteSpace: 'nowrap' }}>{value}</div>;
+    }
+  };
+
+  const columns = [
+    {
+      name: 'No',
+      label: 'ลำดับ',
+      options: {
+        sort: true,
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'center' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'center' }
+        })
+      }
+    },
+    {
+      name: 'created_date',
+      label: 'วันที่จอง',
+      options: {
+        sort: true,
+        setCellProps: () => ({
+          style: {
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }
+        }),
+        customBodyRender: (value) => (
+          <Typography variant="body">{moment(value.slice(0, 10)).format('DD/MM/YY') + ' - ' + value.slice(11, 16) + 'น.'}</Typography>
+        )
+      }
+    },
+    {
+      name: 'pickup_date',
+      label: 'วันที่เข้ารับสินค้า',
+      options: {
+        sort: true,
+        setCellHeaderProps: () => ({
+          style: {
+            whiteSpace: 'nowrap',
+            align: 'center'
+          }
+        }),
+        customBodyRender: (value) => <Typography variant="body">{moment(value.slice(0, 10)).format('DD/MM/YY')}</Typography>
+      }
+    },
+    {
+      name: 'registration_no',
+      label: 'ทะเบียนรถ',
+      options: {
+        sort: true,
+        customBodyRender: (value) => (
+          <Tooltip title={value}>
+            <Chip color={'primary'} label={value} sx={{ width: 122, border: 1 }} />
+          </Tooltip>
+        )
+      }
+    },
+    {
+      name: 'product_company_id',
+      label: 'เบรน Code',
+      options: {
+        sort: true,
+        setCellHeaderProps: () => ({
+          style: {
+            whiteSpace: 'nowrap',
+            align: 'center'
+          }
+        }),
+        customBodyRender: (value, tableMeta) => {
+          const rowData = tableMeta.rowData;
+          const rowDataFilter = filteredData.find((x) => x.reserve_id === rowData[11]);
+          console.log('tableMeta :', tableMeta);
+          return rowDataFilter.queue_token ? <QueueTag id={value} token={rowDataFilter.queue_token} /> : getTokenCompany(value);
+        }
+      }
+    },
+    {
+      name: 'r_description',
+      label: 'รหัสคิวเดิม',
+      options: {
+        sort: true,
+        setCellHeaderProps: () => ({
+          style: {
+            whiteSpace: 'nowrap',
+            align: 'center'
+          }
+        }),
+        customBodyRender: (value) => (value ? <strong style={{ color: 'red' }}>{value}</strong> : '-')
+      }
+    },
+    {
+      name: 'company',
+      label: 'ร้านค้า/บริษัท',
+      options: {
+        sort: true,
+        setCellProps: () => ({
+          style: {
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }
+        }),
+        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+      }
+    },
+    {
+      name: 'driver',
+      label: 'คนขับรถ',
+      options: {
+        sort: true,
+        setCellProps: () => ({
+          style: {
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }
+        }),
+        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+      }
+    },
+    {
+      name: 'mobile_no',
+      label: 'เบอร์โทรคนขับรถ',
+      options: {
+        sort: true,
+        setCellHeaderProps: () => ({
+          style: {
+            whiteSpace: 'nowrap',
+            align: 'center'
+          }
+        }),
+        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+      }
+    },
+    {
+      name: 'total_quantity',
+      label: 'จำนวน (ตัน)',
+      options: {
+        sort: true,
+        setCellHeaderProps: () => ({
+          style: {
+            whiteSpace: 'nowrap',
+            align: 'center'
+          }
+        }),
+        customBodyRender: (value) => <Typography variant="body">{value ? parseFloat((value * 1).toFixed(3)) : '-'}</Typography>
+      }
+    },
+    {
+      name: 'status',
+      label: 'สถานะออกคิว',
+      options: {
+        // sort: true,
+        setCellHeaderProps: () => ({
+          style: {
+            whiteSpace: 'nowrap',
+            align: 'center'
+          }
+        }),
+        customBodyRender: (value, tableMeta) => {
+          const queueDat = filteredData[tableMeta.rowIndex];
+
+          return value == 'completed' && parseFloat(queueDat.total_quantity) == 0 ? (
+            <OrderStatus status={'pending'} />
+          ) : (
+            <OrderStatus status={value} />
+          );
+          // value !== 'none' ? <>{parseFloat(value) <= 0 ? <QueueStatus status={'pending'} /> : <QueueStatus status={value} />}</> : '-'
+        }
+      }
+    },
+    {
+      name: 'reserve_id',
+      label: 'Actions',
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          const queueDat = filteredData[tableMeta.rowIndex];
+          return (
+            <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
+              <Tooltip title="รายละเอียด">
+                <span>
+                  <Button
+                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                    variant="contained"
+                    size="medium"
+                    color="success"
+                    onClick={() => reserveDetail(value)}
+                  >
+                    <ProfileOutlined />
+                  </Button>
+                </span>
+              </Tooltip>
+
+              {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && (
+                <>
+                  <Tooltip title="สร้างคิว">
+                    <span>
+                      <Button
+                        // disabled
+                        variant="contained"
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        size="medium"
+                        disabled={
+                          queueDat.status === 'completed' ||
+                          currentDate !== moment(queueDat.pickup_date).format('YYYY-MM-DD') ||
+                          queueDat.car_id == 1 ||
+                          queueDat.driver_id == 1 ||
+                          ((queueDat.product_brand_id === 45 || queueDat.product_brand_id === 46) &&
+                            parseFloat(queueDat.total_quantity) === 0)
+                        }
+                        color="info"
+                        onClick={() =>
+                          handleClickOpen(
+                            value,
+                            'add-queue',
+                            queueDat.total_quantity,
+                            getTokenCompany(queueDat.product_company_id),
+                            queueDat.product_company_id,
+                            queueDat
+                          )
+                        }
+                      >
+                        <DiffOutlined />
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title="แก้ไข">
+                    <span>
+                      <Button
+                        variant="contained"
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        size="medium"
+                        // disabled={row.status === 'completed'}
+                        color="primary"
+                        onClick={() => updateDrivers(value)}
+                      >
+                        <EditOutlined />
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <CancleQueueButton reserve_id={value} status={queueDat.status} handleReload={handleSetReload} />
+                  <Tooltip title="ลบ">
+                    <span>
+                      <Button
+                        variant="contained"
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        size="medium"
+                        disabled={queueDat.status === 'completed' || queueDat.total_quantity > 0}
+                        color="error"
+                        // onClick={() => deleteDrivers(row.reserve_id)}
+                        onClick={() => handleClickOpen(value, 'delete', queueDat.total_quantity, queueDat.brand_code)}
+                      >
+                        <DeleteOutlined />
+                      </Button>
+                    </span>
+                  </Tooltip>
+                </>
+              )}
+            </ButtonGroup>
+          );
+        },
+
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'center' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'center' }
+        })
+      }
+    }
+  ];
+
   return (
     <Box>
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
@@ -873,7 +1131,22 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
         </Backdrop>
       )}
 
-      <TableContainer
+      {loading && (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
+          open={loading}
+        >
+          <CircularProgress color="primary" />
+        </Backdrop>
+      )}
+      <MUIDataTable
+        title={<Typography variant="h5">ตารางข้อมูลการจองคิว</Typography>}
+        data={filteredData}
+        columns={columns}
+        options={options}
+      />
+
+      {/* <TableContainer
         sx={{
           width: '100%',
           overflowX: 'auto',
@@ -927,7 +1200,6 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
                         {row.r_description ? <strong style={{ color: 'red' }}>{row.r_description}</strong> : <>-</>}
                       </TableCell>
                       <TableCell align="left">{row.company}</TableCell>
-                      {/* <TableCell align="left">{row.contact_person ? row.contact_person : '-'}</TableCell> */}
                       <TableCell align="left">{row.driver ? row.driver : '-'}</TableCell>
                       <TableCell align="left">{row.mobile_no ? row.mobile_no : '-'}</TableCell>
                       <TableCell align="right"> {parseFloat((row.total_quantity * 1).toFixed(3))}</TableCell>
@@ -1000,21 +1272,6 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
                                 </span>
                               </Tooltip>
                               <CancleQueueButton reserve_id={row.reserve_id} status={row.status} handleReload={handleSetReload} />
-                              {/* <Tooltip title="ยกเลิก">
-                                <span>
-                                  <Button
-                                    variant="contained"
-                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                    size="medium"
-                                    disabled={row.status !== 'completed'}
-                                    color="warning"
-                                    // onClick={() => deleteDrivers(row.reserve_id)}
-                                    onClick={() => handleClickOpen(row.reserve_id, 'cancle', row.total_quantity, row.brand_code)}
-                                  >
-                                    <WarningOutlined />
-                                  </Button>
-                                </span>
-                              </Tooltip> */}
                               <Tooltip title="ลบ">
                                 <span>
                                   <Button
@@ -1057,7 +1314,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
             </TableBody>
           )}
         </Table>
-      </TableContainer>
+      </TableContainer> */}
     </Box>
   );
 }

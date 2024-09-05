@@ -518,7 +518,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
     const protocol = window.location.protocol;
     const hostname = window.location.hostname;
     const port = window.location.port;
-
+    // if (queue_id === 99999) {
     var link = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
     link = link + '/queues/detail/' + queue_id;
 
@@ -539,6 +539,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
     fetch(apiUrl + '/line-notify', requestOptions)
       .then((response) => response.text())
       .catch((error) => console.error(error));
+    // }
   };
 
   const getStepToken = (step_id) => {
@@ -691,12 +692,12 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
 
           const data = {
             audit_user_id: userId,
-            audit_action: "I",
+            audit_action: 'I',
             audit_system_id: id_update,
-            audit_system: "step3",
-            audit_screen: "ข้อมูลชั่งหนัก",
-            audit_description: "เรียกชั่งหนัก"
-          }
+            audit_system: 'step3',
+            audit_screen: 'ข้อมูลชั่งหนัก',
+            audit_description: 'เรียกชั่งหนัก'
+          };
           AddAuditLogs(data);
 
           // handleCallQueue(queues);
@@ -727,12 +728,12 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
               // const queu = weight;
               const data = {
                 audit_user_id: userId,
-                audit_action: "U",
+                audit_action: 'U',
                 audit_system_id: id_update,
-                audit_system: "step3",
-                audit_screen: "ข้อมูลชั่งหนัก",
-                audit_description: "ทวนสอบการขึ้นสินค้า"
-              }
+                audit_system: 'step3',
+                audit_screen: 'ข้อมูลชั่งหนัก',
+                audit_description: 'ทวนสอบการขึ้นสินค้า'
+              };
               AddAuditLogs(data);
               updateRecall(id_update, queues.queue_id, queues);
 
@@ -754,12 +755,12 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
                 });
               const data = {
                 audit_user_id: userId,
-                audit_action: "U",
+                audit_action: 'U',
                 audit_system_id: id_update,
-                audit_system: "step3",
-                audit_screen: "ข้อมูลชั่งหนัก",
-                audit_description: "บันทึกข้อมูลชั่งหนัก"
-              }
+                audit_system: 'step3',
+                audit_screen: 'ข้อมูลชั่งหนัก',
+                audit_description: 'บันทึกข้อมูลชั่งหนัก'
+              };
               AddAuditLogs(data);
 
               updateLoadingTeam(id_update_next, team_id);
@@ -792,12 +793,12 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
 
           const data = {
             audit_user_id: userId,
-            audit_action: "D",
+            audit_action: 'D',
             audit_system_id: id_update,
-            audit_system: "step3",
-            audit_screen: "ข้อมูลชั่งหนัก",
-            audit_description: "ยกเลิกข้อมูลชั่งหนัก"
-          }
+            audit_system: 'step3',
+            audit_screen: 'ข้อมูลชั่งหนัก',
+            audit_description: 'ยกเลิกข้อมูลชั่งหนัก'
+          };
           AddAuditLogs(data);
           step1Update(id_update, 'waiting', 27);
           updateStartTime(id_update);
@@ -900,15 +901,14 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
     }));
   };
 
-  useEffect(() => {
-  }, [queuesDetial])
+  useEffect(() => {}, [queuesDetial]);
   const handleChangeWeight1 = (data) => {
     setQueuesDetial(data);
-  }
+  };
 
   const AddAuditLogs = async (data) => {
     await functionAddLogs.AddAuditLog(data);
-  }
+  };
   return (
     <>
       <Box>
@@ -926,9 +926,13 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
                     {/* <Typography variant="body1" sx={{ fontSize: 16 }}>
                       น้ำหนักชั่งเบา : <strong>{queuesDetial.length > 0 ? parseFloat(queuesDetial[0].weight1) : '-'}</strong> ตัน
                     </Typography> */}
-                    {queuesDetial.length > 0 &&
-                      <ChangeWeight weight1={parseFloat(queuesDetial[0].weight1)} queueId={queuesDetial[0]?.queue_id} changeWeight={handleChangeWeight1} />
-                    }
+                    {queuesDetial.length > 0 && (
+                      <ChangeWeight
+                        weight1={parseFloat(queuesDetial[0].weight1)}
+                        queueId={queuesDetial[0]?.queue_id}
+                        changeWeight={handleChangeWeight1}
+                      />
+                    )}
                   </Grid>
 
                   <Grid item xs={12}>
