@@ -55,6 +55,23 @@ export const getOrderByReserveId = async (id) => {
   return result;
 };
 
+export const postCreateOrder = async (data) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  const raw = JSON.stringify(data);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + `/ordertran/`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
 export const getProductByIdComAndBrandId = async (idcom, idbrand) => {
   const requestOptions = {
     method: 'GET',

@@ -233,16 +233,24 @@ function UpdateReserve() {
       });
   };
 
+  const updateReserveBeforeTotal = async () => {
+    try {
+      await reserveRequest.getReserTotalByID(id);
+    } catch (error) {
+      console.log(error);
+      alert('ข้อผิดพลาด ', error);
+    }
+  };
   const updateReserveTotal = async (id) => {
     try {
       await reserveRequest.getReserTotalByID(id).then(() => {
         Promise.all([getReserve()])
           .then(() => {
-            setLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
+            setLoading(false);
           })
           .catch((error) => {
             console.error('Error loading data:', error);
-            setLoading(false); // ปิดการแสดง Loading แม้จะเกิดข้อผิดพลาด
+            setLoading(false);
           });
       });
     } catch (error) {
@@ -271,6 +279,7 @@ function UpdateReserve() {
 
           try {
             // รอให้ getReserve ทำงานเสร็จก่อน
+            await updateReserveBeforeTotal(id);
             await getReserve();
             await getProductBrandList();
             await getProductCompany();
@@ -488,9 +497,13 @@ function UpdateReserve() {
     return await new Promise((resolve) => {
       axios.request(config).then((response) => {
         if (response.data.status === 'ok') {
+          // if (typeof response.data.queuecount !== Number) {
+          //   resolve(response.data.queuecount);
+          // } else {
           response.data.queuecount.map((data) => {
             resolve(data.queuecount);
           });
+          // }
         } else {
           alert(result['message']);
         }

@@ -53,7 +53,7 @@ const MainLayout = () => {
 
   const getProfile = () => {
     authUser.authUser(token).then((result) => {
-      if (result.status) {
+      if (result.status === 'ok') {
         dispatch(
           setProfile({
             email: result.decoded.email,
@@ -63,6 +63,7 @@ const MainLayout = () => {
         );
         getPagePermission(result.decoded.role_id);
       } else {
+        alert('การเข้าสู่ระบบของคุณหมดอายุ กรุณาเข้าสู่ระบบอีกครั้งเพื่อใช้งานต่อ');
         localStorage.removeItem('token');
         localStorage.removeItem('user_id');
         // if (result.status == 9999)

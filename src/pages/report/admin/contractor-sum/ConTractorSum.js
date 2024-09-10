@@ -94,6 +94,9 @@ function ConTractorSum() {
   const waitingGet = async (company) => {
     try {
       await reportRequest.getContractorSummary(selectedDate1, selectedDate2).then((response) => {
+        console.log('waitingGet', response);
+        console.log('selectedDate1', selectedDate1);
+        console.log('selectedDate2', selectedDate2);
         if (company.length > 0) {
           company.map((x, index) => {
             if (index == 0) {

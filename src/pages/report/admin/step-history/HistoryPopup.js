@@ -69,6 +69,8 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
   const getAllSteps = async (id) => {
     try {
       await queueRequest.getAllStepById(id).then((response) => {
+        const steps = ['ชั่งเบา', 'ขึ้นสินค้า', 'ชั่งหนัก', 'เสร็จสิ้น'];
+        response = sortDataBySteps(response, steps);
         if (types === 'weight') {
           getAllAuditlog(response[0].step_id, 'U', 'weight', startDate, endDate, response[2].step_id);
           // getAllAuditlog(, 'U', "weight", startDate, endDate);
@@ -82,6 +84,14 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
     } catch (error) {
       console.log(error);
     }
+  };
+  // Function to sort the data based on the steps array
+  const sortDataBySteps = (data, steps) => {
+    return data.sort((a, b) => {
+      const stepA = a.remark.replace('ทดสอบ-', '').trim();
+      const stepB = b.remark.replace('ทดสอบ-', '').trim();
+      return steps.indexOf(stepA) - steps.indexOf(stepB);
+    });
   };
 
   // =============== Get All product register ===============//

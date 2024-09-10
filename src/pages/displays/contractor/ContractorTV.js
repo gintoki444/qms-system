@@ -46,7 +46,7 @@ function ContractorTV() {
 
     const intervalId = setInterval(() => {
       fetchData();
-    }, 15000); // Polling every 5 seconds
+    }, 120000); // Polling every 5 seconds
 
     return () => clearInterval(intervalId);
   }, []);
@@ -94,10 +94,6 @@ function ContractorTV() {
         const sortedData = sortContracts(result);
         const chunk1 = sortedData.slice(0, 15); // ลำดับที่ 0-13
         const chunk2 = sortedData.slice(15, 30); // ลำดับที่ 14-27
-
-        console.log('result', result);
-        console.log('chunk1', chunk1);
-        console.log('chunk2', chunk2);
         setContractorList(chunk1);
         setContractorList2(chunk2);
       });

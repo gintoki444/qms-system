@@ -40,7 +40,7 @@ import CryptoJS from 'crypto-js';
 const KeyCode = process.env.REACT_APP_CODE_URL;
 
 // Get api queuesRequest
-import * as queueRequest from '_api/queueReques'
+import * as queueRequest from '_api/queueReques';
 import * as reserveRequest from '_api/reserveRequest';
 import QueueNow from './QueueNow';
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -68,7 +68,6 @@ function QueueDetail({ sx }) {
   const prurl = window.location.origin + '/queues/detail/';
 
   useEffect(() => {
-
     const decryptData = () => {
       try {
         // Decode the Base64 string
@@ -97,7 +96,7 @@ function QueueDetail({ sx }) {
     // const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
 
     if (Object.keys(userPermission).length > 0) {
-      console.log('userRoles :', userRoles)
+      console.log('userRoles :', userRoles);
       if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
         setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
       } else {
@@ -228,23 +227,45 @@ function QueueDetail({ sx }) {
   const [items, setItems] = useState([]);
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState(false);
-  const getQueueById = (id) => {
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
 
-    fetch(apiUrl + '/stepbyqueueidonly/' + id, requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        setItems(result);
-      })
-      .catch((error) => {
-        console.log('error', error);
-        setErrorMessage('ไม่พบข้อมูลคิว');
-        setError(true);
-        setLoading(false);
+  const getQueueById = (id) => {
+    try {
+      queueRequest.getAllStepById(id).then((result) => {
+        const sortedData = sortDataBySteps(result, steps);
+        setItems(sortedData);
       });
+    } catch (error) {
+      console.log(error);
+      console.log('error', error);
+      setErrorMessage('ไม่พบข้อมูลคิว');
+      setError(true);
+      setLoading(false);
+    }
+    // var requestOptions = {
+    //   method: 'GET',
+    //   redirect: 'follow'
+    // };
+
+    // fetch(apiUrl + '/stepbyqueueidonly/' + id, requestOptions)
+    //   .then((response) => response.json())
+    //   .then((result) => {
+    //     setItems(result);
+    //   })
+    //   .catch((error) => {
+    //     console.log('error', error);
+    //     setErrorMessage('ไม่พบข้อมูลคิว');
+    //     setError(true);
+    //     setLoading(false);
+    //   });
+  };
+
+  // Function to sort the data based on the steps array
+  const sortDataBySteps = (data, steps) => {
+    return data.sort((a, b) => {
+      const stepA = a.remark.replace('ทดสอบ-', '').trim();
+      const stepB = b.remark.replace('ทดสอบ-', '').trim();
+      return steps.indexOf(stepA) - steps.indexOf(stepB);
+    });
   };
   //  ==================== [ ปิดคิว ] ====================
   const [open, setOpen] = useState(false);
@@ -551,7 +572,7 @@ function QueueDetail({ sx }) {
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Typography variant="body">
-                    <strong>ชื่อผู้ขับ :</strong> {' '}{queues.driver_name}
+                    <strong>ชื่อผู้ขับ :</strong> {queues.driver_name}
                   </Typography>
                 </Grid>
 
@@ -636,8 +657,10 @@ function QueueDetail({ sx }) {
                     {isMobile ? (
                       <Grid container>
                         <Grid item xs={6}>
-                          <Typography variant="h4">หมายเลขคิว : <span style={{ color: 'red' }}>{queue_token}</span></Typography>
-                          {(queues.step2_status === "waiting" || queues.step2_status === "none") && (
+                          <Typography variant="h4">
+                            หมายเลขคิว : <span style={{ color: 'red' }}>{queue_token}</span>
+                          </Typography>
+                          {(queues.step2_status === 'waiting' || queues.step2_status === 'none') && (
                             <QueueNow productComId={queues.product_company_id} />
                           )}
                           {/* {userId && (
@@ -671,12 +694,12 @@ function QueueDetail({ sx }) {
                         <Grid item xs={12}>
                           {/* <Stack justifyContent="space-between" flexDirection="row"> */}
                           <Typography variant="h4">
-                            หมายเลขคิว : {' '} <span style={{ color: 'red' }}> {queue_token}</span>{'  '}
-
+                            หมายเลขคิว : <span style={{ color: 'red' }}> {queue_token}</span>
+                            {'  '}
                             {/* (เลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>) */}
                             {/* <span style={{ color: 'red' }}>{queueNumber}</span> */}
                           </Typography>
-                          {(queues.step2_status === "waiting" || queues.step2_status === "none") && (
+                          {(queues.step2_status === 'waiting' || queues.step2_status === 'none') && (
                             <QueueNow productComId={queues.product_company_id} />
                           )}
                           {/* </Stack> */}
@@ -698,8 +721,10 @@ function QueueDetail({ sx }) {
                     )}
                   </Grid>
                   <Grid item xs={12} sx={{ '& button': { m: 1 }, p: '0 -6%!important' }} align="center">
-                    {(pageDetail.length > 0 &&
-                      (pageDetail[0].permission_name === 'manage_everything' || pageDetail[0].permission_name === 'add_edit_delete_data') || userRoles === 19) &&
+                    {((pageDetail.length > 0 &&
+                      (pageDetail[0].permission_name === 'manage_everything' ||
+                        pageDetail[0].permission_name === 'add_edit_delete_data')) ||
+                      userRoles === 19) &&
                       activeStep == 3 && (
                         <Button size="mediam" variant="contained" color="primary" onClick={() => handleClickOpen(stepData.step_id)}>
                           ปิดคิว
@@ -751,7 +776,6 @@ function QueueDetail({ sx }) {
   );
 }
 const VerticalStepper = ({ activeStep, steps, queue_token, queues, orders, totalItem, stepDetail, stepId }) => {
-
   // ==============================|| ORDER TABLE - STATUS ||============================== //
   const QueueStatus = ({ status, id }) => {
     const statusText = [
@@ -910,8 +934,8 @@ const VerticalStepper = ({ activeStep, steps, queue_token, queues, orders, total
             <StepLabel>
               <Stack flexDirection="row" justifyContent="space-between">
                 <Typography variant="h5">{label}</Typography>
-                <Typography variant="h5" sx={{ mr: '40%' }}>เวลา :
-                  {stepDetail[index]?.end_time ? ' ' + stepDetail[index].end_time.slice(11, 16) + ' น.' : ' -- : -- น.'}
+                <Typography variant="h5" sx={{ mr: '40%' }}>
+                  เวลา :{stepDetail[index]?.end_time ? ' ' + stepDetail[index].end_time.slice(11, 16) + ' น.' : ' -- : -- น.'}
                 </Typography>
               </Stack>
             </StepLabel>
@@ -941,21 +965,19 @@ const VerticalStepper = ({ activeStep, steps, queue_token, queues, orders, total
       />
       {/* )} */}
     </div>
-  )
-
+  );
 };
 
 const HorizontalStepper = ({ activeStep, steps, queue_token, queues, orders, totalItem, stepDetail, stepId }) => (
   <div>
     <MainCard>
       <Stepper activeStep={activeStep} alternativeLabel sx={{ ml: '-8%' }}>
-
         {steps.map((label, index) => (
           <Step key={index}>
             <StepLabel>
               <Typography variant="h5">{label}</Typography>
-              <Typography variant="h5">เวลา :
-                {stepDetail[index]?.end_time ? ' ' + stepDetail[index].end_time.slice(11, 16) + ' น.' : ' -- : --'}
+              <Typography variant="h5">
+                เวลา :{stepDetail[index]?.end_time ? ' ' + stepDetail[index].end_time.slice(11, 16) + ' น.' : ' -- : --'}
               </Typography>
             </StepLabel>
           </Step>
@@ -1141,10 +1163,10 @@ const QueueDetails = ({ queues, orders, totalItem, stepDetail, stepId }) => {
   const getProductBrandList = async () => {
     reserveRequest.getAllproductBrand().then((response) => {
       if (response.length > 0) {
-        setProductBrandList(response)
+        setProductBrandList(response);
       }
     });
-  }
+  };
   return (
     <Grid container spacing={2} sx={{ p: '0 3%' }}>
       <Grid item xs={12}>
@@ -1157,22 +1179,32 @@ const QueueDetails = ({ queues, orders, totalItem, stepDetail, stepId }) => {
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Typography variant="h4" sx={{ pl: 1 }}>
-                <strong>โกดัง :  <span style={{ color: 'red' }}>{queues.warehouse_name || '-'}</span></strong>
+                <strong>
+                  โกดัง : <span style={{ color: 'red' }}>{queues.warehouse_name || '-'}</span>
+                </strong>
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
               <Typography variant="h4" sx={{ pl: { xs: 1, lg: '20%' } }}>
-                <strong>หัวจ่าย :  <span style={{ color: 'red' }}>{queues.station_description || '-'}</span></strong>
+                <strong>
+                  หัวจ่าย : <span style={{ color: 'red' }}>{queues.station_description || '-'}</span>
+                </strong>
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
               <Typography variant="h4" sx={{ pl: 1 }}>
-                <strong>น้ำหนักก่อนรับสินค้า :</strong> <span style={{ color: 'red' }}>{queues.weight1 && queues.weight1 !== null ? parseFloat(queues.weight1) + ' ตัน' : '-'}</span>
+                <strong>น้ำหนักก่อนรับสินค้า :</strong>{' '}
+                <span style={{ color: 'red' }}>
+                  {queues.weight1 && queues.weight1 !== null ? parseFloat(queues.weight1) + ' ตัน' : '-'}
+                </span>
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
               <Typography variant="h4" sx={{ pl: { xs: 1, lg: '20%' } }}>
-                <strong>น้ำหนักหลังรับสินค้า :</strong>  <span style={{ color: 'red' }}>{queues.weight2 && queues.weight2 !== null ? parseFloat(queues.weight2) + ' ตัน' : '-'}</span>
+                <strong>น้ำหนักหลังรับสินค้า :</strong>{' '}
+                <span style={{ color: 'red' }}>
+                  {queues.weight2 && queues.weight2 !== null ? parseFloat(queues.weight2) + ' ตัน' : '-'}
+                </span>
               </Typography>
             </Grid>
             <Grid item xs={12} md={12}>
@@ -1190,7 +1222,7 @@ const QueueDetails = ({ queues, orders, totalItem, stepDetail, stepId }) => {
       )} */}
       <Grid item xs={12} md={6}>
         <Typography variant="h4" sx={{ pl: 1 }}>
-          <strong style={{ color: '#555555' }}>ข้อมูลผู้ขับขี่:</strong>{' '}{queues.driver_name}
+          <strong style={{ color: '#555555' }}>ข้อมูลผู้ขับขี่:</strong> {queues.driver_name}
         </Typography>
       </Grid>
 
@@ -1212,7 +1244,7 @@ const QueueDetails = ({ queues, orders, totalItem, stepDetail, stepId }) => {
         </Typography>
       </Grid>
 
-      {stepDetail && !isMobile &&
+      {stepDetail && !isMobile && (
         <Grid item xs={12} md={6}>
           {stepDetail.map(
             (item, index) =>
@@ -1228,7 +1260,7 @@ const QueueDetails = ({ queues, orders, totalItem, stepDetail, stepId }) => {
               )
           )}
         </Grid>
-      }
+      )}
       {userId && (
         <>
           <Grid item xs={12} sx={{ mt: 1 }}>
@@ -1250,19 +1282,27 @@ const QueueDetails = ({ queues, orders, totalItem, stepDetail, stepId }) => {
                           เลขที่คำสั่งซื้อ : <strong>{order.ref_order_id}</strong>
                         </Typography>
                       </Grid>
-                      <Grid item xs={12} md={6} >
+                      <Grid item xs={12} md={6}>
                         <Typography variant="body1" sx={{ fontSize: '18px', pl: { xs: 1, lg: '20%' } }}>
                           วันที่สั่งซื้อสินค้า : <strong>{moment(order.order_date).format('DD/MM/YYYY')}</strong>
                         </Typography>
                       </Grid>
                       <Grid item xs={12} md={6}>
                         <Typography variant="body1" sx={{ fontSize: '18px' }}>
-                          บริษัท(สินค้า) : <strong> {productCompany.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}</strong>
+                          บริษัท(สินค้า) :{' '}
+                          <strong>
+                            {' '}
+                            {productCompany.find((x) => x.product_company_id === order.product_company_id)?.product_company_name_th}
+                          </strong>
                         </Typography>
                       </Grid>
                       <Grid item xs={12} md={6}>
                         <Typography variant="body1" sx={{ fontSize: '18px', pl: { xs: 1, lg: '20%' } }}>
-                          ตราสินค้า : <strong>  {productBrandList.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}</strong>
+                          ตราสินค้า :{' '}
+                          <strong>
+                            {' '}
+                            {productBrandList.find((x) => x.product_brand_id === order.product_brand_id)?.product_brand_name}
+                          </strong>
                         </Typography>
                       </Grid>
                       <Grid item xs={12} md={6}>
@@ -1273,7 +1313,7 @@ const QueueDetails = ({ queues, orders, totalItem, stepDetail, stepId }) => {
                     </Grid>
                     <Grid item xs={12} md={12}>
                       <Typography variant="body1" sx={{ fontSize: '18px' }}>
-                        รายละเอียด :  <strong> {order.description}</strong>
+                        รายละเอียด : <strong> {order.description}</strong>
                       </Typography>
                     </Grid>
                     <Grid item xs={12} md={9}>
@@ -1319,7 +1359,7 @@ const QueueDetails = ({ queues, orders, totalItem, stepDetail, stepId }) => {
           </Grid>
         </>
       )}
-    </Grid >
+    </Grid>
   );
 };
 

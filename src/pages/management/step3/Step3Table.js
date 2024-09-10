@@ -269,11 +269,21 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
   const getQueuesDetial = (id) => {
     try {
       queueReques.getAllStepById(id).then((response) => {
-        setQueuesDetial(response);
+        const steps = ['ชั่งเบา', 'ขึ้นสินค้า', 'ชั่งหนัก', 'เสร็จสิ้น'];
+        const sortedData = sortDataBySteps(response, steps);
+        setQueuesDetial(sortedData);
       });
     } catch (error) {
       console.log(error);
     }
+  };
+  // Function to sort the data based on the steps array
+  const sortDataBySteps = (data, steps) => {
+    return data.sort((a, b) => {
+      const stepA = a.remark.replace('ทดสอบ-', '').trim();
+      const stepB = b.remark.replace('ทดสอบ-', '').trim();
+      return steps.indexOf(stepA) - steps.indexOf(stepB);
+    });
   };
 
   const step1Update = async (step_id, statusupdate, station_id) => {

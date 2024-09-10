@@ -460,10 +460,15 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     };
     return await new Promise((resolve) => {
       axios.request(config).then((response) => {
+        console.log(response);
         if (response.data.status === 'ok') {
+          // if (typeof response.data.queuecount !== Number) {
+          //   resolve(response.data.queuecount);
+          // } else {
           response.data.queuecount.map((data) => {
             resolve(data.queuecount);
           });
+          // }
         } else {
           alert(result['message']);
         }

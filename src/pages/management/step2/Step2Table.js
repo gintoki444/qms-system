@@ -224,8 +224,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       console.log('fetchData');
       getWarehouses();
       getAllContractor();
-      getProductRegisters();
-      getAllItemsRegis();
+      // await getProductRegisters();
+      // getAllItemsRegis();
       // Use different API functions based on the status
       if (status === 'waiting') {
         await waitingGet();
@@ -660,99 +660,207 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
   // =============== Get Order Product ===============//
   const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    console.log('orders :', orders);
+  }, [orders]);
   // const [loadOrders, setLoadOrder] = useState(false);
-
-  const getOrderOfReserve = async (id) => {
+  const getOrderOfReserve = async (id, status) => {
     // setLoadOrder(true);
-    await reserveRequest.getOrderByReserveId(id).then((response) => {
+    await reserveRequest.getOrderByReserveId(id).then(async (response) => {
       if (response.length > 0) {
-        response.map((result) => {
-          if (result.product_company_id && result.product_brand_id) {
-            result.items.map((data, index) => {
-              const getProductRegis = productList.filter(
-                (x) =>
-                  x.product_id == data.product_id &&
-                  x.product_brand_id == result.product_brand_id &&
-                  x.product_company_id == result.product_company_id
-              );
-              data.productRegis = getProductRegis;
+        if (status !== 'cancle') {
+          for (let result of response) {
+            if (result.product_company_id && result.product_brand_id) {
+              for (let [index, data] of result.items.entries()) {
+                // เพิ่มพารามิเตอร์ status ในการเรียก getProductRegisters
+                const getAllProductRegis = await getProductRegisters(status); // หรือ 'อื่นๆ' ตามที่คุณต้องการ
+                const allProductRegis = await getAllItemsRegis();
 
-              const getItemsRegisData = allProductRegis.filter(
-                (option) => option.order_id === data.order_id && option.item_id === data.item_id
-              );
+                const getProductRegis = getAllProductRegis.filter(
+                  (x) =>
+                    x.product_id == data.product_id &&
+                    x.product_brand_id == result.product_brand_id &&
+                    x.product_company_id == result.product_company_id
+                );
 
-              if (getItemsRegisData.length > 0) {
-                getItemsRegisData.map((x) => {
+                console.log('befor productList: ', getAllProductRegis);
+                console.log('befor getProductRegis: ', getProductRegis);
+                data.productRegis = getProductRegis;
+
+                const getItemsRegisData = allProductRegis.filter(
+                  (option) => option.order_id === data.order_id && option.item_id === data.item_id
+                );
+
+                if (getItemsRegisData.length > 0) {
+                  getItemsRegisData.forEach((x) => {
+                    setLoopSelect((prevState) => {
+                      const updatedOptions = [...prevState];
+                      x.id = data.order_id + data.item_id + index;
+                      updatedOptions.push(x);
+                      return updatedOptions;
+                    });
+                  });
+                } else {
+                  const selectedOption = {
+                    id: `${data.order_id}${data.item_id}${getItemsRegisData.length}`,
+                    order_id: data.order_id,
+                    item_id: data.item_id,
+                    product_register_id: '',
+                    quantity: parseFloat(data.quantity),
+                    product_register_quantity: 0,
+                    sling_hook_quantity: 0,
+                    sling_sort_quantity: 0,
+                    smash_quantity: 0,
+                    jumbo_hook_quantity: 0
+                  };
                   setLoopSelect((prevState) => {
                     const updatedOptions = [...prevState];
-
-                    (x.id = data.order_id + data.item_id + index), updatedOptions.push(x);
+                    updatedOptions.push(selectedOption);
                     return updatedOptions;
                   });
-                });
-              } else {
-                const selectedOption = {
-                  // id: `${data.order_id}${data.item_id}${index}`,
-                  id: `${data.order_id}${data.item_id}${getItemsRegisData.length}`,
-                  order_id: data.order_id,
-                  item_id: data.item_id,
-                  product_register_id: '',
-                  quantity: parseFloat(data.quantity),
-                  product_register_quantity: 0,
-                  sling_hook_quantity: 0,
-                  sling_sort_quantity: 0,
-                  smash_quantity: 0,
-                  jumbo_hook_quantity: 0
-                };
-                setLoopSelect((prevState) => {
-                  const updatedOptions = [...prevState];
-                  updatedOptions.push(selectedOption);
-                  return updatedOptions;
-                });
-              }
+                }
 
-              if (data.product_id) {
-                const selectedOption = { id: data.item_id, value: data.product_register_id };
-                setOrderSelect((prevState) => {
-                  const updatedOptions = [...prevState];
-                  updatedOptions.push(selectedOption);
-                  return updatedOptions;
-                });
+                if (data.product_id) {
+                  const selectedOption = { id: data.item_id, value: data.product_register_id };
+                  setOrderSelect((prevState) => {
+                    const updatedOptions = [...prevState];
+                    updatedOptions.push(selectedOption);
+                    return updatedOptions;
+                  });
+                }
               }
-            });
+            }
           }
-        });
-
+        }
         setOrders(response);
+        setOnClickSubmit(false);
         // setLoadOrder(false);
       }
     });
   };
 
-  const [productList, setProductList] = useState([]);
-  const getProductRegisters = async () => {
+  // const getOrderOfReserve = async (id) => {
+  //   // setLoadOrder(true);
+  //   await reserveRequest.getOrderByReserveId(id).then(async(response) => {
+  //     if (response.length > 0) {
+  //       response.map((result) => {
+  //         if (result.product_company_id && result.product_brand_id) {
+  //           result.items.map((data, index) => {
+  //             const getAllProductRegis = getProductRegisters();
+  //             const getProductRegis = getAllProductRegis.filter(
+  //               (x) =>
+  //                 x.product_id == data.product_id &&
+  //                 x.product_brand_id == result.product_brand_id &&
+  //                 x.product_company_id == result.product_company_id
+  //             );
+  //             console.log('befor productList: ', getAllProductRegis);
+  //             console.log('befor getProductRegis: ', getProductRegis);
+  //             data.productRegis = getProductRegis;
+
+  //             const getItemsRegisData = allProductRegis.filter(
+  //               (option) => option.order_id === data.order_id && option.item_id === data.item_id
+  //             );
+
+  //             if (getItemsRegisData.length > 0) {
+  //               getItemsRegisData.map((x) => {
+  //                 setLoopSelect((prevState) => {
+  //                   const updatedOptions = [...prevState];
+
+  //                   (x.id = data.order_id + data.item_id + index), updatedOptions.push(x);
+  //                   return updatedOptions;
+  //                 });
+  //               });
+  //             } else {
+  //               const selectedOption = {
+  //                 // id: `${data.order_id}${data.item_id}${index}`,
+  //                 id: `${data.order_id}${data.item_id}${getItemsRegisData.length}`,
+  //                 order_id: data.order_id,
+  //                 item_id: data.item_id,
+  //                 product_register_id: '',
+  //                 quantity: parseFloat(data.quantity),
+  //                 product_register_quantity: 0,
+  //                 sling_hook_quantity: 0,
+  //                 sling_sort_quantity: 0,
+  //                 smash_quantity: 0,
+  //                 jumbo_hook_quantity: 0
+  //               };
+  //               setLoopSelect((prevState) => {
+  //                 const updatedOptions = [...prevState];
+  //                 updatedOptions.push(selectedOption);
+  //                 return updatedOptions;
+  //               });
+  //             }
+
+  //             if (data.product_id) {
+  //               const selectedOption = { id: data.item_id, value: data.product_register_id };
+  //               setOrderSelect((prevState) => {
+  //                 const updatedOptions = [...prevState];
+  //                 updatedOptions.push(selectedOption);
+  //                 return updatedOptions;
+  //               });
+  //             }
+  //           });
+  //         }
+  //       });
+
+  //       setOrders(response);
+  //       // setLoadOrder(false);
+  //     }
+  //   });
+  // };
+
+  //  แสดงข้อมูลสินค้าทั้งหมด
+  const getProductRegisters = async (status) => {
     try {
-      adminRequest.getAllProductRegister().then((response) => {
-        adminRequest.getAllProductHistory().then((response0) => {
-          let allRespon = [...response, ...response0];
-          if (onFilter) {
-            setProductList(allRespon.filter((x) => x.product_company_id == onFilter));
-          } else {
-            setProductList(allRespon);
-          }
-          setOnClickSubmit(false);
-        });
-        // if (onFilter) {
-        //   setProductList(response.filter((x) => x.product_company_id == onFilter));
-        // } else {
-        //   setProductList(response);
-        // }
-        // setOnClickSubmit(false);
-      });
+      let allRespon;
+
+      if (status === 'call') {
+        // ดึงข้อมูลเฉพาะจาก getAllProductRegister
+        const response = await adminRequest.getAllProductRegister();
+        allRespon = [...response];
+      } else {
+        // ดึงข้อมูลจากทั้ง getAllProductRegister และ getAllProductHistory
+        const [response, response0] = await Promise.all([adminRequest.getAllProductRegister(), adminRequest.getAllProductHistory()]);
+        allRespon = [...response, ...response0];
+      }
+
+      // กรองข้อมูลตาม onFilter ถ้ามี
+      if (onFilter) {
+        return allRespon.filter((x) => x.product_company_id == onFilter);
+      } else {
+        return allRespon;
+      }
     } catch (error) {
       console.log(error);
+      return []; // ส่งกลับ array ว่างในกรณีที่เกิด error
     }
   };
+
+  // const [productList, setProductList] = useState([]);
+  // const getProductRegisters = async () => {
+  //   try {
+  //     await adminRequest.getAllProductRegister().then(async (response) => {
+  //       await adminRequest.getAllProductHistory().then((response0) => {
+  //         let allRespon = [...response, ...response0];
+  //         if (onFilter) {
+  //           setProductList(allRespon.filter((x) => x.product_company_id == onFilter));
+  //         } else {
+  //           setProductList(allRespon);
+  //         }
+  //         setOnClickSubmit(false);
+  //       });
+  //       // if (onFilter) {
+  //       //   setProductList(response.filter((x) => x.product_company_id == onFilter));
+  //       // } else {
+  //       //   setProductList(response);
+  //       // }
+  //       // setOnClickSubmit(false);
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   const [orderSelect, setOrderSelect] = useState([]);
   const [stockSelect, setStockSelect] = useState([]);
@@ -1226,15 +1334,23 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     }
   };
 
-  const handleClickOpen = (step_id, fr, queues_id, station_id, queuesData) => {
+  const handleClickOpen = async (step_id, fr, queues_id, station_id, queuesData) => {
     //ข้อความแจ้งเตือน
     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
     if (fr === 'call') {
       setText('เรียกคิว');
       setMessage('ขึ้นสินค้า–STEP2 เรียกคิว');
       setOrderSelect([]);
-      getOrderOfReserve(queuesData.reserve_id);
-      getReserveId(queuesData.reserve_id);
+
+      setSaveLoading(true);
+      await Promise.all([
+        // await getProductRegisters(),
+        // await getAllItemsRegis(),
+        await getOrderOfReserve(queuesData.reserve_id, 'call'),
+        await getReserveId(queuesData.reserve_id)
+      ]).then(() => {
+        setSaveLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
+      });
     } else {
       if (fr === 'close') {
         setMessage('ขึ้นสินค้า–STEP2 ปิดคิว');
@@ -1242,11 +1358,27 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         setOrderSelect([]);
         setTypeSelect([]);
         setTypeNumSelect([]);
-        getOrderOfReserve(queuesData.reserve_id);
-        getReserveId(queuesData.reserve_id);
+
+        setSaveLoading(true);
+        await Promise.all([
+          // await getProductRegisters(),
+          await getOrderOfReserve(queuesData.reserve_id, 'close'),
+          await getReserveId(queuesData.reserve_id)
+        ]).then(() => {
+          setSaveLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
+        });
+        // getOrderOfReserve(queuesData.reserve_id, 'close');
+        // getReserveId(queuesData.reserve_id);
         setText('ปิดคิว');
       } else {
-        getOrderOfReserve(queuesData.reserve_id);
+        setSaveLoading(true);
+        await Promise.all([
+          // await getProductRegisters(),
+          await getOrderOfReserve(queuesData.reserve_id, 'cancle')
+        ]).then(() => {
+          setSaveLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
+        });
+        // getOrderOfReserve(queuesData.reserve_id, 'cancle');
         setMessage('ขึ้นสินค้า–STEP2 ยกเลิกเรียกคิว');
         setText('ยกเลิก');
       }
@@ -1265,6 +1397,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   const handleClose = async (flag) => {
     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
     const currentDate = await stepRequest.getCurrentDate();
+    // const allProductRegis = await getAllItemsRegis();
 
     const contracOtherValue = {
       reserve_id: reservesData.reserve_id,
@@ -1272,11 +1405,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       contract_other_status: 'working',
       contract_other_update: currentDate
     };
-
-    console.log('reservesData :', reservesData);
-    console.log('reservesData.contractor_other_id :', reservesData.contractor_other_id);
-    console.log('contracOtherValue :', contracOtherValue);
-    console.log('currentDate :', currentDate);
 
     if (flag === 1) {
       setOnClickSubmit(true);
@@ -1364,7 +1492,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               setStationCount(station_count + 1);
               await step1Update(id_update, 'processing', station_id);
               await updateStartTime(id_update);
-              await getProductRegisters();
+              // await getProductRegisters();
               // }
               setLoopSelect([]);
               // }
@@ -1549,7 +1677,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
             ];
             await updateMultipleStepStatus(updates);
 
-            await getProductRegisters();
+            // await getProductRegisters();
             // }
             setStockSelect([]);
             setLoopSelect([]);
@@ -1612,7 +1740,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           setStationCount(station_count - 1);
           await step1Update(id_update, 'waiting', 27);
           await updateStartTime(id_update);
-          await getProductRegisters();
+          // await getProductRegisters();
           setStockSelect([]);
           setReservesData([]);
           setLoopSelect([]);
@@ -1646,13 +1774,27 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
   // แสดงข้อมูลกองสินค้าทั้งหมด
   const [allProductRegis, setAllProductRegis] = useState([]);
-  const getAllItemsRegis = () => {
+  // const getAllItemsRegis = async () => {
+  //   try {
+  //     await stepRequest.getAllItemsRegister().then((response) => {
+  //       setAllProductRegis(response);
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+  const getAllItemsRegis = async () => {
     try {
-      stepRequest.getAllItemsRegister().then((response) => {
-        setAllProductRegis(response);
-      });
+      let allRespon;
+
+      const response = await stepRequest.getAllItemsRegister();
+      allRespon = [...response];
+
+      setAllProductRegis(allRespon);
+      return allRespon;
     } catch (error) {
       console.log(error);
+      return []; // ส่งกลับ array ว่างในกรณีที่เกิด error
     }
   };
 
@@ -2133,14 +2275,19 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                                       'DD/MM/YY'
                                                                     )}) `
                                                                   : '-'}
-                                                                {productRegis.product_register_date
-                                                                  ? ` (${calculateAge(productRegis.product_register_date)}) `
-                                                                  : '-'}
+                                                                {productRegis.product_register_date ? (
+                                                                  <strong style={{ color: 'red' }}>
+                                                                    {' '}
+                                                                    ({calculateAge(productRegis.product_register_date)})
+                                                                  </strong>
+                                                                ) : (
+                                                                  '-'
+                                                                )}
                                                                 {productRegis.product_register_remark ? (
-                                                                  <span style={{ color: 'red' }}>
+                                                                  <strong style={{ color: 'red' }}>
                                                                     {' '}
                                                                     ({productRegis.product_register_remark})
-                                                                  </span>
+                                                                  </strong>
                                                                 ) : (
                                                                   ''
                                                                 )}
@@ -2191,14 +2338,19 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                                       'DD/MM/YY'
                                                                     )}) `
                                                                   : '-'}
-                                                                {productRegis.product_register_date
-                                                                  ? ` (${calculateAge(productRegis.product_register_date)}) `
-                                                                  : '-'}
+                                                                {productRegis.product_register_date ? (
+                                                                  <strong style={{ color: 'red' }}>
+                                                                    {' '}
+                                                                    ({calculateAge(productRegis.product_register_date)})
+                                                                  </strong>
+                                                                ) : (
+                                                                  '-'
+                                                                )}
                                                                 {productRegis.product_register_remark ? (
-                                                                  <span style={{ color: 'red' }}>
+                                                                  <strong style={{ color: 'red' }}>
                                                                     {' '}
                                                                     ({productRegis.product_register_remark})
-                                                                  </span>
+                                                                  </strong>
                                                                 ) : (
                                                                   ''
                                                                 )}
@@ -2418,15 +2570,20 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                                     'DD/MM/YY'
                                                                   )}) `
                                                                 : '-'}
-                                                              {productRegis.product_register_date
-                                                                ? ` (${calculateAge(productRegis.product_register_date)}) `
-                                                                : '-'}
+                                                              {productRegis.product_register_date ? (
+                                                                <strong style={{ color: 'red' }}>
+                                                                  {' '}
+                                                                  ({calculateAge(productRegis.product_register_date)})
+                                                                </strong>
+                                                              ) : (
+                                                                '-'
+                                                              )}
                                                               {' (คงเหลือ : ' + productRegis.total_remain + ' ตัน) '}
                                                               {productRegis.product_register_remark ? (
-                                                                <span style={{ color: 'red' }}>
+                                                                <strong style={{ color: 'red' }}>
                                                                   {' '}
                                                                   ({productRegis.product_register_remark})
-                                                                </span>
+                                                                </strong>
                                                               ) : (
                                                                 ''
                                                               )}
@@ -2897,14 +3054,19 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                                       'DD/MM/YY'
                                                                     )}) `
                                                                   : '-'}
-                                                                {productRegis.product_register_date
-                                                                  ? ` (${calculateAge(productRegis.product_register_date)}) `
-                                                                  : '-'}
+                                                                {productRegis.product_register_date ? (
+                                                                  <strong style={{ color: 'red' }}>
+                                                                    {' '}
+                                                                    ({calculateAge(productRegis.product_register_date)})
+                                                                  </strong>
+                                                                ) : (
+                                                                  '-'
+                                                                )}
                                                                 {productRegis.product_register_remark ? (
-                                                                  <span style={{ color: 'red' }}>
+                                                                  <strong style={{ color: 'red' }}>
                                                                     {' '}
                                                                     ({productRegis.product_register_remark})
-                                                                  </span>
+                                                                  </strong>
                                                                 ) : (
                                                                   ''
                                                                 )}
