@@ -26,9 +26,7 @@ import { SaveOutlined, PlusCircleOutlined, CloseCircleOutlined } from '@ant-desi
 
 // Link api url
 import * as companyRequest from '_api/companyRequest';
-
-// DateTime
-import moment from 'moment';
+import * as stepRequest from '_api/StepRequest';
 import { useSnackbar } from 'notistack';
 
 function AddCompany({ userID, onSaves, companyList }) {
@@ -66,7 +64,7 @@ function AddCompany({ userID, onSaves, companyList }) {
 
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values) => {
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const currentDate = await stepRequest.getCurrentDate();
 
     const checkCompany = companyList.filter((x) => x.name == values.name);
 

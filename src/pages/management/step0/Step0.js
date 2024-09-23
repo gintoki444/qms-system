@@ -3,8 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 import {
-  Grid, Stack, Button, Box, TextField, Alert, Typography
-  // , Badge 
+  Grid,
+  Stack,
+  Button,
+  Box,
+  TextField,
+  Alert,
+  Typography
+  // , Badge
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
@@ -38,7 +44,6 @@ function Step0() {
   // const navigate = useNavigate();
   const [pageDetail, setPageDetail] = useState([]);
   // const navigate = useNavigate();
-
 
   if (!startDate) {
     startDate = currentDate;
@@ -88,12 +93,9 @@ function Step0() {
   const [items, setItems] = useState([]);
   const getProductCompany = (dataList) => {
     stepRequest.getAllProductCompany().then((response) => {
-
       if (response.length > 0) {
         response.map((x) => {
-          let countCompany = dataList.filter(
-            (i) => i.product_company_id == x.product_company_id
-          ).length;
+          let countCompany = dataList.filter((i) => i.product_company_id == x.product_company_id).length;
 
           setItems((prevState) => ({
             ...prevState,
@@ -113,13 +115,13 @@ function Step0() {
   const [sumProcessing, setSumProcessing] = useState(0);
   const handleReserveData = (data) => {
     getProductCompany(data);
-    setSumWaiting(data.filter((x) => x.step2_status !== "processing")?.length)
-    setSumProcessing(data.filter((x) => x.step2_status === "processing")?.length)
-  }
+    setSumWaiting(data.filter((x) => x.step2_status !== 'processing')?.length);
+    setSumProcessing(data.filter((x) => x.step2_status === 'processing')?.length);
+  };
 
   const handleRefresh = () => {
     window.location = '/admin/step0/';
-  }
+  };
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
       {userRole === 5 && (
@@ -150,9 +152,9 @@ function Step0() {
                   name="pickup_date"
                   value={selectedDate1}
                   onChange={handleDateChange1}
-                // inputProps={{
-                //   min: currentDate
-                // }}
+                  // inputProps={{
+                  //   min: currentDate
+                  // }}
                 />
               </Stack>
             </Grid>
@@ -166,9 +168,9 @@ function Step0() {
                   name="pickup_date"
                   value={selectedDate2}
                   onChange={handleDateChange2}
-                // inputProps={{
-                //   min: currentDate
-                // }}
+                  // inputProps={{
+                  //   min: currentDate
+                  // }}
                 />
               </Stack>
             </Grid>
@@ -182,8 +184,12 @@ function Step0() {
             </Grid>
             <Grid item xs={12} md={4} align="right">
               <Stack justifyContent="row" flexDirection="row">
-                <Typography variant="h5" sx={{ p: '0 20px' }}>กำลังขึ้นสินค้า :<span style={{ padding: '0 20px', borderBottom: 'solid 2px', color: 'green' }}>{sumProcessing}</span> คัน</Typography>
-                <Typography variant="h5">กำลังรอขึ้นสินค้า :<span style={{ padding: '0 20px', borderBottom: 'solid 2px', color: 'red' }}>{sumWaiting}</span> คัน</Typography>
+                <Typography variant="h5" sx={{ p: '0 20px' }}>
+                  กำลังขึ้นสินค้า :<span style={{ padding: '0 20px', borderBottom: 'solid 2px', color: 'green' }}>{sumProcessing}</span> คัน
+                </Typography>
+                <Typography variant="h5">
+                  รอเลือกหัวจ่าย :<span style={{ padding: '0 20px', borderBottom: 'solid 2px', color: 'red' }}>{sumWaiting}</span> คัน
+                </Typography>
               </Stack>
             </Grid>
           </Grid>
@@ -213,11 +219,11 @@ function Step0() {
                   companyList.map((company, index) => (
                     <QueueTab
                       key={index}
-                      id={(company.product_company_id)}
+                      id={company.product_company_id}
                       numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                       txtLabel={company.product_company_name_th2}
                       onSelect={() => handleChange(company.product_company_id)}
-                    // {...a11yProps(company.product_company_id)}
+                      // {...a11yProps(company.product_company_id)}
                     />
                   ))}
               </Tabs>
@@ -226,7 +232,13 @@ function Step0() {
 
           <MainCard content={false} sx={{ mt: 1.5 }}>
             <Box>
-              <Step0Table startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} onFilter={valueFilter} permission={pageDetail[0].permission_name} step0List={handleReserveData} />
+              <Step0Table
+                startDate={selectedDateRange.startDate}
+                endDate={selectedDateRange.endDate}
+                onFilter={valueFilter}
+                permission={pageDetail[0].permission_name}
+                step0List={handleReserveData}
+              />
             </Box>
           </MainCard>
         </Grid>

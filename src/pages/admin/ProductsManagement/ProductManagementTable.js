@@ -33,6 +33,7 @@ import QueueTag from 'components/@extended/QueueTag';
 import MUIDataTable from 'mui-datatables';
 import { useDownloadExcel } from 'react-export-table-to-excel';
 import ProductExport from './ProductExport';
+import ExportProductManage from 'pages/report/admin/export/ExportProductManage';
 
 function ProductManagementTable({ onFilter, permission }) {
   //   const [car, setCar] = useState([]);
@@ -112,10 +113,15 @@ function ProductManagementTable({ onFilter, permission }) {
               <HistoryOutlined />
             </Button>
           </Tooltip>
-          <Tooltip title="Export Excel">
-            <Button color="success" variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={onDownload}>
-              <FileExcelOutlined />
-            </Button>
+          {productList === 999 && (
+            <Tooltip title="Export Excel">
+              <Button color="success" variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={onDownload}>
+                <FileExcelOutlined />
+              </Button>
+            </Tooltip>
+          )}
+          <Tooltip title="New Export Excel">
+            <ExportProductManage dataList={productList} />
           </Tooltip>
         </>
       );

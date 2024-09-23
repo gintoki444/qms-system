@@ -213,21 +213,6 @@ function AddReserve() {
         setLoading(false);
       }
     }
-    // if (userRoles && Object.keys(userPermission).length > 0) {
-    //   if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
-    //     const permissionName = userPermission.permission.find((x) => x.page_id === pageId);
-    //     setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
-
-    //     getCompanyLsit(permissionName?.permission_name);
-    //     getCarLsit(permissionName?.permission_name);
-    //     getDriverLsit(permissionName?.permission_name);
-
-    //     getProductCompany();
-    //     setLoading(false);
-    //   } else {
-    //     setLoading(false);
-    //   }
-    // }
   }, [userRoles, userPermission, newCar, newCompany, newDriver]);
 
   // =============== Validate Forms ===============//
@@ -341,6 +326,8 @@ function AddReserve() {
           window.location.href = '/reserve/update/' + id;
           setLoading(false);
         });
+        // } else {
+        //   window.location.href = '/reserve/update/' + id;
         // }
       });
     });
@@ -364,12 +351,6 @@ function AddReserve() {
       audit_description: 'เพิ่มข้อมูลร้านค้า'
     };
     AddAuditLogs(data);
-    // getCompanyLsit();
-    // setInitialValue((preViews) => {
-    //   let data = preViews;
-    //   data.company_id = formData[0].company_id;
-    //   return data
-    // })
   };
 
   // =============== เพิ่มข้อมูลรถ ===============//
@@ -390,13 +371,6 @@ function AddReserve() {
       audit_description: 'เพิ่มข้อมูลรถบรรทุก'
     };
     AddAuditLogs(data);
-    // setNewCar(formData);
-    // getCarLsit();
-    // setInitialValue((preViews) => {
-    //   let data = preViews;
-    //   data.car_id = formData[0].car_id;
-    //   return data;
-    // })
   };
 
   // =============== เพิ่มข้อมูลคนขับรถ ===============//
@@ -417,14 +391,6 @@ function AddReserve() {
       audit_description: 'เพิ่มข้อมูลคนขับรถ'
     };
     AddAuditLogs(data);
-    // setNewDriver(formData);
-    // getDriverLsit();
-    // setInitialValue((preViews) => {
-    //   let data = preViews;
-
-    //   data.driver_id = formData[0].driver_id;
-    //   return data
-    // })
   };
 
   const AddAuditLogs = async (data) => {

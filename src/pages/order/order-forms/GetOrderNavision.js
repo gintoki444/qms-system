@@ -153,6 +153,7 @@ function GetOrderNavision({ soNumber, onSetData, proCompanyID }) {
       const items = itemFerResult.result.find((i) => i.No === line.No);
       line.items = items;
       const itemDetails = getItemsFilterx(items.Description);
+      console.log('itemDetails :', itemDetails);
       itemDetails
         .then((details) => {
           items.Detial = details;
@@ -170,8 +171,8 @@ function GetOrderNavision({ soNumber, onSetData, proCompanyID }) {
       }, {});
       setSaleLines.push(line);
     });
-    console.log(salesHeaderResult.result);
-    console.log(setSaleLines);
+    console.log('salesHeaderResult.result :', salesHeaderResult.result);
+    console.log('setSaleLines: ', setSaleLines);
     setItems(itemFerResult.result);
     setSalesHeader(salesHeaderResult.result);
     setSalesLines(setSaleLines);

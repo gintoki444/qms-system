@@ -3,22 +3,8 @@ import { Grid } from '@mui/material';
 
 const SalesHeader = ({ data }) => (
   <div>
-    {/* <p>
-      <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px' }}>
-        [ INTER ] on {data.proxyUrl}
-      </div>
-    </p> */}
     <h3>Order No: {data.No}</h3>
     <Grid container spacing={2}>
-      {/* <Grid item xs={6}>
-        <b>คิวที่:</b> {data.Queue}
-      </Grid>
-      <Grid item xs={6}>
-        <b>ทะเบียนรถ:</b> {data.License_Plate_No}
-      </Grid>
-      <Grid item xs={6}>
-        <b>เลขที่(DO):</b> {data.Delivery_Slip_No}
-      </Grid> */}
       <Grid item xs={6}>
         <b>ใบสั่งซื้อเลขที่:</b> {data.External_Document_No}
       </Grid>
@@ -46,9 +32,6 @@ const SalesHeader = ({ data }) => (
       <Grid item xs={6}>
         <b>ชื่อคลังสินค้า:</b> {data.LocationName}
       </Grid>
-      {/* <Grid item xs={6}>
-        <b>เวลาเริ่มขึ้นสินค้า:</b> {data.Time_In_Truck}
-      </Grid> */}
     </Grid>
   </div>
 );

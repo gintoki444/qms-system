@@ -58,15 +58,17 @@ function Step2() {
   const getProductCompany = (permissions) => {
     // Check if the data has already been fetched to avoid redundant API calls
     if (permissions.length > 0) {
-      stepRequest.getAllProductCompany().then((response) => {
-        console.log('getAllProductCompany', response);
-        if (response) {
-          waitingGet(response);
-        }
-        setLoading(false);
-      }).catch(() => {
-        setLoading(false);
-      });
+      stepRequest
+        .getAllProductCompany()
+        .then((response) => {
+          if (response) {
+            waitingGet(response);
+          }
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+        });
     } else {
       setLoading(false);
     }
@@ -77,11 +79,14 @@ function Step2() {
   const waitingGet = async (company) => {
     try {
       await getQueues.getStep2Waitting().then((response) => {
-        console.log('getStep2Waitting', response);
         if (company.length > 0) {
           company.map((x) => {
             let countCompany = response.filter(
-              (i) => i.team_id !== null && i.reserve_station_id !== 1 && i.product_company_id == x.product_company_id
+              (i) =>
+                i.team_id !== null &&
+                i.reserve_station_id !== 1 &&
+                i.product_company_id == x.product_company_id &&
+                parseFloat(i.total_quantity) > 0
             ).length;
             setItems((prevState) => ({
               ...prevState,
@@ -91,7 +96,9 @@ function Step2() {
         }
 
         setCompanyList(company);
-        setCountAllQueue(response.filter((i) => i.team_id !== null && i.reserve_station_id !== 1).length);
+        setCountAllQueue(
+          response.filter((i) => i.team_id !== null && i.reserve_station_id !== 1 && parseFloat(i.total_quantity) > 0).length
+        );
       });
     } catch (e) {
       console.log(e);
@@ -180,7 +187,7 @@ function Step2() {
                               numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                               txtLabel={company.product_company_name_th2}
                               onSelect={() => handleChange(company.product_company_id)}
-                            // {...a11yProps(company.product_company_id)}
+                              // {...a11yProps(company.product_company_id)}
                             />
                           ))}
                       </Tabs>

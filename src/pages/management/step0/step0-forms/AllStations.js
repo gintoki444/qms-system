@@ -119,15 +119,11 @@ function AllStations({ permission }) {
   };
   const handleClose = async (flag) => {
     if (flag == 1) {
-      console.log(stationsData.station_status);
-      console.log(stationStatus);
       if (stationsData.station_status !== stationStatus && stationStatus) {
-        console.log('1');
         setOpen(false);
         await updateStation(stationsData.station_id, stationStatus);
         setLoading(true);
       } else if (permission === 'manage_everything') {
-        console.log('2');
         setOpen(false);
         setLoading(true);
         await updateStation(stationsData.station_id, stationStatus, stationsData.time_update);
@@ -156,9 +152,7 @@ function AllStations({ permission }) {
         data.time_update = moment(timeU).format('YYYY-MM-DD');
       }
 
-      await stepRequest.putStationStatus(id, data).then((response) => {
-        console.log('response', response);
-        console.log('data', data);
+      await stepRequest.putStationStatus(id, data).then(() => {
         getAllStation();
         setStationStatus('');
       });

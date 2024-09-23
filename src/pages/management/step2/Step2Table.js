@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import {
   Grid,
   Box,
@@ -44,6 +43,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { RightSquareOutlined, SoundOutlined } from '@ant-design/icons';
 import moment from 'moment/min/moment-with-locales';
 import QueueTag from 'components/@extended/QueueTag';
+import { useSnackbar } from 'notistack';
 
 // Sound Call
 import SoundCall from 'components/@extended/SoundCall';
@@ -51,6 +51,7 @@ import SoundCall from 'components/@extended/SoundCall';
 
 import * as functionCancleTeam from 'components/Function/CancleTeamStation';
 import * as functionAddLogs from 'components/Function/AddLog';
+import checkProductQuantities from 'components/Function/checkProductQuantities';
 
 export const Step2Table = ({ status, title, onStatusChange, onFilter, permission }) => {
   // ==============================|| ORDER TABLE - HEADER ||============================== //
@@ -196,6 +197,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   const [saveLoading, setSaveLoading] = useState(false);
   const [onclickSubmit, setOnClickSubmit] = useState(false);
   const [message, setMessage] = useState('');
+  const { enqueueSnackbar } = useSnackbar();
 
   //เพิ่ม function get จำนวนสถานีของ step 1
   const station_num = 20;
@@ -221,12 +223,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
   const fetchData = async () => {
     try {
-      console.log('fetchData');
       getWarehouses();
       getAllContractor();
-      // await getProductRegisters();
-      // getAllItemsRegis();
-      // Use different API functions based on the status
+
       if (status === 'waiting') {
         await waitingGet();
       } else if (status === 'processing') {
@@ -248,9 +247,14 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     try {
       await getQueues.getStep2Waitting().then((response) => {
         if (onFilter == 0) {
-          setItems(response.filter((x) => x.team_id !== null && x.reserve_station_id !== 1));
+          setItems(response.filter((x) => x.team_id !== null && x.reserve_station_id !== 1 && parseFloat(x.total_quantity) > 0));
         } else {
-          setItems(response.filter((x) => x.product_company_id == onFilter && x.team_id !== null && x.reserve_station_id !== 1) || []);
+          setItems(
+            response.filter(
+              (x) =>
+                x.product_company_id == onFilter && x.team_id !== null && x.reserve_station_id !== 1 && parseFloat(x.total_quantity) > 0
+            ) || []
+          );
         }
         cleckStations();
       });
@@ -290,7 +294,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       fetch(apiUrl + '/allstations', requestOptions)
         .then((response) => response.json())
         .then((result) => {
-          console.log('allstations', result);
           setStations(result.filter((x) => x.station_group_id === 3));
           resolve(); // ส่งคืนเมื่อการเรียก API เสร็จสมบูรณ์
         })
@@ -303,7 +306,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
   const getStepCount = async (step_order, step_status) => {
     await stepRequest.getStepCountByIdStatus(step_order, step_status).then((response) => {
-      console.log('getStepCountByIdStatus:', response);
       if (response.length > 0) response.map((result) => setStationCount(result.step_count));
     });
   };
@@ -322,43 +324,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       .catch((error) => console.log('error', error));
   };
 
-  //Update ทีมขึ้นสินค้าสำหรับ step2
-  // const updateLoadingTeam = (step_id) => {
-  //   return new Promise((resolve, reject) => {
-  //     const myHeaders = new Headers();
-  //     myHeaders.append('Content-Type', 'application/json');
-
-  //     const raw = JSON.stringify({
-  //       team_id: teamId,
-  //       contractor_id: contractorId,
-  //       labor_line_id: labor_line_id
-  //     });
-
-  //     // updateTeamLoading(queues.reserve_id, teamValue);
-  //     // updateTeamData(queues.reserve_id, teamData);
-
-  //     const requestOptions = {
-  //       method: 'PUT',
-  //       headers: myHeaders,
-  //       body: raw,
-  //       redirect: 'follow'
-  //     };
-
-  //     fetch(apiUrl + '/updateloadigteam/' + step_id, requestOptions)
-  //       .then((response) => response.json())
-  //       .then((result) => {
-  //         if (result['status'] === 'ok') {
-  //           resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
-  //         } else {
-  //           reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
-  //         }
-  //       })
-  //       .catch((error) => {
-  //         console.error(error);
-  //         reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
-  //       });
-  //   });
-  // };
   const updateLoadingTeams = (step_ids) => {
     return new Promise((resolve, reject) => {
       const myHeaders = new Headers();
@@ -380,10 +345,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         .then((response) => response.json())
         .then((result) => {
           if (result['status'] === 'ok') {
-            // console.log('updateLoadingTeam is ok');
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
-            // console.log('not update LoadingTeam');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
           }
         })
@@ -425,8 +388,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           }
         }
       }
-      // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-      // console.log('newCurrentDate :', newCurrentDate);
 
       var myHeaders = new Headers();
       myHeaders.append('Content-Type', 'application/json');
@@ -462,43 +423,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     });
   };
 
-  //Update ข้อมูลรอเรียกคิวสถานีถัดไป
-  // const step2Update = (step_id, statusupdate, station_id) => {
-  //   return new Promise((resolve, reject) => {
-  //     const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-
-  //     var myHeaders = new Headers();
-  //     myHeaders.append('Content-Type', 'application/json');
-
-  //     var raw = JSON.stringify({
-  //       status: statusupdate,
-  //       station_id: station_id,
-  //       updated_at: currentDate
-  //     });
-
-  //     var requestOptions = {
-  //       method: 'PUT',
-  //       headers: myHeaders,
-  //       body: raw,
-  //       redirect: 'follow'
-  //     };
-
-  //     fetch(apiUrl + '/updatestepstatus/' + step_id, requestOptions)
-  //       .then((response) => response.json())
-  //       .then((result) => {
-  //         if (result['status'] === 'ok') {
-  //           resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
-  //         } else {
-  //           reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
-  //         }
-  //       })
-  //       .catch((error) => {
-  //         console.error('error', error);
-  //         reject(error); // ส่งคืนเมื่อเกิดข้อผิดพลาดในการเรียก API
-  //       });
-  //   });
-  // };
-
   const updateMultipleStepStatus = (updates) => {
     return new Promise((resolve, reject) => {
       const myHeaders = new Headers();
@@ -517,9 +441,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         .then((response) => response.json())
         .then((result) => {
           if (result['status'] === 'ok') {
-            // console.log('updateMultipleStepStatus is ok');
-
-            //alert("Update multiplestepstatus");
             waitingGet();
             processingGet();
             getStepCount(2, 'processing');
@@ -527,7 +448,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
-            // console.log('not update MultipleStepStatus');
             reject(result); // ส่งคืนเมื่อไม่สามารถอัปเดตได้
           }
         })
@@ -578,9 +498,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
   //Update start_time of step
   const updateEndTime = async (step_id) => {
-    //alert("updateEndTime")
     const currentDate = await stepRequest.getCurrentDate();
-    // const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
     return new Promise((resolve, reject) => {
       const myHeaders = new Headers();
@@ -615,7 +533,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   const getReserveId = async (id) => {
     stepRequest.getReserveById(id).then((response) => {
       if (response) {
-        console.log('getReserveId :', response);
         response?.reserve.map((result) => {
           getStationById(result.warehouse_id);
           getTeamloadingByIdwh(result.warehouse_id);
@@ -625,18 +542,9 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           }
 
           if (result.team_id !== null) {
-            // if (result.team_data === null || result.team_data.team_id === null) {
-            //   getTeamloadingByIds(result.team_id);
-            // } else if (result.team_data.team_data && result.team_data.team_data.team_id === null) {
-            //   getTeamloadingByIds(result.team_id);
-            // }
             if (result.team_data) {
               getTeamloadingByIds(result.team_id);
             } else if (result.team_data.length > 0) {
-              // setTeamData(result.team_data);
-
-              // console.log('result.team_data :', result.team_data);
-
               // if (result.team_data === 999) {
               const combinedData = [
                 ...result.team_data.team_managers,
@@ -661,21 +569,20 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   // =============== Get Order Product ===============//
   const [orders, setOrders] = useState([]);
 
-  useEffect(() => {
-    console.log('orders :', orders);
-  }, [orders]);
-  // const [loadOrders, setLoadOrder] = useState(false);
+  useEffect(() => {}, [orders]);
   const getOrderOfReserve = async (id, status) => {
-    // setLoadOrder(true);
-    await reserveRequest.getOrderByReserveId(id).then(async (response) => {
-      if (response.length > 0) {
-        if (status !== 'cancle') {
+    try {
+      await reserveRequest.getOrderByReserveId(id).then(async (response) => {
+        if (response.length > 0) {
+          const getAllProductRegis = await getProductRegisters(status); // หรือ 'อื่นๆ' ตามที่คุณต้องการ
+
           for (let result of response) {
+            const allProductRegis = await getItemsRegisByOrder(result.order_id);
+
+            // const getAllProductRegis = await getProductRegistersComBrand(result.product_company_id, result.product_brand_id);
             if (result.product_company_id && result.product_brand_id) {
-              for (let [index, data] of result.items.entries()) {
+              for (let data of result.items) {
                 // เพิ่มพารามิเตอร์ status ในการเรียก getProductRegisters
-                const getAllProductRegis = await getProductRegisters(status); // หรือ 'อื่นๆ' ตามที่คุณต้องการ
-                const allProductRegis = await getAllItemsRegis();
 
                 const getProductRegis = getAllProductRegis.filter(
                   (x) =>
@@ -684,26 +591,23 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                     x.product_company_id == result.product_company_id
                 );
 
-                console.log('befor productList: ', getAllProductRegis);
-                console.log('befor getProductRegis: ', getProductRegis);
                 data.productRegis = getProductRegis;
-
-                const getItemsRegisData = allProductRegis.filter(
-                  (option) => option.order_id === data.order_id && option.item_id === data.item_id
-                );
-
-                if (getItemsRegisData.length > 0) {
-                  getItemsRegisData.forEach((x) => {
-                    setLoopSelect((prevState) => {
-                      const updatedOptions = [...prevState];
-                      x.id = data.order_id + data.item_id + index;
-                      updatedOptions.push(x);
-                      return updatedOptions;
+                if (allProductRegis.length > 0) {
+                  setLoopSelect((prevState) => {
+                    const updatedOptions = [...prevState];
+                    allProductRegis.map((x) => {
+                      if (x.order_id === data.order_id && x.item_id === data.item_id) {
+                        x.quantity = parseFloat(data.quantity);
+                        x.product_register_quantity = parseFloat(x.product_register_quantity);
+                        updatedOptions.push(x);
+                      }
                     });
+
+                    return updatedOptions;
                   });
-                } else {
+                } else if (allProductRegis.length === 0 && status === 'call') {
                   const selectedOption = {
-                    id: `${data.order_id}${data.item_id}${getItemsRegisData.length}`,
+                    id: `${data.order_id}${data.item_id}${allProductRegis.length}`,
                     order_id: data.order_id,
                     item_id: data.item_id,
                     product_register_id: '',
@@ -714,6 +618,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                     smash_quantity: 0,
                     jumbo_hook_quantity: 0
                   };
+
                   setLoopSelect((prevState) => {
                     const updatedOptions = [...prevState];
                     updatedOptions.push(selectedOption);
@@ -732,83 +637,16 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               }
             }
           }
+          // }
+          setOrders(response);
+          setOnClickSubmit(false);
+          // setLoadOrder(false);
         }
-        setOrders(response);
-        setOnClickSubmit(false);
-        // setLoadOrder(false);
-      }
-    });
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
-
-  // const getOrderOfReserve = async (id) => {
-  //   // setLoadOrder(true);
-  //   await reserveRequest.getOrderByReserveId(id).then(async(response) => {
-  //     if (response.length > 0) {
-  //       response.map((result) => {
-  //         if (result.product_company_id && result.product_brand_id) {
-  //           result.items.map((data, index) => {
-  //             const getAllProductRegis = getProductRegisters();
-  //             const getProductRegis = getAllProductRegis.filter(
-  //               (x) =>
-  //                 x.product_id == data.product_id &&
-  //                 x.product_brand_id == result.product_brand_id &&
-  //                 x.product_company_id == result.product_company_id
-  //             );
-  //             console.log('befor productList: ', getAllProductRegis);
-  //             console.log('befor getProductRegis: ', getProductRegis);
-  //             data.productRegis = getProductRegis;
-
-  //             const getItemsRegisData = allProductRegis.filter(
-  //               (option) => option.order_id === data.order_id && option.item_id === data.item_id
-  //             );
-
-  //             if (getItemsRegisData.length > 0) {
-  //               getItemsRegisData.map((x) => {
-  //                 setLoopSelect((prevState) => {
-  //                   const updatedOptions = [...prevState];
-
-  //                   (x.id = data.order_id + data.item_id + index), updatedOptions.push(x);
-  //                   return updatedOptions;
-  //                 });
-  //               });
-  //             } else {
-  //               const selectedOption = {
-  //                 // id: `${data.order_id}${data.item_id}${index}`,
-  //                 id: `${data.order_id}${data.item_id}${getItemsRegisData.length}`,
-  //                 order_id: data.order_id,
-  //                 item_id: data.item_id,
-  //                 product_register_id: '',
-  //                 quantity: parseFloat(data.quantity),
-  //                 product_register_quantity: 0,
-  //                 sling_hook_quantity: 0,
-  //                 sling_sort_quantity: 0,
-  //                 smash_quantity: 0,
-  //                 jumbo_hook_quantity: 0
-  //               };
-  //               setLoopSelect((prevState) => {
-  //                 const updatedOptions = [...prevState];
-  //                 updatedOptions.push(selectedOption);
-  //                 return updatedOptions;
-  //               });
-  //             }
-
-  //             if (data.product_id) {
-  //               const selectedOption = { id: data.item_id, value: data.product_register_id };
-  //               setOrderSelect((prevState) => {
-  //                 const updatedOptions = [...prevState];
-  //                 updatedOptions.push(selectedOption);
-  //                 return updatedOptions;
-  //               });
-  //             }
-  //           });
-  //         }
-  //       });
-
-  //       setOrders(response);
-  //       // setLoadOrder(false);
-  //     }
-  //   });
-  // };
 
   //  แสดงข้อมูลสินค้าทั้งหมด
   const getProductRegisters = async (status) => {
@@ -837,38 +675,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     }
   };
 
-  // const [productList, setProductList] = useState([]);
-  // const getProductRegisters = async () => {
-  //   try {
-  //     await adminRequest.getAllProductRegister().then(async (response) => {
-  //       await adminRequest.getAllProductHistory().then((response0) => {
-  //         let allRespon = [...response, ...response0];
-  //         if (onFilter) {
-  //           setProductList(allRespon.filter((x) => x.product_company_id == onFilter));
-  //         } else {
-  //           setProductList(allRespon);
-  //         }
-  //         setOnClickSubmit(false);
-  //       });
-  //       // if (onFilter) {
-  //       //   setProductList(response.filter((x) => x.product_company_id == onFilter));
-  //       // } else {
-  //       //   setProductList(response);
-  //       // }
-  //       // setOnClickSubmit(false);
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
   const [orderSelect, setOrderSelect] = useState([]);
   const [stockSelect, setStockSelect] = useState([]);
   const handleChangeProduct = (e, id, items, key) => {
     const selectedOption = { id: id, value: e.target.value };
 
     const stockItem = items.productRegis.find((x) => x.product_register_id === e.target.value)?.total_remain;
-
     // console.log('*************** Stock select  ***************');
     setStockSelect((prevState) => {
       let updatedOptions = [...prevState];
@@ -880,22 +692,25 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         product_register_id: e.target.value,
         stockQuetity: parseFloat(stockItem) >= parseFloat(items.quantity) ? parseFloat(items.quantity) : parseFloat(stockItem)
       };
-      console.log('selectedStock 1', selectedStock);
 
       const index = updatedOptions.findIndex((option) => option.order_id === items.order_id && option.item_id === items.item_id);
       const indexProId = updatedOptions.filter(
         (option) => option.order_id === items.order_id && option.item_id === items.item_id && option.product_register_id !== e.target.value
       );
+      const checkStockSelect = updatedOptions.filter((x) => x.order_id === items.order_id && x.item_id === items.item_id);
       const indexKey = updatedOptions.findIndex((option) => option.id === key);
 
       if (parseFloat(stockItem) <= parseFloat(items.quantity) && indexKey === -1) {
-        console.log('check 1');
+        if (checkStockSelect.length > 0) {
+          checkStockSelect.map((x) => {
+            const totalQuantity = parseFloat(items.quantity);
+            selectedStock.stockQuetity = totalQuantity - x.stockQuetity.toFixed(3);
+          });
+        }
         updatedOptions.push(selectedStock);
       } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length === 0) {
-        console.log('check 2');
         updatedOptions[index] = selectedStock;
       } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length !== 0) {
-        console.log('check 3');
         const filterindex = updatedOptions.filter((option) => option.order_id === items.order_id && option.item_id === items.item_id);
         filterindex.map(
           (x) =>
@@ -905,81 +720,56 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 : x.stockQuetity - selectedStock.stockQuetity)
         );
         if (selectedStock.stockQuetity <= 0 && indexKey !== -1) {
-          console.log('check 3.1');
           selectedStock.stockQuetity = parseFloat(items.quantity);
 
           let filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
 
           filterRemove.push(selectedStock);
           updatedOptions = filterRemove;
-          // updatedOptions.push(selectedStock);
         } else if (indexKey !== -1) {
-          console.log('check 3.2');
           selectedStock.stockQuetity = parseFloat(items.quantity);
 
           const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
           if (checkStock.length > 0) {
-            console.log('check 3.2.1');
             let totolIsSelect = 0;
             checkStock.map((x) => (totolIsSelect = x.stockQuetity + totolIsSelect));
 
             if (parseFloat(stockItem) < totolIsSelect + selectedStock.stockQuetity) {
-              console.log('check 3.2.2');
               let result = (parseFloat(stockItem) - totolIsSelect).toFixed(3);
               selectedStock.stockQuetity = result;
             }
           }
           updatedOptions[index] = selectedStock;
         } else {
-          console.log('check 3.3');
           updatedOptions.push(selectedStock);
         }
       } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey === -1) {
         const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
-        const checkStockSelect = updatedOptions.filter((x) => x.order_id === items.order_id && x.item_id === items.item_id);
-        console.log('checkStock :', checkStock);
-        console.log('check 4');
 
         if (checkStock.length > 0) {
-          console.log('check 4.1');
           let totolIsSelect = 0;
           checkStock.map((x) => (totolIsSelect = x.stockQuetity + totolIsSelect));
 
-          console.log('parseFloat(stockItem)', parseFloat(stockItem));
-          console.log('totolIsSelect', totolIsSelect);
-          console.log('totolIsSelect', selectedStock.stockQuetity);
           if (parseFloat(stockItem) < totolIsSelect + selectedStock.stockQuetity) {
-            console.log('check 4.1.1');
             let result = (parseFloat(stockItem) - totolIsSelect).toFixed(3);
             selectedStock.stockQuetity = parseFloat(result);
-
-            // if (selectedStock.stockQuetity < items.quantity) {
-            //   // console.log('check 4.2.1');
-            // }
           } else if (parseFloat(stockItem) === totolIsSelect + selectedStock.stockQuetity && checkStockSelect.length > 0) {
-            // console.log('checkStockSelect',checkStockSelect);
-            console.log('check 4.1.2');
             let result = (parseFloat(stockItem) - selectedStock.stockQuetity).toFixed(3);
             selectedStock.stockQuetity = parseFloat(result);
-            // console.log('selectedStock.stockQuetity',selectedStock.stockQuetity);
           }
         } else if (checkStockSelect.length > 0) {
-          console.log('check 4.2');
           checkStockSelect.map((x) => {
             selectedStock.stockQuetity = selectedStock.stockQuetity - x.stockQuetity;
           });
         }
         updatedOptions.push(selectedStock);
       } else {
-        console.log('check 5');
         const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
         if (checkStock.length > 0) {
-          console.log('check 5.1');
           let totolIsSelect = 0;
           checkStock.map((x) => (totolIsSelect = x.stockQuetity + totolIsSelect));
 
           if (parseFloat(stockItem) < totolIsSelect + selectedStock.stockQuetity) {
-            console.log('check 5.2');
             let result = (parseFloat(stockItem) - totolIsSelect).toFixed(3);
             selectedStock.stockQuetity = parseFloat(result);
           }
@@ -987,11 +777,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
         updatedOptions[index] = selectedStock;
       }
-      console.log('setStockSelect', updatedOptions);
       return updatedOptions;
     });
 
-    console.log('*************** Loop select  ***************');
+    // console.log('*************** Loop select  ***************');
     setLoopSelect((prevState) => {
       let updatedOptions = [...prevState];
 
@@ -1014,32 +803,18 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       const indexKey = updatedOptions.findIndex((option) => option.id === key);
       const orderList = updatedOptions.filter((option) => option.item_id == items.item_id && option.order_id == items.order_id);
       const orderListNotSelect = orderList.filter((option) => option.id !== key);
-      console.log('orderList ', orderList);
-      console.log('orderListNotSelect ', orderListNotSelect);
 
       let checkSum = sumSelectProductRegis(orderList);
       let checkSumNotSelect = sumSelectProductRegis(orderListNotSelect);
-      console.log('checkSum ', checkSum);
       checkSum = checkSum + selectedOptionNew.product_register_quantity;
-      console.log('checkSum =  ', checkSum);
 
-      console.log('parseFloat(stockItem) ', parseFloat(stockItem));
-      console.log('parseFloat(items.quantity) ', parseFloat(items.quantity));
-      console.log('indexKey ', indexKey);
-      console.log('indexProId ', indexProId);
-
-      // console.log('updatedOptionsbefor ', updatedOptions);
       if (parseFloat(stockItem) < parseFloat(items.quantity) && indexKey !== -1) {
-        // console.log('check 1');
         const filterList = updatedOptions.filter(
           (option) => option.item_id == items.item_id && option.order_id == items.order_id && option.product_register_id === ''
         );
 
         if (orderList.length < 3 && orderList.length < items.productRegis.length && filterList.length === 0) {
-          console.log('check 1.1');
           if (parseFloat(items.quantity) > checkSum || checkSumNotSelect === 0) {
-            console.log('check 1.2');
-            console.log('orderList.length + 1', orderList.length + 1);
             const selectedOption = {
               id: `${items.order_id}${items.item_id}${orderList.length + 1}`,
               order_id: items.order_id,
@@ -1053,25 +828,22 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               jumbo_hook_quantity: 0
             };
             updatedOptions.push(selectedOption);
+          } else if (orderListNotSelect.length > 0) {
+            orderListNotSelect.map((x) => {
+              selectedOptionNew.product_register_quantity = parseFloat((x.quantity - x.product_register_quantity).toFixed(3));
+            });
           }
-          // else if (checkSumNotSelect) {
-          //   console.log('check checkSumNotSelect', checkSumNotSelect);
-          // }
         } else if (parseFloat(items.quantity) < checkSum) {
-          // console.log('check 1.3');
           let sumquatity = sumSelectProductRegis(orderList);
-          console.log('newsum = ', sumquatity - parseFloat(items.quantity));
-          console.log('newsum = ', parseFloat(items.quantity) - sumquatity);
+
+          selectedOptionNew.product_register_quantity =
+            sumquatity > parseFloat(items.quantity)
+              ? parseFloat((sumquatity - parseFloat(items.quantity)).toFixed(3))
+              : parseFloat((parseFloat(items.quantity) - sumquatity).toFixed(3));
         }
 
         updatedOptions[indexKey] = selectedOptionNew;
-      } else if (
-        // parseFloat(items.quantity) > checkSum &&
-        parseFloat(stockItem) >= parseFloat(items.quantity) &&
-        indexKey !== -1 &&
-        indexProId.length !== 0
-      ) {
-        console.log('check 2');
+      } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length !== 0) {
         const filterindex = updatedOptions.filter((option) => option.order_id === items.order_id && option.item_id === items.item_id);
         filterindex.map(
           (x) =>
@@ -1082,34 +854,25 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         );
 
         if (selectedOptionNew.product_register_quantity <= 0 && indexKey !== -1) {
-          console.log('check 2.1');
-
           selectedOptionNew.product_register_quantity = parseFloat(items.quantity);
-          // console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
           const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
 
           filterRemove.push(selectedOptionNew);
           updatedOptions = filterRemove;
         } else if (indexKey !== -1) {
-          console.log('check 2.2');
-
           const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value && x.id !== key);
           const checkNumSelect = updatedOptions.filter(
             (option) => option.item_id == items.item_id && option.order_id == items.order_id && option.product_register_id === ''
           );
           if (checkStock.length > 0) {
-            console.log('check 2.2.1');
             let totolIsSelect = 0;
             checkStock.map((x) => (totolIsSelect = x.product_register_quantity + totolIsSelect));
 
             if (parseFloat(stockItem) < totolIsSelect + selectedOptionNew.product_register_quantity) {
-              let result = (parseFloat(stockItem) - totolIsSelect).toFixed(3);
+              let result = parseFloat((parseFloat(stockItem) - totolIsSelect).toFixed(3));
               selectedOptionNew.product_register_quantity = parseFloat(result);
-              console.log('check 2.2.1.1');
 
               if (selectedOptionNew.product_register_quantity < selectedOptionNew.quantity && checkNumSelect < 1) {
-                console.log('check 2.2.1.1.1');
-
                 const selectedOption = {
                   id: items.order_id + items.item_id + (orderList.length + 1),
                   order_id: items.order_id,
@@ -1122,50 +885,32 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                   smash_quantity: 0,
                   jumbo_hook_quantity: 0
                 };
-                console.log('add new selectedOption', selectedOption);
                 updatedOptions.push(selectedOption);
               }
             } else if (parseFloat(stockItem) === totolIsSelect + selectedOptionNew.product_register_quantity && checkNumSelect.length > 0) {
-              console.log('check 2.2.1.2');
               updatedOptions = updatedOptions.filter((x) => x.id !== checkNumSelect[0].id);
             } else if (totolIsSelect < selectedOptionNew.product_register_quantity) {
-              console.log('check 2.2.1.3');
               selectedOptionNew.quantity = selectedOptionNew.product_register_quantity - totolIsSelect;
             }
           } else if (checkNumSelect.length > 0) {
-            console.log('check 2.2.2');
-
             const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
 
-            console.log('filterRemove :', filterRemove);
-            console.log('key :', key);
-            console.log('filterRemove :', (updatedOptions = filterRemove));
             updatedOptions = filterRemove;
             updatedOptions.push(selectedOptionNew);
           }
 
           const idKey = updatedOptions.findIndex((option) => option.id === key);
           updatedOptions[idKey] = selectedOptionNew;
-          // updatedOptions.push(selectedOptionNew);
         }
-
-        // else {
-        //   updatedOptions.push(selectedOptionNew);
-        // }
       } else if (parseFloat(stockItem) >= parseFloat(items.quantity) && indexKey !== -1 && indexProId.length === 0) {
-        console.log('check 3');
-        // selectedOptionNew.product_register_quantity = parseFloat(items.quantity);
-        // console.log(updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id));
         const filterRemove = updatedOptions.filter((x) => x.id !== key && x.item_id !== items.item_id);
 
         const checkStock = updatedOptions.filter((x) => x.product_register_id === e.target.value);
         if (checkStock.length > 0) {
-          console.log('check 3.1');
           let totolIsSelect = 0;
           checkStock.map((x) => (totolIsSelect = x.product_register_quantity + totolIsSelect));
 
           if (parseFloat(stockItem) < totolIsSelect + selectedOptionNew.product_register_quantity) {
-            console.log('check 3.2');
             let result = (parseFloat(stockItem) - totolIsSelect).toFixed(3);
             selectedOptionNew.product_register_quantity = parseFloat(result);
 
@@ -1174,10 +919,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               orderList.length < 3 &&
               orderList.length < items.productRegis.length
             ) {
-              console.log('check 1.1');
-              // console.log('parseFloat(stockItem) > parseFloat(items.quantity)', parseFloat(stockItem) > parseFloat(items.quantity));
-              // console.log('orderList.length < 3 :', orderList.length < 3);
-              // console.log('orderList.length < items.productRegis.length :', orderList.length < items.productRegis.length);
               const selectedOption = {
                 id: items.order_id + items.item_id + orderList.length,
                 order_id: items.order_id,
@@ -1198,8 +939,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         filterRemove.push(selectedOptionNew);
         updatedOptions = filterRemove;
       }
-
-      // console.log('setLoopSelect ', updatedOptions);
       return updatedOptions;
     });
 
@@ -1329,7 +1068,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
       stepRequest.putContractorStatus(id, data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setLoading(false);
     }
   };
@@ -1345,46 +1084,42 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       setSaveLoading(true);
       await Promise.all([
         // await getProductRegisters(),
-        // await getAllItemsRegis(),
         await getOrderOfReserve(queuesData.reserve_id, 'call'),
         await getReserveId(queuesData.reserve_id)
       ]).then(() => {
         setSaveLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
       });
-    } else {
-      if (fr === 'close') {
-        setMessage('ขึ้นสินค้า–STEP2 ปิดคิว');
-        setTeamLoading([]);
-        setOrderSelect([]);
-        setTypeSelect([]);
-        setTypeNumSelect([]);
+    } else if (fr === 'close') {
+      setMessage('ขึ้นสินค้า–STEP2 ปิดคิว');
+      setTeamLoading([]);
+      setOrderSelect([]);
+      setTypeSelect([]);
+      setTypeNumSelect([]);
 
-        setSaveLoading(true);
-        await Promise.all([
-          // await getProductRegisters(),
-          await getOrderOfReserve(queuesData.reserve_id, 'close'),
-          await getReserveId(queuesData.reserve_id)
-        ]).then(() => {
-          setSaveLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
-        });
-        // getOrderOfReserve(queuesData.reserve_id, 'close');
-        // getReserveId(queuesData.reserve_id);
-        setText('ปิดคิว');
-      } else {
-        setSaveLoading(true);
-        await Promise.all([
-          // await getProductRegisters(),
-          await getOrderOfReserve(queuesData.reserve_id, 'cancle')
-        ]).then(() => {
-          setSaveLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
-        });
-        // getOrderOfReserve(queuesData.reserve_id, 'cancle');
-        setMessage('ขึ้นสินค้า–STEP2 ยกเลิกเรียกคิว');
-        setText('ยกเลิก');
-      }
+      setSaveLoading(true);
+      await Promise.all([
+        // await getProductRegisters(),
+        await getOrderOfReserve(queuesData.reserve_id, 'close'),
+        await getReserveId(queuesData.reserve_id)
+      ]).then(() => {
+        setSaveLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
+      });
+      // getOrderOfReserve(queuesData.reserve_id, 'close');
+      // getReserveId(queuesData.reserve_id);
+      setText('ปิดคิว');
+    } else {
+      setSaveLoading(true);
+      await Promise.all([
+        // await getProductRegisters(),
+        await getOrderOfReserve(queuesData.reserve_id, 'cancle')
+      ]).then(() => {
+        setSaveLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
+      });
+      // getOrderOfReserve(queuesData.reserve_id, 'cancle');
+      setMessage('ขึ้นสินค้า–STEP2 ยกเลิกเรียกคิว');
+      setText('ยกเลิก');
     }
 
-    console.log('queuesData :', queuesData);
     //กดปุ่มมาจากไหน
     setFrom(fr);
     setUpdate(step_id);
@@ -1397,7 +1132,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   const handleClose = async (flag) => {
     //call = เรียกคิว, close = ปิดคิว, cancel = ยกเลิกคิว
     const currentDate = await stepRequest.getCurrentDate();
-    // const allProductRegis = await getAllItemsRegis();
 
     const contracOtherValue = {
       reserve_id: reservesData.reserve_id,
@@ -1412,91 +1146,82 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         setLoading(true);
         if (station_count < station_num) {
           if (station_id) {
-            let countItem = 0;
-            orders.map((orderData) => {
-              countItem = countItem + orderData.items.length;
-            });
-
-            let checkCountItemLoop = 0;
-            loopSelect.map((orderData) => {
-              if (!orderData.product_register_quantity) {
-                checkCountItemLoop = checkCountItemLoop + 1;
-              }
-            });
-            if (checkCountItemLoop > 0) {
+            // ตัวเลขที่ต้องการค้นหา stations_id ที่เลือกไปแล้ว
+            const foundItem = items2.find((item) => item.station_id === station_id);
+            if (foundItem) {
+              // พบ item ที่มี station_id ที่ต้องการ
+              setLoading(false);
               setOnClickSubmit(false);
-              alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
+              alert("หัวจ่าย '" + foundItem.station_description + "' ไม่ว่าง");
               return;
-            } else if (orderSelect.length != countItem) {
-              setOnClickSubmit(false);
-              alert('กรุณาระบุกองสินค้าให้ครบถ้วน');
-              return;
-            } else {
-              // if (status === 9999) {
-              setItems([]);
-              setOpen(false);
-
-              loopSelect.map((x) => {
-                if (
-                  (x.order_id !== null || x.order_id !== undefined) &&
-                  (x.item_id !== null || x.item_id !== undefined) &&
-                  (x.product_register_id !== null || x.product_register_id !== undefined)
-                ) {
-                  const getItemsRegisData = allProductRegis.filter(
-                    (option) => option.order_id === x.order_id && option.item_id === x.item_id
-                  );
-                  if (queues.recall_status === 'Y' && getItemsRegisData.length > 0) {
-                    updateItemsRegister(x.item_register_id, x);
-                  } else {
-                    addItemsRegister(x);
-                  }
-                }
-              });
-
-              const dataLogStock = {
-                audit_user_id: userId,
-                audit_action: 'A',
-                audit_system_id: id_update,
-                audit_system: 'step2',
-                audit_screen: 'เลือกกองสินค้า',
-                audit_description: JSON.stringify(loopSelect)
-              };
-              AddAuditLogs(dataLogStock);
-
-              // รอปรับปรุงข้อมูลกองสินค้าที่เลือก
-              orderSelect.map((dataOrder) => {
-                const setData = {
-                  product_register_id: dataOrder.value,
-                  smash_quantity: 0,
-                  sling_hook_quantity: 0,
-                  sling_sort_quantity: 0,
-                  jumbo_hook_quantity: 0
-                };
-                updateRegisterItems(dataOrder.id, setData);
-              });
-
-              const data = {
-                audit_user_id: userId,
-                audit_action: 'I',
-                audit_system_id: id_update,
-                audit_system: 'step2',
-                audit_screen: 'ข้อมูลขึ้นสินค้า',
-                audit_description: 'เรียกขึ้นสินค้า'
-              };
-              AddAuditLogs(data);
-              if (reservesData.contractor_other_id) {
-                updateContractorOthers(reservesData.contractor_other_id, contracOtherValue);
-              }
-              updateStation(station_id, 'working');
-              updateContractor(queues.contractor_id, 'working');
-              setStationCount(station_count + 1);
-              await step1Update(id_update, 'processing', station_id);
-              await updateStartTime(id_update);
-              // await getProductRegisters();
-              // }
-              setLoopSelect([]);
-              // }
             }
+
+            if (!checkProductQuantities(loopSelect, enqueueSnackbar)) {
+              setLoading(false);
+              setOnClickSubmit(false);
+              return;
+            }
+            // if (status === 9999) {
+            setItems([]);
+            setOpen(false);
+
+            for (let x of loopSelect) {
+              if (x.order_id && x.item_id && x.product_register_id) {
+                const getItemsRegisData = await getItemsRegisByOrder(x.order_id);
+                const checkItemsRegisData = getItemsRegisData.filter(
+                  (i) => i.product_register_id === x.product_register_id && i.item_id === x.item_id && i.order_id === x.order_id
+                );
+
+                if (queues.recall_status === 'Y' && checkItemsRegisData.length > 0) {
+                  updateItemsRegister(x.item_register_id, x);
+                } else {
+                  addItemsRegister(x);
+                }
+              }
+            }
+            // if (status === 9999) {
+            const dataLogStock = {
+              audit_user_id: userId,
+              audit_action: 'A',
+              audit_system_id: id_update,
+              audit_system: 'step2',
+              audit_screen: 'เลือกกองสินค้า',
+              audit_description: JSON.stringify(loopSelect)
+            };
+            AddAuditLogs(dataLogStock);
+
+            // รอปรับปรุงข้อมูลกองสินค้าที่เลือก
+            orderSelect.forEach((dataOrder) => {
+              const setData = {
+                product_register_id: dataOrder.value,
+                smash_quantity: 0,
+                sling_hook_quantity: 0,
+                sling_sort_quantity: 0,
+                jumbo_hook_quantity: 0
+              };
+              updateRegisterItems(dataOrder.id, setData);
+            });
+
+            const data = {
+              audit_user_id: userId,
+              audit_action: 'I',
+              audit_system_id: id_update,
+              audit_system: 'step2',
+              audit_screen: 'ข้อมูลขึ้นสินค้า',
+              audit_description: 'เรียกขึ้นสินค้า'
+            };
+            AddAuditLogs(data);
+            if (reservesData.contractor_other_id) {
+              updateContractorOthers(reservesData.contractor_other_id, contracOtherValue);
+            }
+            updateStation(station_id, 'working');
+            updateContractor(queues.contractor_id, 'working');
+            setStationCount(station_count + 1);
+            await step1Update(id_update, 'processing', station_id);
+            await updateStartTime(id_update);
+            setLoopSelect([]);
+            enqueueSnackbar('เรียกคิวรับสินค้า สำเร็จ!', { variant: 'success' });
+            // }
           } else {
             setOnClickSubmit(false);
             alert('กรุณาเลือกหัวจ่าย');
@@ -1554,10 +1279,19 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           }
 
           try {
-            // console.log('Click close teamData', teamData);
             // if (status === 9999) {
             setItems([]);
             setOpen(false);
+
+            const dataLogStock = {
+              audit_user_id: userId,
+              audit_action: 'A',
+              audit_system_id: id_update,
+              audit_system: 'step2',
+              audit_screen: 'ปิดคิวครับสินค้า :ข้อมูลกองสินค้า',
+              audit_description: JSON.stringify(loopSelect)
+            };
+            AddAuditLogs(dataLogStock);
 
             loopSelect.map((x) => {
               if (
@@ -1569,7 +1303,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 updateItemsRegister(x.item_register_id, x);
               }
             });
-
             if (status === 'processing') setOnClickSubmit(true);
             if (orderSelect.length > 0 || typeSelect.length !== 0) {
               orders.map((order) => {
@@ -1655,17 +1388,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
             updateStation(station_id, 'waiting');
             updateContractor(queues.contractor_id, 'waiting');
 
-            // await updateLoadingTeam(id_update);
-            // await updateLoadingTeam(id_update_next);
             await updateLoadingTeams([id_update, id_update_next]);
 
             await updateTeamLoading();
             // await updateTeamData();
             await updateEndTime(id_update);
             await updateStartTime(id_update_next);
-
-            // await step2Update(id_update_next, 'waiting', 27);
-            // await step1Update(id_update, 'completed', station_id);
 
             // อัปเดตสถานะและข้อมูลของทั้งสองขั้นตอนใน API call เดียว
             const station_id2 = station_id;
@@ -1676,6 +1404,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               { step_id: id_update_next, status: 'waiting', station_id: 27, updated_at: currentDate }
             ];
             await updateMultipleStepStatus(updates);
+            enqueueSnackbar('ปิดคิวรับสินค้า สำเร็จ!', { variant: 'success' });
 
             // await getProductRegisters();
             // }
@@ -1692,60 +1421,87 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
           }
           // }
         } else {
-          setLoading(true);
-          // การใช้งาน Line Notify
-          setItems([]);
+          try {
+            setLoading(true);
+            setOpen(false);
+            setItems([]);
 
-          const data = {
-            audit_user_id: userId,
-            audit_action: 'D',
-            audit_system_id: id_update,
-            audit_system: 'step2',
-            audit_screen: 'ข้อมูลขึ้นสินค้า',
-            audit_description: 'ยกเลิกการขึ้นสินค้า'
-          };
-          AddAuditLogs(data);
+            if (!stationStatus || stationStatus === 'R') {
+              const data = {
+                audit_user_id: userId,
+                audit_action: 'D',
+                audit_system_id: queues.reserve_id,
+                audit_system: 'step2',
+                audit_screen: 'ข้อมูลการจอง',
+                audit_description: 'ยกเลิกการเลือกกองสินค้า'
+              };
+              AddAuditLogs(data);
+              for (let x of loopSelect) {
+                await removeItemsRegister(x.item_register_id);
+              }
 
-          // console.log('cancle Click');
-          if (stationStatus === 'N') {
-            const data = {
-              audit_user_id: userId,
-              audit_action: 'D',
-              audit_system_id: queues.reserve_id,
-              audit_system: 'step2',
-              audit_screen: 'ข้อมูลการจอง',
-              audit_description: 'ยกเลิกทีมขึ้นสินค้า'
-            };
-            AddAuditLogs(data);
-            updateCancleTeams(queues.reserve_id);
+              enqueueSnackbar('ยกเลิกข้อมูลกองสินค้า!', { variant: 'success' });
+            } else if (stationStatus === 'N') {
+              const data = {
+                audit_user_id: userId,
+                audit_action: 'D',
+                audit_system_id: queues.reserve_id,
+                audit_system: 'step2',
+                audit_screen: 'ข้อมูลการจอง',
+                audit_description: 'ยกเลิกทีมขึ้นสินค้า'
+              };
+              await AddAuditLogs(data);
+              await updateCancleTeams(queues.reserve_id);
+            } else if (stationStatus === 'Y') {
+              const data = {
+                audit_user_id: userId,
+                audit_action: 'D',
+                audit_system_id: id_update,
+                audit_system: 'step2',
+                audit_screen: 'ข้อมูลขึ้นสินค้า',
+                audit_description: 'ยกเลิกการคำสั่งซื้อ'
+              };
+              await AddAuditLogs(data);
+              for (let x of loopSelect) {
+                await removeItemsRegister(x.item_register_id);
+              }
+
+              orders.map(async (order) => {
+                await deleteOrder(order.order_id, order.reserve_id);
+              });
+              enqueueSnackbar('ยกเลิกข้อมูลคำสั่งซื้อสินค้า!', { variant: 'success' });
+            }
+
+            getStepToken(id_update)
+              .then(({ queue_id, token }) => {
+                lineNotify(queue_id, token);
+              })
+              .catch((error) => {
+                setOnClickSubmit(false);
+                console.error('Error:', error);
+              });
+
+            // if (queues.contractor_id === 9999) {
+            updateStation(station_id, 'waiting');
+            updateContractor(queues.contractor_id, 'waiting');
+            setStationCount(station_count - 1);
+            await step1Update(id_update, 'waiting', 27);
+            await updateStartTime(id_update);
+            setStockSelect([]);
+            setReservesData([]);
+            setLoopSelect([]);
+            // }
+            setStationCount(station_count - 1);
+            await step1Update(id_update, 'waiting', 27);
+            await updateStartTime(id_update);
+
+            setStationStatus('');
+            setStockSelect([]);
+            setReservesData([]);
+            setLoopSelect([]);
+          } catch (error) {
+            console.error(' Handle click Cancle', error);
           }
-          // if (id_update === 999999) {
-          setOpen(false);
-          getStepToken(id_update)
-            .then(({ queue_id, token }) => {
-              lineNotify(queue_id, token);
-            })
-            .catch((error) => {
-              setOnClickSubmit(false);
-              console.error('Error:', error);
-              // ทำอะไรกับข้อผิดพลาด
-            });
-
-          loopSelect.map((x) => {
-            removeItemsRegister(x.item_register_id);
-          });
-
-          updateStation(station_id, 'waiting');
-          updateContractor(queues.contractor_id, 'waiting');
-          setStationCount(station_count - 1);
-          await step1Update(id_update, 'waiting', 27);
-          await updateStartTime(id_update);
-          // await getProductRegisters();
-          setStockSelect([]);
-          setReservesData([]);
-          setLoopSelect([]);
-          // }
-          // Trigger the parent to reload the other instance with the common status
         }
       }
     } else if (flag === 0) {
@@ -1772,30 +1528,20 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   //   await adminRequest.putReserveTeamData(queues.reserve_id, teamData);
   // };
 
-  // แสดงข้อมูลกองสินค้าทั้งหมด
-  const [allProductRegis, setAllProductRegis] = useState([]);
-  // const getAllItemsRegis = async () => {
-  //   try {
-  //     await stepRequest.getAllItemsRegister().then((response) => {
-  //       setAllProductRegis(response);
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-  const getAllItemsRegis = async () => {
+  const getItemsRegisByOrder = async (id) => {
+    // const startTime = performance.now(); // เริ่มจับเวลา
     try {
-      let allRespon;
-
-      const response = await stepRequest.getAllItemsRegister();
-      allRespon = [...response];
-
-      setAllProductRegis(allRespon);
-      return allRespon;
+      const response = await stepRequest.getItemsRegisterOrderId(id);
+      return response;
     } catch (error) {
       console.log(error);
       return []; // ส่งกลับ array ว่างในกรณีที่เกิด error
     }
+    // finally {
+    //   const endTime = performance.now(); // จบการจับเวลา
+    //   const timeInSeconds = ((endTime - startTime) / 1000).toFixed(2); // คำนวณเวลาเป็นวินาที
+    //   console.log('เวลา getAllItemsRegis : ', timeInSeconds);
+    // }
   };
 
   // เพิ่มข้อมูลกองสินค้า
@@ -1803,52 +1549,48 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     await stepRequest.addItemRegister(data);
   };
 
+  // ลบข้อมูลคำสั่งซื้อ
+  const deleteOrder = async (orderId, regisId) => {
+    try {
+      await reserveRequest.deleteOrderId(orderId).then(() => updateReserveTotal(regisId));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateReserveTotal = async (id) => {
+    try {
+      await reserveRequest.getReserTotalByID(id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   // ลบข้อมูลกองสินค้า
   const removeItemsRegister = async (id) => {
-    await stepRequest.deleteItemsRegister(id);
-    // .then((response) => {
-    //   console.log('removeItemsRegister:', response);
-    // });
-    // .then((response) => {
-    //   console.log('response', response);
-    // });
+    try {
+      await stepRequest.deleteItemsRegister(id);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // แก้ไขข้อมูลกองสินค้า
   const updateItemsRegister = async (id, data) => {
     try {
-      await stepRequest.putItemsRegister(id, data).then((response) => {
-        console.log('updateItemsRegister:', response);
-      });
+      await stepRequest.putItemsRegister(id, data);
     } catch (error) {
-      console.log();
+      console.error(error);
     }
-    // .then((response) => {
-    //   console.log('response', response);
-    // });
   };
 
   const updateRegisterItems = async (id, data) => {
     await stepRequest.putRegisterItem(id, data);
-    // .then((response) => {
-    //   console.log('response', response);
-    // });
   };
 
   // =============== บันทึกข้อมูล สายแรงงานใหม่ ===============//
-  // const deleteContractorOthers = async (id) => {
-  //   try {
-  //     await adminRequest.deleteContractorOtherByID(id);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
   const updateContractorOthers = async (id, value) => {
     try {
-      await adminRequest.putContractorOther(id, value).then((response) => {
-        console.log('updateContractorOthers', response);
-      });
+      await adminRequest.putContractorOther(id, value);
     } catch (error) {
       console.log(error);
     }
@@ -1970,8 +1712,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   const getTeamloadingByIds = (id) => {
     try {
       adminRequest.getLoadingTeamById(id).then((result) => {
-        // console.log("getLoadingTeamById :", result);
-        // setTeamData(result);
         const combinedData = [...result.team_managers, ...result.team_checkers, ...result.team_forklifts];
         setTeamLoading(combinedData);
       });
@@ -2088,9 +1828,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   };
 
   const updateCancleTeams = async (reserveId) => {
-    functionCancleTeam.updateCancleTeamStation(reserveId).then((response) => {
-      console.log('updateCancleTeams :', response);
-    });
+    functionCancleTeam.updateCancleTeamStation(reserveId);
   };
 
   // =============== เลือกสถานะ หัวจ่าย ===============//
@@ -2399,7 +2137,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                         setLoopSelect([]);
                         setStockSelect([]);
                         setOrderSelect([]);
-                        getOrderOfReserve(queues.reserve_id);
+                        getOrderOfReserve(queues.reserve_id, 'call');
                       }}
                     >
                       รีเซ็ต
@@ -2480,6 +2218,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                           <Grid item xs={12} md={6}>
                             <Typography variant="h5">
                               สายแรงงาน : <strong>{contractorList.find((x) => x.contractor_id === contractorId)?.contractor_name}</strong>
+                              {reservesData?.contractor_name_to_other && (
+                                <>
+                                  {' '}
+                                  , <span style={{ color: 'red' }}>Pre-sling</span> :{' '}
+                                  <strong>{reservesData.contractor_name_to_other}</strong>
+                                </>
+                              )}
                             </Typography>
                           </Grid>
                         </Grid>
@@ -2554,7 +2299,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                                                       <MenuItem disabled value="">
                                                         เลือกกองสินค้า
                                                       </MenuItem>
-
                                                       {orderItem.productRegis.map(
                                                         (productRegis) =>
                                                           productRegis.product_register_id === onLoop.product_register_id && (
@@ -3396,7 +3140,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 </DialogTitle>
 
                 <DialogContent>
-                  <DialogContentText>
+                  <DialogContentText align="center" sx={{ p: 2 }}>
                     ต้องการ <strong> {textnotify} </strong> คิวหมายเลข :{' '}
                     <QueueTag id={queues.product_company_id || ''} token={queues.token} /> หรือไม่?
                   </DialogContentText>
@@ -3405,10 +3149,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                       row
                       aria-labelledby="demo-row-radio-buttons-group-label"
                       name="row-radio-buttons-group"
-                      defaultValue={stationStatus == '' ? 'Y' : 'N'}
+                      defaultValue={stationStatus === '' ? 'R' : 'N'}
                       onChange={(e) => handleSelectCloseStation(e.target.value)}
                     >
-                      <FormControlLabel value="Y" control={<Radio />} label={'แก้ไขรายการคำสั่งซื้อ'} />
+                      <FormControlLabel value="R" control={<Radio />} label={'ยกเลิกกองสินค้า'} />
+                      <FormControlLabel value="Y" control={<Radio />} label={'ยกเลิกรายการคำสั่งซื้อ'} />
                       <FormControlLabel value="N" control={<Radio />} label={'ยกเลิกเข้าหัวจ่าย'} />
                     </RadioGroup>
                   </FormControl>

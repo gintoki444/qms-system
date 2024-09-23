@@ -203,7 +203,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
   const waitingGet = async () => {
     try {
       await queueReques.getStep1Waitting().then((response) => {
-        console.log('getStep1Waitting', response);
         if (onFilter == 0) {
           setItems(response.filter((x) => parseFloat(x.total_quantity) > 0));
         } else {
@@ -219,7 +218,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
   const processingGet = async () => {
     try {
       await queueReques.getStep1Processing().then((response) => {
-        console.log('getStep1Processing', response);
         const step1 = response;
         queueReques.getStep3Processing().then((response) => {
           if (response.length > 0)
@@ -732,7 +730,6 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
   const getStation = () => {
     try {
       stepRequest.getAllStations().then((response) => {
-        console.log(response);
         if (response) {
           setStations(response.filter((x) => x.station_group_id == 2));
         }

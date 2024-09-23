@@ -96,7 +96,6 @@ function QueueDetail({ sx }) {
     // const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
 
     if (Object.keys(userPermission).length > 0) {
-      console.log('userRoles :', userRoles);
       if (userPermission.permission.filter((x) => x.page_id === pageId).length > 0) {
         setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
       } else {
@@ -219,7 +218,6 @@ function QueueDetail({ sx }) {
             setLoading(false);
           })
           .catch((error) => console.log('error', error));
-        //resolve('Async operation completed');
       }, 100);
     });
   }
@@ -235,28 +233,11 @@ function QueueDetail({ sx }) {
         setItems(sortedData);
       });
     } catch (error) {
-      console.log(error);
       console.log('error', error);
       setErrorMessage('ไม่พบข้อมูลคิว');
       setError(true);
       setLoading(false);
     }
-    // var requestOptions = {
-    //   method: 'GET',
-    //   redirect: 'follow'
-    // };
-
-    // fetch(apiUrl + '/stepbyqueueidonly/' + id, requestOptions)
-    //   .then((response) => response.json())
-    //   .then((result) => {
-    //     setItems(result);
-    //   })
-    //   .catch((error) => {
-    //     console.log('error', error);
-    //     setErrorMessage('ไม่พบข้อมูลคิว');
-    //     setError(true);
-    //     setLoading(false);
-    //   });
   };
 
   // Function to sort the data based on the steps array
@@ -383,7 +364,6 @@ function QueueDetail({ sx }) {
       fetch(apiUrl + '/updateendtime/' + step_id, requestOptions)
         .then((response) => response.json())
         .then((result) => {
-          //console.log(result)
           if (result['status'] === 'ok') {
             resolve(result); // ส่งคืนเมื่อการอัปเดตสำเร็จ
           } else {
@@ -509,8 +489,6 @@ function QueueDetail({ sx }) {
     setChecked2(event.target.checked);
     const has_cover = HasCover(event.target.checked);
     setTrailerHasCover(has_cover);
-
-    console.log(trailer_has_cover);
   };
 
   const navigate = useNavigate();

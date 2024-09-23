@@ -238,9 +238,6 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
               x.step2_status !== 'cancle'
           ) || []
         );
-        // setItems(response.filter((x) => x.product_company_id == (onFilter + 1) && x.token !== null && parseFloat(x.total_quantity) > 0));
-
-        // step0List(response.filter((x) => x.product_company_id == (onFilter + 1) && x.token !== null && parseFloat(x.total_quantity) > 0));
         setLoading(false);
       });
     } catch (e) {
@@ -348,11 +345,6 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
                             permission={permission}
                           />
                         </ButtonGroup>
-                        {/* <Button 
-                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                    variant="contained" size="medium" color="error" onClick={() => deleteDrivers(row.reserve_id)}>
-                    <DeleteOutlined />
-                  </Button> */}
                       </TableCell>
                     </TableRow>
                   );

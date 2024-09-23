@@ -136,6 +136,15 @@ function ConTractorSumTable({ startDate, endDate, clickDownload, onFilter, nameC
     try {
       reportRequest.getContractorSummary(startDate, endDate).then((response) => {
         if (response.status != 'error') {
+          console.log(
+            response.filter(
+              (x) =>
+                x.total_smash_old !== '0.0000' ||
+                x.total_jumbo_hook_old !== '0.0000' ||
+                x.total_sling_hook_old !== '0.0000' ||
+                x.total_sling_sort_old !== '0.0000'
+            )
+          );
           // setCompanyName(response.filter((x) => x.contract_company_id == onFilter + 1)[0]);
           // console.log(response.length > 0?response.find((x) => x.contract_company_id == onFilter + 1).contract_company_name);
           setItems(response.filter((x) => x.contract_company_id == onFilter + 1));

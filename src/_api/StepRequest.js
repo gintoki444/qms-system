@@ -181,13 +181,24 @@ export const getAllItemsRegister = async () => {
   return result;
 };
 
-// แสดงข้อมูล กองสินค้าทั้งหมด
+// แสดงข้อมูล กองสินค้า ด้วย ID
 export const getAllItemsRegisterById = async (id) => {
   const requestOptions = {
     method: 'GET',
     redirect: 'follow'
   };
   const response = await fetch(apiUrl + `/itemsregister/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+
+// แสดงข้อมูล กองสินค้า ด้วย ID
+export const getItemsRegisterOrderId = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/itemsregisterbyorder/${id}`, requestOptions);
   const result = await response.json();
   return result;
 };
@@ -317,7 +328,7 @@ export const getCurrentDate = () => {
     fetch(apiUrl + '/current-date', requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        console.log(result)
+        console.log(result);
         resolve(result.currentDate);
       })
       .catch((error) => {

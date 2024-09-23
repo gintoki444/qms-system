@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-// import { useNavigate } from 'react-router-dom';
 
 import { Grid, Stack, Button, TextField, Box, Alert, Backdrop, CircularProgress, Badge, Tabs, Tab } from '@mui/material';
 import MainCard from 'components/MainCard';
-// import { PlusCircleOutlined } from '@ant-design/icons';
 import QueueTab from 'components/@extended/QueueTab';
 
 import { SearchOutlined } from '@ant-design/icons';
@@ -21,13 +19,10 @@ function Queues() {
   const userRole = useSelector((state) => state.auth?.roles);
   const userPermission = useSelector((state) => state.auth?.user_permissions);
 
-  // let startDate = localStorage.getItem('queue_startDate');
-  // let endDate = localStorage.getItem('queue_endDate');
   let startDate = '';
   let endDate = '';
   const [loading, setLoading] = useState(false);
   const [pageDetail, setPageDetail] = useState([]);
-
 
   if (!startDate) {
     startDate = currentDate;
@@ -62,31 +57,11 @@ function Queues() {
   const [companyList, setCompanyList] = useState([]);
   const [items, setItems] = useState([]);
   const [countAllQueue, setCountAllQueue] = useState(0);
-  // const getProductCompany = (dataList) => {
-  //   stepRequest.getAllProductCompany().then((response) => {
 
-  //     if (response.length > 0) {
-  //       response.map((x) => {
-  //         let countCompany = dataList.filter(
-  //           (i) => i.product_company_id == x.product_company_id
-  //         ).length;
-
-  //         setItems((prevState) => ({
-  //           ...prevState,
-  //           [x.product_company_id]: countCompany
-  //         }));
-  //       });
-  //     }
-
-  //     setCompanyList(response);
-  //     setCountAllQueue(dataList.length);
-  //   });
-  // };
   const getProductCompany = async (dataList) => {
     try {
       const response = await stepRequest.getAllProductCompany(); // รอการดึงข้อมูลจาก API
       const companyList = await filterProductCom(response); // รอการเรียงลำดับ
-      // console.log('companyList :', companyList);
 
       if (response.length > 0) {
         response.map((x) => {
@@ -99,7 +74,6 @@ function Queues() {
         });
       }
       setCompanyList(companyList);
-      // console.log(dataList.length)
       setCountAllQueue(dataList.length);
       return companyList;
     } catch (error) {
@@ -115,7 +89,6 @@ function Queues() {
     }
   }, [userRole, userPermission, startDate, endDate]);
 
-
   const [valueFilter, setValueFilter] = useState(0);
   const [dataFilter, setDataFilter] = useState(0);
   const handleChange = (newValue, proId) => {
@@ -124,10 +97,9 @@ function Queues() {
   };
   const handleQueueData = (data) => {
     getProductCompany(data);
-  }
+  };
   return (
     <Grid rowSpacing={2} columnSpacing={2.75}>
-      {/* {loading === 9999 && ( */}
       <Backdrop
         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
         open={loading}
@@ -147,9 +119,6 @@ function Queues() {
                 name="pickup_date"
                 value={selectedDate1}
                 onChange={handleDateChange1}
-              // inputProps={{
-              //   min: currentDate
-              // }}
               />
             </Stack>
           </Grid>
@@ -206,7 +175,6 @@ function Queues() {
                       numQueue={items[company.product_company_id] !== 0 ? items[company.product_company_id] : '0'}
                       txtLabel={company.product_company_name_th2}
                       onSelect={() => handleChange(index + 1, company.product_company_id)}
-                    // {...a11yProps(company.product_company_id)}
                     />
                   ))}
               </Tabs>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// import logo from '../../assets/images/ICON-02.png';
 import QRCode from 'react-qr-code';
 
 import { Grid, Paper, Typography, Button, Divider, Backdrop, CircularProgress, Stack, Checkbox } from '@mui/material';
@@ -9,10 +8,7 @@ import moment from 'moment';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 import { useLocation } from 'react-router-dom';
-// ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
-// const padZero = (num) => {
-//   return num < 10 ? `0${num}` : num;
-// };
+
 const printPageStyle = {
   width: '80mm',
   // minHeight: '80mm',
@@ -23,7 +19,7 @@ function QueuesPrint() {
   const location = useLocation();
 
   const queuesId = location.state?.queuesId;
-  const productCompanyName = location.state?.productCampanyName
+  const productCompanyName = location.state?.productCampanyName;
   const [loading, setLoading] = useState(false);
 
   const prurl = window.location.origin + '/queues/detail/' + queuesId;
@@ -100,7 +96,7 @@ function QueuesPrint() {
             <Grid item xs={12} align="center">
               <QRCode value={prurl} className="qr-code" size={128} />
 
-              <Stack justifyContent='center' alignItems='center' flexDirection='row'>
+              <Stack justifyContent="center" alignItems="center" flexDirection="row">
                 <Typography variant="h5" gutterBottom sx={{ mb: 0 }}>
                   หมายเลขคิว :
                 </Typography>
@@ -116,7 +112,7 @@ function QueuesPrint() {
               <Typography variant="h5" gutterBottom>
                 ทะเบียนรถ : <strong>{queues.registration_no}</strong>
               </Typography>
-              <Stack justifyContent='center' alignItems='center' flexDirection='row'>
+              <Stack justifyContent="center" alignItems="center" flexDirection="row">
                 <Typography variant="h5">
                   <strong>คลุมผ้าใบ : </strong>
                 </Typography>
@@ -126,10 +122,7 @@ function QueuesPrint() {
                 </Typography>
                 <Typography variant="h5">
                   <strong>ตัวลูก</strong>
-                  <Checkbox
-                    color="primary"
-                    inputProps={{ 'aria-label': 'Checkbox' }} sx={{ '& .MuiSvgIcon-root': { fontSize: 30 } }}
-                  />
+                  <Checkbox color="primary" inputProps={{ 'aria-label': 'Checkbox' }} sx={{ '& .MuiSvgIcon-root': { fontSize: 30 } }} />
                 </Typography>
               </Stack>
               <Typography variant="h5" gutterBottom sx={{ mt: 2 }}>

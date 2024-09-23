@@ -19,12 +19,6 @@ import {
   Box,
   Stack,
   Chip,
-  // Table,
-  // TableBody,
-  // TableCell,
-  // TableContainer,
-  // TableHead,
-  // TableRow,
   Tooltip,
   ButtonGroup,
   Button,
@@ -51,111 +45,6 @@ import axios from 'axios';
 import * as functionAddLogs from 'components/Function/AddLog';
 
 import MUIDataTable from 'mui-datatables';
-
-// ==============================|| ORDER TABLE - HEADER CELL ||============================== //
-// const headCells = [
-//   {
-//     id: 'No',
-//     align: 'center',
-//     disablePadding: true,
-//     label: 'ลำดับ'
-//   },
-//   {
-//     id: 'dateReserve',
-//     align: 'center',
-//     disablePadding: true,
-//     label: 'วันที่จอง'
-//   },
-//   {
-//     id: 'dateQueue',
-//     align: 'center',
-//     disablePadding: true,
-//     label: 'วันที่เข้ารับ'
-//   },
-//   {
-//     id: 'registration_no',
-//     align: 'center',
-//     disablePadding: true,
-//     label: 'ทะเบียนรถ'
-//   },
-//   {
-//     id: 'brandCode',
-//     align: 'center',
-//     disablePadding: true,
-//     label: 'เบรน Code'
-//   },
-//   {
-//     id: 'description',
-//     align: 'left',
-//     disablePadding: true,
-//     width: '5%',
-//     label: 'รหัสคิวเดิม'
-//   },
-//   {
-//     id: 'Company',
-//     align: 'left',
-//     disablePadding: false,
-//     width: '15%',
-//     label: 'บริษัท'
-//   },
-//   // {
-//   //   id: 'names',
-//   //   align: 'left',
-//   //   disablePadding: false,
-//   //   label: 'ชื่อผู้ติดต่อ'
-//   // },
-//   {
-//     id: 'driverName',
-//     align: 'left',
-//     disablePadding: false,
-//     label: 'คนขับรถ'
-//   },
-//   {
-//     id: 'tels',
-//     align: 'left',
-//     disablePadding: false,
-//     label: 'เบอร์โทรคนขับรถ'
-//   },
-//   {
-//     id: 'totalQuantity',
-//     align: 'right',
-//     disablePadding: false,
-//     label: 'จำนวน (ตัน)'
-//   },
-//   {
-//     id: 'status',
-//     align: 'center',
-//     disablePadding: false,
-//     label: 'สถานะออกคิว'
-//   },
-//   {
-//     id: 'action',
-//     align: 'center',
-//     width: '10%',
-//     disablePadding: false,
-//     label: 'Actions'
-//   }
-// ];
-
-// ==============================|| ORDER TABLE - HEADER ||============================== //
-// function OrderTableHead() {
-//   return (
-//     <TableHead>
-//       <TableRow>
-//         {headCells.map((headCell) => (
-//           <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'} width={headCell.width}>
-//             {headCell.label}
-//           </TableCell>
-//         ))}
-//       </TableRow>
-//     </TableHead>
-//   );
-// }
-
-// OrderTableHead.propTypes = {
-//   order: PropTypes.string,
-//   orderBy: PropTypes.string
-// };
 
 // ==============================|| ORDER TABLE - STATUS ||============================== //
 const OrderStatus = ({ status }) => {
@@ -225,7 +114,6 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     }
 
     await reserveRequest.getAllReserveByUrl(urlGet).then((response) => {
-      // console.log('getAllReserveByUrl :', response);
       if (onFilter) {
         const filter = response.filter((x) => x.product_company_id === onFilter);
         const newData = filter.map((item, index) => {
@@ -252,13 +140,9 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
 
   const [filteredData, setFilteredData] = useState([]);
   useEffect(() => {
-    // console.log('filteredData:', filteredData);
-    // console.log('items:', items);
     if (checkFilter) {
       const activeFilters = Object.keys(checkFilter).filter((key) => checkFilter[key]);
       if (activeFilters.length === 0) {
-        // console.log('filteredData === 0:', items);
-        console.log('items', items);
         setFilteredData(items);
       } else {
         const filtered = items.filter((item) => {
@@ -275,19 +159,8 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
           // return activeFilters.includes(item.status);
           return activeFilters.includes(item.status) && !(item.status === 'completed' && parseInt(item.total_quantity) === 0);
         });
-        console.log('filtered', filtered);
         setFilteredData(filtered);
       }
-      // } else {
-      //   const filtered = items.filter(item => {
-      //     console.log(activeFilters.includes(item.status));
-      //     console.log(item.status);
-      //     console.log(typeof item.status);
-      //     return activeFilters.includes(item.status);
-      //   });
-      //   console.log('filtered !== 0:', filtered);
-      //   setFilteredData(filtered);
-      // }
     }
   }, [checkFilter, items]);
 
@@ -460,7 +333,6 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     };
     return await new Promise((resolve) => {
       axios.request(config).then((response) => {
-        console.log(response);
         if (response.data.status === 'ok') {
           // if (typeof response.data.queuecount !== Number) {
           //   resolve(response.data.queuecount);
@@ -477,22 +349,28 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
   }
 
   async function checkQueueCompanyCount(id) {
+    const newCurrentDate = await stepRequest.getCurrentDate();
     return await new Promise((resolve) => {
-      queuesRequest.getQueueTokenByIdCom(id, currentDate, currentDate).then((response) => {
-        if (response) {
-          resolve(response.queue_count_company_code);
-        }
-      });
+      // const currentDate = moment(new Date()).format('YYYY-MM-DD');
+      queuesRequest
+        .getQueueTokenByIdCom(id, moment(newCurrentDate).format('YYYY-MM-DD'), moment(newCurrentDate).format('YYYY-MM-DD'))
+        .then((response) => {
+          if (response) {
+            setBrandCode(response.product_company_code);
+            resolve(response.queue_count_company_code);
+          }
+        });
     });
   }
 
   //สร้าง Queue รับค่า reserve_id
-  function createQueuef(reserve_id, brand_code, queue_number) {
+  async function createQueuef(reserve_id, brand_code, queue_number) {
+    const newCurrentDate = await stepRequest.getCurrentDate();
     return new Promise((resolve) => {
       setTimeout(() => {
         //วันที่ปัจจุบัน
-        const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-        const queueDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+        const currentDate = newCurrentDate;
+        const queueDate = newCurrentDate;
 
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
@@ -620,7 +498,8 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     lineNotify(messageLine);
   };
 
-  function getQueue(id) {
+  async function getQueue(id) {
+    const newCurrentDate = await stepRequest.getCurrentDate();
     return new Promise((resolve) => {
       setTimeout(() => {
         var requestOptions = {
@@ -634,7 +513,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
             // setQueueToken(result[0]['token'])
             // setQueues(result)
 
-            const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+            const currentDate = newCurrentDate;
             const token_m = result[0]['token'];
             const company_name_m = 'บริษัท: ' + result[0]['company_name'];
             const registration_no_m = 'ทะเบียนรถ: ' + result[0]['registration_no'];
@@ -692,7 +571,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
   }
 
   //สร้าง ขั้นตอนการรับสินค้า
-  function createStepsf(queue_id) {
+  async function createStepsf(queue_id) {
     const data = {
       audit_user_id: userId,
       audit_action: 'I',
@@ -702,9 +581,10 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
       audit_description: 'ออกบัตรคิว'
     };
     AddAuditLogs(data);
+    const newCurrentDate = await stepRequest.getCurrentDate();
     return new Promise((resolve) => {
       setTimeout(() => {
-        const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+        const currentDate = newCurrentDate;
 
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
@@ -899,7 +779,6 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
         customBodyRender: (value, tableMeta) => {
           const rowData = tableMeta.rowData;
           const rowDataFilter = filteredData.find((x) => x.reserve_id === rowData[11]);
-          console.log('tableMeta :', tableMeta);
           return rowDataFilter.queue_token ? <QueueTag id={value} token={rowDataFilter.queue_token} /> : getTokenCompany(value);
         }
       }
@@ -1150,176 +1029,6 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
         columns={columns}
         options={options}
       />
-
-      {/* <TableContainer
-        sx={{
-          width: '100%',
-          overflowX: 'auto',
-          position: 'relative',
-          display: 'block',
-          maxWidth: '100%',
-          '& td, & th': { whiteSpace: 'nowrap' }
-        }}
-      >
-        <Table
-          aria-labelledby="tableTitle"
-          size="small"
-          sx={{
-            '& .MuiTableCell-root:first-of-type': {
-              pl: 2
-            },
-            '& .MuiTableCell-root:last-of-type': {
-              pr: 3
-            }
-          }}
-        >
-          <OrderTableHead order={order} orderBy={orderBy} />
-          {!loading ? (
-            <TableBody>
-              {filteredData.length > 0 &&
-                filteredData.map((row, index) => {
-                  return (
-                    <TableRow key={index}>
-                      <TableCell align="center">{index + 1}</TableCell>
-                      <TableCell align="left">
-                        {moment(row.created_date.slice(0, 10)).format('DD/MM/YY') + ' - ' + row.created_date.slice(11, 16) + 'น.'}
-                      </TableCell>
-                      <TableCell align="center">
-                        <Chip color={'primary'} label={moment(row.pickup_date.slice(0, 10)).format('DD/MM/YY')} sx={{ minWidth: 95 }} />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Tooltip title={row.registration_no}>
-                          <span>
-                            <Chip color={'primary'} label={row.registration_no} sx={{ width: 140, border: 1 }} />
-                          </span>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell align="center">
-                        {row.queue_token ? (
-                          <QueueTag id={row.product_company_id} token={row.queue_token} />
-                        ) : (
-                          getTokenCompany(row.product_company_id)
-                        )}
-                      </TableCell>
-                      <TableCell align="left">
-                        {row.r_description ? <strong style={{ color: 'red' }}>{row.r_description}</strong> : <>-</>}
-                      </TableCell>
-                      <TableCell align="left">{row.company}</TableCell>
-                      <TableCell align="left">{row.driver ? row.driver : '-'}</TableCell>
-                      <TableCell align="left">{row.mobile_no ? row.mobile_no : '-'}</TableCell>
-                      <TableCell align="right"> {parseFloat((row.total_quantity * 1).toFixed(3))}</TableCell>
-                      <TableCell align="center">
-                        {row.status == 'completed' && parseFloat(row.total_quantity) == 0 ? (
-                          <OrderStatus status={'pending'} />
-                        ) : (
-                          <OrderStatus status={row.status} />
-                        )}
-                      </TableCell>
-                      <TableCell align="center">
-                        <ButtonGroup variant="plain" aria-label="Basic button group" sx={{ boxShadow: 'none!important' }}>
-                          <Tooltip title="รายละเอียด">
-                            <span>
-                              <Button
-                                variant="contained"
-                                sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                size="medium"
-                                color="success"
-                                onClick={() => reserveDetail(row.reserve_id)}
-                              >
-                                <ProfileOutlined />
-                              </Button>
-                            </span>
-                          </Tooltip>
-                          {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && (
-                            <>
-                              <Tooltip title="สร้างคิว">
-                                <span>
-                                  <Button
-                                    // disabled
-                                    variant="contained"
-                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                    size="medium"
-                                    disabled={
-                                      row.status === 'completed' ||
-                                      currentDate !== moment(row.pickup_date).format('YYYY-MM-DD') ||
-                                      row.car_id == 1 ||
-                                      row.driver_id == 1 ||
-                                      ((row.product_brand_id === 45 || row.product_brand_id === 46) && parseFloat(row.total_quantity) === 0)
-                                    }
-                                    color="info"
-                                    onClick={() =>
-                                      handleClickOpen(
-                                        row.reserve_id,
-                                        'add-queue',
-                                        row.total_quantity,
-                                        getTokenCompany(row.product_company_id),
-                                        row.product_company_id,
-                                        row
-                                      )
-                                    }
-                                  >
-                                    <DiffOutlined />
-                                  </Button>
-                                </span>
-                              </Tooltip>
-                              <Tooltip title="แก้ไข">
-                                <span>
-                                  <Button
-                                    variant="contained"
-                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                    size="medium"
-                                    // disabled={row.status === 'completed'}
-                                    color="primary"
-                                    onClick={() => updateDrivers(row.reserve_id)}
-                                  >
-                                    <EditOutlined />
-                                  </Button>
-                                </span>
-                              </Tooltip>
-                              <CancleQueueButton reserve_id={row.reserve_id} status={row.status} handleReload={handleSetReload} />
-                              <Tooltip title="ลบ">
-                                <span>
-                                  <Button
-                                    variant="contained"
-                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                    size="medium"
-                                    disabled={row.status === 'completed' || row.total_quantity > 0}
-                                    color="error"
-                                    // onClick={() => deleteDrivers(row.reserve_id)}
-                                    onClick={() => handleClickOpen(row.reserve_id, 'delete', row.total_quantity, row.brand_code)}
-                                  >
-                                    <DeleteOutlined />
-                                  </Button>
-                                </span>
-                              </Tooltip>
-                            </>
-                          )}
-                        </ButtonGroup>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-
-              {filteredData.length == 0 && (
-                <TableRow>
-                  <TableCell colSpan={13} align="center">
-                    ไม่พบข้อมูล
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          ) : (
-            <TableBody>
-              <TableRow>
-                <TableCell colSpan={13} align="center">
-                  <CircularProgress />
-                  <Typography variant="body1">Loading....</Typography>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          )}
-        </Table>
-      </TableContainer> */}
     </Box>
   );
 }

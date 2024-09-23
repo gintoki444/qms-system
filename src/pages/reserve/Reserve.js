@@ -21,8 +21,6 @@ function Reserve() {
   const userRole = useSelector((state) => state.auth?.roles);
   const userPermission = useSelector((state) => state.auth?.user_permissions);
 
-  // let startDate = localStorage.getItem('reserve_startDate');
-  // let endDate = localStorage.getItem('reserve_endDate');
   let startDate = '';
   let endDate = '';
   const [pageDetail, setPageDetail] = useState([]);
@@ -36,31 +34,11 @@ function Reserve() {
   const [companyList, setCompanyList] = useState([]);
   const [items, setItems] = useState([]);
   const [countAllQueue, setCountAllQueue] = useState(0);
-  // const getProductCompany = async (dataList) => {
-  //   await stepRequest.getAllProductCompany().then((response) => {
 
-  //     const companyList = filterProductCom(response);
-  //     console.log('companyList :', companyList);
-  //     if (response.length > 0) {
-  //       response.map((x) => {
-  //         let countCompany = dataList.filter((i) => i.product_company_id == x.product_company_id).length;
-
-  //         setItems((prevState) => ({
-  //           ...prevState,
-  //           [x.product_company_id]: countCompany
-  //         }));
-  //       });
-  //     }
-
-  //     setCompanyList(companyList);
-  //     setCountAllQueue(dataList.length);
-  //   });
-  // };
   const getProductCompany = async (dataList) => {
     try {
       const response = await stepRequest.getAllProductCompany(); // รอการดึงข้อมูลจาก API
       const companyList = await filterProductCom(response); // รอการเรียงลำดับ
-      // console.log('companyList :', companyList);
 
       if (response.length > 0) {
         response.map((x) => {
@@ -73,7 +51,6 @@ function Reserve() {
         });
       }
       setCompanyList(companyList);
-      // console.log(dataList.length)
       setCountAllQueue(dataList.length);
       return companyList;
     } catch (error) {
@@ -166,9 +143,6 @@ function Reserve() {
                 name="pickup_date"
                 value={selectedDate1}
                 onChange={handleDateChange1}
-                // inputProps={{
-                //   min: currentDate
-                // }}
               />
             </Stack>
           </Grid>

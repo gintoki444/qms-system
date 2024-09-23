@@ -204,42 +204,14 @@ function AddOrder() {
 
         try {
           reserveRequest.postCreateOrder(raw).then((response) => {
-            // console.log('response ', response);
             if (response.status === 'ok') {
-              //Update total_amount
-              // if (response.status == 9999) {
               updateReserveTotal();
-              // }
               resolve(response.status);
             }
           });
         } catch (error) {
           console.log(error);
         }
-
-        // let config = {
-        //   method: 'post',
-        //   maxBodyLength: Infinity,
-        //   url: apiUrl + '/ordertran',
-        //   headers: {
-        //     'Content-Type': 'application/json'
-        //   },
-        //   data: raw
-        // };
-
-        // axios
-        //   .request(config)
-        //   .then((result) => {
-        //     if (result.data.status === 'ok') {
-        //       console.log('result ', result);
-        //       //Update total_amount
-        //       updateReserveTotal();
-        //       resolve(result['status']);
-        //     }
-        //   })
-        //   .catch((error) => {
-        //     console.log(error);
-        //   });
       }, 500);
     });
   }
@@ -368,14 +340,11 @@ function AddOrder() {
 
   const [SoNumber, setSoNumber] = useState('');
   const handleChangeSO = (e) => {
-    console.log('handleChangeSO', e.target.value);
     setSoNumber(e.target.value);
   };
 
   const [onSetOrder, setOnSetOrder] = useState({});
   const handleOnSetOrder = (data) => {
-    console.log('data :', data);
-
     let itemList = [];
     if (data) {
       data.item_list.map((item) => {

@@ -184,44 +184,13 @@ function AddQueue() {
       .catch((err) => console.log(err));
   };
 
-  // =============== Get Warehouses ===============//
-  // const [selectWarehouse, setSelectWareHouse] = useState('');
-  // const [warehousesList, setWarehousesList] = useState([]);
-  // const getWarehouses = async (selectId) => {
-  //   await adminRequest
-  //     .getAllWareHouse()
-  //     .then((result) => {
-  //       setWarehousesList(result.filter((x) => x.warehouse_id === selectId));
-  //     })
-  //     .catch((error) => console.log('error', error));
-  // };
-
-  // const handleChangeWarehouse = (e) => {
-  //   setTeamLoading([]);
-  //   setTeamLoadingList([]);
-  //   getStation(e.target.value);
-  //   getTeamloading();
-  // };
-  // =============== Get Stations ===============//
-  // const [stationsList, setStationsList] = useState([]);
-  // const getStation = (id, selectId) => {
-  //   try {
-  //     adminRequest.getStationsByWareHouse(id).then((response) => {
-  //       setStationsList(response.filter((x) => x.station_id == selectId));
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
   // =============== Get TeamLoanding ===============//
   // const [team_id, setTeamId] = useState([]);
   const [teamloadingList, setTeamLoadingList] = useState([]);
   const getTeamloading = (teamId) => {
     try {
       adminRequest.getAllLoadingTeamByStation().then((result) => {
-        setTeamLoadingList(result.filter((x) => (x.station_status == 'waiting' || x.station_status == null || x.team_id === teamId)));
-        console.log(result.filter((x) => (x.station_status == 'waiting' || x.station_status == null || x.team_id === teamId)))
+        setTeamLoadingList(result.filter((x) => x.station_status == 'waiting' || x.station_status == null || x.team_id === teamId));
       });
     } catch (error) {
       console.log(error);
@@ -255,29 +224,10 @@ function AddQueue() {
     }
   };
 
-  // const handleChangeTeam = (e) => {
-  //   setTeamLoading([]);
-  //   getTeamManagers(e);
-  //   getTeamloadingByIds(e);
-  // };
-
   const handleChangeTeam = (e) => {
     // const filterTeam = teamloadingList.filter((x) => x.team_id == e);
     getTeamloadingByIds(e);
     getTeamManagers(e);
-
-    // if (filterTeam.length > 0) {
-    //   filterTeam.map((data) => {
-    //     getWarehouses(data.warehouse_id);
-    //     getTeamManagers(data.team_id);
-    //     getStation(data.warehouse_id, data.station_id);
-
-    //     // setWareHouse(data.warehouse_id);
-    //     // setTeam_id(e);
-    //     getTeamloadingByIds(e);
-    //     // setSelectedStation(data.station_id);
-    //   });
-    // }
   };
 
   // =============== Get Contractor ===============//
@@ -340,17 +290,9 @@ function AddQueue() {
             getCompanyList();
             getProductBrand(result.product_company_id);
 
-            // if (result.team_id && result.warehouse_id && result.reserve_station_id) {
-            // getWarehouses(result.warehouse_id);
-            // getTeamManagers(result.team_id);
-            // getStation(result.warehouse_id, result.reserve_station_id);
-            // }
-
-            // if (userRole === 9 || userRole === 1) {
             getTeamloading(result.team_id);
             getTeamManagers(result.team_id);
             getLaborLine(result.contractor_id);
-            // }
           });
         }
       })
@@ -420,10 +362,6 @@ function AddQueue() {
         contractor_id: values.contractor_id,
         labor_line_id: values.labor_line_id
       };
-
-      // console.log('teamData :', teamData);
-      // console.log('values.team_data :', values.team_data);
-      // console.log('values.team_data :', values.team_data);
 
       // if (id === 9999) {
       await reserveRequest
@@ -874,74 +812,6 @@ function AddQueue() {
                                     )}
                                   </Stack>
                                 </Grid>
-
-                                {/* <Grid item xs={12} md={6}>
-                                  <Stack spacing={1}>
-                                    <InputLabel>โกดังสินค้า</InputLabel>
-                                    <FormControl>
-                                      <Select
-                                        displayEmpty
-                                        variant="outlined"
-                                        name="warehouse_id"
-                                        value={values.warehouse_id || ''}
-                                        onChange={(e) => {
-                                          setFieldValue('warehouse_id', e.target.value);
-                                          handleChangeWarehouse(e);
-                                        }}
-                                        placeholder="เลือกโกดังสินค้า"
-                                        fullWidth
-                                        error={Boolean(touched.warehouse_id && errors.warehouse_id)}
-                                      >
-                                        <MenuItem disabled value="">
-                                          เลือกโกดังสินค้า
-                                        </MenuItem>
-                                        {warehousesList &&
-                                          warehousesList.map((warehouses) => (
-                                            <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
-                                              {warehouses.description}
-                                            </MenuItem>
-                                          ))}
-                                      </Select>
-                                    </FormControl>
-                                    {touched.warehouse_id && errors.warehouse_id && (
-                                      <FormHelperText error id="helper-text-warehouse_id">
-                                        {errors.warehouse_id}
-                                      </FormHelperText>
-                                    )}
-                                  </Stack>
-                                </Grid>
-
-                                <Grid item xs={12} md={6}>
-                                  <Stack spacing={1}>
-                                    <InputLabel>หัวจ่าย</InputLabel>
-                                    <FormControl>
-                                      <Select
-                                        displayEmpty
-                                        variant="outlined"
-                                        name="reserve_station_id"
-                                        value={values.reserve_station_id || ''}
-                                        onChange={handleChange}
-                                        placeholder="เลือกหัวจ่ายสินค้า"
-                                        fullWidth
-                                        error={Boolean(touched.reserve_station_id && errors.reserve_station_id)}
-                                      >
-                                        <MenuItem disabled value="">
-                                          เลือกหัวจ่ายสินค้า
-                                        </MenuItem>
-                                        {stationsList.map((station) => (
-                                          <MenuItem key={station.station_id} value={station.station_id}>
-                                            {station.station_description}
-                                          </MenuItem>
-                                        ))}
-                                      </Select>
-                                    </FormControl>
-                                    {touched.reserve_station_id && errors.reserve_station_id && (
-                                      <FormHelperText error id="helper-text-reserve_station_id">
-                                        {errors.reserve_station_id}
-                                      </FormHelperText>
-                                    )}
-                                  </Stack>
-                                </Grid> */}
 
                                 <Grid item xs={12} md={6}>
                                   <Stack spacing={1}>

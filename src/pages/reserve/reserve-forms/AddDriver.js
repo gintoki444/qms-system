@@ -26,9 +26,8 @@ import { SaveOutlined, PlusCircleOutlined, CloseCircleOutlined } from '@ant-desi
 
 // Link api url
 import * as driverRequest from '_api/driverRequest';
+import * as stepRequest from '_api/StepRequest';
 
-// DateTime
-import moment from 'moment';
 import { useSnackbar } from 'notistack';
 
 function AddDriver({ userID, onSaves, driverList }) {
@@ -80,7 +79,7 @@ function AddDriver({ userID, onSaves, driverList }) {
 
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values) => {
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const currentDate = await stepRequest.getCurrentDate();
 
     const checkCar = driverList.filter(
       (x) => x.firstname == values.firstname && x.lastname == values.lastname && x.license_no == values.license_no

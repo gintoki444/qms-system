@@ -88,7 +88,7 @@ export const deleteOrderId = async (id) => {
     redirect: 'follow'
   };
   const response = await fetch(apiUrl + `/deleteorderitem/${id}`, requestOptions);
-  const result = await response.json();
+  const result = await response.text();
   return result;
 };
 

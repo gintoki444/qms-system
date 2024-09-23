@@ -10,6 +10,7 @@ import axios from '../../../node_modules/axios/index';
 const apiUrl = process.env.REACT_APP_API_URL;
 import * as queuesRequest from '_api/queueReques';
 import * as reserveRequest from '_api/reserveRequest';
+import * as stepRequest from '_api/StepRequest';
 
 // import QRCode from 'react-qr-code';
 // import logo from '../../assets/images/ICON-02.png';
@@ -217,13 +218,16 @@ function ReserveDetail() {
   }
 
   async function checkQueueCompanyCount(id) {
+    const newCurrentDate = await stepRequest.getCurrentDate();
     return await new Promise((resolve) => {
-      queuesRequest.getQueueTokenByIdCom(id, currentDate, currentDate).then((response) => {
-        if (response) {
-          setBrandCode(response.product_company_code);
-          resolve(response.queue_count_company_code);
-        }
-      });
+      queuesRequest
+        .getQueueTokenByIdCom(id, moment(newCurrentDate).format('YYYY-MM-DD'), moment(newCurrentDate).format('YYYY-MM-DD'))
+        .then((response) => {
+          if (response) {
+            setBrandCode(response.product_company_code);
+            resolve(response.queue_count_company_code);
+          }
+        });
     });
   }
   //สร้าง Queue รับค่า reserve_id

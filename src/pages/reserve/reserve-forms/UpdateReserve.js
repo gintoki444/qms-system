@@ -12,6 +12,7 @@ const apiUrl = process.env.REACT_APP_API_URL;
 import * as reserveRequest from '_api/reserveRequest';
 import * as queuesRequest from '_api/queueReques';
 import * as companyRequest from '_api/companyRequest';
+import * as stepRequest from '_api/StepRequest';
 // import * as adminRequest from '_api/adminRequest';
 
 const userId = localStorage.getItem('user_id');
@@ -362,7 +363,7 @@ function UpdateReserve() {
 
   // =============== บันทึกข้อมูล ===============//
   const handleSubmits = async (values) => {
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const currentDate = await stepRequest.getCurrentDate();
     try {
       values.user_id = user_Id;
       values.updated_at = currentDate;
@@ -512,23 +513,27 @@ function UpdateReserve() {
   }
 
   async function checkQueueCompanyCount(id) {
+    const newCurrentDate = await stepRequest.getCurrentDate();
     return await new Promise((resolve) => {
-      queuesRequest.getQueueTokenByIdCom(id, currentDate, currentDate).then((response) => {
-        if (response) {
-          setBrandCode(response.product_company_code);
-          resolve(response.queue_count_company_code);
-        }
-      });
+      queuesRequest
+        .getQueueTokenByIdCom(id, moment(newCurrentDate).format('YYYY-MM-DD'), moment(newCurrentDate).format('YYYY-MM-DD'))
+        .then((response) => {
+          if (response) {
+            setBrandCode(response.product_company_code);
+            resolve(response.queue_count_company_code);
+          }
+        });
     });
   }
 
   //สร้าง Queue รับค่า reserve_id
-  function createQueuef(reserve_id, brand_code, queue_number) {
+  async function createQueuef(reserve_id, brand_code, queue_number) {
+    const newCurrentDate = await stepRequest.getCurrentDate();
     return new Promise((resolve) => {
       setTimeout(() => {
         //วันที่ปัจจุบัน
-        const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-        const queueDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+        const currentDate = newCurrentDate;
+        const queueDate = newCurrentDate;
 
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
@@ -589,6 +594,7 @@ function UpdateReserve() {
       if (queuecountf === 0) {
         //สร้างข้อมูลคิว
         const queue_number = (await checkQueueCompanyCount(conpany_id)) + 1;
+        // if (id === 999999) {
         const queue_id_createf = await createQueuef(id, brand_code, queue_number);
 
         //แจ้งเตือนหลังจากสร้าง Queue แล้ว
@@ -598,6 +604,7 @@ function UpdateReserve() {
         setOpen(false);
         setLoading(true);
         setOnClickSubmit(false);
+        // }
       } else {
         //alert("สร้างคิวแล้ว")
         updateReserveStatus(reserve_id);
@@ -643,7 +650,8 @@ function UpdateReserve() {
   };
 
   //แสดงข้อมูลคิว
-  function getQueue(id) {
+  async function getQueue(id) {
+    const newCurrentDate = await stepRequest.getCurrentDate();
     return new Promise((resolve) => {
       setTimeout(() => {
         var requestOptions = {
@@ -657,7 +665,7 @@ function UpdateReserve() {
             // setQueueToken(result[0]['token'])
             // setQueues(result)
 
-            const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+            const currentDate = newCurrentDate;
             const token_m = result[0]['token'];
             const company_name_m = 'บริษัท: ' + result[0]['company_name'];
             const registration_no_m = 'ทะเบียนรถ: ' + result[0]['registration_no'];
@@ -716,7 +724,8 @@ function UpdateReserve() {
   }
 
   //สร้าง ขั้นตอนการรับสินค้า
-  function createStepsf(queue_id) {
+  async function createStepsf(queue_id) {
+    const newCurrentDate = await stepRequest.getCurrentDate();
     const data = {
       audit_user_id: userId,
       audit_action: 'I',
@@ -729,7 +738,7 @@ function UpdateReserve() {
 
     return new Promise((resolve) => {
       setTimeout(() => {
-        const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+        const currentDate = newCurrentDate;
 
         var myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/json');
@@ -782,51 +791,6 @@ function UpdateReserve() {
           newTran.transactions[1].status = 'completed';
         }
         var raw = JSON.stringify(newTran);
-
-        // var raw = JSON.stringify({
-        //   transactions: [
-        //     {
-        //       order: 1,
-        //       description: 'ชั่งเบา',
-        //       queue_id: queue_id,
-        //       status: 'waiting',
-        //       station_id: 27,
-        //       remark: 'ทดสอบ-ชั่งเบา',
-        //       created_at: currentDate,
-        //       updated_at: currentDate
-        //     },
-        //     {
-        //       order: 2,
-        //       description: 'ขึ้นสินค้า',
-        //       queue_id: queue_id,
-        //       status: 'none',
-        //       station_id: 27,
-        //       remark: 'ทดสอบ-ขึ้นสินค้า',
-        //       created_at: currentDate,
-        //       updated_at: currentDate
-        //     },
-        //     {
-        //       order: 3,
-        //       description: 'ชั่งหนัก',
-        //       queue_id: queue_id,
-        //       status: 'none',
-        //       station_id: 27,
-        //       remark: 'ทดสอบ-ชั่งหนัก ',
-        //       created_at: currentDate,
-        //       updated_at: currentDate
-        //     },
-        //     {
-        //       order: 4,
-        //       description: 'เสร็จสิ้น',
-        //       queue_id: queue_id,
-        //       status: 'none',
-        //       station_id: 27,
-        //       remark: 'ทดสอบ-เสร็จสิ้น',
-        //       created_at: currentDate,
-        //       updated_at: currentDate
-        //     }
-        //   ]
-        // });
 
         var requestOptions = {
           method: 'POST',

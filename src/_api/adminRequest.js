@@ -330,7 +330,6 @@ export const addForklifts = async (data) => {
   const myHeaders = new Headers();
   myHeaders.append('Content-Type', 'application/json');
   const raw = JSON.stringify(data);
-  console.log(data);
   const requestOptions = {
     method: 'POST',
     headers: myHeaders,
@@ -698,6 +697,20 @@ export const getAllProducts = async () => {
   return result;
 };
 
+export const getProductsRegisByComBrand = async (companyId, brandId) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(
+    apiUrl + `/productregister-com-brand?product_company_id=${companyId}&product_brand_id=${brandId}`,
+    requestOptions
+  );
+
+  const result = await response.json();
+  return result;
+};
+
 export const getProductRegisterById = async (id) => {
   const requestOptions = {
     method: 'GET',
@@ -926,7 +939,6 @@ export const AddAuditLogs = async (data) => {
 
   const response = await fetch(apiUrl + '/addauditlogs/', requestOptions);
   const result = await response.text();
-  console.log('result ', result);
 
   return result;
 };
@@ -971,7 +983,6 @@ export const AddContractorOther = async (data) => {
 
   const response = await fetch(apiUrl + '/contractors-other/', requestOptions);
   const result = await response.text();
-  console.log('result ', result);
 
   return result;
 };

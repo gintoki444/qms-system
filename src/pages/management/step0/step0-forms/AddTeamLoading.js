@@ -39,6 +39,7 @@ import axios from '../../../../../node_modules/axios/index';
 const apiUrl = process.env.REACT_APP_API_URL;
 import * as reserveRequest from '_api/reserveRequest';
 import * as adminRequest from '_api/adminRequest';
+import * as stepRequest from '_api/StepRequest';
 
 // DateTime
 import moment from 'moment';
@@ -105,7 +106,6 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
     contractor_id: Yup.string().required('กรุณาเลือกสายแรงงาน'),
     team_id: Yup.string().required('กรุณาเลือกทีมขึ้นสินค้า'),
     contractor_id_to_other: Yup.lazy((value, context) => {
-      console.log('checkPreSling:', context.parent.checkPreSling); // ตรวจสอบค่าของ checkPreSling
       return context.parent.checkPreSling
         ? Yup.number()
             .required('กรุณาเลือกทีมขึ้นสินค้า Pre-sling')
@@ -136,10 +136,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
         const sortedData = sortTeams(
           result.filter((x) => x.station_status == 'waiting' || x.station_status == null || x.team_id === teamId)
         );
-        // console.log('sortedData :', sortedData)
         setTeamLoadingList(sortedData);
-
-        // setTeamLoadingList(result.filter((x) => x.station_status == 'waiting' || x.station_status == null || x.team_id === teamId));
       });
     } catch (error) {
       console.log(error);
@@ -189,9 +186,6 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
           )
         );
         setContractorList(sortedData);
-        // console.log('getAllContractor :', result);
-        // console.log('getAllContractor filter:', result.filter((x) => x.status === 'A' && (x.contract_status == 'waiting' || x.contract_status == null || x.contractor_id === contractId)));
-        // setContractorList(result.filter((x) => x.status === 'A' && (x.contract_status == 'waiting' || x.contract_status == null || x.contractor_id === contractId)));
       });
     } catch (error) {
       console.log(error);
@@ -217,9 +211,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
   };
 
   const handleSubmits = async (values) => {
-    const currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-    console.log('values :', values);
-    console.log('initialValue :', initialValue);
+    const currentDate = await stepRequest.getCurrentDate();
     try {
       // if (values === 9999) {
       values.user_id = user_Id;
@@ -283,9 +275,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
         .putReserById(id, values)
         .then((result) => {
           if (result.status === 'ok') {
-            console.log(result.status);
             updateTeamLoading(teamValue);
-            // if (values.contractor_id === 9999) {
             const data = {
               audit_user_id: userId,
               audit_action: 'I',
@@ -297,7 +287,6 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
             AddAuditLogs(data);
             setCheckPreSling(false);
             updateTeamData(values.team_data);
-            // }
           } else {
             enqueueSnackbar('บันทึกข้อมูลทีมขึ้นสินค้าไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
           }
@@ -314,7 +303,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
   // =============== บันทึกข้อมูล ===============//
   const updateTeamLoading = (values) => {
     try {
-      adminRequest.putReserveTeam(id, values).then((response) => console.log('updateTeamLoading :', response));
+      adminRequest.putReserveTeam(id, values).then(() => console.log('updateTeamLoading'));
     } catch (error) {
       console.log(error);
     }
@@ -327,7 +316,6 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
         setOpen(false);
         enqueueSnackbar('บันทึกข้อมูลทีมขึ้นสินค้าสำเร็จ!', { variant: 'success' });
         handleReload(true);
-        // console.log('updateTeamData :', response)
       });
     } catch (error) {
       enqueueSnackbar('บันทึกข้อมูลทีมขึ้นสินค้าไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });

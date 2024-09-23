@@ -280,7 +280,7 @@ function AddProducts() {
                                   },
                                   '& .MuiOutlinedInput-root .MuiAutocomplete-endAdornment': {
                                     right: '7px!important',
-                                    top: 'calc(50% - 18px)'
+                                    top: 'calc(50% - 1px)'
                                   }
                                 }}
                                 error={Boolean(touched.product_id && errors.product_id)}

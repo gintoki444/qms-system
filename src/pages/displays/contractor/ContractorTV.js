@@ -46,7 +46,7 @@ function ContractorTV() {
 
     const intervalId = setInterval(() => {
       fetchData();
-    }, 120000); // Polling every 5 seconds
+    }, 360000); // Polling every 5 seconds
 
     return () => clearInterval(intervalId);
   }, []);
@@ -91,9 +91,10 @@ function ContractorTV() {
     try {
       await adminRequest.getAllContractors().then((result) => {
         result = result.filter((x) => x.status !== 'I' && x.contract_company_id !== 11);
+        console.log(result);
         const sortedData = sortContracts(result);
-        const chunk1 = sortedData.slice(0, 15); // ลำดับที่ 0-13
-        const chunk2 = sortedData.slice(15, 30); // ลำดับที่ 14-27
+        const chunk1 = sortedData.slice(0, 14); // ลำดับที่ 0-13
+        const chunk2 = sortedData.slice(14, 18); // ลำดับที่ 14-27
         setContractorList(chunk1);
         setContractorList2(chunk2);
       });
@@ -149,20 +150,21 @@ function ContractorTV() {
       id: 'queueNo',
       align: 'center',
       disablePadding: false,
-      width: '5%',
+      width: '10%',
       label: 'ลำดับ'
     },
     {
       id: 'contractName',
       align: 'center',
       disablePadding: false,
-      width: '15%',
+      width: '25%',
       label: 'สายแรงงาน'
     },
     {
       id: 'status',
       align: 'center',
       disablePadding: false,
+      width: '20%',
       label: 'หัวจ่าย'
     },
     {
@@ -254,16 +256,15 @@ function ContractorTV() {
               </Grid>
             </Grid>
           </Grid>
-          <Grid item xs={12} sx={{ p: '1%', mt: '1%' }}>
-            <Grid container rowSpacing={3} colSpacing={2}>
-              <Grid item xs={8} align="center">
-                <Typography variant="h1">สายแรงงานขึ้นสินค้า</Typography>
-              </Grid>
-              <Grid item xs={4} align="center">
-                <Typography variant="h1">Pre-Sling/Other</Typography>
+          <Grid item xs={12} sx={{ p: '1%', pt: 20, mt: '0%' }}>
+            <Grid container rowSpacing={1} colSpacing={2}>
+              <Grid item xs={12} sx={{ p: 1 }}>
+                <Typography variant="h2" sx={{ fontSize: { xs: 24, md: '1.8vw!important' }, fontWeight: 'bold' }}>
+                  สายแรงงานขึ้นสินค้า
+                </Typography>
               </Grid>
 
-              <Grid item md={4} sx={{ p: 1 }}>
+              <Grid item md={6} sx={{ p: 1 }}>
                 <TableContainer
                   sx={{
                     width: '100%',
@@ -312,20 +313,20 @@ function ContractorTV() {
                               border: 'solid 3px #fff'
                             }}
                           >
-                            <TableCell align="center" sx={{ fontSize: 20, fontWeight: 'bold' }}>
+                            <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
                               {index + 1}
                             </TableCell>
-                            <TableCell align="center" sx={{ fontSize: 20, fontWeight: 'bold' }}>
+                            <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
                               {row.contractor_name}
                             </TableCell>
-                            <TableCell align="center" sx={{ fontSize: 20, fontWeight: 'bold' }}>
+                            <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
                               {items &&
                               items.find((x) => x.contractor_id === row.contractor_id) &&
                               moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
                                 ? items.find((x) => x.contractor_id === row.contractor_id)?.station_name
                                 : '-'}
                             </TableCell>
-                            <TableCell align="center" sx={{ fontSize: 20, fontWeight: 'bold' }}>
+                            <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
                               {row.contract_update &&
                               moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
                                 ? row.contract_update.slice(11, 19) + ' น.'
@@ -339,142 +340,147 @@ function ContractorTV() {
                 </TableContainer>
               </Grid>
 
-              <Grid item md={4} sx={{ p: 1 }}>
-                <TableContainer
-                  sx={{
-                    width: '100%',
-                    overflowX: 'auto',
-                    position: 'relative',
-                    display: 'block',
-                    maxWidth: '100%',
-                    '& td, & th': { whiteSpace: 'nowrap' }
-                  }}
-                >
-                  <Table
-                    aria-labelledby="tableTitle"
+              <Grid item md={6} sx={{ p: 1 }}>
+                <Grid item xs={12}>
+                  <TableContainer
                     sx={{
-                      '& .MuiTableCell-root:first-of-type': {
-                        pl: 2
-                      },
-                      '& .MuiTableCell-root:last-of-type': {
-                        pr: 3
-                      }
+                      width: '100%',
+                      overflowX: 'auto',
+                      position: 'relative',
+                      display: 'block',
+                      maxWidth: '100%',
+                      '& td, & th': { whiteSpace: 'nowrap' }
                     }}
                   >
-                    <QueueTableHead />
-                    <TableBody>
-                      {contractorList2.map((row, index) => {
-                        return (
-                          <TableRow
-                            key={index + 16}
-                            sx={{
-                              background:
-                                row.contract_status === 'working'
-                                  ? '#FFCC33'
-                                  : moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') ===
-                                      moment(new Date()).format('DD/MM/YYYY') && row.contract_status === 'waiting'
-                                  ? '#D9D9D9'
-                                  : '#33C072',
-                              border: 'solid 3px #fff'
-                            }}
-                          >
-                            <TableCell align="center" sx={{ fontSize: 20, fontWeight: 'bold' }}>
-                              {index + 16}
-                            </TableCell>
-                            <TableCell align="center" sx={{ fontSize: 20, fontWeight: 'bold' }}>
-                              {row.contractor_name}
-                            </TableCell>
-                            <TableCell align="center" sx={{ fontSize: 20, fontWeight: 'bold' }}>
-                              {items &&
-                              items.find((x) => x.contractor_id === row.contractor_id) &&
-                              moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
-                                ? items.find((x) => x.contractor_id === row.contractor_id)?.station_name
-                                : '-'}
-                            </TableCell>
-                            <TableCell align="center" sx={{ fontSize: 20, fontWeight: 'bold' }}>
-                              {row.contract_update &&
-                              moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
-                                ? row.contract_update.slice(11, 19) + ' น.'
-                                : '-'}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Grid>
+                    <Table
+                      aria-labelledby="tableTitle"
+                      sx={{
+                        '& .MuiTableCell-root:first-of-type': {
+                          pl: 2
+                        },
+                        '& .MuiTableCell-root:last-of-type': {
+                          pr: 3
+                        }
+                      }}
+                    >
+                      <QueueTableHead />
+                      <TableBody>
+                        {contractorList2.map((row, index) => {
+                          return (
+                            <TableRow
+                              key={index + 15}
+                              sx={{
+                                background:
+                                  row.contract_status === 'working'
+                                    ? '#FFCC33'
+                                    : moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') ===
+                                        moment(new Date()).format('DD/MM/YYYY') && row.contract_status === 'waiting'
+                                    ? '#D9D9D9'
+                                    : '#33C072',
+                                border: 'solid 3px #fff'
+                              }}
+                            >
+                              <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                {index + 15}
+                              </TableCell>
+                              <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                {row.contractor_name}
+                              </TableCell>
+                              <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                {items &&
+                                items.find((x) => x.contractor_id === row.contractor_id) &&
+                                moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
+                                  ? items.find((x) => x.contractor_id === row.contractor_id)?.station_name
+                                  : '-'}
+                              </TableCell>
+                              <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                {row.contract_update &&
+                                moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
+                                  ? row.contract_update.slice(11, 19) + ' น.'
+                                  : '-'}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Grid>
 
-              <Grid item md={4} sx={{ p: 1 }}>
-                <TableContainer
-                  sx={{
-                    width: '100%',
-                    overflowX: 'auto',
-                    position: 'relative',
-                    display: 'block',
-                    maxWidth: '100%',
-                    '& td, & th': { whiteSpace: 'nowrap' }
-                  }}
-                >
-                  <Table
-                    aria-labelledby="tableTitle"
+                <Grid item xs={12}>
+                  <Typography variant="h2" sx={{ mt: 2, mb: 2, fontSize: { xs: 24, md: '1.8vw!important' }, fontWeight: 'bold' }}>
+                    Pre-Sling/Other
+                  </Typography>
+                  <TableContainer
                     sx={{
-                      '& .MuiTableCell-root:first-of-type': {
-                        pl: 2
-                      },
-                      '& .MuiTableCell-root:last-of-type': {
-                        pr: 3
-                      }
+                      width: '100%',
+                      overflowX: 'auto',
+                      position: 'relative',
+                      display: 'block',
+                      maxWidth: '100%',
+                      '& td, & th': { whiteSpace: 'nowrap' }
                     }}
                   >
-                    <QueueTableHead />
-                    <TableBody>
-                      {contracOtherList.map((row, index) => {
-                        return (
-                          <TableRow
-                            key={index + 1}
-                            sx={{
-                              background:
-                                row.contract_other_status === 'working'
-                                  ? '#FFCC33'
-                                  : moment(row.contract_other_update?.slice(0, 10)).format('DD/MM/YYYY') ===
-                                      moment(new Date()).format('DD/MM/YYYY') && row.contract_other_status === 'waiting'
-                                  ? '#D9D9D9'
-                                  : '#33C072',
-                              border: 'solid 3px #fff'
-                            }}
-                          >
-                            <TableCell align="center" sx={{ fontSize: 20, fontWeight: 'bold' }}>
-                              {index + 1}
-                            </TableCell>
-                            <TableCell align="center" sx={{ fontSize: 20, fontWeight: 'bold' }}>
-                              {row.contractor_name}
-                            </TableCell>
-                            <TableCell align="center" sx={{ fontSize: 20, fontWeight: 'bold' }}>
-                              {items &&
-                              items.find((x) => x.reserve_id === row.reserve_id) &&
-                              moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
-                                ? items.find((x) => x.reserve_id === row.reserve_id)?.station_name
-                                : '-'}
-                              {/* {row.contract_other_status &&
+                    <Table
+                      aria-labelledby="tableTitle"
+                      sx={{
+                        '& .MuiTableCell-root:first-of-type': {
+                          pl: 2
+                        },
+                        '& .MuiTableCell-root:last-of-type': {
+                          pr: 3
+                        }
+                      }}
+                    >
+                      <QueueTableHead />
+                      <TableBody>
+                        {contracOtherList.map((row, index) => {
+                          return (
+                            <TableRow
+                              key={index + 1}
+                              sx={{
+                                background:
+                                  row.contract_other_status === 'working'
+                                    ? '#FFCC33'
+                                    : moment(row.contract_other_update?.slice(0, 10)).format('DD/MM/YYYY') ===
+                                        moment(new Date()).format('DD/MM/YYYY') && row.contract_other_status === 'waiting'
+                                    ? '#D9D9D9'
+                                    : '#33C072',
+                                border: 'solid 3px #fff'
+                              }}
+                            >
+                              <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                {index + 1}
+                              </TableCell>
+                              <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                {row.contractor_name}
+                              </TableCell>
+                              <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                {items &&
+                                items.find((x) => x.reserve_id === row.reserve_id) &&
+                                moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
+                                  ? items.find((x) => x.reserve_id === row.reserve_id)?.station_name
+                                  : '-'}
+                                {/* {row.contract_other_status &&
                               moment(row.contract_other_update?.slice(0, 10)).format('DD/MM/YYYY') ===
                                 moment(new Date()).format('DD/MM/YYYY')
                                 ? 'กำลังขึ้นสินค้า'
                                 : '-'} */}
-                            </TableCell>
-                            <TableCell align="center" sx={{ fontSize: 20, fontWeight: 'bold' }}>
-                              {row.contract_other_update &&
-                              moment(row.contract_other_update?.slice(0, 10)).format('DD/MM/YYYY') ===
-                                moment(new Date()).format('DD/MM/YYYY')
-                                ? row.contract_other_update.slice(11, 19) + ' น.'
-                                : '-'}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                              </TableCell>
+                              <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                {row.contract_other_update &&
+                                moment(row.contract_other_update?.slice(0, 10)).format('DD/MM/YYYY') ===
+                                  moment(new Date()).format('DD/MM/YYYY')
+                                  ? row.contract_other_update.slice(11, 19) + ' น.'
+                                  : '-'}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Grid>
               </Grid>
             </Grid>
           </Grid>
