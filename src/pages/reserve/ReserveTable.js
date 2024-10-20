@@ -287,35 +287,45 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     }
   };
 
+  //  99999999
   // อัพเดทสถานะคิว
   async function updateQueuesStatus(queueId) {
     try {
-      var currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-      const statusData = {
-        status: 'waiting',
-        station_id: 27,
-        updated_at: currentDate
-      };
-      await queuesRequest
-        .getAllStepById(queueId)
-        .then((response) => {
-          response.map((x, index) => {
-            if (index > 0) {
-              statusData.status = 'none';
-            }
-            stepRequest.updateStatusStep(x.step_id, statusData).then();
-          });
-        })
-        .then(() => {
-          window.location.href = '/queues/detail/' + queueId;
-        });
+      // ดึง currentDate มาใช้
+      const currentDate = await stepRequest.getCurrentDate();
+
+      // ดึงข้อมูล Step ของ Queue มาใช้
+      const response = await queuesRequest.getAllStepById(queueId);
+
+      // ใช้ for...of เพื่อรองรับ async/await ภายในลูป
+      for (const x of response) {
+        const statusData = {
+          status: 'waiting',
+          station_id: 27,
+          updated_at: currentDate
+        };
+
+        // ตรวจสอบ remark เพื่อเปลี่ยนแปลง status
+        if (x.remark !== 'ชั่งเบา') {
+          statusData.status = 'none';
+        }
+
+        // บันทึกข้อมูล status ของ step แต่ละตัว
+        await stepRequest.updateStatusStep(x.step_id, statusData);
+      }
+
+      // เมื่อบันทึกเสร็จสิ้นทั้งหมด
+      window.location.href = '/queues/detail/' + queueId;
     } catch (error) {
       console.log(error);
     }
   }
+
+  //  99999999
   async function getQueueIdByReserve(reserve_id) {
     try {
       await reserveRequest.getQueuesByIdReserve(reserve_id).then((response) => {
+        console.log('getQueuesByIdReserve ', response);
         updateQueuesStatus(response[0].queue_id);
       });
     } catch (error) {
@@ -597,7 +607,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
               queue_id: queue_id,
               status: 'waiting',
               station_id: 27,
-              remark: 'ทดสอบ-ชั่งเบา',
+              remark: 'ชั่งเบา',
               created_at: currentDate,
               updated_at: currentDate
             },
@@ -607,7 +617,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
               queue_id: queue_id,
               status: 'none',
               station_id: 27,
-              remark: 'ทดสอบ-ขึ้นสินค้า',
+              remark: 'ขึ้นสินค้า',
               created_at: currentDate,
               updated_at: currentDate
             },
@@ -617,7 +627,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
               queue_id: queue_id,
               status: 'none',
               station_id: 27,
-              remark: 'ทดสอบ-ชั่งหนัก ',
+              remark: 'ชั่งหนัก',
               created_at: currentDate,
               updated_at: currentDate
             },
@@ -627,7 +637,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
               queue_id: queue_id,
               status: 'none',
               station_id: 27,
-              remark: 'ทดสอบ-เสร็จสิ้น',
+              remark: 'เสร็จสิ้น',
               created_at: currentDate,
               updated_at: currentDate
             }
@@ -767,7 +777,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     },
     {
       name: 'product_company_id',
-      label: 'เบรน Code',
+      label: 'แบรนด์ Code',
       options: {
         sort: true,
         setCellHeaderProps: () => ({

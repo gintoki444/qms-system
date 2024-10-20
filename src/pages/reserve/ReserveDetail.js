@@ -185,11 +185,43 @@ function ReserveDetail() {
     }
   };
 
+  async function updateQueuesStatus(queueId) {
+    try {
+      // ดึง currentDate มาใช้
+      const currentDate = await stepRequest.getCurrentDate();
+
+      // ดึงข้อมูล Step ของ Queue มาใช้
+      const response = await queuesRequest.getAllStepById(queueId);
+
+      // ใช้ for...of เพื่อรองรับ async/await ภายในลูป
+      for (const x of response) {
+        const statusData = {
+          status: 'waiting',
+          station_id: 27,
+          updated_at: currentDate
+        };
+
+        // ตรวจสอบ remark เพื่อเปลี่ยนแปลง status
+        if (x.remark !== 'ชั่งเบา') {
+          statusData.status = 'none';
+        }
+
+        // บันทึกข้อมูล status ของ step แต่ละตัว
+        await stepRequest.updateStatusStep(x.step_id, statusData);
+      }
+
+      // เมื่อบันทึกเสร็จสิ้นทั้งหมด
+      window.location.href = '/queues/detail/' + queueId;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
   async function getQueueIdByReserve(reserve_id) {
     try {
-      reserveRequest.getQueuesByIdReserve(reserve_id).then((response) => {
-        window.location.href = '/queues/detail/' + response[0].queue_id;
+      await reserveRequest.getQueuesByIdReserve(reserve_id).then((response) => {
+        updateQueuesStatus(response[0].queue_id);
       });
     } catch (error) {
       console.log(error);
@@ -467,7 +499,7 @@ function ReserveDetail() {
               queue_id: queue_id,
               status: 'waiting',
               station_id: 27,
-              remark: 'ทดสอบ-ชั่งเบา',
+              remark: 'ชั่งเบา',
               created_at: currentDate,
               updated_at: currentDate
             },
@@ -477,7 +509,7 @@ function ReserveDetail() {
               queue_id: queue_id,
               status: 'none',
               station_id: 27,
-              remark: 'ทดสอบ-ขึ้นสินค้า',
+              remark: 'ขึ้นสินค้า',
               created_at: currentDate,
               updated_at: currentDate
             },
@@ -487,7 +519,7 @@ function ReserveDetail() {
               queue_id: queue_id,
               status: 'none',
               station_id: 27,
-              remark: 'ทดสอบ-ชั่งหนัก ',
+              remark: 'ชั่งหนัก ',
               created_at: currentDate,
               updated_at: currentDate
             },
@@ -497,7 +529,7 @@ function ReserveDetail() {
               queue_id: queue_id,
               status: 'none',
               station_id: 27,
-              remark: 'ทดสอบ-เสร็จสิ้น',
+              remark: 'เสร็จสิ้น',
               created_at: currentDate,
               updated_at: currentDate
             }
@@ -515,7 +547,7 @@ function ReserveDetail() {
         //       queue_id: queue_id,
         //       status: 'waiting',
         //       station_id: 27,
-        //       remark: 'ทดสอบ-ชั่งเบา',
+        //       remark: 'ชั่งเบา',
         //       created_at: currentDate,
         //       updated_at: currentDate
         //     },
@@ -525,7 +557,7 @@ function ReserveDetail() {
         //       queue_id: queue_id,
         //       status: 'none',
         //       station_id: 27,
-        //       remark: 'ทดสอบ-ขึ้นสินค้า',
+        //       remark: 'ขึ้นสินค้า',
         //       created_at: currentDate,
         //       updated_at: currentDate
         //     },
@@ -535,7 +567,7 @@ function ReserveDetail() {
         //       queue_id: queue_id,
         //       status: 'none',
         //       station_id: 27,
-        //       remark: 'ทดสอบ-ชั่งหนัก ',
+        //       remark: 'ชั่งหนัก ',
         //       created_at: currentDate,
         //       updated_at: currentDate
         //     },
@@ -545,7 +577,7 @@ function ReserveDetail() {
         //       queue_id: queue_id,
         //       status: 'none',
         //       station_id: 27,
-        //       remark: 'ทดสอบ-เสร็จสิ้น',
+        //       remark: 'เสร็จสิ้น',
         //       created_at: currentDate,
         //       updated_at: currentDate
         //     }

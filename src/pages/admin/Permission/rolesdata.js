@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSnackbar } from 'notistack';
+import { useSelector } from 'react-redux';
 import {
   Select,
   MenuItem,
@@ -14,7 +15,9 @@ import {
   Typography,
   Stack,
   Backdrop,
-  CircularProgress
+  CircularProgress,
+  Grid,
+  Alert
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
@@ -33,6 +36,17 @@ const iconMap = {
 };
 
 function RolesData() {
+  const pageId = 34;
+  const userRole = useSelector((state) => state.auth?.roles);
+  const userPermission = useSelector((state) => state.auth?.user_permissions);
+  const [pageDetail, setPageDetail] = useState([]);
+
+  useEffect(() => {
+    if (Object.keys(userPermission).length > 0) {
+      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+    }
+  }, [userRole, userPermission]);
+
   const [data, setData] = useState([]);
   const [roles, setRoles] = useState([]);
   const [permissionOptions, setPermissionOptions] = useState([]);
@@ -226,65 +240,76 @@ function RolesData() {
           <CircularProgress color="primary" />
         </Backdrop>
       )}
+      {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
+        <Grid item xs={12}>
+          <MainCard content={false}>
+            <Stack sx={{ width: '100%' }} spacing={2}>
+              <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+            </Stack>
+          </MainCard>
+        </Grid>
+      )}
 
-      <MainCard content={false} sx={{ mt: 1.5, p: 3, minWidth: '100%', width: 'fit-content' }}>
-        <Typography variant="h3">การกำหนดสิทธิ์การใช้งานระบบ</Typography>
-        <TableContainer
-          sx={{
-            width: '100%',
-            overflowX: 'auto',
-            position: 'relative',
-            display: 'block',
-            maxWidth: '100%',
-            '& td, & th': { whiteSpace: 'nowrap' }
-          }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>หมวดหมู่</TableCell>
-                <TableCell>หน้า</TableCell>
-                {roles.map((role, index) => (
-                  <TableCell key={index}>{role.role_name}</TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {data.map((category, categoryIndex) => (
-                <React.Fragment key={categoryIndex}>
-                  <TableRow sx={{ background: getColor(categoryIndex) }}>
-                    <TableCell rowSpan={category.permissions.length + 1}>{category.category}</TableCell>
-                  </TableRow>
-                  {category.permissions.map((page, pageIndex) => (
-                    <TableRow key={pageIndex} sx={{ background: getColor(categoryIndex) }}>
-                      <TableCell>{page.name}</TableCell>
-                      {page.permissions.map((value, roleIndex) => (
-                        <TableCell key={roleIndex}>
-                          <InputLabel sx={{ background: 'transparent!important' }}>{roles[roleIndex].role_name}</InputLabel>
-                          <FormControl variant="outlined" fullWidth>
-                            <Select
-                              value={value}
-                              onChange={(event) => handlePermissionChange(categoryIndex, pageIndex, roleIndex, event)}
-                              // label={roles[roleIndex].role_name && replaceText(roles[roleIndex].role_name)}
-                              sx={{ background: getColor(value) }}
-                            >
-                              {permissionOptions.map((option) => (
-                                <MenuItem key={option.value} value={option.value} sx={{ background: getColor(option.id) }}>
-                                  {option.label}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        </TableCell>
-                      ))}
-                    </TableRow>
+      {pageDetail.length !== 0 && (
+        <MainCard content={false} sx={{ mt: 1.5, p: 3, minWidth: '100%', width: 'fit-content' }}>
+          <Typography variant="h3">การกำหนดสิทธิ์การใช้งานระบบ</Typography>
+          <TableContainer
+            sx={{
+              width: '100%',
+              overflowX: 'auto',
+              position: 'relative',
+              display: 'block',
+              maxWidth: '100%',
+              '& td, & th': { whiteSpace: 'nowrap' }
+            }}
+          >
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>หมวดหมู่</TableCell>
+                  <TableCell>หน้า</TableCell>
+                  {roles.map((role, index) => (
+                    <TableCell key={index}>{role.role_name}</TableCell>
                   ))}
-                </React.Fragment>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </MainCard>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.map((category, categoryIndex) => (
+                  <React.Fragment key={categoryIndex}>
+                    <TableRow sx={{ background: getColor(categoryIndex) }}>
+                      <TableCell rowSpan={category.permissions.length + 1}>{category.category}</TableCell>
+                    </TableRow>
+                    {category.permissions.map((page, pageIndex) => (
+                      <TableRow key={pageIndex} sx={{ background: getColor(categoryIndex) }}>
+                        <TableCell>{page.name}</TableCell>
+                        {page.permissions.map((value, roleIndex) => (
+                          <TableCell key={roleIndex}>
+                            <InputLabel sx={{ background: 'transparent!important' }}>{roles[roleIndex].role_name}</InputLabel>
+                            <FormControl variant="outlined" fullWidth>
+                              <Select
+                                value={value}
+                                onChange={(event) => handlePermissionChange(categoryIndex, pageIndex, roleIndex, event)}
+                                // label={roles[roleIndex].role_name && replaceText(roles[roleIndex].role_name)}
+                                sx={{ background: getColor(value) }}
+                              >
+                                {permissionOptions.map((option) => (
+                                  <MenuItem key={option.value} value={option.value} sx={{ background: getColor(option.id) }}>
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </MainCard>
+      )}
     </div>
   );
 }

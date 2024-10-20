@@ -328,7 +328,6 @@ export const getCurrentDate = () => {
     fetch(apiUrl + '/current-date', requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
         resolve(result.currentDate);
       })
       .catch((error) => {

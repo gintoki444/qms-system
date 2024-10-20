@@ -15,7 +15,7 @@ import {
   DialogContent,
   DialogActions,
   Chip
-} from '../../../../../node_modules/@mui/material/index';
+} from '@mui/material';
 
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -251,7 +251,7 @@ function AllStations({ permission }) {
                 key={index}
               >
                 {row.time_update && getDateFormat(row.time_update) === moment(new Date()).format('DD/MM/YYYY')
-                  ? row.time_update.slice(11, 16)
+                  ? row.time_update.slice(11, 16) + ' น.'
                   : '--:--'}
                 <Paper
                   variant="outlined"
@@ -292,7 +292,7 @@ function AllStations({ permission }) {
                 key={index}
               >
                 {row.time_update && getDateFormat(row.time_update) === moment(new Date()).format('DD/MM/YYYY')
-                  ? row.time_update.slice(11, 16)
+                  ? row.time_update.slice(11, 16) + ' น.'
                   : '--:--'}
                 <Paper
                   variant="outlined"
@@ -334,7 +334,7 @@ function AllStations({ permission }) {
                 key={index}
               >
                 {row.time_update && getDateFormat(row.time_update) === moment(new Date()).format('DD/MM/YYYY')
-                  ? row.time_update.slice(11, 16)
+                  ? row.time_update.slice(11, 16) + ' น.'
                   : '--:--'}
                 <Paper
                   variant="outlined"
@@ -381,7 +381,7 @@ function AllStations({ permission }) {
                 key={index}
               >
                 {row.time_update && getDateFormat(row.time_update) === moment(new Date()).format('DD/MM/YYYY')
-                  ? row.time_update.slice(11, 16)
+                  ? row.time_update.slice(11, 16) + ' น.'
                   : '--:--'}
                 <Paper
                   variant="outlined"

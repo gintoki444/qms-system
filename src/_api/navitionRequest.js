@@ -32,7 +32,6 @@ export const getProductRegisID = async (description) => {
 
   const response = await fetch(apiUrl + '/itemsfilter', requestOptions);
   const result = await response.json();
-  console.log(result);
   if (!result.error) {
     return result[0]; // Return product_id only
   }

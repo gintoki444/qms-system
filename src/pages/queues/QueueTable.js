@@ -33,6 +33,7 @@ import {
 
 import MUIDataTable from 'mui-datatables';
 import CopyLinkButton from 'components/CopyLinkButton';
+// import ResetStepButton from 'components/@extended/ResetStepButton';
 
 // ==============================|| ORDER TABLE - STATUS ||============================== //
 const QueueStatus = ({ status }) => {
@@ -231,12 +232,42 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       }
     },
     {
-      name: 'step1_status',
+      name: 'queue_id',
       label: 'ชั่งเบา(S1)',
       options: {
-        // sort: true,
-        customBodyRender: (value) =>
-          value !== 'none' ? <>{parseFloat(value) <= 0 ? <QueueStatus status={'pending'} /> : <QueueStatus status={value} />}</> : '-'
+        customBodyRender: (value, tableMeta) => {
+          const queueDat = items[tableMeta.rowIndex];
+          return (
+            <div style={{ textAlign: 'center' }}>
+              {queueDat.step1_status !== 'none' ? (
+                <>
+                  {parseFloat(queueDat.step1_status) <= 0 ? (
+                    <QueueStatus status={'pending'} />
+                  ) : (
+                    <QueueStatus status={queueDat.step1_status} />
+                  )}
+                </>
+              ) : (
+                <>{'-'}</>
+              )}
+              {/* <ResetStepButton data={queueDat} stepId={'step1'} /> */}
+              {/* <br />
+              <Tooltip title="รายละเอียด">
+                <span>
+                  <Button
+                    sx={{ minWidth: '33px!important', p: '6px 0px', mt: 1 }}
+                    variant="contained"
+                    size="medium"
+                    color="info"
+                    onClick={() => updateDrivers(value)}
+                  >
+                    รีเซต
+                  </Button>
+                </span>
+              </Tooltip> */}
+            </div>
+          );
+        }
       }
     },
     {
@@ -324,31 +355,42 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
 
   // ยกเลิกข้อมูลการจองคิว
   const [reserve_id, setReserve_id] = useState(false);
+  // const [queueData, setQueueData] = useState();
   const [id_del, setDel] = useState(0);
   const [textnotify, setText] = useState('');
+  const [onClick, setOnClick] = useState('');
 
-  const handleClickOpen = (queue_id, reserve_id, step1_status) => {
-    if (step1_status === 'processing' || step1_status === 'completed') {
-      alert('คิวนี้ถูกเรียกแล้ว! ไม่สามารถลบข้อมูลนี้ได้');
-      return;
+  const handleClickOpen = (queue_id, reserve_id, step1_status, onClick) => {
+    if (onClick === 'delete') {
+      if (step1_status === 'processing' || step1_status === 'completed') {
+        alert('คิวนี้ถูกเรียกแล้ว! ไม่สามารถลบข้อมูลนี้ได้');
+        return;
+      }
+      setReserve_id(reserve_id);
+      setText('ลบข้อมูล');
+      setDel(queue_id);
+    } else if (onClick === 'reset') {
+      setText('รีเซตสถานะ');
+      // setQueueData(queueData);
     }
-    setReserve_id(reserve_id);
-    setText('ลบข้อมูล');
-    setDel(queue_id);
+    setOnClick(onClick);
     setOpen(true);
   };
 
   const [onclickSubmit, setOnClickSubmit] = useState(false);
   const handleClose = (flag) => {
-    if (flag === 1) {
-      setOnClickSubmit(true);
-      setLoading(true);
+    if (onClick === 'delete') {
+      if (flag === 1) {
+        setOnClickSubmit(true);
+        setLoading(true);
 
-      deteteQueue(id_del);
-      //update = waiting การจองเมื่อลบคิว queue
-      updateReserveStatus(reserve_id);
-      setOpen(false);
-    } else if (flag === 0) {
+        deteteQueue(id_del);
+        //update = waiting การจองเมื่อลบคิว queue
+        updateReserveStatus(reserve_id);
+        setOpen(false);
+      }
+    }
+    if (flag === 0) {
       setOpen(false);
     }
   };

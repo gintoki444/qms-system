@@ -11,7 +11,9 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
+  Alert
+
   //   CircularProgress
 } from '@mui/material';
 import TextSliders from './../TextSliders';
@@ -22,10 +24,57 @@ import MainCard from 'components/MainCard';
 import ClockTime from 'components/@extended/ClockTime';
 import AuthFooter from 'components/cards/AuthFooter';
 
-import * as adminRequest from '_api/adminRequest';
-import * as stepRequest from '_api/StepRequest';
+// import * as adminRequest from '_api/adminRequest';
+import * as permissionsRequest from '_api/permissionsRequest';
+import * as authUser from '_api/loginRequest';
+import * as displayRequest from '_api/displayRequest';
+const token = localStorage.getItem('token');
+// import * as stepRequest from '_api/StepRequest';
 
 function ContractorTV() {
+  const pageId = 35;
+  // const userRole = useSelector((state) => state.auth?.roles);
+  // const userPermission = useSelector((state) => state.auth?.user_permissions);
+  const [pageDetail, setPageDetail] = useState([]);
+  const [userPermission, setUserPermission] = useState([]);
+  const [userRole, setUserRole] = useState([]);
+
+  useEffect(() => {
+    getProfile();
+  }, []);
+  const getProfile = () => {
+    authUser.authUser(token).then((result) => {
+      if (result.status === 'ok') {
+        getPagePermission(result.decoded.role_id);
+        setUserRole(result.decoded.role_id);
+      }
+    });
+  };
+
+  const getPagePermission = (userRole) => {
+    try {
+      permissionsRequest.getPagesPermissionByRole(userRole).then((response) => {
+        if (response.length > 0) {
+          response = response.filter((x) => x.permission_name !== 'no_access_to_view_data');
+          setUserPermission(response);
+          setPageDetail(response.filter((x) => x.page_id === pageId));
+          // dispatch(setPermission({ key: 'permission', value: response }));
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    // console.log(userRole);
+    // console.log(userPermission);
+    // if (Object.keys(userPermission).length > 0) {
+    //   console.log(userPermission.permission.filter((x) => x.page_id === pageId));
+    //   setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+    // }
+  }, [userRole, userPermission]);
+
   const fullscreenRef = useRef(null);
   const [statusDisplay, setStatusDisplay] = useState(false);
 
@@ -41,65 +90,53 @@ function ContractorTV() {
     }
   };
 
-  useEffect(async () => {
-    fetchData();
+  useEffect(() => {
+    async function fetchDataWrapper() {
+      await fetchData();
+    }
+
+    fetchDataWrapper();
 
     const intervalId = setInterval(() => {
-      fetchData();
-    }, 360000); // Polling every 5 seconds
+      fetchDataWrapper();
+    }, 360000); // Polling every 5 minutes
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, []); // คุณสามารถเพิ่ม dependencies ได้ตามต้องการถ้ามีค่าที่ใช้ภายใน
 
   const fetchData = async () => {
     try {
-      await getQueue();
+      console.log('Fetching contractors:');
       await getAllContractor();
-      await getAllContractorOther();
     } catch (error) {
       console.error('Error fetching data:', error);
-    }
-  };
-
-  const [items, setItems] = useState([]);
-  const getQueue = async () => {
-    const nowDate = moment(new Date()).format('YYYY-MM-DD');
-    try {
-      await stepRequest.getAllStep0ByDate(nowDate, nowDate).then((response) => {
-        console.log('response :', response);
-        console.log('nowDate :', nowDate);
-        setItems(
-          response.filter(
-            (x) =>
-              x.token !== null &&
-              parseFloat(x.total_quantity) > 0 &&
-              x.contractor_id !== null &&
-              x.step2_status !== 'completed' &&
-              x.step2_status !== 'cancle'
-          ) || []
-        );
-      });
-    } catch (e) {
-      console.log(e);
     }
   };
 
   // =============== Get Contractor ===============//
   const [contractorList, setContractorList] = useState([]);
   const [contractorList2, setContractorList2] = useState([]);
+  const [contracOtherList, setContracOtherList] = useState([]);
+
   const getAllContractor = async () => {
+    const nowDate = moment(new Date()).format('YYYY-MM-DD');
     try {
-      await adminRequest.getAllContractors().then((result) => {
-        result = result.filter((x) => x.status !== 'I' && x.contract_company_id !== 11);
-        console.log(result);
-        const sortedData = sortContracts(result);
-        const chunk1 = sortedData.slice(0, 14); // ลำดับที่ 0-13
-        const chunk2 = sortedData.slice(14, 18); // ลำดับที่ 14-27
-        setContractorList(chunk1);
-        setContractorList2(chunk2);
-      });
+      const result = await displayRequest.getContractorTV(nowDate, nowDate);
+
+      const filterContractors = result.contractors.filter((x) => x.status !== 'I' && x.contract_company_id !== 11);
+
+      const sortedData = sortContracts(filterContractors);
+      const chunk1 = sortedData.slice(0, 14); // ลำดับที่ 0-13
+      const chunk2 = sortedData.slice(14, 18); // ลำดับที่ 14-27
+
+      const filterContractorsOther =
+        result.contractors_other.length > 0 && result.contractors_other.filter((x) => x.contract_other_status !== 'completed');
+
+      setContractorList(chunk1);
+      setContractorList2(chunk2);
+      setContracOtherList(filterContractorsOther);
     } catch (error) {
-      console.log(error);
+      console.error('Error in getAllContractor:', error);
     }
   };
 
@@ -130,17 +167,16 @@ function ContractorTV() {
   }
 
   // =============== Get Contractor other===============//
-  const [contracOtherList, setContracOtherList] = useState([]);
-  const getAllContractorOther = async () => {
-    try {
-      await adminRequest.getContractorOtherAll().then((result) => {
-        result = result.filter((x) => x.contract_other_status !== 'completed');
-        setContracOtherList(result);
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const getAllContractorOther = async () => {
+  //   try {
+  //     await adminRequest.getContractorOtherAll().then((result) => {
+  //       result = result.filter((x) => x.contract_other_status !== 'completed');
+  //       setContracOtherList(result);
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
   const currentDate = moment().locale('th').format('LL');
   const nameDate = moment().locale('th').format('dddd');
 
@@ -197,151 +233,86 @@ function ContractorTV() {
 
   return (
     <Grid sx={{ background: '#bdbdbd' }}>
-      <Grid
-        alignItems="center"
-        justifyContent="space-between"
-        ref={fullscreenRef}
-        sx={{
-          background: '#bdbdbd',
-          height: statusDisplay == false ? 'auto' : '100vh',
-          minHeight: '100vh',
-          flexDirection: 'column',
-          display: 'flex'
-        }}
-      >
-        <Grid container rowSpacing={3} onClick={toggleFullScreen}>
-          <Grid item xs={12} sx={{ background: '#fff', pl: '2%', pr: '2%' }}>
-            <Grid container alignItems="center">
-              <Grid item xs={1}>
-                <Stack sx={{ pb: 2, pt: 2, justifyContent: 'center', alignItems: 'left', width: '100%' }}>
-                  <img src={IconLogo} width={'50%'} alt="logo" />
-                  {/* <img src={IconLogo} width={'30%'} alt="logo" /> */}
-                  {/* <Typography variant="h5">บริษัท ไอ ซี พี เฟอทิไลเซอร์ จำกัด</Typography> */}
-                </Stack>
-              </Grid>
-              <Grid item xs={4} sx={{ position: 'relative' }}>
-                <Divider
-                  absolute
-                  orientation="vertical"
-                  textAlign="center"
-                  sx={{
-                    left: '-8%',
-                    width: 0
-                  }}
-                />
-                <Stack justifyContent="row" flexDirection="row">
-                  <Typography variant="h3">วัน{nameDate + ' ที่ ' + currentDate}</Typography>
-                  <ClockTime />
-                </Stack>
-              </Grid>
-              <Grid item xs={7} sx={{ position: 'relative' }}>
-                <Divider
-                  absolute
-                  orientation="vertical"
-                  textAlign="center"
-                  sx={{
-                    left: '-2%',
-                    width: 0
-                  }}
-                />
-                <Box sx={{ minHeight: '5vh' }}>
-                  <MainCard contentSX={{ p: '1%!important' }} sx={{ background: '#f4f4f4' }}>
-                    <TextSliders />
-                    {/* <InfiniteLooper speed="4" direction="right">
+      {Object.keys(userPermission).length > 0 && pageDetail.length === 0 && (
+        <Grid item xs={12}>
+          <MainCard content={false}>
+            <Stack sx={{ width: '100%' }} spacing={2}>
+              <Alert severity="warning">คุณไม่มีสิทธิ์ใช้เข้าถึงข้อมูลนี้</Alert>
+            </Stack>
+          </MainCard>
+        </Grid>
+      )}
+
+      {pageDetail.length !== 0 && (
+        <Grid
+          alignItems="center"
+          justifyContent="space-between"
+          ref={fullscreenRef}
+          sx={{
+            background: '#bdbdbd',
+            height: statusDisplay == false ? 'auto' : '100vh',
+            minHeight: '100vh',
+            flexDirection: 'column',
+            display: 'flex'
+          }}
+        >
+          <Grid container rowSpacing={3} onClick={toggleFullScreen}>
+            <Grid item xs={12} sx={{ background: '#fff', pl: '2%', pr: '2%' }}>
+              <Grid container alignItems="center">
+                <Grid item xs={1}>
+                  <Stack sx={{ pb: 2, pt: 2, justifyContent: 'center', alignItems: 'left', width: '100%' }}>
+                    <img src={IconLogo} width={'50%'} alt="logo" />
+                    {/* <img src={IconLogo} width={'30%'} alt="logo" /> */}
+                    {/* <Typography variant="h5">บริษัท ไอ ซี พี เฟอทิไลเซอร์ จำกัด</Typography> */}
+                  </Stack>
+                </Grid>
+                <Grid item xs={4} sx={{ position: 'relative' }}>
+                  <Divider
+                    absolute
+                    orientation="vertical"
+                    textAlign="center"
+                    sx={{
+                      left: '-8%',
+                      width: 0
+                    }}
+                  />
+                  <Stack justifyContent="row" flexDirection="row">
+                    <Typography variant="h3">วัน{nameDate + ' ที่ ' + currentDate}</Typography>
+                    <ClockTime />
+                  </Stack>
+                </Grid>
+                <Grid item xs={7} sx={{ position: 'relative' }}>
+                  <Divider
+                    absolute
+                    orientation="vertical"
+                    textAlign="center"
+                    sx={{
+                      left: '-2%',
+                      width: 0
+                    }}
+                  />
+                  <Box sx={{ minHeight: '5vh' }}>
+                    <MainCard contentSX={{ p: '1%!important' }} sx={{ background: '#f4f4f4' }}>
+                      <TextSliders />
+                      {/* <InfiniteLooper speed="4" direction="right">
                   <div className="contentBlock contentBlock--one">Place the stuff you want to loop</div>
                   <div className="contentBlock contentBlock--one">right here</div>
                 </InfiniteLooper> */}
-                  </MainCard>
-                </Box>
+                    </MainCard>
+                  </Box>
+                </Grid>
               </Grid>
             </Grid>
-          </Grid>
-          <Grid item xs={12} sx={{ p: '1%', pt: 20, mt: '0%' }}>
-            <Grid container rowSpacing={1} colSpacing={2}>
-              <Grid item xs={12} sx={{ p: 1 }}>
-                <Typography variant="h2" sx={{ fontSize: { xs: 24, md: '1.8vw!important' }, fontWeight: 'bold' }}>
-                  สายแรงงานขึ้นสินค้า
-                </Typography>
-              </Grid>
 
-              <Grid item md={6} sx={{ p: 1 }}>
-                <TableContainer
-                  sx={{
-                    width: '100%',
-                    overflowX: 'auto',
-                    position: 'relative',
-                    display: 'block',
-                    maxWidth: '100%',
-                    '& td, & th': { whiteSpace: 'nowrap' }
-                  }}
-                >
-                  <Table
-                    aria-labelledby="tableTitle"
-                    sx={{
-                      '& .MuiTableCell-root:first-of-type': {
-                        pl: 2
-                      },
-                      '& .MuiTableCell-root:last-of-type': {
-                        pr: 3
-                      }
-                    }}
-                  >
-                    <QueueTableHead />
-                    {/* {loading ? (
-                  <TableBody>
-                    <TableRow>
-                      <TableCell colSpan={status == 'processing' ? 13 : 12} align="center">
-                        <CircularProgress />
-                        <Typography variant="body1">Loading....</Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                ) : ( */}
-                    <TableBody>
-                      {contractorList.map((row, index) => {
-                        return (
-                          <TableRow
-                            key={index}
-                            sx={{
-                              background:
-                                row.contract_status === 'working'
-                                  ? '#FFCC33'
-                                  : moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') ===
-                                      moment(new Date()).format('DD/MM/YYYY') && row.contract_status === 'waiting'
-                                  ? '#D9D9D9'
-                                  : '#33C072',
-                              border: 'solid 3px #fff'
-                            }}
-                          >
-                            <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
-                              {index + 1}
-                            </TableCell>
-                            <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
-                              {row.contractor_name}
-                            </TableCell>
-                            <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
-                              {items &&
-                              items.find((x) => x.contractor_id === row.contractor_id) &&
-                              moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
-                                ? items.find((x) => x.contractor_id === row.contractor_id)?.station_name
-                                : '-'}
-                            </TableCell>
-                            <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
-                              {row.contract_update &&
-                              moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
-                                ? row.contract_update.slice(11, 19) + ' น.'
-                                : '-'}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Grid>
-
-              <Grid item md={6} sx={{ p: 1 }}>
-                <Grid item xs={12}>
+            {/* 9999 */}
+            <Grid item xs={12} sx={{ p: '1%', pt: 20, mt: '0%' }}>
+              <Grid container rowSpacing={1} colSpacing={2}>
+                <Grid item md={6} sx={{ p: 1 }}>
+                  <Grid item xs={12} sx={{ p: 1 }}>
+                    <Typography variant="h2" sx={{ fontSize: { xs: 24, md: '1.8vw!important' }, fontWeight: 'bold' }}>
+                      สายแรงงานขึ้นสินค้า
+                    </Typography>
+                  </Grid>
                   <TableContainer
                     sx={{
                       width: '100%',
@@ -365,10 +336,10 @@ function ContractorTV() {
                     >
                       <QueueTableHead />
                       <TableBody>
-                        {contractorList2.map((row, index) => {
+                        {contractorList.map((row, index) => {
                           return (
                             <TableRow
-                              key={index + 15}
+                              key={index}
                               sx={{
                                 background:
                                   row.contract_status === 'working'
@@ -381,17 +352,22 @@ function ContractorTV() {
                               }}
                             >
                               <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
-                                {index + 15}
+                                {index + 1}
                               </TableCell>
                               <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
                                 {row.contractor_name}
                               </TableCell>
                               <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
-                                {items &&
-                                items.find((x) => x.contractor_id === row.contractor_id) &&
+                                {row.reserves.length > 0 &&
+                                row.reserves.find((x) => x.contractor_id === row.contractor_id) &&
                                 moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
-                                  ? items.find((x) => x.contractor_id === row.contractor_id)?.station_name
+                                  ? row.reserves.find((x) => x.contractor_id === row.contractor_id)?.station_name
                                   : '-'}
+                                {/* {items &&
+                              items.find((x) => x.contractor_id === row.contractor_id) &&
+                              moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
+                                ? items.find((x) => x.contractor_id === row.contractor_id)?.station_name
+                                : '-'} */}
                               </TableCell>
                               <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
                                 {row.contract_update &&
@@ -407,123 +383,176 @@ function ContractorTV() {
                   </TableContainer>
                 </Grid>
 
-                <Grid item xs={12}>
-                  <Typography variant="h2" sx={{ mt: 2, mb: 2, fontSize: { xs: 24, md: '1.8vw!important' }, fontWeight: 'bold' }}>
-                    Pre-Sling/Other
-                  </Typography>
-                  <TableContainer
-                    sx={{
-                      width: '100%',
-                      overflowX: 'auto',
-                      position: 'relative',
-                      display: 'block',
-                      maxWidth: '100%',
-                      '& td, & th': { whiteSpace: 'nowrap' }
-                    }}
-                  >
-                    <Table
-                      aria-labelledby="tableTitle"
+                <Grid item md={6} sx={{ p: 1 }}>
+                  {contractorList2.length > 0 && (
+                    <>
+                      <Grid item xs={12} sx={{ p: 1 }}>
+                        <Typography variant="h2" sx={{ fontSize: { xs: 24, md: '1.8vw!important' }, fontWeight: 'bold' }}>
+                          สายแรงงานขึ้นสินค้า
+                        </Typography>
+                      </Grid>
+                      <TableContainer
+                        sx={{
+                          width: '100%',
+                          overflowX: 'auto',
+                          position: 'relative',
+                          display: 'block',
+                          maxWidth: '100%',
+                          '& td, & th': { whiteSpace: 'nowrap' }
+                        }}
+                      >
+                        <Table
+                          aria-labelledby="tableTitle"
+                          sx={{
+                            '& .MuiTableCell-root:first-of-type': {
+                              pl: 2
+                            },
+                            '& .MuiTableCell-root:last-of-type': {
+                              pr: 3
+                            }
+                          }}
+                        >
+                          <QueueTableHead />
+                          <TableBody>
+                            {contractorList2.map((row, index) => {
+                              return (
+                                <TableRow
+                                  key={index + 15}
+                                  sx={{
+                                    background:
+                                      row.contract_status === 'working'
+                                        ? '#FFCC33'
+                                        : moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') ===
+                                            moment(new Date()).format('DD/MM/YYYY') && row.contract_status === 'waiting'
+                                        ? '#D9D9D9'
+                                        : '#33C072',
+                                    border: 'solid 3px #fff'
+                                  }}
+                                >
+                                  <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                    {index + 15}
+                                  </TableCell>
+                                  <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                    {row.contractor_name}
+                                  </TableCell>
+                                  <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                    {row.reserves.length > 0 &&
+                                    row.reserves.find((x) => x.contractor_id === row.contractor_id) &&
+                                    moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') ===
+                                      moment(new Date()).format('DD/MM/YYYY')
+                                      ? row.reserves.find((x) => x.contractor_id === row.contractor_id)?.station_name
+                                      : '-'}
+                                  </TableCell>
+                                  <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                    {row.contract_update &&
+                                    moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') ===
+                                      moment(new Date()).format('DD/MM/YYYY')
+                                      ? row.contract_update.slice(11, 19) + ' น.'
+                                      : '-'}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </>
+                  )}
+                  <Grid item xs={12}>
+                    <Grid item xs={12} sx={{ p: 1 }}>
+                      <Typography variant="h2" sx={{ fontSize: { xs: 24, md: '1.8vw!important' }, fontWeight: 'bold' }}>
+                        Pre-Sling/Other
+                      </Typography>
+                    </Grid>
+                    <TableContainer
                       sx={{
-                        '& .MuiTableCell-root:first-of-type': {
-                          pl: 2
-                        },
-                        '& .MuiTableCell-root:last-of-type': {
-                          pr: 3
-                        }
+                        width: '100%',
+                        overflowX: 'auto',
+                        position: 'relative',
+                        display: 'block',
+                        maxWidth: '100%',
+                        '& td, & th': { whiteSpace: 'nowrap' }
                       }}
                     >
-                      <QueueTableHead />
-                      <TableBody>
-                        {contracOtherList.map((row, index) => {
-                          return (
-                            <TableRow
-                              key={index + 1}
-                              sx={{
-                                background:
-                                  row.contract_other_status === 'working'
-                                    ? '#FFCC33'
-                                    : moment(row.contract_other_update?.slice(0, 10)).format('DD/MM/YYYY') ===
-                                        moment(new Date()).format('DD/MM/YYYY') && row.contract_other_status === 'waiting'
-                                    ? '#D9D9D9'
-                                    : '#33C072',
-                                border: 'solid 3px #fff'
-                              }}
-                            >
-                              <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
-                                {index + 1}
-                              </TableCell>
-                              <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
-                                {row.contractor_name}
-                              </TableCell>
-                              <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
-                                {items &&
-                                items.find((x) => x.reserve_id === row.reserve_id) &&
-                                moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
-                                  ? items.find((x) => x.reserve_id === row.reserve_id)?.station_name
-                                  : '-'}
-                                {/* {row.contract_other_status &&
-                              moment(row.contract_other_update?.slice(0, 10)).format('DD/MM/YYYY') ===
-                                moment(new Date()).format('DD/MM/YYYY')
-                                ? 'กำลังขึ้นสินค้า'
-                                : '-'} */}
-                              </TableCell>
-                              <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
-                                {row.contract_other_update &&
-                                moment(row.contract_other_update?.slice(0, 10)).format('DD/MM/YYYY') ===
-                                  moment(new Date()).format('DD/MM/YYYY')
-                                  ? row.contract_other_update.slice(11, 19) + ' น.'
-                                  : '-'}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                      <Table
+                        aria-labelledby="tableTitle"
+                        sx={{
+                          '& .MuiTableCell-root:first-of-type': {
+                            pl: 2
+                          },
+                          '& .MuiTableCell-root:last-of-type': {
+                            pr: 3
+                          }
+                        }}
+                      >
+                        <QueueTableHead />
+                        <TableBody>
+                          {contracOtherList.length > 0 &&
+                            contracOtherList.map((row, index) => {
+                              return (
+                                <TableRow
+                                  key={index + 1}
+                                  sx={{
+                                    background:
+                                      row.contract_other_status === 'working'
+                                        ? '#FFCC33'
+                                        : moment(row.contract_other_update?.slice(0, 10)).format('DD/MM/YYYY') ===
+                                            moment(new Date()).format('DD/MM/YYYY') && row.contract_other_status === 'waiting'
+                                        ? '#D9D9D9'
+                                        : '#33C072',
+                                    border: 'solid 3px #fff'
+                                  }}
+                                >
+                                  <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                    {index + 1}
+                                  </TableCell>
+                                  <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                    {row.contractor_name}
+                                  </TableCell>
+                                  <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                    {row.reserves &&
+                                    row.reserves.find((x) => x.contractor_id === row.contractor_id) &&
+                                    moment(row.contract_update?.slice(0, 10)).format('DD/MM/YYYY') ===
+                                      moment(new Date()).format('DD/MM/YYYY')
+                                      ? row.reserves.find((x) => x.contractor_id === row.contractor_id)?.station_name
+                                      : '-'}
+                                  </TableCell>
+                                  <TableCell align="center" sx={{ fontSize: { xs: 20, md: '1.3vw!important' }, fontWeight: 'bold' }}>
+                                    {row.contract_other_update &&
+                                    moment(row.contract_other_update?.slice(0, 10)).format('DD/MM/YYYY') ===
+                                      moment(new Date()).format('DD/MM/YYYY')
+                                      ? row.contract_other_update.slice(11, 19) + ' น.'
+                                      : '-'}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </Grid>
                 </Grid>
               </Grid>
             </Grid>
+
+            <Grid
+              xs={12}
+              sx={{
+                textAlign: 'left'
+              }}
+            ></Grid>
+            <Grid
+              xs={12}
+              sx={{
+                textAlign: 'left'
+              }}
+            ></Grid>
           </Grid>
-          {/* <Grid xs={12} md={6} sx={{ background: '#F9D8C7', minHeight: '89vh' }}>
-            <AllStations queues={stations} groupStation={1} />
+          <Grid sx={{ pt: 1, pb: 1, borderTop: '1px solid #fff', background: '#fff', width: '100%' }}>
+            <AuthFooter />
           </Grid>
-          <Grid xs={12} md={3} sx={{ background: '#C1E5F5', minHeight: '89vh' }}>
-            <AllStations queues={stations2} groupStation={2} />
-          </Grid>
-          <Grid xs={12} md={3} sx={{ background: '#D9F3D0', minHeight: '89vh' }}>
-            <AllStations queues={stations3} groupStation={3} />
-          </Grid> */}
-          <Grid
-            xs={12}
-            sx={{
-              textAlign: 'left'
-            }}
-          >
-            {/* <WeighQueue queues={step1Data} /> */}
-            {/* <Step1Queue queues={step1Data} /> */}
-          </Grid>
-          <Grid
-            xs={12}
-            sx={{
-              textAlign: 'left'
-            }}
-          >
-            {/* <Step2Queue queues={step2Data} /> */}
-            {/* <ReceiveQueue queues={step2Data} /> */}
-          </Grid>
-          {/* <Grid
-        xs={12}
-        sx={{
-          textAlign: 'left'
-        }}
-      >
-        <Step3Queue queues={step3Data} />
-      </Grid> */}
         </Grid>
-        <Grid sx={{ pt: 1, pb: 1, borderTop: '1px solid #fff', background: '#fff', width: '100%' }}>
-          <AuthFooter />
-        </Grid>
-      </Grid>
+      )}
     </Grid>
   );
 }

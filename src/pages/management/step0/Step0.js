@@ -22,6 +22,7 @@ const currentDate = moment(new Date()).format('YYYY-MM-DD');
 // project import
 import Step0Table from './Step0Table';
 import AllStations from './step0-forms/AllStations';
+import AllContractor from './step0-forms/AllContractor';
 import { Divider } from '../../../../node_modules/@mui/material/index';
 
 // import PropTypes from 'prop-types';
@@ -200,6 +201,9 @@ function Step0() {
               <AllStations permission={pageDetail[0].permission_name} />
             </MainCard>
           </Grid>
+
+          {/* สายแรงงานทั้งหมด */}
+          <AllContractor permission={pageDetail[0].permission_name} />
           <MainCard content={false} sx={{ mt: 1.5 }}>
             <Box sx={{ pt: 1, pr: 2 }}>
               <Tabs value={valueFilter} onChange={handleChange} aria-label="company-tabs" variant="scrollable" scrollButtons="auto">

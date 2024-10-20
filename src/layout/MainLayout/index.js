@@ -77,68 +77,68 @@ const MainLayout = () => {
       permissionsRequest.getPagesPermissionByRole(userRole).then((response) => {
         if (response.length > 0) {
           response = response.filter((x) => x.permission_name !== 'no_access_to_view_data');
-          const checkReport = response.filter((x) => x.page_icon === 'report');
-          if (userRole === 11) {
-            const addnew = {
-              page_id: 35,
-              role_id: 11,
-              permission_id: 7,
-              group_id: 4,
-              page_name: 'ContractTV',
-              page_title: 'ตารางสายแรงงาน TV',
-              page_url: '/contractor-screen',
-              page_icon: 'screenDisploy',
-              page_target: 1,
-              page_type: 'item',
-              group_name: 'ผู้ดูแลระบบ',
-              group_type: 'group',
-              role_name: 'ICP-Administrator',
-              role_description: 'ICP-ผู้ดูแลระบบ Administrator',
-              permission_name: 'manage_everything',
-              permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
-            };
-            const addnew2 = {
-              page_id: 34,
-              role_id: 11,
-              permission_id: 7,
-              group_id: 4,
-              page_name: 'Permission',
-              page_title: 'จัดการสิทธิ์การใช้งาน',
-              page_url: '/admin/permission',
-              page_icon: 'permission',
-              page_target: 0,
-              page_type: 'item',
-              group_name: 'ผู้ดูแลระบบ',
-              group_type: 'group',
-              role_name: 'ICP-Administrator',
-              role_description: 'ICP-ผู้ดูแลระบบ Administrator',
-              permission_name: 'manage_everything',
-              permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
-            };
-            response.unshift(addnew);
-            response.unshift(addnew2);
-          }
-          if (checkReport.length > 0) {
-            const addnewReport = {
-              page_id: 33,
-              role_id: 11,
-              permission_id: 7,
-              group_id: 5,
-              page_name: 'Report_Step4-completed',
-              page_title: 'รายงานขั้นตอนการทำงาน',
-              page_url: '/report/step-history',
-              page_icon: 'report',
-              page_target: 0,
-              page_type: 'item',
-              group_name: 'รายงาน',
-              group_type: 'group',
-              role_name: 'ICP-Administrator',
-              role_description: 'ICP-ผู้ดูแลระบบ Administrator',
-              permission_name: 'manage_everything',
-              permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
-            };
-            response.unshift(addnewReport);
-          }
+          // const checkReport = response.filter((x) => x.page_icon === 'report');
+          // if (userRole === 11) {
+          //   const addnew = {
+          //     page_id: 35,
+          //     role_id: 11,
+          //     permission_id: 7,
+          //     group_id: 4,
+          //     page_name: 'ContractTV',
+          //     page_title: 'ตารางสายแรงงาน TV',
+          //     page_url: '/contractor-screen',
+          //     page_icon: 'screenDisploy',
+          //     page_target: 1,
+          //     page_type: 'item',
+          //     group_name: 'ผู้ดูแลระบบ',
+          //     group_type: 'group',
+          //     role_name: 'ICP-Administrator',
+          //     role_description: 'ICP-ผู้ดูแลระบบ Administrator',
+          //     permission_name: 'manage_everything',
+          //     permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
+          //   };
+          //   const addnew2 = {
+          //     page_id: 34,
+          //     role_id: 11,
+          //     permission_id: 7,
+          //     group_id: 4,
+          //     page_name: 'Permission',
+          //     page_title: 'จัดการสิทธิ์การใช้งาน',
+          //     page_url: '/admin/permission',
+          //     page_icon: 'permission',
+          //     page_target: 0,
+          //     page_type: 'item',
+          //     group_name: 'ผู้ดูแลระบบ',
+          //     group_type: 'group',
+          //     role_name: 'ICP-Administrator',
+          //     role_description: 'ICP-ผู้ดูแลระบบ Administrator',
+          //     permission_name: 'manage_everything',
+          //     permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
+          //   };
+          //   response.unshift(addnew);
+          //   response.unshift(addnew2);
+          // }
+          // if (checkReport.length > 0) {
+          //   const addnewReport = {
+          //     page_id: 33,
+          //     role_id: 11,
+          //     permission_id: 7,
+          //     group_id: 5,
+          //     page_name: 'Report_Step4-completed',
+          //     page_title: 'รายงานขั้นตอนการทำงาน',
+          //     page_url: '/report/step-history',
+          //     page_icon: 'report',
+          //     page_target: 0,
+          //     page_type: 'item',
+          //     group_name: 'รายงาน',
+          //     group_type: 'group',
+          //     role_name: 'ICP-Administrator',
+          //     role_description: 'ICP-ผู้ดูแลระบบ Administrator',
+          //     permission_name: 'manage_everything',
+          //     permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
+          //   };
+          //   response.unshift(addnewReport);
+          // }
           dispatch(setPermission({ key: 'permission', value: response }));
         } else {
           alert('คุณไม่ได้รับสิทธิ์ในการใช้งานระบบนี้ กรุณาติดต่อผู้ดูแลระบบ');

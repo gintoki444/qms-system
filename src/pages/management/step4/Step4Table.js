@@ -337,21 +337,23 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       .catch((error) => console.error(error));
   };
 
-  const handleClickOpen = (step_id, fr, team_id, queues_id) => {
+  const [queues, setQueues] = useState([]);
+  const handleClickOpen = (step_id, fr, team_id, queues_id, queuesData) => {
     if (fr === 'call') {
       setMessage('เสร็จสิ้น(ประตูทางออก)–STEP4 เรียกคิว');
-      setText('เรียกคิว');
+      setText('เรียกคิวที่');
     } else {
       if (fr === 'close') {
         setMessage('เสร็จสิ้น(ประตูทางออก)–STEP4 เปิดคิว');
-        setText('ปิดคิว');
+        setText('ปิดคิวที่ ');
       } else {
         getStepId(3, queues_id);
-        setMessage('ยกเลิกการออกจากโรงงาน');
-        setText('ยกเลิก');
+        setMessage('ทวนสอบการชั่งหนัก (Step 3)');
+        setText('ทวนสอบการชั่งหนัก คิวที่ ');
       }
     }
     setFrom(fr);
+    setQueues(queuesData);
     setUpdate(step_id);
     setTeamId(team_id);
     setOpen(true);
@@ -736,7 +738,8 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
         >
           <DialogTitle id="responsive-dialog-title" align="center" sx={{ fontSize: '18px' }}>
             {'แจ้งเตือน : '}
-            {textnotify} ID:{id_update} หรือไม่?
+            {textnotify}
+            <QueueTag id={queues.product_company_id || ''} token={queues.token} />
           </DialogTitle>
           {fr === 'close' && (
             <DialogContent sx={{ maxWidth: '480px' }}>
@@ -924,7 +927,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                                     size="small"
                                     color="info"
                                     disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
-                                    onClick={() => handleClickOpen(row.step_id, 'call', row.team_id, row.queue_id)}
+                                    onClick={() => handleClickOpen(row.step_id, 'call', row.team_id, row.queue_id, row)}
                                     endIcon={<RightSquareOutlined />}
                                   >
                                     เรียกคิว
@@ -943,9 +946,9 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                                       size="small"
                                       color="error"
                                       disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
-                                      onClick={() => handleClickOpen(row.step_id, 'cancel', row.team_id, row.queue_id)}
+                                      onClick={() => handleClickOpen(row.step_id, 'cancel', row.team_id, row.queue_id, row)}
                                     >
-                                      ยกเลิก
+                                      ทวนสอบ
                                     </Button>
                                   </span>
                                 </Tooltip>
@@ -958,7 +961,7 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                                       size="small"
                                       color="primary"
                                       disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
-                                      onClick={() => handleClickOpen(row.step_id, 'close')}
+                                      onClick={() => handleClickOpen(row.step_id, 'close', row.team_id, row.queue_id, row)}
                                       // endIcon={<RightSquareOutlined />}
                                     >
                                       ปิดคิว
