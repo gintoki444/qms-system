@@ -15,18 +15,22 @@ import {
 } from '@mui/material';
 import MainCard from 'components/MainCard';
 
+import { useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 
 import * as adminRequest from '_api/adminRequest';
 import * as stepRequest from '_api/StepRequest';
 import * as lineNotifyApi from '_api/linenotify';
 import * as userRequest from '_api/userRequest';
+// import * as displayRequest from '_api/displayRequest';
 
 import moment from 'moment-timezone';
+import { getContractorTV } from '_api/displayRequest';
 function AllContractor({ permission }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [contractorList, setContractorList] = useState([]);
+  const userRole = useSelector((state) => state.auth?.roles);
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -48,20 +52,68 @@ function AllContractor({ permission }) {
 
   useEffect(() => {
     getContractor();
-  }, [permission]);
+    getAllContractorTV();
+  }, [permission, userRole]);
 
   const getContractor = async () => {
     setLoading(true);
     try {
       adminRequest.getAllContractors().then((response) => {
         const filterContractors = response.filter((x) => x.status !== 'I' && x.contract_company_id !== 11);
-        setContractorList(filterContractors);
+        const sortedData = sortContracts(filterContractors);
+        setContractorList(sortedData);
         setLoading(false);
       });
     } catch (error) {
       console.log(error);
     }
   };
+  const [contracOtherList, setContracOtherList] = useState([]);
+  const getAllContractorTV = async () => {
+    console.log('getAllContractorTV :');
+    // const nowDate = moment(new Date()).format('YYYY-MM-DD');
+    try {
+      // const result = await displayRequest.getContractorTV(nowDate, nowDate);
+      const resultNew = await adminRequest.getContractorOtherAll();
+      // console.log('result :', result);
+      console.log('resultNew :', resultNew);
+
+      // const filterContractorsOther =
+      //   result.contractors_other.length > 0 && result.contractors_other.filter((x) => x.contract_other_status !== 'completed');
+
+      const filterContractorsOtherNew = resultNew.length > 0 && resultNew.filter((x) => x.contract_other_status !== 'completed');
+      console.log('filterContractorsOtherNew :', filterContractorsOtherNew);
+      setContracOtherList(filterContractorsOtherNew);
+    } catch (error) {
+      console.error('Error in getAllContractor:', error);
+    }
+  };
+
+  function sortContracts(data) {
+    // const today = new Date().toISOString().split('T')[0]; // วันที่ปัจจุบันในรูปแบบ YYYY-MM-DD
+
+    return data.sort((a, b) => {
+      // เงื่อนไข 1: contract_status เป็น "working" จะอยู่ด้านบน
+      if (a.contract_status === 'working' && b.contract_status !== 'working') {
+        return -1;
+      } else if (a.contract_status !== 'working' && b.contract_status === 'working') {
+        return 1;
+      }
+
+      // เงื่อนไข 2: ถ้า contract_status เป็น "working" ทั้งคู่ ให้เรียงตามวันที่และเวลาของ contract_update จากน้อยไปมาก
+      if (a.contract_status === 'working' && b.contract_status === 'working') {
+        return new Date(a.contract_update) - new Date(b.contract_update);
+      }
+
+      // เงื่อนไข 3: ถ้า contract_status เป็น "waiting" ให้เรียงตามวันที่และเวลาของ contract_update จากน้อยไปมาก
+      if (a.contract_status === 'waiting' && b.contract_status === 'waiting') {
+        return new Date(a.contract_update) - new Date(b.contract_update);
+      }
+
+      // เงื่อนไขสุดท้าย: เรียงตาม contractor_id ถ้าไม่เข้าเงื่อนไขอื่นๆ
+      return a.contractor_id - b.contractor_id;
+    });
+  }
 
   // =============== Open popup ===============//
   //   const [wareHouseData, setWareHouseData] = useState([]);
@@ -72,7 +124,11 @@ function AllContractor({ permission }) {
   };
   const handleClose = async (flag) => {
     if (flag == 1) {
-      updateContractor(contractorData.contractor_id, 'waiting', contractorData.contract_update);
+      if (contractorData.contractor_other_id) {
+        updateContractorOther(contractorData.contractor_other_id, contractorData.contract_other_update);
+      } else {
+        updateContractor(contractorData.contractor_id, 'waiting', contractorData.contract_update);
+      }
     } else if (flag == 0) {
       setOpen(false);
     }
@@ -86,17 +142,42 @@ function AllContractor({ permission }) {
     try {
       const data = {
         contract_status: status,
-        contract_update: moment(date).format('YYYY-MM-DD')
+        contract_update: moment(date).format('YYYY-MM-DD HH:mm:ss')
       };
+      console.log(' Data', data);
 
       stepRequest.putContractorStatus(id, data).then((response) => {
         if (response.status === 'ok') {
           enqueueSnackbar('รีเซตสายแรงงานสำเร็จ !', { variant: 'success' });
           setMessageCreateReserve();
           getContractor();
+          getContractorTV();
         } else {
           enqueueSnackbar('รีเซตสายแรงงานไม่สำเร็จ :' + response.error, { variant: 'error' });
         }
+      });
+    } catch (error) {
+      enqueueSnackbar('รีเซตสายแรงงานไม่สำเร็จ :' + error, { variant: 'error' });
+      console.log(error);
+      setLoading(false);
+    }
+  };
+  const updateContractorOther = async (id, date) => {
+    // const currentDate = await stepRequest.getCurrentDate();
+
+    try {
+      const data = {
+        reserve_id: contractorData.reserve_id,
+        contractor_id: contractorData.contractor_id,
+        contract_other_status: 'completed',
+        contract_other_update: moment(date).format('YYYY-MM-DD HH:mm:ss')
+      };
+
+      adminRequest.putContractorOther(id, data).then(() => {
+        enqueueSnackbar('รีเซตสายแรงงานสำเร็จ !', { variant: 'success' });
+        setMessageCreateReserve();
+        getContractor();
+        getContractorTV();
       });
     } catch (error) {
       enqueueSnackbar('รีเซตสายแรงงานไม่สำเร็จ :' + error, { variant: 'error' });
@@ -122,9 +203,9 @@ function AllContractor({ permission }) {
       userData.firstname +
       ' ' +
       userData.lastname;
-    if (contractorData.contractor_name === 9999) {
-      lineNotifyApi.sendLinenotify(textMessage);
-    }
+    // if (contractorData.contractor_name === 9999) {
+    lineNotifyApi.sendLinenotify(textMessage);
+    // }
   };
 
   // =============== Get Stations ===============//
@@ -232,7 +313,71 @@ function AllContractor({ permission }) {
                             ) + '.dark'
                         }
                       }}
-                      onClick={() => row.contract_status === 'working' && handleClickOpen(row)}
+                      onClick={() => row.contract_status === 'working' && userRole === 11 && handleClickOpen(row)}
+                    >
+                      <Stack spacing={0}>
+                        <Typography variant="h5" sx={{ fontSize: { sm: '1rem!important', lg: '0.8vw!important' } }}>
+                          {row.contractor_name}
+                        </Typography>
+                      </Stack>
+                    </Paper>
+                  </Grid>
+                ))}
+            </Grid>
+          )}
+
+          {contracOtherList.length > 0 && (
+            <Grid container spacing={1} sx={{ mt: 2 }}>
+              <Grid item xs={12}>
+                <Typography variant="body">
+                  <strong>Pre-slink</strong>
+                </Typography>
+              </Grid>
+              {contracOtherList.length > 0 &&
+                contracOtherList.map((row, index) => (
+                  <Grid item xs={3} sm={2} md={2} lg={1} align="center" key={index}>
+                    {row.contract_other_update && getDateFormat(row.contract_other_update) === moment(new Date()).format('DD/MM/YYYY')
+                      ? row.contract_other_update.slice(11, 16) + ' น.'
+                      : '--:--'}
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: '8px 16px',
+                        bgcolor:
+                          styleStation(
+                            row.contract_other_status === 'working'
+                              ? row.contract_other_status
+                              : moment(row.contract_other_update?.slice(0, 10)).format('DD/MM/YYYY') !==
+                                  moment(new Date()).format('DD/MM/YYYY') && row.contract_other_status === 'waiting'
+                              ? 'none'
+                              : 'waiting'
+                          ) + '.main',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.3s',
+                        '&:hover': {
+                          bgcolor:
+                            styleStation(
+                              row.contract_other_status === 'working'
+                                ? row.contract_other_status
+                                : moment(row.contract_other_status?.slice(0, 10)).format('DD/MM/YYYY') !==
+                                    moment(new Date()).format('DD/MM/YYYY') && row.contract_other_status === 'waiting'
+                                ? 'none'
+                                : 'waiting'
+                            ) + '.light'
+                        },
+                        '&:active': {
+                          bgcolor:
+                            styleStation(
+                              row.contract_other_status === 'working'
+                                ? row.contract_other_status
+                                : moment(row.contract_other_update?.slice(0, 10)).format('DD/MM/YYYY') !==
+                                    moment(new Date()).format('DD/MM/YYYY') && row.contract_other_status === 'waiting'
+                                ? 'none'
+                                : 'waiting'
+                            ) + '.dark'
+                        }
+                      }}
+                      onClick={() => row.contract_other_status === 'working' && userRole === 11 && handleClickOpen(row)}
                     >
                       <Stack spacing={0}>
                         <Typography variant="h5" sx={{ fontSize: { sm: '1rem!important', lg: '0.8vw!important' } }}>
