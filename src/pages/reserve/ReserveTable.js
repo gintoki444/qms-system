@@ -322,11 +322,14 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
   }
 
   //  99999999
-  async function getQueueIdByReserve(reserve_id) {
+  async function getQueueIdByReserve(reserve_id, status) {
     try {
       await reserveRequest.getQueuesByIdReserve(reserve_id).then((response) => {
-        console.log('getQueuesByIdReserve ', response);
-        updateQueuesStatus(response[0].queue_id);
+        if (status === 'create') {
+          updateQueuesStatus(response[0].queue_id);
+        } else {
+          window.location.href = '/queues/detail/' + response[0].queue_id;
+        }
       });
     } catch (error) {
       console.log(error);
@@ -470,7 +473,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
         //alert("สร้างคิวแล้ว")
         setOpen(false);
         updateReserveStatus(id);
-        getQueueIdByReserve(id);
+        getQueueIdByReserve(id, 'create');
       }
     } catch (error) {
       console.error('Error fetching data:', error);

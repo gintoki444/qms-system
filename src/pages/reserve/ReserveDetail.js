@@ -218,10 +218,14 @@ function ReserveDetail() {
   }
 
   //ตรวจสอบว่ามีการสร้าง Queue จากข้อมูลการจองหรือยัง
-  async function getQueueIdByReserve(reserve_id) {
+  async function getQueueIdByReserve(reserve_id, status) {
     try {
       await reserveRequest.getQueuesByIdReserve(reserve_id).then((response) => {
-        updateQueuesStatus(response[0].queue_id);
+        if (status === 'create') {
+          updateQueuesStatus(response[0].queue_id);
+        } else {
+          window.location.href = '/queues/detail/' + response[0].queue_id;
+        }
       });
     } catch (error) {
       console.log(error);
@@ -373,7 +377,7 @@ function ReserveDetail() {
       } else {
         //alert("สร้างคิวแล้ว")
         updateReserveStatus(reserve_id);
-        getQueueIdByReserve(id);
+        getQueueIdByReserve(id, 'create');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -884,7 +888,7 @@ function ReserveDetail() {
                 size="mediam"
                 variant="contained"
                 color="primary"
-                onClick={() => getQueueIdByReserve(reserveData.reserve_id)}
+                onClick={() => getQueueIdByReserve(reserveData.reserve_id, 'detail')}
                 startIcon={<ContainerOutlined />}
               >
                 ข้อมูลคิว
