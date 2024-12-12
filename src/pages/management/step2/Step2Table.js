@@ -1111,6 +1111,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       setSaveLoading(true);
       await Promise.all([
         // await getProductRegisters(),
+        await getReserveId(queuesData.reserve_id),
         await getOrderOfReserve(queuesData.reserve_id, 'cancle')
       ]).then(() => {
         setSaveLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ
@@ -1440,6 +1441,10 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 await removeItemsRegister(x.item_register_id);
               }
 
+              contracOtherValue.contract_other_status = 'waiting';
+              if (reservesData.contractor_other_id) {
+                await updateContractorOthers(reservesData.contractor_other_id, contracOtherValue);
+              }
               enqueueSnackbar('ยกเลิกข้อมูลกองสินค้า!', { variant: 'success' });
             } else if (stationStatus === 'N') {
               const data = {
@@ -1450,8 +1455,14 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 audit_screen: 'ข้อมูลการจอง',
                 audit_description: 'ยกเลิกทีมขึ้นสินค้า'
               };
+
               await AddAuditLogs(data);
               await updateCancleTeams(queues.reserve_id);
+
+              contracOtherValue.contract_other_status = 'waiting';
+              if (reservesData.contractor_other_id) {
+                await updateContractorOthers(reservesData.contractor_other_id, contracOtherValue);
+              }
             } else if (stationStatus === 'Y') {
               const data = {
                 audit_user_id: userId,
@@ -1469,6 +1480,11 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
               orders.map(async (order) => {
                 await deleteOrder(order.order_id, order.reserve_id);
               });
+
+              contracOtherValue.contract_other_status = 'waiting';
+              if (reservesData.contractor_other_id) {
+                await updateContractorOthers(reservesData.contractor_other_id, contracOtherValue);
+              }
               enqueueSnackbar('ยกเลิกข้อมูลคำสั่งซื้อสินค้า!', { variant: 'success' });
             }
 

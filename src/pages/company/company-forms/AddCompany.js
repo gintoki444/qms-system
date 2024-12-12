@@ -432,8 +432,7 @@ function AddCompany() {
                     </Stack>
                   </Grid>
                   {pageDetail.length > 0 &&
-                      (pageDetail[0].permission_name === 'manage_everything' ||
-                        pageDetail[0].permission_name === 'add_edit_delete_data') && (
+                    (pageDetail[0].permission_name === 'manage_everything' || pageDetail[0].permission_name === 'add_edit_delete_data') && (
                       <Grid item xs={12}>
                         <Button
                           disableElevation
