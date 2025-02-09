@@ -30,6 +30,7 @@ import MainCard from 'components/MainCard';
 
 // DateTime
 import moment from 'moment';
+import ZoneDataSelect from './zoneData';
 
 function UpdateCompany() {
   const pageId = 5;
@@ -153,9 +154,11 @@ function UpdateCompany() {
         companyRequest.updateCompany(id, values).then((result) => {
           if (result.status === 'ok') {
             enqueueSnackbar('บันทึกข้อมูลร้านค้า/บริษัท สำเร็จ!', { variant: 'success' });
+            setOpen(false);
             // window.location.href = '/company';
           } else {
             enqueueSnackbar('บันทึกข้อมูลร้านค้า/บริษัท ไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
+            setOpen(false);
             // alert(result['message']['sqlMessage']);
           }
         });
@@ -197,7 +200,7 @@ function UpdateCompany() {
       {pageDetail.length !== 0 && (
         <MainCard content={false} sx={{ mt: 1.5, p: 3 }}>
           <Formik initialValues={initialValue} validationSchema={validationSchema} enableReinitialize={true} onSubmit={handleSubmits}>
-            {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
+            {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
@@ -360,7 +363,13 @@ function UpdateCompany() {
                   </Grid>
 
                   <Grid item xs={6}>
-                    <Stack spacing={1}>
+                    <ZoneDataSelect
+                      value={values.description}
+                      onChange={(e) => {
+                        setFieldValue('description', e);
+                      }}
+                    />
+                    {/* <Stack spacing={1}>
                       <InputLabel htmlFor="description-company">รายละเอียด</InputLabel>
                       <OutlinedInput
                         id="description-company"
@@ -378,7 +387,7 @@ function UpdateCompany() {
                           {errors.description}
                         </FormHelperText>
                       )}
-                    </Stack>
+                    </Stack> */}
                   </Grid>
 
                   <Grid item xs={12}>

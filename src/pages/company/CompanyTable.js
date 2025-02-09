@@ -74,6 +74,21 @@ function CompanyTable({ permission }) {
       label: 'ชื่อบริษัท'
     },
     {
+      name: 'description',
+      label: 'Zone',
+      options: {
+        sort: true,
+        setCellProps: () => ({
+          style: {
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }
+        }),
+        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+      }
+    },
+    {
       name: 'tax_no',
       label: 'เลขที่ผู้เสียภาษี',
       options: {
@@ -117,6 +132,10 @@ function CompanyTable({ permission }) {
                 disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                 onClick={() => updateCompany(value)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  window.open(`/company/update/${value}`, '_blank');
+                }}
               >
                 <EditOutlined />
               </Button>

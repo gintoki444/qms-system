@@ -273,6 +273,10 @@ function ProductManagementTable({ onFilter, permission }) {
                     color="success"
                     sx={{ minWidth: '33px!important', p: '6px 0px' }}
                     onClick={() => productsDetails(value)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      window.open(`/admin/product-register/details/${value}`, '_blank');
+                    }}
                   >
                     <ContainerOutlined />
                   </Button>
@@ -287,6 +291,10 @@ function ProductManagementTable({ onFilter, permission }) {
                         disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                         sx={{ minWidth: '33px!important', p: '6px 0px' }}
                         onClick={() => addCutOffProduct(value)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          window.open(`/admin/product-register/add-cutoff/${value}`, '_blank');
+                        }}
                       >
                         <SwitcherOutlined />
                       </Button>
@@ -299,6 +307,10 @@ function ProductManagementTable({ onFilter, permission }) {
                         disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                         sx={{ minWidth: '33px!important', p: '6px 0px' }}
                         onClick={() => addProductReceives(value)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          window.open(`/admin/product-register/add-receive/${value}`, '_blank');
+                        }}
                       >
                         <FileAddOutlined />
                       </Button>
@@ -311,6 +323,10 @@ function ProductManagementTable({ onFilter, permission }) {
                         disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                         sx={{ minWidth: '33px!important', p: '6px 0px' }}
                         onClick={() => updateProductManagement(value)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          window.open(`/admin/product-register/update/${value}`, '_blank');
+                        }}
                       >
                         <EditOutlined />
                       </Button>

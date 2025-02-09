@@ -30,6 +30,7 @@ import MainCard from 'components/MainCard';
 import { SaveOutlined } from '@ant-design/icons';
 // DateTime
 import moment from 'moment';
+import ZoneDataSelect from './zoneData';
 
 function AddCompany() {
   const pageId = 5;
@@ -197,7 +198,7 @@ function AddCompany() {
             })}
             onSubmit={handleSubmits}
           >
-            {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
+            {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
               <form noValidate onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
@@ -361,7 +362,13 @@ function AddCompany() {
                   </Grid>
 
                   <Grid item xs={6}>
-                    <Stack spacing={1}>
+                    <ZoneDataSelect
+                      value={values.description}
+                      onChange={(e) => {
+                        setFieldValue('description', e);
+                      }}
+                    />
+                    {/* <Stack spacing={1}>
                       <InputLabel htmlFor="description-company">รายละเอียด</InputLabel>
                       <OutlinedInput
                         id="description-company"
@@ -379,9 +386,8 @@ function AddCompany() {
                           {errors.description}
                         </FormHelperText>
                       )}
-                    </Stack>
+                    </Stack> */}
                   </Grid>
-
                   <Grid item xs={12}>
                     <Typography variant="h5">ข้อมูลผู้ติดต่อ</Typography>
                     <Divider sx={{ mt: 1 }} />

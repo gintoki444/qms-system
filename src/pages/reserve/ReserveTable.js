@@ -791,7 +791,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
         }),
         customBodyRender: (value, tableMeta) => {
           const rowData = tableMeta.rowData;
-          const rowDataFilter = filteredData.find((x) => x.reserve_id === rowData[11]);
+          const rowDataFilter = filteredData.find((x) => x.reserve_id === rowData[12]);
           return rowDataFilter.queue_token ? <QueueTag id={value} token={rowDataFilter.queue_token} /> : getTokenCompany(value);
         }
       }
@@ -813,6 +813,21 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     {
       name: 'company',
       label: 'ร้านค้า/บริษัท',
+      options: {
+        sort: true,
+        setCellProps: () => ({
+          style: {
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }
+        }),
+        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+      }
+    },
+    {
+      name: 'description',
+      label: 'Zone',
       options: {
         sort: true,
         setCellProps: () => ({
@@ -907,6 +922,10 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
                     size="medium"
                     color="success"
                     onClick={() => reserveDetail(value)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      window.open(`reserve/detail/${value}`, '_blank');
+                    }}
                   >
                     <ProfileOutlined />
                   </Button>
@@ -918,7 +937,6 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
                   <Tooltip title="สร้างคิว">
                     <span>
                       <Button
-                        // disabled
                         variant="contained"
                         sx={{ minWidth: '33px!important', p: '6px 0px' }}
                         size="medium"
@@ -952,9 +970,12 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
                         variant="contained"
                         sx={{ minWidth: '33px!important', p: '6px 0px' }}
                         size="medium"
-                        // disabled={row.status === 'completed'}
                         color="primary"
                         onClick={() => updateDrivers(value)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          window.open(`/reserve/update/${value}`, '_blank');
+                        }}
                       >
                         <EditOutlined />
                       </Button>
@@ -969,7 +990,6 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
                         size="medium"
                         disabled={queueDat.status === 'completed' || queueDat.total_quantity > 0}
                         color="error"
-                        // onClick={() => deleteDrivers(row.reserve_id)}
                         onClick={() => handleClickOpen(value, 'delete', queueDat.total_quantity, queueDat.brand_code)}
                       >
                         <DeleteOutlined />

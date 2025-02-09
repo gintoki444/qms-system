@@ -131,6 +131,10 @@ function DriverTable({ permission }) {
                 disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                 onClick={() => updateDrivers(value)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  window.open(`/drivers/update/${value}`, '_blank');
+                }}
               >
                 <EditOutlined />
               </Button>

@@ -315,6 +315,10 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
                     size="medium"
                     color="info"
                     onClick={() => updateDrivers(value)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      window.open(`/queues/detail/${value}`, '_blank');
+                    }}
                   >
                     <ProfileOutlined />
                   </Button>

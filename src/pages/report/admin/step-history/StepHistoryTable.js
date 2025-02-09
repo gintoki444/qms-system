@@ -114,19 +114,9 @@ function StepHistoryTable({ startDate, endDate, clickDownload, dataList, onFilte
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [loading, setLoading] = useState(true);
-  // const [selected] = useState([]);
-  //   const currentDate = moment(new Date()).format('YYYY-MM-DD');
-  // const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
 
-  // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
-  // const padZero = (num) => {
-  //   return num < 10 ? `0${num}` : num;
-  // };
   useEffect(() => {
     fetchData();
-    // const intervalId = setInterval(fetchData, 6000); // เรียกใช้ฟังก์ชันทุก 1 นาที (60000 มิลลิวินาที)
-
-    // return () => clearInterval(intervalId); // ลบตัวจับเวลาเมื่อคอมโพเนนต์ถูกยกเลิก
   }, [startDate, endDate, onFilter]);
 
   const [items, setItems] = useState([]);
@@ -152,28 +142,6 @@ function StepHistoryTable({ startDate, endDate, clickDownload, dataList, onFilte
       }
       setLoading(false);
     });
-    // const requestOptions = {
-    //     method: 'GET',
-    //     redirect: 'follow'
-    // };
-
-    // fetch(apiUrl + '/carstimeinout?start_date=' + startDate + '&end_date=' + endDate, requestOptions)
-    //     .then((response) => response.json())
-    //     .then((result) => {
-    //         console.log('onFilter ', onFilter)
-    //         if (onFilter !== 0) {
-    //             setItems(result.filter((x) => x.product_company_id === onFilter));
-    //             dataList(result)
-    //             setLoading(false);
-    //         } else {
-    //             console.log('result ', result);
-    //             setItems(result);
-    //             dataList(result)
-    //             setLoading(false);
-    //         }
-
-    //     })
-    //     .catch((error) => console.error(error));
   };
 
   const [companys, setCompanys] = useState([]);
@@ -204,10 +172,12 @@ function StepHistoryTable({ startDate, endDate, clickDownload, dataList, onFilte
     return token[0]?.product_company_code;
   };
 
-  // รวม grand total ของ quantity ของทุกรายการ items
-  //   const grandTotalQuantity = items.reduce((acc, item) => {
-  //     return acc + parseFloat(item.total_sold);
-  //   }, 0);
+  const handleReload = (onload) => {
+    if (onload) {
+      fetchData();
+    }
+  };
+
   return (
     <Box>
       <TableContainer
@@ -258,7 +228,6 @@ function StepHistoryTable({ startDate, endDate, clickDownload, dataList, onFilte
                         startDate={startDate}
                         endDate={endDate}
                       />
-                      {/* <Button variant="contained" color="info">รายละเอียด</Button> */}
                     </TableCell>
                     <TableCell align="center">
                       <HistoryPopup
@@ -293,8 +262,8 @@ function StepHistoryTable({ startDate, endDate, clickDownload, dataList, onFilte
                         brandData={brands}
                         startDate={startDate}
                         endDate={endDate}
+                        handleReload={handleReload}
                       />
-                      {/* <Button variant="contained">รายละเอียด</Button> */}
                     </TableCell>
                     <TableCell align="center">
                       <HistoryPopup
@@ -306,7 +275,6 @@ function StepHistoryTable({ startDate, endDate, clickDownload, dataList, onFilte
                         startDate={startDate}
                         endDate={endDate}
                       />
-                      {/* <Button variant="contained" >รายละเอียด</Button> */}
                     </TableCell>
                   </TableRow>
                 ))}

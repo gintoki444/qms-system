@@ -1,15 +1,10 @@
 import React, { useState } from 'react';
-// import { Formik } from 'formik';
-// import * as Yup from 'yup';
-// import { useSnackbar } from 'notistack';
 import * as reserveRequest from '_api/reserveRequest';
 import * as queueRequest from '_api/queueReques';
 import * as adminRequest from '_api/adminRequest';
-// import * as stepRequest from '_api/StepRequest';
 
 import {
   Button,
-  // FormHelperText, InputLabel, OutlinedInput, Stack,
   Grid,
   Typography,
   Backdrop,
@@ -20,30 +15,14 @@ import {
   DialogContent,
   Divider,
   DialogActions
-  // DialogContentText,
-  // Table,
-  // TableBody,
-  // TableCell,
-  // TableContainer,
-  // TableHead,
-  // TableRow,
-  // DialogTitle,
 } from '@mui/material';
-// import MenuItem from '@mui/material/MenuItem';
-// import FormControl from '@mui/material/FormControl';
-// import Select from '@mui/material/Select';
-
-// import MainCard from 'components/MainCard';
-// import { SaveOutlined, RollbackOutlined, EditOutlined } from '@ant-design/icons';
-
-// import axios from '../../../../../node_modules/axios/index';
-// const apiUrl = process.env.REACT_APP_API_URL;
-// import * as reserveRequest from '_api/reserveRequest';
+import { RollbackOutlined } from '@ant-design/icons';
 
 // DateTime
 import moment from 'moment';
+import EditTeamLoading from 'pages/management/step0/step0-forms/EditTeamLoading';
 
-function HistoryPopup({ startDate, endDate, data, types, title, companyData, brandData }) {
+function HistoryPopup({ startDate, endDate, data, types, title, companyData, brandData, handleReload }) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -73,7 +52,6 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
         response = sortDataBySteps(response, steps);
         if (types === 'weight') {
           getAllAuditlog(response[0].step_id, 'U', 'weight', startDate, endDate, response[2].step_id);
-          // getAllAuditlog(, 'U', "weight", startDate, endDate);
         } else if (types === 'products') {
           getAllAuditlog(response[1].step_id, 'U', 'step2', startDate, endDate);
         }
@@ -85,6 +63,7 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
       console.log(error);
     }
   };
+
   // Function to sort the data based on the steps array
   const sortDataBySteps = (data, steps) => {
     return data.sort((a, b) => {
@@ -93,24 +72,6 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
       return steps.indexOf(stepA) - steps.indexOf(stepB);
     });
   };
-
-  // =============== Get All product register ===============//
-  // const [productList, setProductList] = useState([]);
-  // const getProductRegister = async (id) => {
-  //   return await new Promise((resolve) => {
-  //     adminRequest.getProductRegisterById(id).then((response) => {
-  //       resolve(response);
-  //     });
-  //   });
-  //   // try {
-  //   //   adminRequest.getAllProductRegister().then((response) => {
-  //   //     setProductList(response);
-  //   //     // setProductList(response.filter((x) => parseFloat(x.total_remain) > 0));
-  //   //   });
-  //   // } catch (error) {
-  //   //   console.log(error);
-  //   // }
-  // };
 
   // =============== Get All log ===============//
   const [auditlogList, setAuditlogList] = useState([]);
@@ -134,8 +95,18 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
         } else if (types === 'products') {
           setAuditlogList(data[data.length - 1]);
         }
-        // else
-        // setAuditlogList(data);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // =============== Get Contractor ===============//
+  const [contractorList, setContractorList] = useState([]);
+  const getAllContractor = async () => {
+    try {
+      await adminRequest.getAllContractors().then((result) => {
+        setContractorList(result);
       });
     } catch (error) {
       console.log(error);
@@ -165,6 +136,7 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
       setTxtTitle('ข้อมูลทีมจ่ายสินค้า');
       setLoading(true);
       setTeamData(data.team_data);
+      await getAllContractor();
       await getAllAuditlog(data.reserve_id, 'I', 'step0', startDate, endDate);
       await getOrders(data.reserve_id);
       setLoading(false);
@@ -185,14 +157,6 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
     }
   };
 
-  // const getWarhouseDate = async (id) => {
-  //   const productList = await getProductRegister(id);
-  //   const proWare = productList[0];
-  //   const numDate = proWare?.product_register_date ? ` (${calculateAge(proWare?.product_register_date)}) ` : '-';
-  //   const txt = proWare?.warehouse_name + ' ' + proWare?.product_register_name + ' ' + numDate;
-  //   return txt;
-  // };
-
   const [sumWeight, setSumWeight] = useState(0);
   const summaryWeight = (data) => {
     let sum = 0;
@@ -206,15 +170,34 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
   };
   return (
     <>
+      <Tooltip title={title}>
+        <span>
+          <Button
+            variant="contained"
+            size="medium"
+            color="info"
+            disabled={
+              (types === 'reserves' && data.status !== 'completed') ||
+              (types === 'orders' && parseFloat(data.total_quantity * 1) == 0) ||
+              (types === 'weight' && data.step1_status !== 'completed') ||
+              (types === 'teams' && data.team_data === null) ||
+              (types === 'products' && data.step2_status !== 'completed')
+            }
+            // sx={{ minWidth: '33px!important', p: '6px 0px' }}
+            onClick={() => handleClickOpen(data)}
+          >
+            รายละเอียด
+          </Button>
+        </span>
+      </Tooltip>
+
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
         <DialogTitle id="responsive-dialog-title" sx={{ backgroundColor: '#e5fffc' }}>
           <Typography variant="h5" align="center">
             {txtTitle}
           </Typography>
         </DialogTitle>
-        <DialogContent sx={{ maxWidth: { xs: 'auto', md: '25vw' }, mt: 2 }}>
-          {/* <DialogContentText style={{ fontFamily: 'kanit' }}>
-                    </DialogContentText> */}
+        <DialogContent sx={{ maxWidth: { xs: 'auto', md: '30vw' }, mt: 2 }}>
           {loading && (
             <Backdrop
               sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 0, backgroundColor: 'rgb(245 245 245 / 50%)!important' }}
@@ -223,7 +206,6 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
               <CircularProgress color="primary" />
             </Backdrop>
           )}
-          {/* <MainCard content={false} sx={{ p: 2 }}> */}
           {!loading && types === 'reserves' && (
             <Grid container spacing={1}>
               <Grid item xs={12}>
@@ -520,7 +502,10 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="body">
-                  สายแรงงาน : <strong>{data?.contractor_id ? data?.contractor_id : '-'}</strong>
+                  สายแรงงาน :{' '}
+                  <strong>
+                    {data?.contractor_id ? contractorList.find((x) => x.contractor_id === data.contractor_id)?.contractor_name : '-'}
+                  </strong>
                 </Typography>
               </Grid>
               <Grid item xs={12}>
@@ -727,32 +712,12 @@ function HistoryPopup({ startDate, endDate, data, types, title, companyData, bra
         </DialogContent>
 
         <DialogActions align="center" sx={{ justifyContent: 'center!important', p: 2, borderTop: 'solid 1px #f6f6f6' }}>
-          <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
+          {!loading && types === 'teams' && <EditTeamLoading id={data.reserve_id} handleReload={handleReload} />}
+          <Button color="error" variant="contained" size="mediam" startIcon={<RollbackOutlined />} autoFocus onClick={() => handleClose(0)}>
             ยกเลิก
           </Button>
         </DialogActions>
       </Dialog>
-
-      <Tooltip title={title}>
-        <span>
-          <Button
-            variant="contained"
-            size="medium"
-            color="info"
-            disabled={
-              (types === 'reserves' && data.status !== 'completed') ||
-              (types === 'orders' && parseFloat(data.total_quantity * 1) == 0) ||
-              (types === 'weight' && data.step1_status !== 'completed') ||
-              (types === 'teams' && data.team_data === null) ||
-              (types === 'products' && data.step2_status !== 'completed')
-            }
-            // sx={{ minWidth: '33px!important', p: '6px 0px' }}
-            onClick={() => handleClickOpen(data)}
-          >
-            รายละเอียด
-          </Button>
-        </span>
-      </Tooltip>
     </>
   );
 }
@@ -766,7 +731,6 @@ const WarehouseInfo = ({ productRegisterId }) => {
 
     const currentDate = moment(new Date()).format('YYYY-MM-DD');
     const regDate = moment(registrationDate).format('YYYY-MM-DD');
-    // const regDate = new Date(registrationDate);
 
     const years = moment(currentDate).diff(regDate, 'years');
     const months = moment(currentDate).diff(regDate, 'months') % 12;
@@ -785,7 +749,6 @@ const WarehouseInfo = ({ productRegisterId }) => {
     }
 
     return result;
-    //return `${years} ปี ${months} เดือน ${days} วัน`;
   };
 
   const getWarhouseDate = async (id) => {

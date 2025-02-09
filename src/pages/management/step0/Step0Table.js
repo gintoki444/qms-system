@@ -2,17 +2,9 @@ import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
-
-// Link api url
-// const apiUrl = process.env.REACT_APP_API_URL;
-// import * as queueRequest from '_api/queueReques';
 import * as stepRequest from '_api/StepRequest';
 import QueueTag from 'components/@extended/QueueTag';
-
-// Get Role use
 import { useSelector } from 'react-redux';
-
-// material-ui
 import {
   Box,
   Stack,
@@ -27,7 +19,6 @@ import {
   ButtonGroup,
   Button,
   Typography,
-  //   Backdrop,
   CircularProgress
 } from '@mui/material';
 
@@ -66,7 +57,6 @@ const headCells = [
     id: 'remarkQueue',
     align: 'center',
     disablePadding: false,
-    // width: '5%',
     label: 'รหัสคิวเดิม'
   },
   {
@@ -74,6 +64,12 @@ const headCells = [
     align: 'left',
     disablePadding: false,
     label: 'ร้านค้า/บริษัท'
+  },
+  {
+    id: 'totals',
+    align: 'left',
+    disablePadding: true,
+    label: 'จำนวน (ตัน)'
   },
   {
     id: 'registration_no',
@@ -206,12 +202,6 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
       setLoading(true);
       getQueue();
     }
-
-    // const intervalId = setInterval(() => {
-    //   getQueue();
-    // }, 60000); // Polling every 5 seconds
-
-    // return () => clearInterval(intervalId);
   }, [userId, userRoles, startDate, endDate, onFilter, permission]);
 
   const getQueue = () => {
@@ -293,14 +283,17 @@ function Step0Table({ startDate, endDate, onFilter, permission, step0List }) {
                       <TableCell align="left">{moment(row.queue_date.slice(0, 10)).format('DD/MM/YY')}</TableCell>
                       <TableCell align="center">
                         <QueueTag id={row.product_company_id} token={row.token} />
-
-                        {/* <Chip color={'primary'} label={row.token} sx={{ width: 70, border: 1 }} /> */}
                         {row.queue_remain == 1 && <span style={{ color: 'red' }}> (คิวค้าง)</span>}
                       </TableCell>
                       <TableCell align="center">
                         {row.r_description ? <strong style={{ color: 'red' }}>{row.r_description}</strong> : '-'}
                       </TableCell>
                       <TableCell align="left">{row.company}</TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body">
+                          <strong>{row.total_quantity ? parseFloat((row.total_quantity * 1).toFixed(3)) : '-'}</strong>
+                        </Typography>
+                      </TableCell>
                       <TableCell align="left">{row.registration_no}</TableCell>
                       <TableCell align="left">{row.driver}</TableCell>
                       <TableCell align="left">{row.mobile_no}</TableCell>

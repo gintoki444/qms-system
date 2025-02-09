@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { useSnackbar } from 'notistack';
@@ -45,7 +45,7 @@ import * as stepRequest from '_api/StepRequest';
 import moment from 'moment';
 
 import * as functionAddLogs from 'components/Function/AddLog';
-function AddTeamLoading({ id, handleReload, token, permission }) {
+function EditTeamLoading({ id, handleReload }) {
   const userId = localStorage.getItem('user_id');
   const [user_Id, setUserId] = useState(false);
   const [reservationData, setReservationData] = useState({});
@@ -53,7 +53,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
   const [open, setOpen] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
 
-  useEffect(() => {}, [permission]);
+  //   useEffect(() => {}, [permission]);
   const getReserve = async (reserveId) => {
     setLoading(true);
     const urlapi = apiUrl + `/reserve/` + reserveId;
@@ -64,6 +64,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
           res.data.reserve.map((result) => {
             setUserId(result.user_id);
             setReservationData(result);
+            setTeamData(result.team_data);
             getTeamloading(result.team_id);
             getTeamManagers(result.team_id);
             getLaborLine(result.contractor_id);
@@ -95,6 +96,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
     warehouse_id: reservationData.warehouse_id && reservationData.team_id ? reservationData.warehouse_id : '',
     contractor_id: reservationData.contractor_id ? reservationData.contractor_id : '',
     team_id: reservationData.team_id ? reservationData.team_id : '',
+    team_data: reservationData.team_data,
     labor_line_id: reservationData.labor_line_id ? reservationData.labor_line_id : 0,
     contractor_id_to_other: reservationData.contractor_id_to_other ? reservationData.contractor_id_to_other : null,
     contractor_other_id: reservationData.contractor_other_id ? reservationData.contractor_other_id : null,
@@ -114,17 +116,6 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
             .test('is-not-null', 'กรุณาเลือกทีมขึ้นสินค้า Pre-sling', (value) => value !== null)
         : Yup.mixed().notRequired(); // ไม่ทำการ Validate เมื่อ checkPreSling เป็น false
     })
-    // contractor_id_to_other: Yup.number()
-    //   .nullable() // กำหนดให้สามารถเป็น null ได้
-    //   .transform((value, originalValue) => (String(originalValue).trim() === '' ? null : value))
-    //   .when('checkPreSling', {
-    //     is: true, // เมื่อ checkPreSling เป็น true
-    //     then: Yup.number()
-    //       .required('กรุณาเลือกทีมขึ้นสินค้า Pre-sling')
-    //       .typeError('กรุณาเลือกทีมขึ้นสินค้า Pre-sling') // แสดงข้อความเมื่อค่าไม่ใช่ number
-    //       .test('is-not-null', 'กรุณาเลือกทีมขึ้นสินค้า Pre-sling', (value) => value !== null), // ตรวจสอบว่าค่าไม่เป็น null
-    //     otherwise: Yup.number().nullable().typeError('กรุณาเลือกทีมขึ้นสินค้า Pre-sling') // ถ้าไม่ใช่ true ก็ให้เป็น nullable
-    //   })
   });
 
   // =============== Get TeamLoanding ===============//
@@ -156,7 +147,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
     }
   };
 
-  const [teamData, setTeamData] = useState([]);
+  const [teamData, setTeamData] = useState({});
   const getTeamloadingByIds = (id) => {
     setLoading(true);
     try {
@@ -212,65 +203,22 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
 
   const handleSubmits = async (values) => {
     const currentDate = await stepRequest.getCurrentDate();
+
     try {
-      // if (values === 9999) {
+      //   if (values === 9999) {
       values.user_id = user_Id;
       values.pickup_date = moment(values.pickup_date).format('YYYY-MM-DD HH:mm:ss');
       values.created_at = currentDate;
       values.updated_at = currentDate;
-      values.team_data = teamData;
+      values.team_data = JSON.stringify(teamData) !== '{}' ? teamData : values.team_data;
 
+      //   if (values === 9999) {
       const teamValue = {
         team_id: values.team_id,
         contractor_id: values.contractor_id,
         labor_line_id: values.labor_line_id
       };
 
-      const contracOtherValue = {
-        reserve_id: id,
-        contractor_id: values.contractor_id_to_other,
-        contract_other_status: 'waiting',
-        contract_other_update: currentDate
-      };
-
-      // ตรวจสอบการแก้ไขข้อมูล Contractor Other
-      if (values.contractor_other_id && checkPreSling === false) {
-        await deleteContractorOthers(values.contractor_other_id);
-        const data = {
-          audit_user_id: userId,
-          audit_action: 'I',
-          audit_system_id: id,
-          audit_system: 'step0',
-          audit_screen: 'ข้อมูลสายแรงงาน Pre-Sling : เพิ่มข้อมูลทีมขึ้นสินค้า',
-          audit_description: JSON.stringify(teamValue)
-        };
-
-        AddAuditLogs(data);
-      } else if (values.contractor_other_id && checkPreSling === true) {
-        await updateContractorOthers(values.contractor_other_id, contracOtherValue);
-        const data = {
-          audit_user_id: userId,
-          audit_action: 'I',
-          audit_system_id: id,
-          audit_system: 'step0',
-          audit_screen: 'ข้อมูลสายแรงงาน Pre-Sling : แก้ไขข้อมูล',
-          audit_description: JSON.stringify(teamValue)
-        };
-        AddAuditLogs(data);
-      } else if (!values.contractor_other_id && checkPreSling === true) {
-        await addContractorOthers(contracOtherValue);
-        const data = {
-          audit_user_id: userId,
-          audit_action: 'I',
-          audit_system_id: id,
-          audit_system: 'step0',
-          audit_screen: 'ข้อมูลสายแรงงาน Pre-Sling : เพิ่มข้อมูล',
-          audit_description: JSON.stringify(teamValue)
-        };
-        AddAuditLogs(data);
-      }
-
-      // if (values.contractor_id === 9999) {
       await reserveRequest
         .putReserById(id, values)
         .then((result) => {
@@ -281,10 +229,11 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
               audit_action: 'I',
               audit_system_id: id,
               audit_system: 'step0',
-              audit_screen: 'ข้อมูลทีมขึ้นสินค้า : เพิ่มข้อมูลทีมขึ้นสินค้า',
+              audit_screen: 'ข้อมูลทีมขึ้นสินค้า : แก้ไขข้อมูลทีมขึ้นสินค้า',
               audit_description: JSON.stringify(teamValue)
             };
             AddAuditLogs(data);
+
             setCheckPreSling(false);
             updateTeamData(values.team_data);
           } else {
@@ -294,7 +243,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
         .catch((error) => {
           console.log(error);
         });
-      // }
+      //   }
     } catch (err) {
       console.error(err);
     }
@@ -308,14 +257,16 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
       console.log(error);
     }
   };
-  const updateTeamData = (values) => {
+
+  const updateTeamData = async (values) => {
     try {
-      adminRequest.putReserveTeamData(id, values).then(() => {
+      await adminRequest.putReserveTeamData(id, values).then(() => {
         setReservationData({});
         setTeamLoading([]);
         setOpen(false);
-        enqueueSnackbar('บันทึกข้อมูลทีมขึ้นสินค้าสำเร็จ!', { variant: 'success' });
         handleReload(true);
+        enqueueSnackbar('บันทึกข้อมูลทีมขึ้นสินค้าสำเร็จ!', { variant: 'success' });
+        // handleReload(true);
       });
     } catch (error) {
       enqueueSnackbar('บันทึกข้อมูลทีมขึ้นสินค้าไม่สำเร็จ!' + result['message']['sqlMessage'], { variant: 'warning' });
@@ -330,30 +281,6 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
       await adminRequest.getContractorOtherAll().then((response) => {
         setContractorOtherList(response);
       });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const addContractorOthers = async (values) => {
-    try {
-      await adminRequest.AddContractorOther(values);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const deleteContractorOthers = async (id) => {
-    try {
-      await adminRequest.deleteContractorOtherByID(id);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const updateContractorOthers = async (id, value) => {
-    try {
-      await adminRequest.putContractorOther(id, value);
     } catch (error) {
       console.log(error);
     }
@@ -446,10 +373,23 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
   };
   return (
     <>
+      <Tooltip title="แก้ไขทีมชึ้นสินค้า">
+        <Button
+          variant="contained"
+          size="medium"
+          color="primary"
+          //   disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
+          onClick={() => handleClickOpen(id)}
+          startIcon={<EditOutlined />}
+        >
+          แก้ไขทีม
+        </Button>
+      </Tooltip>
+
       <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
         <DialogTitle id="responsive-dialog-title">
           <Typography variant="h5" align="center">
-            จัดการทีมขึ้นสินค้าคิว : {token}
+            จัดการทีมขึ้นสินค้าคิว :{/* {token} */}
           </Typography>
         </DialogTitle>
         <DialogContent sx={{ minWidth: { xs: 'auto', md: '40vw' } }}>
@@ -551,26 +491,25 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
                             )}
                           </Stack>
                         </Grid>
+                        {checkPreSling && (
+                          <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={checkPreSling}
+                                  onChange={() => {
+                                    if (checkPreSling === true) {
+                                      setFieldValue('contractor_id_to_other', null);
+                                    }
+                                    setFieldValue('checkPreSling', !checkPreSling);
+                                    handleClickCheckbox(checkPreSling);
+                                  }}
+                                  name="checked1"
+                                />
+                              }
+                              label="Pre-Sling"
+                            />
 
-                        <Grid item xs={12} md={12}>
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={checkPreSling}
-                                onChange={() => {
-                                  if (checkPreSling === true) {
-                                    setFieldValue('contractor_id_to_other', null);
-                                  }
-                                  setFieldValue('checkPreSling', !checkPreSling);
-                                  handleClickCheckbox(checkPreSling);
-                                }}
-                                name="checked1"
-                              />
-                            }
-                            label="Pre-Sling"
-                          />
-
-                          {checkPreSling && (
                             <Stack spacing={1}>
                               <FormControl>
                                 <Select
@@ -605,9 +544,8 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
                                 </FormHelperText>
                               )}
                             </Stack>
-                          )}
-                        </Grid>
-
+                          </Grid>
+                        )}
                         <Grid item xs={12} md={6} sx={{ display: 'none' }}>
                           <Stack spacing={1}>
                             <InputLabel>หมายเลขสาย</InputLabel>
@@ -633,7 +571,7 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
                           </Stack>
                         </Grid>
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid item xs={12}>
                         <TableContainer sx={{ m: 'auto' }}>
                           <Table
                             aria-labelledby="tableTitle"
@@ -716,21 +654,8 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
           </DialogContentText>
         </DialogContent>
       </Dialog>
-
-      <Tooltip title="เพิ่มทีมชึ้นสินค้า">
-        <Button
-          variant="contained"
-          size="medium"
-          color="primary"
-          sx={{ minWidth: '33px!important', p: '6px 0px' }}
-          disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
-          onClick={() => handleClickOpen(id)}
-        >
-          <EditOutlined />
-        </Button>
-      </Tooltip>
     </>
   );
 }
 
-export default AddTeamLoading;
+export default EditTeamLoading;

@@ -216,7 +216,7 @@ function DailyProductOutTable({ startDate, endDate, clickDownload, onFilter, dat
                     <TableCell align="left">{row.setup_pile_date ? moment(row.setup_pile_date).format('DD/MM/yyyy') : '-'}</TableCell>
                     <TableCell align="right">{parseFloat((row.stock_quantity * 1).toFixed(3)).toLocaleString('en-US')}</TableCell>
                     <TableCell align="right">
-                      {parseFloat((row.begin_day_stock * 1).toFixed(3)).toLocaleString('en-US')}
+                      {parseFloat((row.total_sold * 1 + row.total_remain * 1).toFixed(3)).toLocaleString('en-US')}
                       {/* 
                  {(parseFloat(row.total_sold) + parseFloat(row.remaining_quantity)).toLocaleString()}
                  */}
@@ -266,7 +266,7 @@ function DailyProductOutTable({ startDate, endDate, clickDownload, onFilter, dat
                     </TableCell>
                     <TableCell align="right">{parseFloat((row.total_sold * 20).toFixed(0)).toLocaleString('en-US')}</TableCell>
                     <TableCell align="right">{parseFloat((row.total_sold * 1).toFixed(3)).toLocaleString('en-US')}</TableCell>
-                    <TableCell align="right">{parseFloat((row.remaining_quantity * 1).toFixed(3)).toLocaleString('en-US')}</TableCell>
+                    <TableCell align="right">{parseFloat((row.total_remain * 1).toFixed(3)).toLocaleString('en-US')}</TableCell>
                   </TableRow>
                 ))}
               <TableRow>

@@ -194,6 +194,10 @@ function CarTable({ permission }) {
                 disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                 sx={{ minWidth: '33px!important', p: '6px 0px' }}
                 onClick={() => updateCar(value)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  window.open(`/car/update/${value}`, '_blank');
+                }}
               >
                 <EditOutlined />
               </Button>

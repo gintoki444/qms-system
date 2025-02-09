@@ -91,6 +91,12 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
       label: 'ร้านค้า/บริษัท'
     },
     {
+      id: 'totals',
+      align: 'right',
+      disablePadding: true,
+      label: 'จำนวน (ตัน)'
+    },
+    {
       id: 'driver',
       align: 'left',
       disablePadding: true,
@@ -882,7 +888,14 @@ export const Step4Table = ({ status, title, onStatusChange, onFilter, permission
                         )}
 
                         <TableCell align="left">
-                          <Typography sx={{ width: '240px' }}>{row.company_name}</Typography>
+                          <Typography sx={{ width: '240px', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                            {row.company_name}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body">
+                            <strong>{row.total_quantity ? parseFloat((row.total_quantity * 1).toFixed(3)) : '-'}</strong>
+                          </Typography>
                         </TableCell>
                         <TableCell align="left">{row.driver_name}</TableCell>
                         <TableCell align="left">{row.driver_mobile}</TableCell>

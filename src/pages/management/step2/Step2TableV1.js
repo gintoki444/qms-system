@@ -2805,7 +2805,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                             <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>
                           </TableCell>
                           <TableCell align="left">
-                            <Typography sx={{ width: '240px' }}>
+                            <Typography sx={{ width: '240px', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
                               {row.company_name} ({row.count_car_id} คิว)
                             </Typography>
                           </TableCell>

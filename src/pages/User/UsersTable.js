@@ -151,7 +151,6 @@ function UsersTable({ permission }) {
     //     });
   };
 
-
   const [user_id, setUser_id] = useState('');
   const [textnotify, setText] = useState('');
 
@@ -237,7 +236,6 @@ function UsersTable({ permission }) {
                     <TableCell align="left">{row.email}</TableCell>
                     <TableCell align="left">{row.role ? row.role : '-'}</TableCell>
                     <TableCell align="center">
-
                       <ButtonGroup variant="contained" aria-label="Basic button group">
                         <Tooltip title="แก้ไข">
                           <Button
@@ -247,6 +245,10 @@ function UsersTable({ permission }) {
                             disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
                             sx={{ minWidth: '33px!important', p: '6px 0px' }}
                             onClick={() => updateDrivers(row.user_id)}
+                            onContextMenu={(e) => {
+                              e.preventDefault();
+                              window.open(`/admin/users/update/${row.user_id}`, '_blank');
+                            }}
                           >
                             <EditOutlined />
                           </Button>

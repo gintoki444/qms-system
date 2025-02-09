@@ -106,6 +106,12 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       label: 'ร้านค้า/บริษัท'
     },
     {
+      id: 'totals',
+      align: 'right',
+      disablePadding: true,
+      label: 'จำนวน (ตัน)'
+    },
+    {
       id: 'driver',
       align: 'left',
       disablePadding: true,
@@ -3239,8 +3245,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                             <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>
                           </TableCell>
                           <TableCell align="left">
-                            <Typography sx={{ width: '240px' }}>
+                            <Typography sx={{ width: '240px', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
                               {row.company_name} ({row.count_car_id} คิว)
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body">
+                              <strong>{row.total_quantity ? parseFloat((row.total_quantity * 1).toFixed(3)) : '-'}</strong>
                             </Typography>
                           </TableCell>
                           <TableCell align="left">{row.driver_name}</TableCell>
