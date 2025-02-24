@@ -200,3 +200,14 @@ export const putQueueRemainByID = async (id, data) => {
   const result = await response.json();
   return result;
 };
+
+// ==============================|| ข้อมูลการจองคิว ||============================== //
+export const getAllReserveBydate = async (startDate, endDate) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `'/allreservesrange?pickup_date1=${startDate}&pickup_date2=${endDate}`, requestOptions);
+  const result = await response.json();
+  return result;
+};

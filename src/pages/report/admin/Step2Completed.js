@@ -1,24 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
-import {
-  Grid,
-  Box,
-  TextField,
-  Button,
-  Stack,
-  Alert,
-  Backdrop,
-  CircularProgress
-  // Typography
-} from '@mui/material';
+import { Grid, Box, TextField, Button, Stack, Alert, Backdrop, CircularProgress } from '@mui/material';
 import MainCard from 'components/MainCard';
-// import OrderSumQtyTable from './OrderSumQtyTable';
 import moment from 'moment';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, FileExcelOutlined } from '@ant-design/icons';
 
 import StepCompletedForm from './step-forms/StepCompletedForm';
-// import OrderTable from 'pages/dashboard/admin/OrdersTable';
+import SelectCompany from 'components/selector/SelectCompany';
+import { useDownloadExcel } from 'react-export-table-to-excel';
 
 function Step2Completed() {
   const pageId = 31;
@@ -58,6 +48,31 @@ function Step2Completed() {
       setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
     }
   }, [userRole, userPermission]);
+
+  // ฟังก์ชันรับค่า company ที่เลือกจาก SelectCompany
+  const [selectedCompanyId, setSelectedCompanyId] = useState(99);
+  const handleCompanySelect = (companyId) => {
+    setSelectedCompanyId(companyId);
+  };
+  const [filterName, setFilterName] = useState('ทั้งหมด');
+  const handleFilterName = (name) => {
+    setFilterName(name);
+  };
+  useEffect(() => {
+    setLoading(true);
+    if (Object.keys(userPermission).length > 0) {
+      setLoading(false);
+      setPageDetail(userPermission.permission.filter((x) => x.page_id === pageId));
+    }
+  }, [userRole, userPermission]);
+
+  // ======= Export file excel =======;
+  const tableRef = useRef(null);
+  const { onDownload } = useDownloadExcel({
+    currentTableRef: tableRef.current,
+    filename: `step2-summary-${filterName}`,
+    sheet: moment(new Date()).format('DD-MM-YYYY')
+  });
   return (
     <Grid alignItems="center" justifyContent="space-between">
       {loading && (
@@ -70,45 +85,49 @@ function Step2Completed() {
       )}
       <Grid container rowSpacing={1} columnSpacing={1.75}>
         <Grid item xs={12} md={12} lg={12}>
-          <Grid container rowSpacing={1} columnSpacing={1.75}>
-            <Grid item xs={3}>
-              <Stack spacing={1}>
-                <TextField
-                  required
-                  fullWidth
-                  type="date"
-                  id="pickup_date"
-                  name="pickup_date"
-                  value={selectedDate1}
-                  onChange={handleDateChange1}
-                  // inputProps={{
-                  //   min: currentDate
-                  // }}
-                />
-              </Stack>
-            </Grid>
-            <Grid item xs={3}>
-              <Stack spacing={1}>
-                <TextField
-                  required
-                  fullWidth
-                  type="date"
-                  id="pickup_date"
-                  name="pickup_date"
-                  value={selectedDate2}
-                  onChange={handleDateChange2}
-                  // inputProps={{
-                  //   min: currentDate
-                  // }}
-                />
-              </Stack>
-            </Grid>
-            <Grid item xs={3}>
-              <Button size="mediam" color="primary" variant="contained" onClick={() => handleSearch()} startIcon={<SearchOutlined />}>
+          <Stack spacing={2} sx={{ width: '100%' }}>
+            <Stack direction="row" spacing={2} sx={{ width: '100%' }}>
+              <TextField
+                required
+                fullWidth
+                type="date"
+                id="pickup_date1"
+                name="pickup_date1"
+                value={selectedDate1}
+                onChange={handleDateChange1}
+                sx={{ flex: 1 }}
+              />
+              <TextField
+                required
+                fullWidth
+                type="date"
+                id="pickup_date2"
+                name="pickup_date2"
+                value={selectedDate2}
+                onChange={handleDateChange2}
+                sx={{ flex: 1 }}
+              />
+              <SelectCompany
+                onSelect={handleCompanySelect}
+                value={selectedCompanyId}
+                filterName={handleFilterName}
+                // sx={{ flex: 2 }} // ขยายให้กว้างกว่า date fields
+              />
+              <Button
+                size="medium"
+                color="primary"
+                variant="contained"
+                onClick={handleSearch}
+                startIcon={<SearchOutlined />}
+                // sx={{ flex: 1, minWidth: 100 }}
+              >
                 ค้นหา
               </Button>
-            </Grid>
-          </Grid>
+              <Button color="success" variant="contained" sx={{ fontSize: '18px', minWidth: '', p: '6px 10px' }} onClick={onDownload}>
+                <FileExcelOutlined />
+              </Button>
+            </Stack>
+          </Stack>
           <Grid item>
             {Object.keys(userPermission).length > 0 &&
               (pageDetail.length === 0 || (pageDetail.length !== 0 && pageDetail[0].permission_name === 'no_access_to_view_data')) && (
@@ -126,7 +145,13 @@ function Step2Completed() {
                 pageDetail[0].permission_name !== 'add_edit_delete_data') && (
                 <MainCard content={false} sx={{ mt: 1.5 }}>
                   <Box sx={{ pt: 1, pr: 2 }}>
-                    <StepCompletedForm stepId={2} startDate={selectedDateRange.startDate} endDate={selectedDateRange.endDate} />
+                    <StepCompletedForm
+                      stepId={2}
+                      startDate={selectedDateRange.startDate}
+                      endDate={selectedDateRange.endDate}
+                      companySelect={selectedCompanyId}
+                      clickDownload={tableRef}
+                    />
                   </Box>
                 </MainCard>
               )}

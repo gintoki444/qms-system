@@ -1,13 +1,5 @@
-// import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
-// import { styled } from '@mui/material/styles';
-
-// import { Link as RouterLink } from 'react-router-dom';
-// const apiUrl = process.env.REACT_APP_API_URL;
-
 import * as reportRequest from '_api/reportRequest';
-
-// material-ui
 import {
   Box,
   Grid,
@@ -20,116 +12,39 @@ import {
   CircularProgress,
   Typography,
   Chip
-  // , Chip
 } from '@mui/material';
-
-// import { CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
-
 import moment from 'moment';
 import 'moment-timezone';
+import { getAllProductCompany } from '_api/StepRequest';
 
-// import moment from 'moment/min/moment-with-locales';
-
-// ==============================|| ORDER TABLE - HEADER CELL ||============================== //
 const headCells = [
-  {
-    id: 'date-close',
-    align: 'center',
-    disablePadding: false,
-    label: 'วันที่ปิดงาน'
-  },
-  {
-    id: 'queue',
-    align: 'center',
-    disablePadding: true,
-    label: 'หมายเลขคิว'
-  },
-  {
-    id: 'station',
-    align: 'left',
-    disablePadding: true,
-    label: 'สถานี'
-  },
-  {
-    id: 'registration_no',
-    align: 'left',
-    disablePadding: false,
-    label: 'ทะเบียนรถ'
-  },
-  {
-    id: 'company',
-    align: 'left',
-    disablePadding: false,
-    label: 'บริษัท/ร้านค้า'
-  },
-  {
-    id: 'driveName',
-    align: 'left',
-    disablePadding: false,
-    label: 'ชื่อผู้ขับ'
-  },
-  {
-    id: 'tel',
-    align: 'left',
-    disablePadding: false,
-    label: 'เบอร์โทร'
-  },
-  {
-    id: 'time-in',
-    align: 'center',
-    disablePadding: false,
-    label: 'เวลาเริ่ม'
-  },
-  {
-    id: 'time-out',
-    align: 'center',
-    disablePadding: false,
-    label: 'เวลาเสร็จ'
-  },
-  {
-    id: 'time',
-    align: 'center',
-    disablePadding: false,
-    label: 'เวลาที่ใช้'
-  },
-  {
-    id: 'weight1',
-    align: 'center',
-    disablePadding: false,
-    label: 'น้ำหนักชั่งเบา'
-  },
-  {
-    id: 'weight2',
-    align: 'center',
-    disablePadding: false,
-    label: 'น้ำหนักชั่งหนัก'
-  },
-  {
-    id: 'status',
-    align: 'center',
-    disablePadding: false,
-    label: 'สถานะ'
-  }
+  { id: 'date-close', align: 'center', disablePadding: false, label: 'วันที่ปิดงาน' },
+  { id: 'queue', align: 'center', disablePadding: true, label: 'หมายเลขคิว' },
+  { id: 'station', align: 'left', disablePadding: true, label: 'สถานี' },
+  { id: 'registration_no', align: 'left', disablePadding: false, label: 'ทะเบียนรถ' },
+  { id: 'company', align: 'left', disablePadding: false, label: 'บริษัท/ร้านค้า' },
+  { id: 'zone', align: 'center', disablePadding: false, label: 'Zone' },
+  { id: 'driveName', align: 'left', disablePadding: false, label: 'ชื่อผู้ขับ' },
+  { id: 'tel', align: 'left', disablePadding: false, label: 'เบอร์โทร' },
+  { id: 'time-in', align: 'center', disablePadding: false, label: 'เวลาเริ่ม' },
+  { id: 'time-out', align: 'center', disablePadding: false, label: 'เวลาเสร็จ' },
+  { id: 'time', align: 'center', disablePadding: false, label: 'เวลาที่ใช้' },
+  { id: 'weight1', align: 'center', disablePadding: false, label: 'น้ำหนักชั่งเบา' },
+  { id: 'weight2', align: 'center', disablePadding: false, label: 'น้ำหนักชั่งหนัก' },
+  { id: 'status', align: 'center', disablePadding: false, label: 'สถานะ' }
 ];
 
-// ==============================|| ORDER TABLE - HEADER ||============================== //
-
-// OrderTableHead.propTypes = {
-//   order: PropTypes.string,
-//   orderBy: PropTypes.string
-// };
-
-function StepCompletedForm({ stepId, startDate, endDate }) {
-  //   const [order] = useState('asc');
-  //   const [orderBy] = useState('trackingNo');
+function StepCompletedForm({ stepId, startDate, endDate, companySelect, clickDownload }) {
   const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState([]);
+  const [avgStep, setAvgStep] = useState([]);
 
   useEffect(() => {
     console.log('stepId :', stepId);
     fetchData();
-  }, [stepId, startDate, endDate]);
+    // eslint-disable-next-line
+  }, [stepId, startDate, endDate, companySelect]);
 
-  const [items, setItems] = useState([]);
   const fetchData = async () => {
     setLoading(true);
     getStepCompleted();
@@ -144,12 +59,7 @@ function StepCompletedForm({ stepId, startDate, endDate }) {
               {(stepId === 1 && headCell.id === 'weight2') ||
                 (stepId === 3 && headCell.id === 'weight1') ||
                 ((stepId === 2 || stepId === 4) && (headCell.id === 'weight1' || headCell.id === 'weight2')) || (
-                  <TableCell
-                    key={headCell.id}
-                    align={headCell.align}
-                    padding={headCell.disablePadding ? 'none' : 'normal'}
-                  // sortDirection={orderBy === headCell.id ? order : false}
-                  >
+                  <TableCell key={headCell.id} align={headCell.align} padding={headCell.disablePadding ? 'none' : 'normal'}>
                     {headCell.label}
                   </TableCell>
                 )}
@@ -160,24 +70,45 @@ function StepCompletedForm({ stepId, startDate, endDate }) {
     );
   }
 
-  const getStepCompleted = () => {
+  const getStepCompleted = async () => {
     try {
-      reportRequest.getStepCompleted(stepId, startDate, endDate).then((response) => {
-        if (response.length > 0) {
-          setItems(response);
-          console.log(response);
-          getStepCompletedAvg();
-        } else {
-          setItems([]);
-          setLoading(false);
+      const companyData = await getAllProductCompany();
+      console.log('companyData :', companyData);
+
+      const response = await reportRequest.getStepCompleted(stepId, startDate, endDate);
+      if (response.length > 0) {
+        const mappedResponse = response.map((item) => {
+          if (item.token) {
+            const matchingCompany = companyData.find((company) => {
+              return (
+                company.product_company_code &&
+                item.token.substring(0, company.product_company_code.length) === company.product_company_code
+              );
+            });
+            if (matchingCompany) {
+              // Merge fields ของบริษัทเข้ามาใน item โดยตรง
+              return { ...item, ...matchingCompany };
+            }
+          }
+          return item;
+        });
+        let filteredData = mappedResponse;
+        // กรองข้อมูลตาม companySelect ถ้ามีค่า
+        if (companySelect && companySelect !== 99) {
+          filteredData = mappedResponse.filter((item) => item.product_company_id === companySelect);
         }
-      });
+
+        setItems(filteredData);
+        getStepCompletedAvg();
+      } else {
+        setItems([]);
+        setLoading(false);
+      }
     } catch (error) {
       console.log(error);
     }
   };
 
-  const [avgStep, setAvgStep] = useState([]);
   const getStepCompletedAvg = () => {
     try {
       reportRequest.getAvgStepCompleted(stepId, startDate, endDate).then((response) => {
@@ -195,6 +126,14 @@ function StepCompletedForm({ stepId, startDate, endDate }) {
       console.log(error);
     }
   };
+
+  // จัดกลุ่มข้อมูลตาม product_company_id
+  const groupedItems = items.reduce((groups, item) => {
+    const key = item.product_company_id || 'undefined';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+    return groups;
+  }, {});
 
   return (
     <Box>
@@ -226,61 +165,93 @@ function StepCompletedForm({ stepId, startDate, endDate }) {
           maxWidth: '100%',
           '& td, & th': { whiteSpace: 'nowrap' }
         }}
+        ref={clickDownload}
       >
         <Table
           aria-labelledby="tableTitle"
           sx={{
-            '& .MuiTableCell-root:first-of-type': {
-              pl: 2
-            },
-            '& .MuiTableCell-root:last-of-type': {
-              pr: 3
-            }
+            '& .MuiTableCell-root:first-of-type': { pl: 2 },
+            '& .MuiTableCell-root:last-of-type': { pr: 3 }
           }}
         >
-          <OrderTableHead
-          //    order={order} orderBy={orderBy}
-          />
+          <OrderTableHead />
           {!loading ? (
             <TableBody>
-              {items.length > 0 &&
-                items.map((row, index) => (
-                  <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                    <TableCell align="center">
-                      <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px' }}>
-                        {/* {moment(row.end_time).tz('America/Los_Angeles').format('DD/MM/yyyy')} */}
-                        {row.end_time ? moment(row.end_time.slice(0, 10)).format('DD/MM/yyyy') : '-'}
-                      </div>
-                    </TableCell>
-                    <TableCell align="center">
-                      <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px' }}>{row.token}</div>
-                    </TableCell>
-                    <TableCell align="left">
-                      <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', fontFamily: 'kanit' }}>
-                        {row.station_description}
-                      </div>
-                    </TableCell>
-                    <TableCell align="left">{row.registration_no}</TableCell>
-                    <TableCell align="left">{row.company_name}</TableCell>
-                    <TableCell align="left">{row.driver_name}</TableCell>
-                    <TableCell align="left">{row.driver_mobile}</TableCell>
-                    <TableCell align="center">{row.start_time ? row.start_time.slice(11, 19) : '-'}</TableCell>
-                    <TableCell align="center">{row.end_time ? row.end_time.slice(11, 19) : '-'}</TableCell>
-                    <TableCell align="center">{row.elapsed_time ? row.elapsed_time : '-'}</TableCell>
-                    {(stepId === 1 || stepId === 3) && <TableCell align="center">{stepId === 1 ? row.weight1 : row.weight2}</TableCell>}
-                    <TableCell align="center">
-                      {row.status === 'completed' ? (
-                        <Chip color={'success'} label={'สำเร็จ'} sx={{ minWidth: '78.7px!important' }} />
-                      ) : (
-                        <Chip color={'error'} label={'ยกเลิก'} sx={{ minWidth: '78.7px!important' }} />
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-
-              {items.length == 0 && (
+              {items.length > 0 ? (
+                Object.entries(groupedItems).map(([companyId, group]) => (
+                  <React.Fragment key={companyId}>
+                    {/* Header row สำหรับกลุ่ม */}
+                    <TableRow>
+                      <TableCell
+                        colSpan={13}
+                        sx={{
+                          backgroundColor: '#f0f0f0',
+                          fontWeight: 'bold',
+                          fontSize: '1rem'
+                        }}
+                      >
+                        {group[0].product_company_name_th}
+                      </TableCell>
+                    </TableRow>
+                    {group.map((row, index) => (
+                      <TableRow key={`${companyId}-${index}`} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                        <TableCell align="center">
+                          <div
+                            style={{
+                              backgroundColor: 'lightBlue',
+                              borderRadius: '10px',
+                              padding: '7px'
+                            }}
+                          >
+                            {row.end_time ? moment(row.end_time.slice(0, 10)).format('DD/MM/yyyy') : '-'}
+                          </div>
+                        </TableCell>
+                        <TableCell align="center">
+                          <div
+                            style={{
+                              backgroundColor: 'lightBlue',
+                              borderRadius: '10px',
+                              padding: '7px'
+                            }}
+                          >
+                            {row.token}
+                          </div>
+                        </TableCell>
+                        <TableCell align="left">
+                          <div
+                            style={{
+                              backgroundColor: 'lightBlue',
+                              borderRadius: '10px',
+                              padding: '7px',
+                              fontFamily: 'kanit'
+                            }}
+                          >
+                            {row.station_description}
+                          </div>
+                        </TableCell>
+                        <TableCell align="left">{row.registration_no}</TableCell>
+                        <TableCell align="left">{row.company_name}</TableCell>
+                        <TableCell align="center">{row.company_description || '-'}</TableCell>
+                        <TableCell align="left">{row.driver_name}</TableCell>
+                        <TableCell align="left">{row.driver_mobile}</TableCell>
+                        <TableCell align="center">{row.start_time ? row.start_time.slice(11, 19) : '-'}</TableCell>
+                        <TableCell align="center">{row.end_time ? row.end_time.slice(11, 19) : '-'}</TableCell>
+                        <TableCell align="center">{row.elapsed_time ? row.elapsed_time : '-'}</TableCell>
+                        {(stepId === 1 || stepId === 3) && <TableCell align="center">{stepId === 1 ? row.weight1 : row.weight2}</TableCell>}
+                        <TableCell align="center">
+                          {row.status === 'completed' ? (
+                            <Chip color="success" label="สำเร็จ" sx={{ minWidth: '78.7px!important' }} />
+                          ) : (
+                            <Chip color="error" label="ยกเลิก" sx={{ minWidth: '78.7px!important' }} />
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </React.Fragment>
+                ))
+              ) : (
                 <TableRow>
-                  <TableCell colSpan={9} align="center">
+                  <TableCell colSpan={13} align="center">
                     ไม่พบข้อมูล
                   </TableCell>
                 </TableRow>

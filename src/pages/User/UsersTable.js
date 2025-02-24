@@ -35,12 +35,6 @@ const headCells = [
     disablePadding: false,
     label: 'ID.'
   },
-  // {
-  //   id: 'avatar',
-  //   align: 'left',
-  //   disablePadding: true,
-  //   label: 'รูปภาพ'
-  // },
   {
     id: 'fullName',
     align: 'left',
@@ -126,29 +120,6 @@ function UsersTable({ permission }) {
     } catch (error) {
       console.log(error);
     }
-    //   let config = {
-    //     method: 'delete',
-    //     maxBodyLength: Infinity,
-    //     url: apiUrl + '/deleteuser/' + id,
-    //     headers: {}
-    //   };
-
-    //   console.log(config.url);
-
-    //   axios
-    //     .request(config)
-    //     .then((result) => {
-    //       console.log(result);
-    //       if (result.data.status === 'ok') {
-    //         alert(result.data.message);
-    //         getDrivers();
-    //       } else {
-    //         alert(result.data.message);
-    //       }
-    //     })
-    //     .catch((error) => {
-    //       console.log(error);
-    //     });
   };
 
   const [user_id, setUser_id] = useState('');

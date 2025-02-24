@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // import {
 //   useNavigate
-//   // , useParams 
+//   // , useParams
 // } from 'react-router-dom';
 
 // third party
@@ -13,14 +13,23 @@ import * as adminRequest from '_api/adminRequest';
 
 // material-ui
 import {
-  Button, FormHelperText, Grid, InputLabel, OutlinedInput, Stack, Typography, Divider, Autocomplete, TextField,
+  Button,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  OutlinedInput,
+  Stack,
+  Typography,
+  Divider,
+  Autocomplete,
+  TextField,
   Backdrop,
   CircularProgress,
   Tooltip,
   Dialog,
   // DialogActions,
   DialogContent,
-  DialogContentText,
+  DialogContentText
   // DialogTitle,
 } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
@@ -78,7 +87,7 @@ function AddManageTeam({ id, handleClickReset }) {
             if (setData) {
               data.push(setData);
             }
-          })
+          });
         }
         return data;
       });
@@ -90,14 +99,14 @@ function AddManageTeam({ id, handleClickReset }) {
             if (setData) {
               data.push(setData);
             }
-          })
+          });
         }
         return data;
-      })
+      });
       setCheckerList(getChecker);
       setForkliftList(getForklifts);
       setWareHouseManagerList(getManagers);
-      setInitialValue(teamData)
+      setInitialValue(teamData);
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -303,60 +312,68 @@ function AddManageTeam({ id, handleClickReset }) {
     try {
       // Checker data processing
       if (values.manager_id) {
-        await updateWareHouseManager(values.manager_id, values.team_id)
+        await updateWareHouseManager(values.manager_id, values.team_id);
       }
-      const teamCheckerIds = values.team_checkers.map(tcx => tcx.checker_id);
-      const checkerDataIds = values.checkerData.map(cd => cd.checker_id);
+      const teamCheckerIds = values.team_checkers.map((tcx) => tcx.checker_id);
+      const checkerDataIds = values.checkerData.map((cd) => cd.checker_id);
 
-      const deletedCheckers = values.team_checkers.filter(tcx => !checkerDataIds.includes(tcx.checker_id));
-      const addedCheckers = values.checkerData.filter(cd => !teamCheckerIds.includes(cd.checker_id));
+      const deletedCheckers = values.team_checkers.filter((tcx) => !checkerDataIds.includes(tcx.checker_id));
+      const addedCheckers = values.checkerData.filter((cd) => !teamCheckerIds.includes(cd.checker_id));
 
       // Delete checkers from previous teams
       if (addedCheckers.length > 0) {
-        await Promise.all(addedCheckers.map(async (x) => {
-          const CheckTeamChecker = allTeamCheckers.filter((ft) => ft.checker_id == x.checker_id);
-          if (CheckTeamChecker.length > 0) {
-            await Promise.all(CheckTeamChecker.map((tcx) => {
-              return retryOperation(() => deleteTeamChecker(tcx.team_checker_id));
-            }));
-          }
-          await retryOperation(() => addTeamChecker(values.team_id, x.checker_id));
-        }));
+        await Promise.all(
+          addedCheckers.map(async (x) => {
+            const CheckTeamChecker = allTeamCheckers.filter((ft) => ft.checker_id == x.checker_id);
+            if (CheckTeamChecker.length > 0) {
+              await Promise.all(
+                CheckTeamChecker.map((tcx) => {
+                  return retryOperation(() => deleteTeamChecker(tcx.team_checker_id));
+                })
+              );
+            }
+            await retryOperation(() => addTeamChecker(values.team_id, x.checker_id));
+          })
+        );
       }
 
       if (deletedCheckers.length > 0) {
-        await Promise.all(deletedCheckers.map(tcx => retryOperation(() => deleteTeamChecker(tcx.team_checker_id))));
+        await Promise.all(deletedCheckers.map((tcx) => retryOperation(() => deleteTeamChecker(tcx.team_checker_id))));
       }
 
       // Forklift data processing
-      const teamForkliftIds = values.team_forklifts.map(tfx => tfx.forklift_id);
-      const forkLiftDataIds = values.forkLiftData.map(fd => fd.forklift_id);
+      const teamForkliftIds = values.team_forklifts.map((tfx) => tfx.forklift_id);
+      const forkLiftDataIds = values.forkLiftData.map((fd) => fd.forklift_id);
 
-      const deletedForklifts = values.team_forklifts.filter(tfx => !forkLiftDataIds.includes(tfx.forklift_id));
-      const addedForklifts = values.forkLiftData.filter(fd => !teamForkliftIds.includes(fd.forklift_id));
+      const deletedForklifts = values.team_forklifts.filter((tfx) => !forkLiftDataIds.includes(tfx.forklift_id));
+      const addedForklifts = values.forkLiftData.filter((fd) => !teamForkliftIds.includes(fd.forklift_id));
 
       // Delete forklifts from previous teams
       if (addedForklifts.length > 0) {
-        await Promise.all(addedForklifts.map(async (x) => {
-          const CheckTeamForklift = allTeamForklifts.filter((ft) => ft.forklift_id == x.forklift_id);
-          if (CheckTeamForklift.length > 0) {
-            await Promise.all(CheckTeamForklift.map((tfx) => {
-              return retryOperation(() => deleteTeamForklift(tfx.team_forklift_id));
-            }));
-          }
-          await retryOperation(() => addTeamForklift(values.team_id, x.forklift_id));
-        }));
+        await Promise.all(
+          addedForklifts.map(async (x) => {
+            const CheckTeamForklift = allTeamForklifts.filter((ft) => ft.forklift_id == x.forklift_id);
+            if (CheckTeamForklift.length > 0) {
+              await Promise.all(
+                CheckTeamForklift.map((tfx) => {
+                  return retryOperation(() => deleteTeamForklift(tfx.team_forklift_id));
+                })
+              );
+            }
+            await retryOperation(() => addTeamForklift(values.team_id, x.forklift_id));
+          })
+        );
       }
 
       if (deletedForklifts.length > 0) {
-        await Promise.all(deletedForklifts.map(tfx => retryOperation(() => deleteTeamForklift(tfx.team_forklift_id))));
+        await Promise.all(deletedForklifts.map((tfx) => retryOperation(() => deleteTeamForklift(tfx.team_forklift_id))));
       }
 
       setLoading(false);
       setOpen(false);
       handleClickReset(true);
     } catch (error) {
-      console.error("Error saving data:", error);
+      console.error('Error saving data:', error);
       setLoading(false);
     }
   };
@@ -393,7 +410,6 @@ function AddManageTeam({ id, handleClickReset }) {
       console.log(error);
     }
   };
-
 
   // =============== Get Forklift ===============//
   const [allTeamForklifts, setAllTeamForklifts] = useState([]);
@@ -437,9 +453,8 @@ function AddManageTeam({ id, handleClickReset }) {
   // const [teamData, setTeamData] = useState({});
   // const [textnotify, setText] = useState('');
   const handleClickOpen = (teamId) => {
-
     setOpen(true);
-    setLoading(true)
+    setLoading(true);
     //   setOpen(true);
     // setTeamData()
     if (teamId) {
@@ -448,7 +463,6 @@ function AddManageTeam({ id, handleClickReset }) {
       getTeamLoading(teamId);
     }
   };
-
 
   const handleClose = async (flag) => {
     if (flag === 0) {
@@ -472,10 +486,19 @@ function AddManageTeam({ id, handleClickReset }) {
               <Grid container rowSpacing={0} columnSpacing={0}>
                 <Grid item xs={12}>
                   <MainCard content={false} sx={{ p: 3 }}>
-                    <Formik initialValues={initialValue}
-                      // validationSchema={validations}
-                      onSubmit={handleSubmits} enableReinitialize={true} >
-                      {({ errors, handleSubmit, isSubmitting, touched, values, setFieldValue
+                    <Formik
+                      initialValues={initialValue}
+                      // lidations}
+                      onSubmit={handleSubmits}
+                      enableReinitialize={true}
+                    >
+                      {({
+                        errors,
+                        handleSubmit,
+                        isSubmitting,
+                        touched,
+                        values,
+                        setFieldValue
                         // , handleChange
                       }) => (
                         <form noValidate onSubmit={handleSubmit}>
@@ -541,8 +564,11 @@ function AddManageTeam({ id, handleClickReset }) {
                                         id="manager_id"
                                         name="manager_id"
                                         displayEmpty
-                                        value={values.manager_id || (selectManager.length > 0 && selectManager[0].manager_id) ||
-                                          (values.team_managers ? values.team_managers[(values.team_managers.length - 1)]?.manager_id : null)}
+                                        value={
+                                          values.manager_id ||
+                                          (selectManager.length > 0 && selectManager[0].manager_id) ||
+                                          (values.team_managers ? values.team_managers[values.team_managers.length - 1]?.manager_id : null)
+                                        }
                                         input={<OutlinedInput />}
                                         onChange={(e) => {
                                           handleChangeManager(e);
@@ -596,7 +622,6 @@ function AddManageTeam({ id, handleClickReset }) {
                                           setFieldValue('checkerData', [...checkers, ...value]);
                                           handleChangeCheckers(value);
                                         }}
-
                                         filterOptions={(options, { inputValue }) => {
                                           const filtered = options.filter(
                                             (option) => !checkers.some((checker) => checker.checker_id === option.checker_id)
@@ -610,12 +635,7 @@ function AddManageTeam({ id, handleClickReset }) {
                                             option.checker_name.toLowerCase().includes(inputValue.toLowerCase())
                                           );
                                         }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            placeholder="เลือกพนักงานจ่ายสินค้า"
-                                          />
-                                        )}
+                                        renderInput={(params) => <TextField {...params} placeholder="เลือกพนักงานจ่ายสินค้า" />}
                                       />
                                       {/* <Select
                                 labelId="demo-multiple-chip-label"
@@ -687,7 +707,6 @@ function AddManageTeam({ id, handleClickReset }) {
                                           // setFieldValue('forkLiftData', value);
                                           handleChangeForklift(value);
                                         }}
-
                                         filterOptions={(options, { inputValue }) => {
                                           const filtered = options.filter(
                                             (option) => !forkLift.some((x) => x.forklift_id === option.forklift_id)
@@ -701,12 +720,8 @@ function AddManageTeam({ id, handleClickReset }) {
                                             option.forklift_name.toLowerCase().includes(inputValue.toLowerCase())
                                           );
                                         }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            placeholder="เลือกพนักงานจ่ายสินค้า"
-                                          />
-                                        )} _
+                                        renderInput={(params) => <TextField {...params} placeholder="เลือกพนักงานจ่ายสินค้า" />}
+                                        _
                                       />
                                       {/* <Select
                                 labelId="demo-multiple-chip-label"
@@ -761,7 +776,7 @@ function AddManageTeam({ id, handleClickReset }) {
                                 variant="contained"
                                 color="error"
                                 onClick={() => {
-                                  handleClose(0)
+                                  handleClose(0);
                                 }}
                                 startIcon={<RollbackOutlined />}
                               >
@@ -790,7 +805,7 @@ function AddManageTeam({ id, handleClickReset }) {
                   </MainCard>
                 </Grid>
               </Grid>
-            </Grid >
+            </Grid>
           </DialogContentText>
         </DialogContent>
 

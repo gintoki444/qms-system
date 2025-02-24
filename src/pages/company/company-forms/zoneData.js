@@ -2,7 +2,7 @@ import React from 'react';
 import { InputLabel, Stack, FormControl, Select, MenuItem } from '@mui/material';
 
 const ZoneDataSelect = ({ onChange, value }) => {
-  const zones = ['C01', 'C02', 'C03', 'E01', 'HO1', 'N01', 'N02', 'N03', 'NE1', 'NE2', 'NE3', 'S01', 'S02', 'SP1'];
+  const zones = ['C01', 'C02', 'C03', 'E01', 'HO1', 'N01', 'N02', 'N03', 'NE1', 'NE2', 'NE3', 'S01', 'S02', 'SP1', 'SP2'];
 
   return (
     <Stack spacing={1}>

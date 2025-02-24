@@ -837,7 +837,14 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
             textOverflow: 'ellipsis'
           }
         }),
-        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+        customBodyRender: (value, tableMeta) => {
+          const queueDat = filteredData[tableMeta.rowIndex];
+          return queueDat.product_company_id === 1 ? (
+            <Typography variant="body">{value ? value : '-'}</Typography>
+          ) : (
+            <Typography variant="body">{'-'}</Typography>
+          );
+        }
       }
     },
     {
