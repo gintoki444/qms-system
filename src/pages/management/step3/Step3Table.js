@@ -558,6 +558,34 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
     // }
   };
 
+  const telegramNotify = (queue_id, token) => {
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+    // if (queue_id === 99999) {
+    var link = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+    link = link + '/queues/detail/' + queue_id;
+
+    const myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+
+    const raw = JSON.stringify({
+      message: message + ' หมายเลขคิว: ' + token + '\n' + 'น้ำหนักชั่งหนัก: ' + weight + ' ตัน' + '\n' + link
+    });
+
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    };
+
+    fetch(apiUrl + '/telegram-notify', requestOptions)
+      .then((response) => response.text())
+      .catch((error) => console.error(error));
+    // }
+  };
+
   const getStepToken = (step_id) => {
     return new Promise((resolve, reject) => {
       const requestOptions = {
@@ -700,6 +728,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
           getStepToken(id_update)
             .then(({ queue_id, token }) => {
               lineNotify(queue_id, token);
+              telegramNotify(queue_id, token);
             })
             .catch((error) => {
               console.error('Error:', error);
@@ -764,6 +793,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
               getStepToken(id_update)
                 .then(({ queue_id, token }) => {
                   lineNotify(queue_id, token);
+                  telegramNotify(queue_id, token);
                 })
                 .catch((error) => {
                   console.error('Error:', error);
@@ -801,6 +831,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
           getStepToken(id_update)
             .then(({ queue_id, token }) => {
               lineNotify(queue_id, token);
+              telegramNotify(queue_id, token);
             })
             .catch((error) => {
               console.error('Error:', error);

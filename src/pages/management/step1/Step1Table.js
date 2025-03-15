@@ -343,6 +343,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
           getStepToken(id_update)
             .then(({ queue_id, token }) => {
               lineNotify(queue_id, token);
+              telegramNotify(queue_id, token);
             })
             .catch((error) => {
               console.error('Error:', error);
@@ -381,6 +382,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
             getStepToken(id_update)
               .then(({ queue_id, reserve_id, token }) => {
                 lineNotify(queue_id, reserve_id, token);
+                telegramNotify(queue_id, token);
               })
               .catch((error) => {
                 console.error('Error:', error);
@@ -420,6 +422,7 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
         getStepToken(id_update)
           .then(({ queue_id, token }) => {
             lineNotify(queue_id, token);
+            telegramNotify(queue_id, token);
           })
           .catch((error) => {
             console.error('Error:', error);
@@ -500,6 +503,35 @@ export const StepTable = ({ status, title, onStatusChange, onFilter, permission 
     };
 
     fetch(apiUrl + '/line-notify', requestOptions)
+      .then((response) => response.text())
+      .catch((error) => console.error(error));
+    // }
+  };
+
+  //Update lineNotify Message
+  const telegramNotify = (queue_id, token) => {
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+
+    var link = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+    link = link + '/queues/detail/' + queue_id;
+    // if (queue_id === 99999) {
+    const myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+
+    const raw = JSON.stringify({
+      message: message + ' หมายเลขคิว: ' + token + '\n' + 'น้ำหนักชั่งเบา: ' + weight + ' ตัน' + '\n' + link
+    });
+
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    };
+
+    fetch(apiUrl + '/telegram-notify', requestOptions)
       .then((response) => response.text())
       .catch((error) => console.error(error));
     // }

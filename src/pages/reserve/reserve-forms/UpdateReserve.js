@@ -681,6 +681,7 @@ function UpdateReserve() {
     const messageLine = queue_info + 'รายการสินค้า:-' + '\n' + orderProducts + '\n' + link;
     // if (queue_id === 9999) {
     lineNotify(messageLine);
+    telegramNotify(messageLine);
     // }
   };
 
@@ -863,6 +864,25 @@ function UpdateReserve() {
     };
 
     fetch(apiUrl + '/line-notify', requestOptions)
+      .then((response) => response.text())
+      .catch((error) => console.error(error));
+  };
+  const telegramNotify = (message) => {
+    const myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+
+    const raw = JSON.stringify({
+      message: message
+    });
+
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    };
+
+    fetch(apiUrl + '/telegram-notify', requestOptions)
       .then((response) => response.text())
       .catch((error) => console.error(error));
   };

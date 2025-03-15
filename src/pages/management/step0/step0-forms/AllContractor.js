@@ -205,6 +205,7 @@ function AllContractor({ permission }) {
       userData.lastname;
     // if (contractorData.contractor_name === 9999) {
     lineNotifyApi.sendLinenotify(textMessage);
+    lineNotifyApi.sendTelegramNotify(textMessage);
     // }
   };
 

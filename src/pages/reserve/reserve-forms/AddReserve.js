@@ -322,6 +322,8 @@ function AddReserve() {
           prurl;
 
         // if (id === 9999) {
+
+        lineNotifyApi.sendTelegramNotify(textMessage);
         lineNotifyApi.sendLinenotify(textMessage).then(() => {
           window.location.href = '/reserve/update/' + id;
           setLoading(false);

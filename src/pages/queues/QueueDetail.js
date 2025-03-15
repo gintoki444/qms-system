@@ -267,6 +267,7 @@ function QueueDetail({ sx }) {
       getStepToken(id_update)
         .then(({ queue_id, token }) => {
           lineNotify(queue_id, token);
+          telegramNotify(queue_id, token);
         })
         .catch((error) => {
           console.error('Error:', error);
@@ -441,6 +442,46 @@ function QueueDetail({ sx }) {
     };
 
     fetch(apiUrl + '/line-notify', requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => console.error(error));
+  };
+  const telegramNotify = (queue_id, token) => {
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+
+    var link = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+    link = link + '/queues/detail/' + queue_id;
+
+    const myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+
+    const raw = JSON.stringify({
+      message:
+        message +
+        ' หมายเลขคิว: ' +
+        token +
+        '\n' +
+        'คลุมผ้าใบ(ตัวแม่): ' +
+        parent_has_cover +
+        '\n' +
+        'คลุมผ้าใบ(ตัวลูก): ' +
+        trailer_has_cover +
+        '\n' +
+        link
+    });
+
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    };
+
+    fetch(apiUrl + '/telegram-notify', requestOptions)
       .then((response) => response.json())
       .then((result) => {
         console.log(result);

@@ -22,3 +22,25 @@ export const sendLinenotify = async (message) => {
   const response = await fetch(apiUrl + '/line-notify', requestOptions);
   return response.text();
 };
+
+export const sendTelegramNotify = async (message) => {
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+
+  const raw = JSON.stringify({
+    message: message
+  });
+  // const raw = {
+  //   message: message
+  // };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  const response = await fetch(apiUrl + '/telegram-notify', requestOptions);
+  return response.text();
+};

@@ -509,6 +509,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     const messageLine = queue_info + 'รายการสินค้า:-' + '\n' + orderProducts + '\n' + link;
 
     lineNotify(messageLine);
+    telegramNotify(messageLine);
   };
 
   async function getQueue(id) {
@@ -686,6 +687,26 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     };
 
     fetch(apiUrl + '/line-notify', requestOptions)
+      .then((response) => response.json())
+      .catch((error) => console.error(error));
+  };
+
+  const telegramNotify = (message) => {
+    const myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+
+    const raw = JSON.stringify({
+      message: message
+    });
+
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    };
+
+    fetch(apiUrl + '/telegram-notify', requestOptions)
       .then((response) => response.json())
       .catch((error) => console.error(error));
   };

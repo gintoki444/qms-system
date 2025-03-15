@@ -131,6 +131,7 @@ function CancleQueueButton({ reserve_id, status, handleReload }) {
 
         // if (id === 9999) {
         lineNotifyApi.sendLinenotify(textMessage);
+        lineNotifyApi.sendTelegramNotify(textMessage);
         // .then(() => {
         //   window.location.href = '/reserve/update/' + id;
         //   setLoading(false);
