@@ -18,7 +18,7 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
-  Typography,
+  Typography
   // Button,
   // Stack
   // Button
@@ -41,30 +41,30 @@ const headCells = [
     disablePadding: false,
     label: 'สินค้า'
   },
-  // {
-  //   id: 'product_register',
-  //   align: 'left',
-  //   disablePadding: true,
-  //   label: 'ทะเบียน'
-  // },
-  // {
-  //   id: 'setup_pile_date',
-  //   align: 'left',
-  //   disablePadding: true,
-  //   label: 'วันที่ตั้งกอง'
-  // },
+  {
+    id: 'brand_group',
+    align: 'left',
+    disablePadding: true,
+    label: 'ตราสินค้า'
+  },
+  {
+    id: 'setup_pile_date',
+    align: 'left',
+    disablePadding: true,
+    label: 'ทะเบียนสินค้า'
+  },
   // {
   //   id: 'total_sold',
   //   align: 'right',
   //   disablePadding: true,
   //   label: 'ยอดตั้งต้น (ตัน)'
   // },
-  {
-    id: 'total_yok_sold',
-    align: 'right',
-    disablePadding: true,
-    label: 'ยอดรวมทั้งหมด (ตัน)'
-  },
+  // {
+  //   id: 'total_yok_sold',
+  //   align: 'right',
+  //   disablePadding: true,
+  //   label: 'ยอดรวมทั้งหมด (ตัน)'
+  // },
   // {
   //   id: 'total_receive',
   //   align: 'right',
@@ -161,7 +161,6 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
     return acc + parseFloat(item.total_sold);
   }, 0);
 
-
   // const [onclickShow, setOnClickShow] = useState(false);
   // const handleClickShow = () => {
   //   if (onclickShow == false) {
@@ -208,9 +207,13 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
                       <span style={{ display: 'none' }}>{`'`}</span>
                       {row.name}
                     </TableCell>
-                    {/* <TableCell align="left">{row.product_register ? row.product_register : '-'}</TableCell> */}
+                    <TableCell align="left">
+                      {/* <span style={{ display: 'none' }}>{`'`}</span> */}
+                      {row.brand_group}
+                    </TableCell>
+                    <TableCell align="left">{row.product_register ? row.product_register : '-'}</TableCell>
                     {/* <TableCell align="left">{row.setup_pile_date ? moment(row.setup_pile_date).format('DD/MM/yyyy') : '-'}</TableCell> */}
-                    <TableCell align="right">{parseFloat((row.stock_quantity * 1).toFixed(3)).toLocaleString('en-US')}</TableCell>
+                    {/* <TableCell align="right">{parseFloat((row.stock_quantity * 1).toFixed(3)).toLocaleString('en-US')}</TableCell> */}
                     {/* <TableCell align="right">
                       {parseFloat((row.begin_day_stock * 1).toFixed(3)).toLocaleString('en-US')}
                     </TableCell> */}
@@ -293,6 +296,6 @@ export default function OrderTable({ startDate, endDate, clickDownload, onFilter
           )}
         </Table>
       </TableContainer>
-    </Box >
+    </Box>
   );
 }

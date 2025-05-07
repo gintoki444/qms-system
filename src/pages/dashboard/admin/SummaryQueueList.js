@@ -259,7 +259,9 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                                         <StyledTableCell align="right">
                                             <strong>
                                                 เวลาขึ้นสินค้าฉลี่ย :
-                                                <span style={{ color: 'red', padding: '0 10px' }}>{parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)}</span>
+                                                <span style={{ color: 'red', padding: '0 10px' }}>{row.step2_total_duration_minutes2 && row.step2_cars_count
+                            ? parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)
+                            : '0'}</span>
                                                 นาที/คัน
                                             </strong>
                                         </StyledTableCell>
@@ -335,7 +337,9 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                       <strong>
                         เวลาขึ้นสินค้าฉลี่ย :
                         <span style={{ color: 'red', padding: '0 10px' }}>
-                          {parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)}
+                          {row.step2_total_duration_minutes2 && row.step2_cars_count
+                            ? parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)
+                            : '0'}
                         </span>
                         นาที/คัน
                       </strong>
@@ -401,7 +405,9 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                       <strong>
                         เวลาขึ้นสินค้าฉลี่ย :
                         <span style={{ color: 'red', padding: '0 10px' }}>
-                          {parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)}
+                          {row.step2_total_duration_minutes2 && row.step2_cars_count
+                            ? parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)
+                            : '0'}
                         </span>
                         นาที/คัน
                       </strong>
@@ -467,7 +473,9 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                       <strong>
                         เวลาขึ้นสินค้าฉลี่ย :
                         <span style={{ color: 'red', padding: '0 10px' }}>
-                          {parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)}
+                          {row.step2_total_duration_minutes2 && row.step2_cars_count
+                            ? parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)
+                            : '0'}
                         </span>
                         นาที/คัน
                       </strong>
@@ -533,7 +541,9 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                       <strong>
                         เวลาขึ้นสินค้าฉลี่ย :
                         <span style={{ color: 'red', padding: '0 10px' }}>
-                          {parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)}
+                          {row.step2_total_duration_minutes2 && row.step2_cars_count
+                            ? parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)
+                            : '0'}
                         </span>
                         นาที/คัน
                       </strong>
@@ -599,7 +609,9 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                       <strong>
                         เวลาขึ้นสินค้าฉลี่ย :
                         <span style={{ color: 'red', padding: '0 10px' }}>
-                          {parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)}
+                          {row.step2_total_duration_minutes2 && row.step2_cars_count
+                            ? parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)
+                            : '0'}
                         </span>
                         นาที/คัน
                       </strong>
@@ -665,7 +677,9 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                       <strong>
                         เวลาขึ้นสินค้าฉลี่ย :
                         <span style={{ color: 'red', padding: '0 10px' }}>
-                          {parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)}
+                          {row.step2_total_duration_minutes2 && row.step2_cars_count
+                            ? parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)
+                            : '0'}
                         </span>
                         นาที/คัน
                       </strong>
@@ -731,7 +745,9 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                       <strong>
                         เวลาขึ้นสินค้าฉลี่ย :
                         <span style={{ color: 'red', padding: '0 10px' }}>
-                          {parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)}
+                          {row.step2_total_duration_minutes2 && row.step2_cars_count
+                            ? parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)
+                            : '0'}
                         </span>
                         นาที/คัน
                       </strong>
@@ -797,7 +813,9 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                       <strong>
                         เวลาขึ้นสินค้าฉลี่ย :
                         <span style={{ color: 'red', padding: '0 10px' }}>
-                          {parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)}
+                          {row.step2_total_duration_minutes2 && row.step2_cars_count
+                            ? parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)
+                            : '0'}
                         </span>
                         นาที/คัน
                       </strong>
@@ -863,7 +881,9 @@ function SummaryQueueList({ startDate, endDate, dataList }) {
                       <strong>
                         เวลาขึ้นสินค้าฉลี่ย :
                         <span style={{ color: 'red', padding: '0 10px' }}>
-                          {parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)}
+                          {row.step2_total_duration_minutes2 && row.step2_cars_count
+                            ? parseFloat(row.step2_total_duration_minutes2 / row.step2_cars_count).toFixed(2)
+                            : '0'}
                         </span>
                         นาที/คัน
                       </strong>

@@ -71,7 +71,8 @@ function AddReserve() {
     station_id: 1,
     reserve_station_id: 1,
     status: 'waiting',
-    total_quantity: 0
+    total_quantity: 0,
+    received_weight: 0
   });
 
   // =============== Get Company ===============//
@@ -265,8 +266,9 @@ function AddReserve() {
               audit_action: 'I',
               audit_system_id: result.data.results.insertId,
               audit_system: 'reserves',
-              audit_screen: 'ข้อมูลการจองคิว',
-              audit_description: 'เพิ่มข้อมูลจองคิวรับสินค้า'
+              audit_screen: 'ข้อมูลการจองคิว (เพิ่มข้อมูลจองคิวรับสินค้า)',
+              audit_description: JSON.stringify(values)
+              // audit_description: 'เพิ่มข้อมูลจองคิวรับสินค้า'
             };
             AddAuditLogs(data);
             setMessageCreateReserve(result.data.results.insertId);
@@ -323,8 +325,7 @@ function AddReserve() {
 
         // if (id === 9999) {
 
-        lineNotifyApi.sendTelegramNotify(textMessage);
-        lineNotifyApi.sendLinenotify(textMessage).then(() => {
+        lineNotifyApi.sendTelegramNotify(textMessage).then(() => {
           window.location.href = '/reserve/update/' + id;
           setLoading(false);
         });
@@ -350,7 +351,7 @@ function AddReserve() {
       audit_system_id: formData[0].company_id,
       audit_system: 'company',
       audit_screen: 'ข้อมูลร้านค้า',
-      audit_description: 'เพิ่มข้อมูลร้านค้า'
+      audit_description: 'เพิ่มข้อมูลร้านค้า id: ' + formData[0].company_id
     };
     AddAuditLogs(data);
   };
@@ -370,7 +371,7 @@ function AddReserve() {
       audit_system_id: formData[0].car_id,
       audit_system: 'cars',
       audit_screen: 'ข้อมูลรถบรรทุก',
-      audit_description: 'เพิ่มข้อมูลรถบรรทุก'
+      audit_description: 'เพิ่มข้อมูลรถบรรทุก id: ' + formData[0].car_id
     };
     AddAuditLogs(data);
   };
@@ -390,7 +391,7 @@ function AddReserve() {
       audit_system_id: formData[0].driver_id,
       audit_system: 'drivers',
       audit_screen: 'ข้อมูลคนขับรถ',
-      audit_description: 'เพิ่มข้อมูลคนขับรถ'
+      audit_description: 'เพิ่มข้อมูลคนขับรถ id: ' + formData[0].driver_id
     };
     AddAuditLogs(data);
   };
@@ -714,7 +715,7 @@ function AddReserve() {
 
                   <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
-                      <InputLabel>หมายเหตุ (รหัสคิวเดิม)</InputLabel>
+                      <InputLabel>คิวเดิม</InputLabel>
                       <OutlinedInput
                         id="description"
                         type="description"
@@ -722,7 +723,7 @@ function AddReserve() {
                         name="description"
                         onBlur={handleBlur}
                         onChange={handleChange}
-                        placeholder="หมายเหตุ (รหัสคิวเดิม)"
+                        placeholder="คิวเดิม"
                         error={Boolean(touched.description && errors.description)}
                       />
                       {touched.description && errors.description && (
@@ -755,7 +756,21 @@ function AddReserve() {
                       )}
                     </Stack>
                   </Grid>
-
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <InputLabel>ตันที่เข้ารับ</InputLabel>
+                      <OutlinedInput
+                        id="received_weight"
+                        type="text"
+                        value={values.received_weight}
+                        name="received_weight"
+                        onChange={handleChange}
+                        placeholder="จำนวนตันที่เข้ารับ"
+                        fullWidth
+                        error={Boolean(touched.received_weight && errors.received_weight)}
+                      />
+                    </Stack>
+                  </Grid>
                   <Grid item xs={12}>
                     {pageDetail.length > 0 &&
                       (pageDetail[0].permission_name === 'manage_everything' ||

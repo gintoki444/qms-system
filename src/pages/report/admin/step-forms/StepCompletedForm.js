@@ -34,20 +34,29 @@ const headCells = [
   { id: 'status', align: 'center', disablePadding: false, label: 'สถานะ' }
 ];
 
+// ฟังก์ชันแปลง HH:MM:SS เป็นวินาที
+const convertToSeconds = (timeStr) => {
+  if (!timeStr || typeof timeStr !== 'string') return 0;
+  const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+  return hours * 3600 + minutes * 60 + seconds;
+};
+
 function StepCompletedForm({ stepId, startDate, endDate, companySelect, clickDownload }) {
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([]);
-  const [avgStep, setAvgStep] = useState([]);
+  const [stats, setStats] = useState({
+    count: 0,
+    totalTime: 0, // รวมเวลาในหน่วยวินาที
+    averageTime: 0 // ค่าเฉลี่ยในหน่วยวินาที
+  });
 
   useEffect(() => {
-    console.log('stepId :', stepId);
     fetchData();
-    // eslint-disable-next-line
   }, [stepId, startDate, endDate, companySelect]);
 
   const fetchData = async () => {
     setLoading(true);
-    getStepCompleted();
+    await getStepCompleted();
   };
 
   function OrderTableHead() {
@@ -73,8 +82,6 @@ function StepCompletedForm({ stepId, startDate, endDate, companySelect, clickDow
   const getStepCompleted = async () => {
     try {
       const companyData = await getAllProductCompany();
-      console.log('companyData :', companyData);
-
       const response = await reportRequest.getStepCompleted(stepId, startDate, endDate);
       if (response.length > 0) {
         const mappedResponse = response.map((item) => {
@@ -86,44 +93,38 @@ function StepCompletedForm({ stepId, startDate, endDate, companySelect, clickDow
               );
             });
             if (matchingCompany) {
-              // Merge fields ของบริษัทเข้ามาใน item โดยตรง
               return { ...item, ...matchingCompany };
             }
           }
           return item;
         });
         let filteredData = mappedResponse;
-        // กรองข้อมูลตาม companySelect ถ้ามีค่า
         if (companySelect && companySelect !== 99) {
           filteredData = mappedResponse.filter((item) => item.product_company_id === companySelect);
         }
 
         setItems(filteredData);
-        getStepCompletedAvg();
+
+        // คำนวณ stats จาก filteredData
+        const completedItems = filteredData.filter((item) => item.status === 'completed'); // นับเฉพาะรายการที่ completed
+        const totalSeconds = completedItems.reduce((sum, item) => sum + convertToSeconds(item.elapsed_time), 0);
+        const count = completedItems.length;
+        const averageSeconds = count > 0 ? totalSeconds / count : 0;
+
+        setStats({
+          count,
+          totalTime: totalSeconds,
+          averageTime: averageSeconds
+        });
+        setLoading(false);
       } else {
         setItems([]);
+        setStats({ count: 0, totalTime: 0, averageTime: 0 });
         setLoading(false);
       }
     } catch (error) {
       console.log(error);
-    }
-  };
-
-  const getStepCompletedAvg = () => {
-    try {
-      reportRequest.getAvgStepCompleted(stepId, startDate, endDate).then((response) => {
-        if (response.length > 0) {
-          response.map((data) => {
-            setAvgStep(data);
-          });
-          setLoading(false);
-        } else {
-          setAvgStep([]);
-          setLoading(false);
-        }
-      });
-    } catch (error) {
-      console.log(error);
+      setLoading(false);
     }
   };
 
@@ -141,16 +142,14 @@ function StepCompletedForm({ stepId, startDate, endDate, companySelect, clickDow
         <Grid alignItems="center" justifyContent="space-between">
           <Grid container rowSpacing={3}>
             <Grid item xs={12}>
-              <Typography variant="h5">จำนวนรายการ: {avgStep.count_step ? avgStep.count_step : '-'}</Typography>
+              <Typography variant="h5">จำนวนรายการ: {stats.count || '-'}</Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="h5">รวมเวลาที่ใช้ทั้งหมด (นาที): {stats.totalTime ? (stats.totalTime / 60).toFixed(2) : '-'}</Typography>
             </Grid>
             <Grid item xs={12}>
               <Typography variant="h5">
-                รวมเวลาที่ใช้ทั้งหมด (นาที): {avgStep.sum_elapsed_time ? parseFloat(avgStep.sum_elapsed_time / 60).toFixed(2) : '-'}
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="h5">
-                ค่าเฉลี่ยเวลาที่ใช้ (นาที): {avgStep.average_elapsed_time ? parseFloat(avgStep.average_elapsed_time / 60).toFixed(2) : '-'}
+                ค่าเฉลี่ยเวลาที่ใช้ (นาที): {stats.averageTime ? (stats.averageTime / 60).toFixed(2) : '-'}
               </Typography>
             </Grid>
           </Grid>
@@ -180,7 +179,6 @@ function StepCompletedForm({ stepId, startDate, endDate, companySelect, clickDow
               {items.length > 0 ? (
                 Object.entries(groupedItems).map(([companyId, group]) => (
                   <React.Fragment key={companyId}>
-                    {/* Header row สำหรับกลุ่ม */}
                     <TableRow>
                       <TableCell
                         colSpan={13}
@@ -196,36 +194,15 @@ function StepCompletedForm({ stepId, startDate, endDate, companySelect, clickDow
                     {group.map((row, index) => (
                       <TableRow key={`${companyId}-${index}`} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                         <TableCell align="center">
-                          <div
-                            style={{
-                              backgroundColor: 'lightBlue',
-                              borderRadius: '10px',
-                              padding: '7px'
-                            }}
-                          >
+                          <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px' }}>
                             {row.end_time ? moment(row.end_time.slice(0, 10)).format('DD/MM/yyyy') : '-'}
                           </div>
                         </TableCell>
                         <TableCell align="center">
-                          <div
-                            style={{
-                              backgroundColor: 'lightBlue',
-                              borderRadius: '10px',
-                              padding: '7px'
-                            }}
-                          >
-                            {row.token}
-                          </div>
+                          <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px' }}>{row.token}</div>
                         </TableCell>
                         <TableCell align="left">
-                          <div
-                            style={{
-                              backgroundColor: 'lightBlue',
-                              borderRadius: '10px',
-                              padding: '7px',
-                              fontFamily: 'kanit'
-                            }}
-                          >
+                          <div style={{ backgroundColor: 'lightBlue', borderRadius: '10px', padding: '7px', fontFamily: 'kanit' }}>
                             {row.station_description}
                           </div>
                         </TableCell>

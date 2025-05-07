@@ -232,7 +232,20 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
         contract_other_status: 'waiting',
         contract_other_update: currentDate
       };
-
+      // const data = {
+      //   audit_user_id: userId,
+      //   audit_action: 'I',
+      //   audit_system_id: id,
+      //   audit_system: 'step0',
+      //   audit_screen: 'ข้อมูลทีมขึ้นสินค้า : เพิ่มข้อมูลทีมขึ้นสินค้า',
+      //   audit_description: JSON.stringify(teamValue)
+      // };
+      // console.log('id', id);
+      // console.log('values', values);
+      // console.log('teamValue', teamValue);
+      // console.log('contracOtherValue', contracOtherValue);
+      // console.log('data', data);
+      // if (values.contractor_id === 9999) {
       // ตรวจสอบการแก้ไขข้อมูล Contractor Other
       if (values.contractor_other_id && checkPreSling === false) {
         await deleteContractorOthers(values.contractor_other_id);
@@ -270,7 +283,6 @@ function AddTeamLoading({ id, handleReload, token, permission }) {
         AddAuditLogs(data);
       }
 
-      // if (values.contractor_id === 9999) {
       await reserveRequest
         .putReserById(id, values)
         .then((result) => {

@@ -204,7 +204,7 @@ function AllContractor({ permission }) {
       ' ' +
       userData.lastname;
     // if (contractorData.contractor_name === 9999) {
-    lineNotifyApi.sendLinenotify(textMessage);
+    // lineNotifyApi.sendLinenotify(textMessage);
     lineNotifyApi.sendTelegramNotify(textMessage);
     // }
   };
@@ -378,7 +378,7 @@ function AllContractor({ permission }) {
                             ) + '.dark'
                         }
                       }}
-                      onClick={() => row.contract_other_status === 'working' && userRole === 11 && handleClickOpen(row)}
+                      onClick={() => (row.contract_other_status === 'working' || userRole === 11) && handleClickOpen(row)}
                     >
                       <Stack spacing={0}>
                         <Typography variant="h5" sx={{ fontSize: { sm: '1rem!important', lg: '0.8vw!important' } }}>

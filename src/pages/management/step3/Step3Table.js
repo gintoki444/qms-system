@@ -530,33 +530,33 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
 
   /* แจ้งเตือน Line Notify */
 
-  const lineNotify = (queue_id, token) => {
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const port = window.location.port;
-    // if (queue_id === 99999) {
-    var link = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
-    link = link + '/queues/detail/' + queue_id;
+  // const lineNotify = (queue_id, token) => {
+  //   const protocol = window.location.protocol;
+  //   const hostname = window.location.hostname;
+  //   const port = window.location.port;
+  //   // if (queue_id === 99999) {
+  //   var link = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+  //   link = link + '/queues/detail/' + queue_id;
 
-    const myHeaders = new Headers();
-    myHeaders.append('Content-Type', 'application/json');
+  //   const myHeaders = new Headers();
+  //   myHeaders.append('Content-Type', 'application/json');
 
-    const raw = JSON.stringify({
-      message: message + ' หมายเลขคิว: ' + token + '\n' + 'น้ำหนักชั่งหนัก: ' + weight + ' ตัน' + '\n' + link
-    });
+  //   const raw = JSON.stringify({
+  //     message: message + ' หมายเลขคิว: ' + token + '\n' + 'น้ำหนักชั่งหนัก: ' + weight + ' ตัน' + '\n' + link
+  //   });
 
-    const requestOptions = {
-      method: 'POST',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow'
-    };
+  //   const requestOptions = {
+  //     method: 'POST',
+  //     headers: myHeaders,
+  //     body: raw,
+  //     redirect: 'follow'
+  //   };
 
-    fetch(apiUrl + '/line-notify', requestOptions)
-      .then((response) => response.text())
-      .catch((error) => console.error(error));
-    // }
-  };
+  //   fetch(apiUrl + '/line-notify', requestOptions)
+  //     .then((response) => response.text())
+  //     .catch((error) => console.error(error));
+  //   // }
+  // };
 
   const telegramNotify = (queue_id, token) => {
     const protocol = window.location.protocol;
@@ -666,8 +666,10 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
   // =============== Get Reserve ===============//
   const [reserves, setreserves] = useState([]);
   const getReserveId = async (id) => {
+    console.log('id:', id);
     stepRequest.getReserveById(id).then((response) => {
       if (response) {
+        console.log('setreserves:', response);
         setreserves(response.reserve);
       }
     });
@@ -727,7 +729,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
           // การใช้งาน Line Notify
           getStepToken(id_update)
             .then(({ queue_id, token }) => {
-              lineNotify(queue_id, token);
+              // lineNotify(queue_id, token);
               telegramNotify(queue_id, token);
             })
             .catch((error) => {
@@ -792,7 +794,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
               // การใช้งาน Line Notify
               getStepToken(id_update)
                 .then(({ queue_id, token }) => {
-                  lineNotify(queue_id, token);
+                  // lineNotify(queue_id, token);
                   telegramNotify(queue_id, token);
                 })
                 .catch((error) => {
@@ -830,7 +832,7 @@ export const Step3Table = ({ status, title, onStatusChange, onFilter, permission
           // การใช้งาน Line Notify
           getStepToken(id_update)
             .then(({ queue_id, token }) => {
-              lineNotify(queue_id, token);
+              // lineNotify(queue_id, token);
               telegramNotify(queue_id, token);
             })
             .catch((error) => {

@@ -97,6 +97,7 @@ function UpdateReserve() {
     driver_id: '',
     status: 'waiting',
     total_quantity: '',
+    received_weight: '',
     pickup_date: '',
     product_company_id: '',
     product_brand_id: '',
@@ -104,7 +105,7 @@ function UpdateReserve() {
     warehouse_id: '',
     created_at: '',
     updated_at: '',
-    firstname: '',
+    // firstname: '',
     lastname: '',
     role: '',
     country: '',
@@ -386,8 +387,9 @@ function UpdateReserve() {
               audit_action: 'U',
               audit_system_id: id,
               audit_system: 'reserves',
-              audit_screen: 'ข้อมูลการจองคิว',
-              audit_description: 'แก้ไขข้อมูลจองคิวรับสินค้า'
+              audit_screen: 'ข้อมูลการจองคิว (แก้ไขข้อมูลจองคิวรับสินค้า)',
+              audit_description: JSON.stringify(values)
+              // audit_description: 'แก้ไขข้อมูลจองคิวรับสินค้า'
             };
             AddAuditLogs(data);
             enqueueSnackbar('บันทึกข้อมูลสำเร็จ!', { variant: 'success' });
@@ -680,7 +682,7 @@ function UpdateReserve() {
 
     const messageLine = queue_info + 'รายการสินค้า:-' + '\n' + orderProducts + '\n' + link;
     // if (queue_id === 9999) {
-    lineNotify(messageLine);
+    // lineNotify(messageLine);
     telegramNotify(messageLine);
     // }
   };
@@ -768,7 +770,7 @@ function UpdateReserve() {
       audit_system_id: queue_id,
       audit_system: 'queues',
       audit_screen: 'ข้อมูลคิว',
-      audit_description: 'ออกบัตรคิว'
+      audit_description: 'ออกบัตรคิว id:' + queue_id
     };
     AddAuditLogs(data);
 
@@ -848,25 +850,25 @@ function UpdateReserve() {
   }
 
   //สร้าง Message lineNotify
-  const lineNotify = (message) => {
-    const myHeaders = new Headers();
-    myHeaders.append('Content-Type', 'application/json');
+  // const lineNotify = (message) => {
+  //   const myHeaders = new Headers();
+  //   myHeaders.append('Content-Type', 'application/json');
 
-    const raw = JSON.stringify({
-      message: message
-    });
+  //   const raw = JSON.stringify({
+  //     message: message
+  //   });
 
-    const requestOptions = {
-      method: 'POST',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow'
-    };
+  //   const requestOptions = {
+  //     method: 'POST',
+  //     headers: myHeaders,
+  //     body: raw,
+  //     redirect: 'follow'
+  //   };
 
-    fetch(apiUrl + '/line-notify', requestOptions)
-      .then((response) => response.text())
-      .catch((error) => console.error(error));
-  };
+  //   fetch(apiUrl + '/line-notify', requestOptions)
+  //     .then((response) => response.text())
+  //     .catch((error) => console.error(error));
+  // };
   const telegramNotify = (message) => {
     const myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
@@ -940,7 +942,7 @@ function UpdateReserve() {
       audit_system_id: formData[0].car_id,
       audit_system: 'cars',
       audit_screen: 'ข้อมูลรถบรรทุก',
-      audit_description: 'เพิ่มข้อมูลรถบรรทุก'
+      audit_description: 'เพิ่มข้อมูลรถบรรทุก id:' + formData[0].car_id
     };
     AddAuditLogs(data);
   };
@@ -957,7 +959,7 @@ function UpdateReserve() {
       audit_system_id: formData[0].driver_id,
       audit_system: 'drivers',
       audit_screen: 'ข้อมูลคนขับรถ',
-      audit_description: 'เพิ่มข้อมูลคนขับรถ'
+      audit_description: 'เพิ่มข้อมูลคนขับรถ id:' + formData[0].driver_id
     };
     AddAuditLogs(data);
   };
@@ -1362,6 +1364,22 @@ function UpdateReserve() {
                                 {errors.total_quantity}
                               </FormHelperText>
                             )}
+                          </Stack>
+                        </Grid>
+
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            <InputLabel>ตันที่เข้ารับ</InputLabel>
+                            <OutlinedInput
+                              id="received_weight"
+                              type="text"
+                              value={values.received_weight}
+                              name="received_weight"
+                              onChange={handleChange}
+                              placeholder="จำนวนตันที่เข้ารับ"
+                              fullWidth
+                              error={Boolean(touched.received_weight && errors.received_weight)}
+                            />
                           </Stack>
                         </Grid>
 

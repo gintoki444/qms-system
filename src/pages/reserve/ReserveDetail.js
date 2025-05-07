@@ -412,7 +412,7 @@ function ReserveDetail() {
 
     const messageLine = queue_info + 'รายการสินค้า:-' + '\n' + orderProducts + '\n' + link;
 
-    lineNotify(messageLine);
+    // lineNotify(messageLine);
     telegramNotify(messageLine);
   };
 
@@ -608,25 +608,25 @@ function ReserveDetail() {
     });
   }
 
-  const lineNotify = (message) => {
-    const myHeaders = new Headers();
-    myHeaders.append('Content-Type', 'application/json');
+  // const lineNotify = (message) => {
+  //   const myHeaders = new Headers();
+  //   myHeaders.append('Content-Type', 'application/json');
 
-    const raw = JSON.stringify({
-      message: message
-    });
+  //   const raw = JSON.stringify({
+  //     message: message
+  //   });
 
-    const requestOptions = {
-      method: 'POST',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow'
-    };
+  //   const requestOptions = {
+  //     method: 'POST',
+  //     headers: myHeaders,
+  //     body: raw,
+  //     redirect: 'follow'
+  //   };
 
-    fetch(apiUrl + '/line-notify', requestOptions)
-      .then((response) => response.json())
-      .catch((error) => console.error(error));
-  };
+  //   fetch(apiUrl + '/line-notify', requestOptions)
+  //     .then((response) => response.json())
+  //     .catch((error) => console.error(error));
+  // };
 
   const telegramNotify = (message) => {
     const myHeaders = new Headers();

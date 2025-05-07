@@ -1,29 +1,23 @@
 import React, { useRef, useEffect, useState } from 'react';
-
 import { Grid, Stack, Typography, Divider, Box } from '@mui/material';
-
-// import Logo from 'components/Logo/Logo';
-
 import IconLogo from 'assets/images/logo.png';
-
-// import Step1Queue from './Step1Queue';
-// import Step2Queue from './Step2Queue';
-// import WeighQueue from './WeighQueue';
-// import ReceiveQueue from './ReceiveQueue';
 import AllStations from './AllStations';
 import AuthFooter from 'components/cards/AuthFooter';
 import TextSliders from './TextSliders';
-// import InfiniteLooper from './InfiniteLooper';
-
-import moment from 'moment/min/moment-with-locales';
 import MainCard from 'components/MainCard';
 import ClockTime from 'components/@extended/ClockTime';
+import moment from 'moment/min/moment-with-locales';
 
 const apiUrlWWS = process.env.REACT_APP_API_URL_WWS;
 
 function QueuesDisplay() {
   const fullscreenRef = useRef(null);
   const [statusDisplay, setStatusDisplay] = useState(false);
+  const [stations, setStations] = useState([]);
+  const [stations2, setStations2] = useState([]);
+  const [stations3, setStations3] = useState([]);
+  const [currentQueue, setCurrentQueue] = useState(null); // คิวที่กำลังเรียก
+  const [prevQueueToken, setPrevQueueToken] = useState(null); // เก็บ Token ล่าสุดที่เรียกไปแล้ว
 
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
@@ -36,33 +30,50 @@ function QueuesDisplay() {
       document.exitFullscreen();
     }
   };
-  // ========= set Web Socket ========= //
-  // const [queueData, setQueueData] = useState([]);
-  // const [step1Data, setStep1Data] = useState([]);
-  // const [step2Data, setStep2Data] = useState([]);
-  // const [step3Data, setStep3Data] = useState([]);
 
-  const [stations, setStations] = useState([]);
-  const [stations2, setStations2] = useState([]);
-  const [stations3, setStations3] = useState([]);
-  const currentDate = moment().locale('th').format('LL');
-  const nameDate = moment().locale('th').format('dddd');
+  // ฟังก์ชันเรียกคิวด้วยเสียง
+  const speakQueue = (text, callback) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'th-TH'; // ภาษาไทย
+    utterance.onend = callback;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // ฟังก์ชันเรียกคิว 3 ครั้ง
+  const announceQueue = (queue) => {
+    if (!queue) return;
+    const text = `ขอเชิญคิวหมายเลข ${queue.Token} เข้าสถานีโกดัง ${queue.warehouse_name} หัวจ่ายที่ ${queue.new_station_num}`;
+    console.log('Announcing:', text); // Debug
+    let count = 0;
+    const repeat = () => {
+      if (count < 3) {
+        speakQueue(text, () => {
+          count++;
+          if (count < 3) {
+            setTimeout(repeat, 500); // รอ 0.5 วินาทีก่อนเรียกครั้งถัดไป
+          } else {
+            setCurrentQueue(null); // ล้างคิวปัจจุบันเมื่อเรียกครบ
+            setPrevQueueToken(queue.Token); // อัปเดต Token ล่าสุดที่เรียกแล้ว
+          }
+        });
+      }
+    };
+    repeat();
+  };
 
   useEffect(() => {
-    // const wssurl = 'wss://queue-wss-f7e0505c7aa0.herokuapp.com';
     const wssurl = apiUrlWWS;
-
     const ws = new WebSocket(wssurl);
 
     ws.onopen = () => {
-      // console.log('WebSocket connection established');
+      console.log('WebSocket connection established');
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log('data', data);
-      // setStep1Data(data.filter((x) => x.order == 1 || x.order == 3));
-      // setStep2Data(data.filter((x) => x.order == 2));
+      console.log('Received data:', data);
+
+      // กรองข้อมูลตามกลุ่มสถานี
       const stationGroup1 = data.filter(
         (x) =>
           x.order == 2 &&
@@ -80,14 +91,10 @@ function QueuesDisplay() {
           x.station_id !== 21 &&
           x.station_id !== 22
       );
-      console.log('stationGroup1', stationGroup1);
-
       const stationGroup2 = data.filter(
         (x) =>
           x.order == 2 && (x.station_id === 18 || x.station_id === 19 || x.station_id === 20 || x.station_id === 21 || x.station_id === 22)
       );
-      console.log('stationGroup2', stationGroup2);
-
       const stationGroup3 = data.filter(
         (x) =>
           x.order == 2 &&
@@ -100,24 +107,56 @@ function QueuesDisplay() {
             x.station_id === 35 ||
             x.station_id === 36)
       );
-      console.log('stationGroup3', stationGroup3);
-      setStations(stationGroup1);
-      setStations2(stationGroup2);
-      setStations3(stationGroup3);
-      // setStep3Data(data.filter((x) => x.order == 3));
-      // console.log('Received message from server:', data);
-      // setQueueData(data);
+
+      // อัปเดตข้อมูลสถานีพร้อมคำนวณ warehouse_name และ new_station_num
+      const updateStationData = (stations) =>
+        stations.map((x) => ({
+          ...x,
+          new_station_num: x.station_name.replace(/.*หัวจ่ายที่/, ''),
+          warehouse_name: x.station_name.slice(0, 2)
+        }));
+
+      const updatedStations = updateStationData(stationGroup1);
+      const updatedStations2 = updateStationData(stationGroup2);
+      const updatedStations3 = updateStationData(stationGroup3);
+
+      setStations(updatedStations);
+      setStations2(updatedStations2);
+      setStations3(updatedStations3);
+
+      // รวมคิวทั้งหมด
+      const allQueues = [...updatedStations, ...updatedStations2, ...updatedStations3];
+      if (allQueues.length > 0) {
+        const latestQueue = allQueues[0]; // คิวล่าสุด
+        console.log('Latest Queue:', latestQueue);
+        console.log('Previous Queue Token:', prevQueueToken);
+        console.log('Current Queue:', currentQueue);
+
+        // ตรวจสอบว่าคิวใหม่แตกต่างจากคิวที่เรียกไปแล้ว และไม่มีคิวที่กำลังเรียกอยู่
+        if (latestQueue.Token !== prevQueueToken && !currentQueue) {
+          setCurrentQueue(latestQueue);
+        }
+      }
     };
 
     ws.onclose = () => {
-      // console.log('WebSocket connection closed');
+      console.log('WebSocket connection closed');
     };
 
     return () => {
       ws.close();
     };
-  }, []);
-  // console.log(queueData);
+  }, [prevQueueToken, currentQueue]); // ใช้ prevQueueToken และ currentQueue เป็น dependency
+
+  // เรียกคิวเมื่อ currentQueue เปลี่ยน
+  useEffect(() => {
+    if (currentQueue) {
+      announceQueue(currentQueue);
+    }
+  }, [currentQueue]);
+
+  const currentDate = moment().locale('th').format('LL');
+  const nameDate = moment().locale('th').format('dddd');
 
   return (
     <Grid sx={{ background: '#bdbdbd' }}>
@@ -139,42 +178,20 @@ function QueuesDisplay() {
               <Grid item xs={1}>
                 <Stack sx={{ pb: 2, pt: 2, justifyContent: 'center', alignItems: 'left', width: '100%' }}>
                   <img src={IconLogo} width={'50%'} alt="logo" />
-                  {/* <img src={IconLogo} width={'30%'} alt="logo" /> */}
-                  {/* <Typography variant="h5">บริษัท ไอ ซี พี เฟอทิไลเซอร์ จำกัด</Typography> */}
                 </Stack>
               </Grid>
               <Grid item xs={4} sx={{ position: 'relative' }}>
-                <Divider
-                  absolute
-                  orientation="vertical"
-                  textAlign="center"
-                  sx={{
-                    left: '-8%',
-                    width: 0
-                  }}
-                />
+                <Divider absolute orientation="vertical" textAlign="center" sx={{ left: '-8%', width: 0 }} />
                 <Stack justifyContent="row" flexDirection="row">
                   <Typography variant="h3">วัน{nameDate + ' ที่ ' + currentDate}</Typography>
                   <ClockTime />
                 </Stack>
               </Grid>
               <Grid item xs={7} sx={{ position: 'relative' }}>
-                <Divider
-                  absolute
-                  orientation="vertical"
-                  textAlign="center"
-                  sx={{
-                    left: '-2%',
-                    width: 0
-                  }}
-                />
+                <Divider absolute orientation="vertical" textAlign="center" sx={{ left: '-2%', width: 0 }} />
                 <Box sx={{ minHeight: '5vh' }}>
                   <MainCard contentSX={{ p: '1%!important' }} sx={{ background: '#f4f4f4' }}>
                     <TextSliders />
-                    {/* <InfiniteLooper speed="4" direction="right">
-                      <div className="contentBlock contentBlock--one">Place the stuff you want to loop</div>
-                      <div className="contentBlock contentBlock--one">right here</div>
-                    </InfiniteLooper> */}
                   </MainCard>
                 </Box>
               </Grid>
@@ -189,32 +206,6 @@ function QueuesDisplay() {
           <Grid xs={12} md={3} sx={{ background: '#D9F3D0', minHeight: '89vh' }}>
             <AllStations queues={stations3} groupStation={3} />
           </Grid>
-          <Grid
-            xs={12}
-            sx={{
-              textAlign: 'left'
-            }}
-          >
-            {/* <WeighQueue queues={step1Data} /> */}
-            {/* <Step1Queue queues={step1Data} /> */}
-          </Grid>
-          <Grid
-            xs={12}
-            sx={{
-              textAlign: 'left'
-            }}
-          >
-            {/* <Step2Queue queues={step2Data} /> */}
-            {/* <ReceiveQueue queues={step2Data} /> */}
-          </Grid>
-          {/* <Grid
-            xs={12}
-            sx={{
-              textAlign: 'left'
-            }}
-          >
-            <Step3Queue queues={step3Data} />
-          </Grid> */}
         </Grid>
         <Grid sx={{ pt: 1, pb: 1, borderTop: '1px solid #fff', background: '#fff', width: '100%' }}>
           <AuthFooter />

@@ -508,7 +508,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
 
     const messageLine = queue_info + 'รายการสินค้า:-' + '\n' + orderProducts + '\n' + link;
 
-    lineNotify(messageLine);
+    // lineNotify(messageLine);
     telegramNotify(messageLine);
   };
 
@@ -671,25 +671,25 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     });
   }
 
-  const lineNotify = (message) => {
-    const myHeaders = new Headers();
-    myHeaders.append('Content-Type', 'application/json');
+  // const lineNotify = (message) => {
+  //   const myHeaders = new Headers();
+  //   myHeaders.append('Content-Type', 'application/json');
 
-    const raw = JSON.stringify({
-      message: message
-    });
+  //   const raw = JSON.stringify({
+  //     message: message
+  //   });
 
-    const requestOptions = {
-      method: 'POST',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow'
-    };
+  //   const requestOptions = {
+  //     method: 'POST',
+  //     headers: myHeaders,
+  //     body: raw,
+  //     redirect: 'follow'
+  //   };
 
-    fetch(apiUrl + '/line-notify', requestOptions)
-      .then((response) => response.json())
-      .catch((error) => console.error(error));
-  };
+  //   fetch(apiUrl + '/line-notify', requestOptions)
+  //     .then((response) => response.json())
+  //     .catch((error) => console.error(error));
+  // };
 
   const telegramNotify = (message) => {
     const myHeaders = new Headers();
@@ -801,7 +801,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
     },
     {
       name: 'product_company_id',
-      label: 'แบรนด์ Code',
+      label: 'รหัสคิว',
       options: {
         sort: true,
         setCellHeaderProps: () => ({
@@ -812,14 +812,14 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
         }),
         customBodyRender: (value, tableMeta) => {
           const rowData = tableMeta.rowData;
-          const rowDataFilter = filteredData.find((x) => x.reserve_id === rowData[12]);
+          const rowDataFilter = filteredData.find((x) => x.reserve_id === rowData[13]);
           return rowDataFilter.queue_token ? <QueueTag id={value} token={rowDataFilter.queue_token} /> : getTokenCompany(value);
         }
       }
     },
     {
       name: 'r_description',
-      label: 'รหัสคิวเดิม',
+      label: 'คิวเดิม',
       options: {
         sort: true,
         setCellHeaderProps: () => ({
@@ -829,6 +829,19 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
           }
         }),
         customBodyRender: (value) => (value ? <strong style={{ color: 'red' }}>{value}</strong> : '-')
+      }
+    },
+    {
+      name: 'received_weight',
+      label: 'ตันที่เข้ารับ',
+      options: {
+        sort: true,
+        setCellHeaderProps: () => ({
+          style: {
+            whiteSpace: 'nowrap'
+          }
+        }),
+        customBodyRender: (value) => (value ? <strong>{parseFloat(value)}</strong> : '-')
       }
     },
     {
