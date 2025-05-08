@@ -192,3 +192,26 @@ export const getQueueCount = async (id, status) => {
   const result = await response.json();
   return result;
 };
+export const getStepsByQueueId = async (id) => {
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  const response = await fetch(apiUrl + `/stepbyqueueidonly/${id}`, requestOptions);
+  const result = await response.json();
+  return result;
+};
+// export const getStepsByQueueId = async (queueId) => {
+//   try {
+//     const response = await fetch(`${apiUrl}/stepbyqueueidonly/${queueId}`);
+//     const data = await response.json();
+//     if (data.status === 'ok') {
+//       return data.data;
+//     } else {
+//       throw new Error('Failed to fetch steps');
+//     }
+//   } catch (error) {
+//     console.error(`Error fetching steps for queue ${queueId}:`, error);
+//     return [];
+//   }
+// };
