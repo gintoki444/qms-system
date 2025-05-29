@@ -3,7 +3,7 @@ import dashboard from './dashboard';
 // import dashboardUser from './dashboardUser';
 import management from './management';
 import admins from './admins';
-import queues from './queue';
+// import queues from './queue';
 import adminSale from './adminSale';
 // import adminManagement from './adminManagement';
 import report from './report';
@@ -17,7 +17,7 @@ const menuItems = {
     dashboard,
     // dashboardUser,
     management,
-    queues,
+    // queues,
     queuesUser,
     admins,
     adminSale,

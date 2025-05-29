@@ -87,7 +87,7 @@ function AddReserve() {
       .get(urlapi)
       .then((res) => {
         if (res) {
-          setCompanyList(res.data);
+          setCompanyList(res.data.filter((x) => x.company_id !== 726 && x.company_id !== 1237));
         }
       })
       .catch((err) => console.log(err));
@@ -672,7 +672,9 @@ function AddReserve() {
                           }}
                           renderOption={(props, option) => (
                             <li {...props} key={option.driver_id}>
-                              {option.driver_id !== 1 ? option.firstname + ' ' + option.lastname : 'ไม่ระบุคนขับรถ'}
+                              {option.driver_id !== 1
+                                ? `${option.firstname} ${option.lastname} (เลขที่บัตร: ${option.id_card_no})`
+                                : 'ไม่ระบุคนขับรถ'}
                             </li>
                           )}
                           getOptionLabel={(option) => {

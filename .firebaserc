@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "qms-testing-01",
+    "default": "icp-qms",
     "build": "icp-qms"
   },
   "targets": {},

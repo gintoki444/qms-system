@@ -79,24 +79,25 @@ const MainLayout = () => {
           response = response.filter((x) => x.permission_name !== 'no_access_to_view_data');
           // const checkReport = response.filter((x) => x.page_icon === 'report');
           // if (userRole === 11) {
-          //   const addnew = {
-          //     page_id: 35,
-          //     role_id: 11,
-          //     permission_id: 7,
-          //     group_id: 4,
-          //     page_name: 'ContractTV',
-          //     page_title: 'ตารางสายแรงงาน TV',
-          //     page_url: '/contractor-screen',
-          //     page_icon: 'screenDisploy',
-          //     page_target: 1,
-          //     page_type: 'item',
-          //     group_name: 'ผู้ดูแลระบบ',
-          //     group_type: 'group',
-          //     role_name: 'ICP-Administrator',
-          //     role_description: 'ICP-ผู้ดูแลระบบ Administrator',
-          //     permission_name: 'manage_everything',
-          //     permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
-          //   };
+          const addnew = {
+            page_id: 35,
+            role_id: 11,
+            permission_id: 7,
+            group_id: 4,
+            page_name: 'ContractTV',
+            page_title: 'ทดสอบระบบ TV (ใหม่)',
+            page_url: '/test-tv',
+            page_icon: 'screenDisploy',
+            page_target: 1,
+            page_type: 'item',
+            group_name: 'ผู้ดูแลระบบ',
+            group_type: 'group',
+            role_name: 'ICP-Administrator',
+            role_description: 'ICP-ผู้ดูแลระบบ Administrator',
+            permission_name: 'manage_everything',
+            permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
+          };
+          response.unshift(addnew);
           //   const addnew2 = {
           //     page_id: 34,
           //     role_id: 11,
@@ -115,7 +116,6 @@ const MainLayout = () => {
           //     permission_name: 'manage_everything',
           //     permission_description: 'ICP-สามารถจัดการทั้งหมดได้'
           //   };
-          //   response.unshift(addnew);
           //   response.unshift(addnew2);
           // }
           // if (checkReport.length > 0) {

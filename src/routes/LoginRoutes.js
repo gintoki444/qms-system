@@ -10,6 +10,7 @@ const AuthRegister = Loadable(lazy(() => import('pages/authentication/Register')
 
 const QueueNonLogin = Loadable(lazy(() => import('pages/queues/QueueNonLogin')));
 // ==============================|| AUTH ROUTING ||============================== //
+const QueuesDisplayTest = Loadable(lazy(() => import('pages/displays/QueuesDisplayTest')));
 
 const LoginRoutes = {
   path: '/',
@@ -26,6 +27,10 @@ const LoginRoutes = {
     {
       path: 'queues-detail/:id',
       element: <QueueNonLogin />
+    },
+    {
+      path: 'test-tv',
+      element: <QueuesDisplayTest />
     }
   ]
 };

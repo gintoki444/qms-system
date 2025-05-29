@@ -76,6 +76,7 @@ function QueuesDisplay() {
       // กรองข้อมูลตามกลุ่มสถานี
       const stationGroup1 = data.filter(
         (x) =>
+          x.status === 'processing' &&
           x.order == 2 &&
           x.station_id !== 32 &&
           x.station_id !== 33 &&
@@ -93,10 +94,13 @@ function QueuesDisplay() {
       );
       const stationGroup2 = data.filter(
         (x) =>
-          x.order == 2 && (x.station_id === 18 || x.station_id === 19 || x.station_id === 20 || x.station_id === 21 || x.station_id === 22)
+          x.status === 'processing' &&
+          x.order == 2 &&
+          (x.station_id === 18 || x.station_id === 19 || x.station_id === 20 || x.station_id === 21 || x.station_id === 22)
       );
       const stationGroup3 = data.filter(
         (x) =>
+          x.status === 'processing' &&
           x.order == 2 &&
           (x.station_id === 15 ||
             x.station_id === 16 ||
