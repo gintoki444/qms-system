@@ -28,8 +28,9 @@ const provinceMap = {
   ชพ: 'ชุมพร',
   ชม: 'เชียงใหม่',
   ชร: 'เชียงราย',
-  ตร: 'ตรัง',
+  ตง: 'ตรัง',
   ตก: 'ตาก',
+  ตด: '	ตราด',
   นย: 'นครนายก',
   นฐ: 'นครปฐม',
   นพ: 'นครพนม',
@@ -46,6 +47,7 @@ const provinceMap = {
   ปร: 'ปราจีนบุรี',
   ปน: 'ปัตตานี',
   พย: 'พะเยา',
+  พง: 'พังงา',
   อย: 'พระนครศรีอยุธยา',
   พจ: 'พิจิตร',
   พล: 'พิษณุโลก',
@@ -75,11 +77,11 @@ const provinceMap = {
   สค: 'สมุทรสาคร',
   สก: 'สระแก้ว',
   สบ: 'สระบุรี',
-  สร: 'สิงห์บุรี',
+  สห: 'สิงห์บุรี',
   สท: 'สุโขทัย',
   สพ: 'สุพรรณบุรี',
   สฎ: 'สุราษฎร์ธานี',
-  สรน: 'สุรินทร์',
+  สร: 'สุรินทร์',
   นค: 'หนองคาย',
   นภ: 'หนองบัวลำภู',
   อท: 'อ่างทอง',
@@ -268,7 +270,8 @@ const AutoSlidePages = ({ title, color, items, height, itemsPerPage = 8 }) => {
                   margin: 'auto',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  paddingTop: 6
                 }}
               >
                 {item.new_station_num}
@@ -507,7 +510,7 @@ function QueueDisplayTest() {
   const connectWebSocket = useCallback(() => {
     // ป้องกันการเชื่อมต่อซ้ำถ้ากำลังเชื่อมต่ออยู่หรือเชื่อมต่อแล้ว
     if (isConnecting || wsRef.current?.readyState === WebSocket.OPEN) {
-      console.log('WebSocket already connecting or connected');
+      // console.log('WebSocket already connecting or connected');
       return;
     }
 
@@ -519,7 +522,7 @@ function QueueDisplayTest() {
 
     setIsConnecting(true);
     setConnectionStatus('connecting');
-    console.log(`WebSocket connection attempt ${reconnectAttempts.current + 1}`);
+    // console.log(`WebSocket connection attempt ${reconnectAttempts.current + 1}`);
 
     const ws = new WebSocket(apiUrlWWS);
     wsRef.current = ws;
@@ -527,13 +530,13 @@ function QueueDisplayTest() {
     // ตั้งค่า timeout สำหรับการเชื่อมต่อ
     const connectionTimeout = setTimeout(() => {
       if (ws.readyState === WebSocket.CONNECTING) {
-        console.log('WebSocket connection timeout');
+        // console.log('WebSocket connection timeout');
         ws.close();
       }
     }, 10000); // 10 วินาที
 
     ws.onopen = () => {
-      console.log('WebSocket connected successfully');
+      // console.log('WebSocket connected successfully');
       clearTimeout(connectionTimeout);
       setIsConnecting(false);
       setConnectionStatus('connected');
@@ -543,15 +546,15 @@ function QueueDisplayTest() {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('WebSocket message received:', data);
+        // console.log('WebSocket message received:', data?.queue);
 
-        if (Array.isArray(data)) {
+        if (Array.isArray(data?.queue)) {
           setAllData((prevData) => {
             // สร้าง Map จาก prevData เพื่อค้นหา item เดิม
             const prevDataMap = new Map(prevData.map((item) => [item.Token, item]));
 
             // กรองและแปลงข้อมูลใหม่จาก WebSocket
-            const updatedData = data
+            const updatedData = data?.queue
               .filter(
                 (x) =>
                   x.order === 2 &&
@@ -682,12 +685,15 @@ function QueueDisplayTest() {
     return () => clearInterval(interval);
   }, []);
 
-  const filterQueues = (prefix) => allData.filter((q) => q.Token?.startsWith(prefix));
+  const filterQueues = (prefix) =>
+    allData.filter(
+      (q) => q.Token?.startsWith(prefix) && q.status !== 'processed' // ซ่อนคิวที่ processed
+    );
 
   const icpFertilizer = filterQueues('IF');
   const icpInternational = filterQueues('II');
   const sahaikaset = filterQueues('SK');
-  const js888 = allData.filter((q) => !['IF', 'II', 'SK'].some((p) => q.Token?.startsWith(p)));
+  const js888 = allData.filter((q) => !['IF', 'II', 'SK'].some((p) => q.Token?.startsWith(p)) && q.status !== 'processed');
 
   const now = moment().locale('th').format('dddd ที่ LL');
 
