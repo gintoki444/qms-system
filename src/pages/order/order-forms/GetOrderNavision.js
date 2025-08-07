@@ -21,8 +21,8 @@ import SalesHeader from './SalesHeader';
 import SalesItem from './SalesItem';
 import { FileSearchOutlined, LoadingOutlined } from '@ant-design/icons';
 
-// const proxyUrl = 'https://asia-southeast1-icp-qms-api.cloudfunctions.net/apia2/navproxy';
-const proxyUrl = 'https://nav.icpgroup.info:7048/';
+// const proxyUrl = 'https://asia-southeast1-icpfer-qms-api.cloudfunctions.net/apia2/navproxy';
+const proxyUrl = 'https://nav.icpgroup.info:7048';
 import * as navitionRequest from '_api/navitionRequest';
 
 function GetOrderNavision({ soNumber, onSetData, proCompanyID }) {

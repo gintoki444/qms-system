@@ -7,6 +7,8 @@ import { Grid, Stack, Typography } from '@mui/material';
 import AuthLogin from './auth-forms/AuthLogin';
 import AuthWrapper from './AuthWrapper';
 
+console.log(process.env.REACT_APP_API_URL);
+
 // ================================|| LOGIN ||================================ //
 
 const Login = () => (
