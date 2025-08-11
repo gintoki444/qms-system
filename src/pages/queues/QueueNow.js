@@ -26,9 +26,8 @@ function QueueNow({ productComId }) {
     }
   };
   return (
-    <Typography variant="h4">
-      คิวปัจจุบัน : <span style={{ color: 'red' }}>{queueData ? queueData.token : '-'}</span>
-      {/* <span style={{ color: 'red' }}>{queueData ? queueData.product_company_code + queueData.queue_count_company_code : '-'}</span> */}
+    <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+      {queueData ? queueData.token : '-'}
     </Typography>
   );
 }

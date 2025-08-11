@@ -63,7 +63,15 @@ export default function ThemeCustomization({ children }) {
     const textRetun = parts.slice(5, 6).join('/');
     text = 'queues-detail';
     window.location = `/${text}/${textRetun}`;
-  } else if (!token && pathname !== '/login' && queueLink !== 'queues-detail') {
+  } else if (
+    !token &&
+    pathname !== '/login' &&
+    pathname !== '/register' &&
+    queueLink !== 'queues-detail' &&
+    pathname !== '/test-tv' &&
+    pathname !== '/test-tv2' &&
+    !pathname.startsWith('/queues-detail/')
+  ) {
     // console.log('queues-detail', text);
     localStorage.setItem('backToPage', window.location.href);
     window.location = '/login';

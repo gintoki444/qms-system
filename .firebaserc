@@ -1,7 +1,7 @@
 {
   "projects": {
     "default": "icp-qms",
-    "build": "icp-qms"
+    "build": "icpfer-qms"
   },
   "targets": {},
   "etags": {},
