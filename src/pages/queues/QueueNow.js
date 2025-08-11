@@ -7,6 +7,7 @@ import * as stepRequest from '_api/queueReques';
 
 function QueueNow({ productComId }) {
   const [queueData, setQueueData] = useState(null);
+  console.log('productComId :', productComId);
   useEffect(() => {
     if (productComId) {
       getQueueNows();
@@ -19,6 +20,7 @@ function QueueNow({ productComId }) {
         const data = response.filter((queue) => queue.product_company_id === productComId);
         const lastdata = data.length > 0 ? data[data.length - 1] : null;
 
+        console.log('data :', data);
         setQueueData(lastdata);
       });
     } catch (error) {

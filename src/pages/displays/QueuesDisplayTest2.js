@@ -433,281 +433,6 @@ const AutoSlidePages = ({ title, color, items, height, itemsPerPage = 7, latestL
   );
 };
 
-// ==============================|| MOCK DATA FOR TESTING ||============================== //
-// ข้อมูลตัวอย่างสำหรับการทดสอบการแสดงผล
-// ข้อมูลนี้จะถูกแทนที่ด้วยข้อมูลจริงจาก WebSocket API
-// const mockQueueData = [
-//   {
-//     order: 1,
-//     station_id: 27,
-//     station_name: 'รอเรียกคิว',
-//     status: 'waiting',
-//     Token: 'IF91',
-//     registration_no: '70-9999/70-1111',
-//     queue_date: '2025-08-10T00:00:00.000Z',
-//     orders: [],
-//     contractors: [
-//       {
-//         contractor_id: 1,
-//         contract_company_id: 1,
-//         contractor_name: 'สัก',
-//         status: 'A',
-//         contract_status: 'waiting',
-//         contract_update: '2025-08-10T17:43:52.000Z',
-//         contract_company_name: 'ยอดเจ้าพระยา'
-//       }
-//     ],
-//     displayStatus: 'รอคำสั่งซื้อ',
-//     statusTimestamp: null,
-//     new_station_num: 'รอเรียกคิว',
-//     warehouse_name: 'รอเรียกคิว'
-//   },
-//   {
-//     order: 1,
-//     station_id: 27,
-//     station_name: 'รอเรียกคิว',
-//     status: 'waiting',
-//     Token: 'IF92',
-//     registration_no: '70-9999/70-1111',
-//     queue_date: '2025-08-10T00:00:00.000Z',
-//     orders: [{ id: 1, name: 'ปุ๋ยเคมี' }],
-//     contractors: [
-//       {
-//         contractor_id: 2,
-//         contract_company_id: 1,
-//         contractor_name: 'ทมA',
-//         status: 'I',
-//         contract_status: 'waiting',
-//         contract_update: '2025-07-22T19:24:44.000Z',
-//         contract_company_name: 'ยอดเจ้าพระยา'
-//       }
-//     ],
-//     displayStatus: 'รอเรียกชั่งเบา',
-//     statusTimestamp: null,
-//     new_station_num: 'รอเรียกคิว',
-//     warehouse_name: 'รอเรียกคิว'
-//   },
-//   {
-//     order: 1,
-//     station_id: 27,
-//     station_name: 'รอเรียกคิว',
-//     status: 'processing',
-//     Token: 'IF95',
-//     registration_no: '70-9999/70-1111',
-//     queue_date: '2025-08-10T00:00:00.000Z',
-//     orders: [{ id: 1, name: 'ปุ๋ยเคมี' }],
-//     contractors: [
-//       {
-//         contractor_id: 26,
-//         contract_company_id: 1,
-//         contractor_name: 'ทม5',
-//         status: 'A',
-//         contract_status: 'waiting',
-//         contract_update: '2025-08-10T17:41:46.000Z',
-//         contract_company_name: 'ยอดเจ้าพระยา'
-//       }
-//     ],
-//     displayStatus: 'เรียกชั่งเบา',
-//     statusTimestamp: Date.now() - 15000, // 15 วินาทีที่แล้ว
-//     new_station_num: 'รอเรียกคิว',
-//     warehouse_name: 'รอเรียกคิว'
-//   },
-//   {
-//     order: 2,
-//     station_id: 27,
-//     station_name: 'รอเรียกคิว',
-//     status: 'waiting',
-//     Token: 'IF70',
-//     registration_no: '70-9999/70-1111',
-//     queue_date: '2025-08-10T00:00:00.000Z',
-//     orders: [],
-//     contractors: [],
-//     displayStatus: 'รอเรียกขึ้นสินค้า',
-//     statusTimestamp: null,
-//     new_station_num: 'รอเรียกคิว',
-//     warehouse_name: 'รอเรียกคิว'
-//   },
-//   {
-//     order: 2,
-//     station_id: 27,
-//     station_name: 'รอเรียกคิว',
-//     status: 'processing',
-//     Token: 'IF71',
-//     registration_no: '70-9999/70-1111',
-//     queue_date: '2025-08-10T00:00:00.000Z',
-//     orders: [],
-//     contractors: [],
-//     displayStatus: 'เรียกขึ้นสินค้า',
-//     statusTimestamp: Date.now() - 25000, // 25 วินาทีที่แล้ว
-//     new_station_num: 'รอเรียกคิว',
-//     warehouse_name: 'รอเรียกคิว'
-//   },
-//   {
-//     order: 2,
-//     station_id: 27,
-//     station_name: 'รอเรียกคิว',
-//     status: 'processing',
-//     Token: 'IF72',
-//     registration_no: '70-9999/70-1111',
-//     queue_date: '2025-08-10T00:00:00.000Z',
-//     orders: [],
-//     contractors: [],
-//     displayStatus: 'กำลังขึ้นสินค้า',
-//     statusTimestamp: Date.now() - 35000, // 35 วินาทีที่แล้ว
-//     new_station_num: 'รอเรียกคิว',
-//     warehouse_name: 'รอเรียกคิว'
-//   },
-//   {
-//     order: 1,
-//     station_id: 27,
-//     station_name: 'รอเรียกคิว',
-//     status: 'waiting',
-//     Token: 'IF80',
-//     registration_no: '70-9999/70-1111',
-//     queue_date: '2025-08-10T00:00:00.000Z',
-//     orders: [],
-//     contractors: [],
-//     displayStatus: 'รอคำสั่งซื้อ',
-//     statusTimestamp: null,
-//     new_station_num: 'รอเรียกคิว',
-//     warehouse_name: 'รอเรียกคิว'
-//   },
-//   {
-//     order: 1,
-//     station_id: 27,
-//     station_name: 'รอเรียกคิว',
-//     status: 'waiting',
-//     Token: 'IF85',
-//     registration_no: '70-9999/70-1111',
-//     queue_date: '2025-08-10T00:00:00.000Z',
-//     orders: [{ id: 1, name: 'ปุ๋ยเคมี' }],
-//     contractors: [],
-//     displayStatus: 'รอเรียกชั่งเบา',
-//     statusTimestamp: null,
-//     new_station_num: 'รอเรียกคิว',
-//     warehouse_name: 'รอเรียกคิว'
-//   },
-//   {
-//     order: 2,
-//     station_id: 27,
-//     station_name: 'รอเรียกคิว',
-//     status: 'waiting',
-//     Token: 'IF75',
-//     registration_no: '70-9999/70-1111',
-//     queue_date: '2025-08-10T00:00:00.000Z',
-//     orders: [],
-//     contractors: [],
-//     displayStatus: 'รอเรียกขึ้นสินค้า',
-//     statusTimestamp: null,
-//     new_station_num: 'รอเรียกคิว',
-//     warehouse_name: 'รอเรียกคิว'
-//   }
-// ];
-
-// // ข้อมูลตัวอย่างสำหรับ contractors
-// const mockContractorData = [
-//   {
-//     contractor_id: 1,
-//     contract_company_id: 1,
-//     contractor_name: 'สัก',
-//     status: 'A',
-//     contract_status: 'waiting',
-//     contract_update: '2025-08-10T17:43:52.000Z',
-//     contract_company_name: 'ยอดเจ้าพระยา',
-//     reserves: []
-//   },
-//   {
-//     contractor_id: 252,
-//     contract_company_id: 2,
-//     contractor_name: 'พิน1',
-//     status: 'A',
-//     contract_status: 'waiting',
-//     contract_update: '2025-08-10T16:41:55.000Z',
-//     contract_company_name: 'เจเอสพี ทรัพย์ทวี',
-//     reserves: []
-//   },
-//   {
-//     contractor_id: 253,
-//     contract_company_id: 2,
-//     contractor_name: 'พิน2',
-//     status: 'A',
-//     contract_status: 'waiting',
-//     contract_update: '2025-08-10T17:44:05.000Z',
-//     contract_company_name: 'เจเอสพี ทรัพย์ทวี',
-//     reserves: []
-//   },
-//   {
-//     contractor_id: 257,
-//     contract_company_id: 3,
-//     contractor_name: 'จู1',
-//     status: 'A',
-//     contract_status: 'waiting',
-//     contract_update: '2025-08-10T17:35:38.000Z',
-//     contract_company_name: 'ณัฎฐินิช',
-//     reserves: []
-//   },
-//   {
-//     contractor_id: 258,
-//     contract_company_id: 3,
-//     contractor_name: 'จู2',
-//     status: 'A',
-//     contract_status: 'waiting',
-//     contract_update: '2025-08-10T17:09:29.000Z',
-//     contract_company_name: 'ณัฎฐินิช',
-//     reserves: []
-//   }
-// ];
-
-// ==============================|| WEB SOCKET API DATA STRUCTURE ||============================== //
-/*
-ข้อมูลที่ได้รับจาก WebSocket API: https://queue-wss-test-d812009dd69f.herokuapp.com/queue-contractor-mix
-
-โครงสร้างข้อมูล:
-{
-  "queue": [
-    {
-      "order": 4,                    // ลำดับคิว
-      "station_id": 27,              // ID สถานี (27 = รอเรียกคิว)
-      "station_name": "รอเรียกคิว",   // ชื่อสถานี
-      "status": "processing",        // สถานะ: "processing", "waiting", "cancle"
-      "Token": "IF25",               // รหัสคิว
-      "registration_no": "นว.81-0949/นว.81-5864", // ทะเบียนรถ
-      "queue_date": "2025-08-10T00:00:00.000Z",   // วันที่คิว
-      "orders": [],                  // รายการสั่งซื้อ
-      "contractors": []              // รายการผู้รับเหมา
-    }
-  ],
-  "contractors": [
-    {
-      "contractor_id": 1,            // ID ผู้รับเหมา
-      "contract_company_id": 1,      // ID บริษัท
-      "contractor_name": "สัก",      // ชื่อผู้รับเหมา
-      "status": "A",                 // สถานะ: "A" = Active, "I" = Inactive
-      "contract_status": "waiting",  // สถานะสัญญา: "waiting", "working"
-      "contract_update": "2025-08-10T17:43:52.000Z", // เวลาอัปเดต
-      "contract_company_name": "ยอดเจ้าพระยา", // ชื่อบริษัท
-      "reserves": []                 // รายการจอง
-    }
-  ]
-}
-
-การกรองข้อมูล:
-1. กรองคิวที่มี order === 2 (คิวขึ้นสินค้า)
-2. กรองคิวที่มี status !== 'cancle' (ไม่แสดงคิวที่ยกเลิก)
-3. กรองคิวที่มี station_id === 27 (รอเรียกคิว)
-4. กรองคิวที่ไม่ใช่ IC06, IF156, SK04 (คิวที่ต้องซ่อน)
-
-การแสดงสถานะ:
-- "waiting" → "รอเรียกคิว"
-- "processing" → "เรียกเข้าหัวจ่าย" (จะเปลี่ยนเป็น "กำลังขึ้นสินค้า" หลัง 30 วินาที)
-- "completed" → "กำลังขึ้นสินค้า"
-
-การแสดงผล:
-- แบ่งตาม prefix ของ Token: IF (ICP Fertilizer), II (ICP International), SK (Sahaikaset)
-- แสดงข้อมูล: ทะเบียนรถ, คิว, สถานะ, สายแรงงาน, หัวจ่าย
-- มีการ flash animation สำหรับคิวที่ "เรียกเข้าหัวจ่าย"
-*/
-
 function QueueDisplayTest2() {
   const fullscreenRef = useRef(null);
   const [statusDisplay, setStatusDisplay] = useState(false);
@@ -1215,25 +940,7 @@ function QueueDisplayTest2() {
   // console.log('contracOtherList', contracOtherList);
 
   // Component สำหรับแสดงข้อมูลตัวอย่าง contractors
-  const MockContractorDisplay = () => {
-    // ข้อมูลจาก JSON ที่แนบมา - กรองเฉพาะ status: "A" และ contract_company_id !== 11
-    const jsonContractors = [
-      { contractor_name: 'สัก', contract_status: 'waiting', contract_update: '2025-08-10T17:43:52.000Z' },
-      { contractor_name: 'ทม5', contract_status: 'waiting', contract_update: '2025-08-10T17:41:46.000Z' },
-      { contractor_name: 'ทม7', contract_status: 'waiting', contract_update: '2025-08-10T16:50:59.000Z' },
-      { contractor_name: 'ทม9', contract_status: 'waiting', contract_update: '2025-08-10T18:11:34.000Z' },
-      { contractor_name: 'ทม10', contract_status: 'waiting', contract_update: '2025-08-10T17:01:56.000Z' },
-      { contractor_name: 'ดำ', contract_status: 'waiting', contract_update: '2025-08-10T16:53:33.000Z' },
-      { contractor_name: 'พิน1', contract_status: 'waiting', contract_update: '2025-08-10T16:41:55.000Z' },
-      { contractor_name: 'พิน2', contract_status: 'waiting', contract_update: '2025-08-10T17:44:05.000Z' },
-      { contractor_name: 'พิน3', contract_status: 'waiting', contract_update: '2025-08-10T17:24:40.000Z' },
-      { contractor_name: 'พิน4', contract_status: 'waiting', contract_update: '2025-08-10T18:09:16.000Z' },
-      { contractor_name: 'พิน5', contract_status: 'waiting', contract_update: '2025-08-10T17:10:36.000Z' },
-      { contractor_name: 'จู1', contract_status: 'waiting', contract_update: '2025-08-10T17:35:38.000Z' },
-      { contractor_name: 'จู2', contract_status: 'waiting', contract_update: '2025-08-10T17:09:29.000Z' },
-      { contractor_name: 'จู3', contract_status: 'waiting', contract_update: '2025-08-10T17:42:36.000Z' }
-    ];
-
+  const AllContractorDisplay = () => {
     // ฟังก์ชันสำหรับกำหนดสีตาม contract_status และวันที่
     const getContractorColor = (contractor) => {
       if (contractor.contract_status === 'working') {
@@ -1248,93 +955,101 @@ function QueueDisplayTest2() {
       }
     };
 
-    // เรียงลำดับข้อมูลตาม sortContracts function
-    const sortedContractors = jsonContractors.sort((a, b) => {
-      // เงื่อนไข 1: contract_status เป็น "working" จะอยู่ด้านบน
-      if (a.contract_status === 'working' && b.contract_status !== 'working') {
-        return -1;
-      } else if (a.contract_status !== 'working' && b.contract_status === 'working') {
-        return 1;
-      }
+    // ฟังก์ชันสำหรับเรียงลำดับข้อมูลตาม sortContracts function
+    const sortContracts = (data) => {
+      return data.sort((a, b) => {
+        // เงื่อนไข 1: contract_status เป็น "working" จะอยู่ด้านบน
+        if (a.contract_status === 'working' && b.contract_status !== 'working') {
+          return -1;
+        } else if (a.contract_status !== 'working' && b.contract_status === 'working') {
+          return 1;
+        }
 
-      // เงื่อนไข 2: ถ้า contract_status เป็น "working" ทั้งคู่ ให้เรียงตามวันที่และเวลาของ contract_update จากน้อยไปมาก
-      if (a.contract_status === 'working' && b.contract_status === 'working') {
-        return new Date(a.contract_update) - new Date(b.contract_update);
-      }
+        // เงื่อนไข 2: ถ้า contract_status เป็น "working" ทั้งคู่ ให้เรียงตามวันที่และเวลาของ contract_update จากน้อยไปมาก
+        if (a.contract_status === 'working' && b.contract_status === 'working') {
+          return new Date(a.contract_update) - new Date(b.contract_update);
+        }
 
-      // เงื่อนไข 3: ถ้า contract_status เป็น "waiting" ให้เรียงตามวันที่และเวลาของ contract_update จากน้อยไปมาก
-      if (a.contract_status === 'waiting' && b.contract_status === 'waiting') {
-        return new Date(a.contract_update) - new Date(b.contract_update);
-      }
+        // เงื่อนไข 3: ถ้า contract_status เป็น "waiting" ให้เรียงตามวันที่และเวลาของ contract_update จากน้อยไปมาก
+        if (a.contract_status === 'waiting' && b.contract_status === 'waiting') {
+          return new Date(a.contract_update) - new Date(b.contract_update);
+        }
 
-      // เงื่อนไขสุดท้าย: เรียงตาม contractor_id ถ้าไม่เข้าเงื่อนไขอื่นๆ
-      return a.contractor_id - b.contractor_id;
-    });
+        // เงื่อนไขสุดท้าย: เรียงตาม contractor_id ถ้าไม่เข้าเงื่อนไขอื่นๆ
+        return a.contractor_id - b.contractor_id;
+      });
+    };
+
+    // ฟังก์ชันสำหรับแสดงเวลาจาก contract_update
+    const getTimeDisplay = (contractor) => {
+      if (
+        contractor.contract_update &&
+        moment(contractor.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
+      ) {
+        return contractor.contract_update.slice(11, 16) + ' น.';
+      }
+      return '--:--';
+    };
+
+    // กรองและเรียงลำดับข้อมูล contractors
+    const filteredContractors = allContractor?.filter((x) => x.status !== 'I' && x.contract_company_id !== 11) || [];
+    const sortedContractors = sortContracts(filteredContractors);
 
     return (
       <Box sx={{ p: 1, background: '#f5f5f5', borderBottom: '1px solid #ddd' }}>
-        {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Box sx={{ display: 'flex', gap: 2, fontSize: { xs: 12, md: '0.9vw!important' } }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ width: '12px', height: '12px', backgroundColor: '#FFCC33', borderRadius: '2px' }} />
-              <span>กำลังขึ้นสินค้า: {sortedContractors.filter((c) => c.contract_status === 'working').length}</span>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ width: '12px', height: '12px', backgroundColor: '#33C072', borderRadius: '2px' }} />
-              <span>
-                รอ:{' '}
-                {
-                  sortedContractors.filter(
-                    (c) =>
-                      c.contract_status === 'waiting' &&
-                      moment(c.contract_update?.slice(0, 10)).format('DD/MM/YYYY') !== moment(new Date()).format('DD/MM/YYYY')
-                  ).length
-                }
-              </span>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ width: '12px', height: '12px', backgroundColor: '#D9D9D9', borderRadius: '2px' }} />
-              <span>
-                วันนี้:{' '}
-                {
-                  sortedContractors.filter(
-                    (c) =>
-                      c.contract_status === 'waiting' &&
-                      moment(c.contract_update?.slice(0, 10)).format('DD/MM/YYYY') === moment(new Date()).format('DD/MM/YYYY')
-                  ).length
-                }
-              </span>
-            </Box>
-          </Box>
-        </Box> */}
+        {/* <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', color: '#000' }}>
+          สายแรงงานทั้งหมด
+        </Typography> */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, maxHeight: '120px', overflowY: 'auto' }}>
           {sortedContractors.map((contractor, index) => (
             <Box
-              key={`mock-${contractor.contractor_name}-${index}`}
+              key={`contractor-${contractor.contractor_id}-${index}`}
               sx={{
-                backgroundColor: getContractorColor(contractor),
-                color: '#000',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                fontSize: { xs: 12, md: '0.9vw!important' },
-                fontWeight: 'bold',
-                border: '1px solid #ccc',
-                minWidth: 'fit-content',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
-                gap: '4px'
+                gap: '2px'
               }}
             >
+              {/* แสดงเวลา */}
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: { xs: 10, md: '0.7vw!important' },
+                  color: '#000',
+                  fontWeight: 'normal',
+                  display: 'none'
+                }}
+              >
+                {getTimeDisplay(contractor)}
+              </Typography>
+              {/* แสดงชื่อ contractor */}
               <Box
                 sx={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: contractor.contract_status === 'working' ? '#FF6B35' : '#4CAF50',
-                  flexShrink: 0
+                  backgroundColor: getContractorColor(contractor),
+                  color: '#fff',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: { xs: 12, md: '0.9vw!important' },
+                  fontWeight: 'bold',
+                  border: '1px solid #ccc',
+                  minWidth: 'fit-content',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
                 }}
-              />
-              {contractor.contractor_name}
+              >
+                <Box
+                  sx={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: contractor.contract_status === 'working' ? '#FF6B35' : '#4CAF50',
+                    flexShrink: 0
+                  }}
+                />
+                {contractor.contractor_name}
+              </Box>
             </Box>
           ))}
         </Box>
@@ -1503,7 +1218,7 @@ function QueueDisplayTest2() {
         </Grid>
         {/* Contractor List */}
         <Grid sx={{ pt: 1, pb: 1, borderTop: '1px solid #fff', background: '#fff', width: '100%' }}>
-          <MockContractorDisplay />
+          <AllContractorDisplay />
         </Grid>
         <Grid sx={{ pt: 1, pb: 1, borderTop: '1px solid #fff', background: '#fff', width: '100%' }}>
           <AuthFooter />

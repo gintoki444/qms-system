@@ -113,6 +113,7 @@ function QueueDetail({ sx }) {
 
   const [queue_token, setQueueToken] = useState('');
   const [queues, setQueues] = useState([]);
+  console.log('queues :', queues);
   // const [queueNumber, setQueueNumber] = useState([]);
 
   function getDateFormat(end_time) {
@@ -723,21 +724,25 @@ function QueueDetail({ sx }) {
                         {/* หมายเลขคิวของท่าน */}
                         <Grid item xs={4}>
                           <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', textAlign: 'center' }}>
-                            หมายเลขคิวของท่าน:
+                            หมายเลขคิว
+                            <br />
+                            ของท่าน
                           </Typography>
                         </Grid>
 
                         {/* คิวขึ้นสินค้าล่าสุด */}
                         <Grid item xs={4}>
                           <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', textAlign: 'center' }}>
-                            คิวขึ้นสินค้าล่าสุด:
+                            คิวขึ้นสินค้า
+                            <br />
+                            ล่าสุด
                           </Typography>
                         </Grid>
 
                         {/* สถานะ */}
                         <Grid item xs={4}>
                           <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', textAlign: 'center' }}>
-                            สถานะ:
+                            สถานะ
                           </Typography>
                         </Grid>
                         <Grid item xs={4}>
@@ -862,13 +867,13 @@ function QueueDetail({ sx }) {
                                 margin: '0 auto'
                               }}
                             >
-                              {queues.step2_status === 'waiting' || queues.step2_status === 'none' ? (
-                                <QueueNow productComId={queues.product_company_id} />
-                              ) : (
+                              {/* {queues.step2_status === 'waiting' || queues.step2_status === 'none' ? ( */}
+                              <QueueNow productComId={queues.product_company_id} />
+                              {/* ) : (
                                 <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white', fontSize: '1.5vw' }}>
                                   -
                                 </Typography>
-                              )}
+                              )} */}
                             </Box>
                           </Grid>
 
