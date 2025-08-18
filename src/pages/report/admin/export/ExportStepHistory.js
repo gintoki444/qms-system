@@ -19,7 +19,7 @@ const ExportStepHistory = ({ startDate, endDate }) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `https://asia-southeast1-icp-qms-api.cloudfunctions.net/apia2/queueslogs?startDate=${startDate}&endDate=${endDate}`
+        `https://asia-southeast1-icpfer-qms-api.cloudfunctions.net/apia2/queueslogs?startDate=${startDate}&endDate=${endDate}`
       );
       console.log(response.data); // Debug: Log fetched data
       if (response.data) {

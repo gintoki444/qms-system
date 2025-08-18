@@ -6,6 +6,7 @@ import MainLayout from 'layout/MainLayout';
 
 // render - dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard')));
+const DashboardNew = Loadable(lazy(() => import('pages/dashboard/admin/DashboardNew')));
 
 const Reserve = Loadable(lazy(() => import('pages/reserve/Reserve')));
 const ReserveDetail = Loadable(lazy(() => import('pages/reserve/ReserveDetail')));
@@ -44,6 +45,10 @@ const MainRoutes = {
     {
       path: '/',
       element: <DashboardDefault />
+    },
+    {
+      path: '/dashboard-new',
+      element: <DashboardNew />
     },
     {
       path: '/reserve',

@@ -1,6 +1,6 @@
 const apiUrl = process.env.REACT_APP_API_URL;
-// const proxyUrl = 'https://asia-southeast1-icp-qms-api.cloudfunctions.net/apia2/navproxy';
-const proxyUrl = 'https://nav.icpgroup.info:7048/';
+// const proxyUrl = 'https://asia-southeast1-icpfer-qms-api.cloudfunctions.net/apia2/navproxy';
+const proxyUrl = 'https://nav.icpgroup.info:7048';
 
 // ==============================|| Reserve: (สำหรับข้อมูล ทีมรับสินค้า และ โกดัง) ||============================== //
 export const getItemFers = async () => {

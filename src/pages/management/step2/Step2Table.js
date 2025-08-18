@@ -583,6 +583,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         if (response.length > 0) {
           const getAllProductRegis = await getProductRegisters(status); // หรือ 'อื่นๆ' ตามที่คุณต้องการ
 
+          console.log('getAllProductRegis :', getAllProductRegis);
           for (let result of response) {
             const allProductRegis = await getItemsRegisByOrder(result.order_id);
 
@@ -599,6 +600,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 );
 
                 data.productRegis = getProductRegis;
+                console.log('data :', data);
                 if (allProductRegis.length > 0) {
                   setLoopSelect((prevState) => {
                     const updatedOptions = [...prevState];
@@ -610,6 +612,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                       }
                     });
 
+                    console.log('updatedOptions :', updatedOptions);
                     return updatedOptions;
                   });
                 } else if (allProductRegis.length === 0 && status === 'call') {

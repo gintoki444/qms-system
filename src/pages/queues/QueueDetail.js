@@ -25,7 +25,8 @@ import {
   DialogContentText,
   DialogActions,
   Checkbox,
-  Stack
+  Stack,
+  Box
 } from '@mui/material';
 
 import moment from 'moment-timezone';
@@ -112,6 +113,7 @@ function QueueDetail({ sx }) {
 
   const [queue_token, setQueueToken] = useState('');
   const [queues, setQueues] = useState([]);
+  console.log('queues :', queues);
   // const [queueNumber, setQueueNumber] = useState([]);
 
   function getDateFormat(end_time) {
@@ -560,6 +562,50 @@ function QueueDetail({ sx }) {
     navigate('/queues');
   };
 
+  // Helper function to get queue status text and color
+  const getQueueStatusInfo = (queues) => {
+    if (!queues) return { text: 'รอคำสั่งซื้อ', color: '#f44336' }; // error red
+
+    // Check if there are orders
+    if (!orders || orders.length === 0) {
+      return { text: 'รอคำสั่งซื้อ', color: '#f44336' }; // error red
+    }
+
+    // Check step statuses
+    if (queues.step1_status === 'waiting' || queues.step1_status === 'none') {
+      return { text: 'รอเรียกชั่งเบา', color: '#9c27b0' }; // secondary purple
+    } else if (queues.step1_status === 'processing') {
+      return { text: 'กำลังชั่งเบา', color: '#ff9800' }; // warning orange
+    } else if (queues.step1_status === 'completed') {
+      if (queues.step2_status === 'waiting' || queues.step2_status === 'none') {
+        return { text: 'รอเรียกขึ้นสินค้า', color: '#9c27b0' }; // secondary purple
+      } else if (queues.step2_status === 'processing') {
+        return { text: 'กำลังขึ้นสินค้า', color: '#ff9800' }; // warning orange
+      } else if (queues.step2_status === 'completed') {
+        if (queues.step3_status === 'waiting' || queues.step3_status === 'none') {
+          return { text: 'รอเรียกชั่งหนัก', color: '#9c27b0' }; // secondary purple
+        } else if (queues.step3_status === 'processing') {
+          return { text: 'กำลังชั่งหนัก', color: '#ff9800' }; // warning orange
+        } else if (queues.step3_status === 'completed') {
+          if (queues.step4_status === 'waiting' || queues.step4_status === 'none') {
+            return { text: 'รอออกจากโรงงาน', color: '#9c27b0' }; // secondary purple
+          } else if (queues.step4_status === 'processing') {
+            return { text: 'กำลังออกจากโรงงาน', color: '#ff9800' }; // warning orange
+          } else if (queues.step4_status === 'completed') {
+            return { text: 'ออกจากโรงงาน', color: '#4caf50' }; // success green
+          }
+        }
+      }
+    }
+
+    return { text: 'รอคำสั่งซื้อ', color: '#f44336' }; // error red
+  };
+
+  // Keep the old function for backward compatibility if needed elsewhere
+  // const getQueueStatusText = (queues) => {
+  //   return getQueueStatusInfo(queues).text;
+  // };
+
   return (
     <>
       <Grid alignItems="center" justifyContent="space-between">
@@ -674,25 +720,98 @@ function QueueDetail({ sx }) {
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
                     {isMobile ? (
-                      <Grid container>
-                        <Grid item xs={6}>
-                          <Typography variant="h4">
-                            หมายเลขคิว : <span style={{ color: 'red' }}>{queue_token}</span>
+                      <Grid container spacing={2}>
+                        {/* หมายเลขคิวของท่าน */}
+                        <Grid item xs={4}>
+                          <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', textAlign: 'center' }}>
+                            หมายเลขคิว
+                            <br />
+                            ของท่าน
                           </Typography>
-                          {(queues.step2_status === 'waiting' || queues.step2_status === 'none') && (
-                            <QueueNow productComId={queues.product_company_id} />
-                          )}
-                          {/* {userId && (
-                            <Typography variant="h4">
-                              เลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>
-                            </Typography>
-                          )} */}
                         </Grid>
-                        {/* <Grid item xs={6} align="right">
-                          {(queues.step2_status === "waiting" || queues.step2_status === "none") && (
-                            <QueueNow productComId={queues.product_company_id} />
-                          )}
-                        </Grid> */}
+
+                        {/* คิวขึ้นสินค้าล่าสุด */}
+                        <Grid item xs={4}>
+                          <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', textAlign: 'center' }}>
+                            คิวขึ้นสินค้า
+                            <br />
+                            ล่าสุด
+                          </Typography>
+                        </Grid>
+
+                        {/* สถานะ */}
+                        <Grid item xs={4}>
+                          <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', textAlign: 'center' }}>
+                            สถานะ
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={4}>
+                          <Box
+                            sx={{
+                              backgroundColor: 'white',
+                              border: '2px solid #ddd',
+                              borderRadius: '8px',
+                              p: 2,
+                              margin: '0 auto',
+                              textAlign: 'center',
+                              minHeight: '70px',
+                              maxHeight: '70px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'black' }}>
+                              {queue_token}
+                            </Typography>
+                          </Box>
+                        </Grid>
+
+                        {/* คิวขึ้นสินค้าล่าสุด */}
+                        <Grid item xs={4}>
+                          <Box
+                            sx={{
+                              backgroundColor: 'red',
+                              borderRadius: '8px',
+                              p: 2,
+                              textAlign: 'center',
+                              minHeight: '70px',
+                              maxHeight: '70px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            {queues.step2_status === 'waiting' || queues.step2_status === 'none' ? (
+                              <QueueNow productComId={queues.product_company_id} />
+                            ) : (
+                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+                                -
+                              </Typography>
+                            )}
+                          </Box>
+                        </Grid>
+
+                        {/* สถานะ */}
+                        <Grid item xs={4}>
+                          <Box
+                            sx={{
+                              backgroundColor: getQueueStatusInfo(queues).color,
+                              borderRadius: '8px',
+                              p: '16px 0',
+                              textAlign: 'center',
+                              minHeight: '70px',
+                              maxHeight: '70px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white', textAlign: 'center', fontSize: '14px' }}>
+                              {getQueueStatusInfo(queues).text}
+                            </Typography>
+                          </Box>
+                        </Grid>
                         <Grid item xs={12} align="right">
                           <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 2 }} />
                         </Grid>
@@ -710,19 +829,74 @@ function QueueDetail({ sx }) {
                       </Grid>
                     ) : (
                       <div>
-                        <Grid item xs={12}>
-                          {/* <Stack justifyContent="space-between" flexDirection="row"> */}
-                          <Typography variant="h4">
-                            หมายเลขคิว : <span style={{ color: 'red' }}> {queue_token}</span>
-                            {'  '}
-                            {/* (เลขคิวเดิม : <span style={{ color: 'red' }}> {queues.reserve_description}</span>) */}
-                            {/* <span style={{ color: 'red' }}>{queueNumber}</span> */}
-                          </Typography>
-                          {(queues.step2_status === 'waiting' || queues.step2_status === 'none') && (
-                            <QueueNow productComId={queues.product_company_id} />
-                          )}
-                          {/* </Stack> */}
-                          <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} />
+                        <Grid container spacing={3} sx={{ mb: 1 }}>
+                          {/* หมายเลขคิวของท่าน */}
+                          <Grid item xs={4} sx={{ textAlign: 'center' }}>
+                            <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', fontSize: '1.2vw' }}>
+                              หมายเลขคิวของท่าน:
+                            </Typography>
+                            <Box
+                              sx={{
+                                backgroundColor: 'white',
+                                border: '2px solid #ddd',
+                                borderRadius: '8px',
+                                p: 2,
+                                textAlign: 'center',
+                                maxWidth: '40%',
+                                margin: '0 auto'
+                              }}
+                            >
+                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'black', fontSize: '1.5vw' }}>
+                                {queue_token}
+                              </Typography>
+                            </Box>
+                          </Grid>
+
+                          {/* คิวขึ้นสินค้าล่าสุด */}
+                          <Grid item xs={4} sx={{ textAlign: 'center' }}>
+                            <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', fontSize: '1.2vw' }}>
+                              คิวขึ้นสินค้าล่าสุด:
+                            </Typography>
+                            <Box
+                              sx={{
+                                backgroundColor: 'red',
+                                borderRadius: '8px',
+                                p: 2,
+                                textAlign: 'center',
+                                maxWidth: '40%',
+                                margin: '0 auto'
+                              }}
+                            >
+                              {/* {queues.step2_status === 'waiting' || queues.step2_status === 'none' ? ( */}
+                              <QueueNow productComId={queues.product_company_id} />
+                              {/* ) : (
+                                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white', fontSize: '1.5vw' }}>
+                                  -
+                                </Typography>
+                              )} */}
+                            </Box>
+                          </Grid>
+
+                          {/* สถานะ */}
+                          <Grid item xs={4} sx={{ textAlign: 'center' }}>
+                            <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', fontSize: '1.2vw' }}>
+                              สถานะ:
+                            </Typography>
+                            <Box
+                              sx={{
+                                backgroundColor: getQueueStatusInfo(queues).color,
+                                borderRadius: '8px',
+                                p: 2,
+                                textAlign: 'center',
+                                maxWidth: '40%',
+                                margin: '0 auto'
+                              }}
+                            >
+                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white', fontSize: '1vw' }}>
+                                {getQueueStatusInfo(queues).text}
+                              </Typography>
+                            </Box>
+                          </Grid>
                         </Grid>
 
                         <Divider sx={{ mb: { xs: 1, sm: 1 }, mt: 3 }} light />

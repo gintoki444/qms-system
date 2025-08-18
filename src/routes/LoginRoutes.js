@@ -10,7 +10,8 @@ const AuthRegister = Loadable(lazy(() => import('pages/authentication/Register')
 
 const QueueNonLogin = Loadable(lazy(() => import('pages/queues/QueueNonLogin')));
 // ==============================|| AUTH ROUTING ||============================== //
-const QueuesDisplayTest = Loadable(lazy(() => import('pages/displays/QueuesDisplayTest')));
+// const QueuesDisplayTest = Loadable(lazy(() => import('pages/displays/QueuesDisplayTest')));
+const QueuesDisplayTest2 = Loadable(lazy(() => import('pages/displays/QueuesDisplayTest2')));
 
 const LoginRoutes = {
   path: '/',
@@ -30,7 +31,12 @@ const LoginRoutes = {
     },
     {
       path: 'test-tv',
-      element: <QueuesDisplayTest />
+      // element: <QueuesDisplayTest />
+      element: <QueuesDisplayTest2 />
+    },
+    {
+      path: 'test-tv2',
+      element: <QueuesDisplayTest2 />
     }
   ]
 };
