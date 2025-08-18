@@ -19,7 +19,6 @@ const AvgLoadingTimePerTruck = ({ date }) => {
       
       try {
         const result = await fetchAvgLoadingTime(date);
-        console.log('Average loading time data:', result);
         
         // Transform the data to match the component's expected format
         const items = result.items || result;

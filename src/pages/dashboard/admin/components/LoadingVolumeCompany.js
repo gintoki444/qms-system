@@ -51,8 +51,7 @@ const LoadingVolumeCompany = ({ date }) => {
       }}>
         <CardContent>
           <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-            ปริมาณการบรรทุกรายบริษัท
-          </Typography>
+            Loading volume          </Typography>
           <Typography color="error">ไม่สามารถโหลดข้อมูลได้</Typography>
         </CardContent>
       </Card>
@@ -168,18 +167,19 @@ const LoadingVolumeCompany = ({ date }) => {
       backgroundColor: 'background.paper', 
       boxShadow: 3, 
       border: 'none',
-      height: '100%'
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column'
     }}>
       <CardContent>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-          ปริมาณการบรรทุกรายบริษัท
-        </Typography>
+          Loading volume        </Typography>
         {loading ? (
           <Box sx={{ 
             display: 'flex', 
             justifyContent: 'center', 
             alignItems: 'center', 
-            height: 350 
+            height: 250 
           }}>
             <Typography>กำลังโหลดข้อมูล...</Typography>
           </Box>

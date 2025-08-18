@@ -2,7 +2,7 @@ import React, {
   useState
   // , useEffect
 } from 'react';
-import { Grid, Typography, Stack, TextField, Button, Box } from '@mui/material';
+import { Grid, Typography, Stack, TextField, Button } from '@mui/material';
 import { SearchOutlined } from '@ant-design/icons';
 import MainCard from 'components/MainCard';
 // import AnalyticQueues from 'components/cards/statistics/AnlyticQueue';
@@ -70,24 +70,19 @@ const DashboardNew = () => {
             <Grid item xs={12}>
               <OperationSummary date={selectedDate} />
             </Grid>
-
+          </Grid>
+          <Grid container rowSpacing={4.5} columnSpacing={2.75} sx={{ mt: 0.5 }}>
             {/* Top Row - Main Charts */}
-            <Grid item xs={12} md={12} lg={3} sx={{ height: '100%' }}>
-              <Box sx={{ height: '100%' }}>
-                <ProgressTruckLoading date={selectedDate} />
-              </Box>
+            <Grid item xs={12} md={12} lg={3}>
+              <ProgressTruckLoading date={selectedDate} />
             </Grid>
 
-            <Grid item xs={12} md={12} lg={4.5} sx={{ height: '100%' }}>
-              <Box sx={{ height: '100%' }}>
-                <LoadingVolumeByHour date={selectedDate} />
-              </Box>
+            <Grid item xs={12} md={12} lg={4.5}>
+              <LoadingVolumeByHour date={selectedDate} />
             </Grid>
 
-            <Grid item xs={12} md={12} lg={4.5} sx={{ height: '100%' }}>
-              <Box sx={{ height: '100%' }}>
-                <DeliveryLoadingByHour date={selectedDate} />
-              </Box>
+            <Grid item xs={12} md={12} lg={4.5}>
+              <DeliveryLoadingByHour date={selectedDate} />
             </Grid>
 
             {/* Second Row - Statistics */}
@@ -96,23 +91,18 @@ const DashboardNew = () => {
                 <AvgLoadingTime date={selectedDate} />
               </Box>
             </Grid> */}
+          </Grid>
 
-            <Grid item xs={12} md={4} lg={4} sx={{ height: '100%' }}>
-              <Box sx={{ height: '100%' }}>
-                <TopItems date={selectedDate} />
-              </Box>
+          <Grid container rowSpacing={4.5} columnSpacing={2.75} sx={{ mt: 0.5 }}>
+            <Grid item xs={12} sm={6} md={4} lg={3}>
+              <TopItems date={selectedDate} />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4} lg={4.5}>
+              <LoadingVolumeCompany date={selectedDate} />
             </Grid>
 
-            <Grid item xs={12} md={4} lg={4} sx={{ height: '100%' }}>
-              <Box sx={{ height: '100%' }}>
-                <LoadingVolumeCompany date={selectedDate} />
-              </Box>
-            </Grid>
-
-            <Grid item xs={12} md={4} lg={4} sx={{ height: '100%' }}>
-              <Box sx={{ height: '100%' }}>
-                <AvgLoadingTimePerTruck date={selectedDate} />
-              </Box>
+            <Grid item xs={12} sm={6} md={4} lg={4.5}>
+              <AvgLoadingTimePerTruck date={selectedDate} />
             </Grid>
           </Grid>
         </MainCard>

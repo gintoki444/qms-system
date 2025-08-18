@@ -56,6 +56,8 @@ const TopItems = ({ date }) => {
           groupedData[companyCode].items = groupedData[companyCode].items.sort((a, b) => b.quantity - a.quantity).slice(0, 5);
         });
 
+        console.log('groupedData', groupedData);
+
         setData(groupedData);
       } catch (err) {
         console.error('Error loading top items data:', err);
@@ -79,81 +81,94 @@ const TopItems = ({ date }) => {
 
   return (
     <DashboardCard title="Top 5 Item" icon={<EmojiEventsIcon sx={{ color: 'primary.main' }} />} isLoading={loading} fullHeight={true}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        {/* Company Groups */}
-        {Object.keys(data).map((companyCode, companyIndex) => {
-          const companyData = data[companyCode];
-          return (
-            <Box
-              key={companyCode + companyIndex}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 0,
-                p: 2,
-                backgroundColor: 'rgba(0,0,0,0.02)',
-                borderRadius: 1,
-                border: '1px solid rgba(0,0,0,0.05)'
-              }}
-            >
-              {/* Company Header */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                 <Box
-                   sx={{
-                     width: 12,
-                     height: 12,
-                     borderRadius: 0.5,
-                     backgroundColor: (() => {
-                       const companyColorMap = {
-                         'IF': '#d32f2f',
-                         'II': '#1976d2',
-                         'JS': '#2e7d32',
-                         'SK': '#7b1fa2'
-                       };
-                       return companyColorMap[companyCode] || '#607D8B';
-                     })()
-                   }}
-                 />
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 0 }}>
-                  <CompanyCodeConverter code={companyCode} showColor={true} />
-                </Typography>
-              </Box>
-
-              {/* Items List */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {companyData.items.map((item, itemIndex) => (
+      {data && Object.keys(data).length > 0 ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {/* Company Groups */}
+          {Object.keys(data).map((companyCode, companyIndex) => {
+            const companyData = data[companyCode];
+            return (
+              <Box
+                key={companyCode + companyIndex}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 0,
+                  p: 2,
+                  backgroundColor: 'rgba(0,0,0,0.02)',
+                  borderRadius: 1,
+                  border: '1px solid rgba(0,0,0,0.05)'
+                }}
+              >
+                {/* Company Header */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box
-                    key={itemIndex}
                     sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      p: 0
-                      //   backgroundColor: 'rgba(0,0,0,0.02)',
-                      //   borderRadius: 1,
-                      //   border: '1px solid rgba(0,0,0,0.05)'
+                      width: 12,
+                      height: 12,
+                      borderRadius: 0.5,
+                      backgroundColor: (() => {
+                        const companyColorMap = {
+                          IF: '#d32f2f',
+                          II: '#1976d2',
+                          JS: '#2e7d32',
+                          SK: '#7b1fa2'
+                        };
+                        return companyColorMap[companyCode] || '#607D8B';
+                      })()
                     }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 500, minWidth: 40 }}>
-                        {itemIndex + 1}.
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {item.item}
-                      </Typography>
+                  />
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0 }}>
+                    <CompanyCodeConverter code={companyCode} showColor={true} />
+                  </Typography>
+                </Box>
+
+                {/* Items List */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {companyData.items.map((item, itemIndex) => (
+                    <Box
+                      key={itemIndex}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        p: 0
+                        //   backgroundColor: 'rgba(0,0,0,0.02)',
+                        //   borderRadius: 1,
+                        //   border: '1px solid rgba(0,0,0,0.05)'
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, minWidth: 40 }}>
+                          {itemIndex + 1}.
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {item.item}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {item.quantity.toLocaleString()} {item.unit}
+                        </Typography>
+                      </Box>
                     </Box>
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {item.quantity.toLocaleString()} {item.unit}
-                      </Typography>
-                    </Box>
-                  </Box>
-                ))}
+                  ))}
+                </Box>
               </Box>
-            </Box>
-          );
-        })}
-      </Box>
+            );
+          })}
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: 350
+          }}
+        >
+          <Typography color="text.secondary">ไม่มีข้อมูล</Typography>
+        </Box>
+      )}
     </DashboardCard>
   );
 };

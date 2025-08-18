@@ -10,6 +10,14 @@ const DeliveryLoadingByHour = ({ date }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Helper function to convert hour to English time format
+  const formatHourToEnglish = (hour) => {
+    if (hour === 0) return '12:00 AM';
+    if (hour < 12) return `${hour}:00 AM`;
+    if (hour === 12) return '12:00 PM';
+    return `${hour - 12}:00 PM`;
+  };
+
   useEffect(() => {
     const loadData = async () => {
       if (!date) return;
@@ -19,21 +27,43 @@ const DeliveryLoadingByHour = ({ date }) => {
 
       try {
         const result = await fetchLoadingVolumeByHour(date);
-        console.log('Delivery loading by hour data received:', result);
 
         // Use result.items if available, otherwise use result directly
         const items = result.items || result;
-        const currentHour = new Date().getHours();
 
-        // Transform the data to match the component's expected format
-        const transformedData = items
-          .filter((item) => item.hour >= 6 && item.hour <= currentHour)
-          .map((item) => ({
-            hour: item.hour,
-            label: item.label,
-            volume: item.total_volume || 0,
-            truckCount: item.truck_count || 0
-          }));
+        // Check if the date is today
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+        const isCurrentDay = date === today;
+
+        let filteredData;
+
+        if (isCurrentDay) {
+          // For current day: filter from 6 AM to current hour
+          const currentHour = new Date().getHours();
+          filteredData = items.filter((item) => item.hour >= 6 && item.hour <= currentHour);
+        } else {
+          // For historical days: filter from first hour with data to last hour with data
+          const hoursWithData = items.filter((item) => item.total_volume > 0 || item.truck_count > 0);
+
+          if (hoursWithData.length > 0) {
+            const firstHour = Math.min(...hoursWithData.map((item) => item.hour));
+            const lastHour = Math.max(...hoursWithData.map((item) => item.hour));
+
+            // Include all hours from first to last, even if some have zero data
+            filteredData = items.filter((item) => item.hour >= firstHour && item.hour <= lastHour);
+          } else {
+            // If no data, show from 6 AM to 18 PM (6 PM) as default
+            filteredData = items.filter((item) => item.hour >= 6 && item.hour <= 18);
+          }
+        }
+
+        // Transform the data to match the component's expected format with English time labels
+        const transformedData = filteredData.map((item) => ({
+          hour: item.hour,
+          label: formatHourToEnglish(item.hour),
+          volume: item.total_volume || 0,
+          truckCount: item.truck_count || 0
+        }));
 
         setData(transformedData);
       } catch (err) {
@@ -88,7 +118,7 @@ const DeliveryLoadingByHour = ({ date }) => {
     },
     yaxis: {
       title: {
-        text: 'ปริมาณการส่งมอบ (คัน)',
+        text: 'ปริมาณการส่งมอบ (ตัน)',
         style: {
           fontFamily: 'Noto Sans Thai',
           fontSize: '14px',
@@ -134,7 +164,12 @@ const DeliveryLoadingByHour = ({ date }) => {
   }
 
   return (
-    <DashboardCard title="Delivery Loading By Hour" icon={<BarChartIcon sx={{ color: 'primary.main' }} />} isLoading={loading} fullHeight={true}>
+    <DashboardCard
+      title="Delivery Loading By Hour"
+      icon={<BarChartIcon sx={{ color: 'primary.main' }} />}
+      isLoading={loading}
+      fullHeight={true}
+    >
       <Box sx={{ height: 300 }}>
         <ReactApexChart options={chartOptions} series={chartSeries} type="bar" height={300} />
       </Box>
