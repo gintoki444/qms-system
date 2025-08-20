@@ -18,7 +18,6 @@ const LoadingVolumeCompany = ({ date }) => {
 
       try {
         const result = await fetchLoadingVolumeCompany(date);
-        console.log('Loading volume company data:', result);
 
         // Transform the data to match the chart's expected format
         const items = result.items || [];
@@ -43,15 +42,18 @@ const LoadingVolumeCompany = ({ date }) => {
 
   if (error) {
     return (
-      <Card sx={{ 
-        backgroundColor: 'background.paper', 
-        boxShadow: 3, 
-        border: 'none',
-        height: '100%'
-      }}>
+      <Card
+        sx={{
+          backgroundColor: 'background.paper',
+          boxShadow: 3,
+          border: 'none',
+          height: '100%'
+        }}
+      >
         <CardContent>
           <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-            Loading volume          </Typography>
+            Loading volume{' '}
+          </Typography>
           <Typography color="error">ไม่สามารถโหลดข้อมูลได้</Typography>
         </CardContent>
       </Card>
@@ -60,18 +62,18 @@ const LoadingVolumeCompany = ({ date }) => {
 
   // Company color mapping
   const companyColorMap = {
-    'IF': '#d32f2f',
-    'II': '#1976d2',
-    'JS': '#2e7d32',
-    'SK': '#7b1fa2'
+    IF: '#d32f2f',
+    II: '#1976d2',
+    JS: '#2e7d32',
+    SK: '#7b1fa2'
   };
 
   // Company code mapping
   const companyCodeMap = {
-    'IF': 'ICPF',
-    'II': 'ICPI',
-    'SK': 'SAHAI KASET',
-    'JS': 'JS888'
+    IF: 'ICPF',
+    II: 'ICPI',
+    SK: 'SAHAI KASET',
+    JS: 'JS888'
   };
 
   // Chart options
@@ -112,7 +114,7 @@ const LoadingVolumeCompany = ({ date }) => {
     },
     fill: {
       opacity: 1,
-      colors: data.map(item => companyColorMap[item.companyCode] || '#607D8B')
+      colors: data.map((item) => companyColorMap[item.companyCode] || '#607D8B')
     },
     tooltip: {
       y: {
@@ -163,24 +165,29 @@ const LoadingVolumeCompany = ({ date }) => {
   const chartSeries = data.map((item) => item.volume);
 
   return (
-    <Card sx={{ 
-      backgroundColor: 'background.paper', 
-      boxShadow: 3, 
-      border: 'none',
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
+    <Card
+      sx={{
+        backgroundColor: 'background.paper',
+        boxShadow: 3,
+        border: 'none',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
       <CardContent>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-          Loading volume        </Typography>
+          Loading volume{' '}
+        </Typography>
         {loading ? (
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: 250 
-          }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: 250
+            }}
+          >
             <Typography>กำลังโหลดข้อมูล...</Typography>
           </Box>
         ) : data.length > 0 ? (

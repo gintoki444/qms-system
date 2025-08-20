@@ -9,7 +9,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import RemoveIcon from '@mui/icons-material/Remove';
-import { fetchProgressTruckLoading, fetchAvgLoadingTime } from '_api/dashboardRequest';
+import { fetchProgressTruckLoading, fetchAvgLoadingTime, fetchLoadingVolumeWarehouse } from '_api/dashboardRequest';
 
 const OperationSummary = ({ date }) => {
   const [data, setData] = useState({
@@ -59,14 +59,33 @@ const OperationSummary = ({ date }) => {
   };
 
   // Helper function to transform API data
-  const transformApiData = (result, avgTime = 0) => {
+  const transformApiData = (result, avgTime = 0, warehouseData = null) => {
     const items = result.items || [];
     
+    console.log('=== transformApiData Debug ===');
+    console.log('Raw API result:', result);
+    console.log('Items array:', items);
+    console.log('Warehouse data:', warehouseData);
+    
     const aggregatedData = items.reduce((acc, company) => {
-      acc.totalTarget += company.total_target || 0;
-      acc.finishedStep2 += company.finished_step2 || 0;
-      acc.remaining += company.remaining || 0;
-      acc.cancelledCount += company.cancelled_count || 0;
+      const totalTarget = company.total_target || 0;
+      const finishedStep2 = company.finished_step2 || 0;
+      const remaining = company.remaining || 0;
+      const cancelledCount = company.cancelled_count || 0;
+      
+      console.log(`Company: ${company.product_company_name_th || company.product_company_code || 'Unknown'}`);
+      console.log(`  - total_target: ${totalTarget}`);
+      console.log(`  - finished_step2: ${finishedStep2}`);
+      console.log(`  - remaining: ${remaining}`);
+      console.log(`  - cancelled_count: ${cancelledCount}`);
+      
+      acc.totalTarget += totalTarget;
+      acc.finishedStep2 += finishedStep2;
+      acc.remaining += remaining;
+      acc.cancelledCount += cancelledCount;
+      
+      console.log(`Running totals - totalTarget: ${acc.totalTarget}, finishedStep2: ${acc.finishedStep2}`);
+      
       return acc;
     }, {
       totalTarget: 0,
@@ -75,20 +94,47 @@ const OperationSummary = ({ date }) => {
       cancelledCount: 0
     });
 
+    console.log('Final aggregated data:', aggregatedData);
+
     const overallProgressPercent = aggregatedData.totalTarget > 0 
       ? (aggregatedData.finishedStep2 / aggregatedData.totalTarget) * 100 
       : 0;
 
-    const estimatedItemsLoaded = aggregatedData.finishedStep2 * 25; // 25 tons per truck average
+    // Calculate total items loaded from warehouse data
+    let totalItemsLoaded = 0;
+    console.log('=== Items Loaded Calculation Debug ===');
+    
+    if (warehouseData && warehouseData.items) {
+      console.log('Using warehouse data for items loaded calculation');
+      console.log('Warehouse items:', warehouseData.items);
+      
+      totalItemsLoaded = warehouseData.items.reduce((sum, warehouse) => {
+        const warehouseVolume = warehouse.total_qty || 0;
+        console.log(`Warehouse ${warehouse.warehouse_name}: ${warehouseVolume} tons`);
+        return sum + warehouseVolume;
+      }, 0);
+      
+      console.log('Total items loaded from warehouse data:', totalItemsLoaded, 'tons');
+    } else {
+      // Fallback to estimated calculation
+      console.log('No warehouse data available, using estimated calculation');
+      totalItemsLoaded = aggregatedData.finishedStep2 * 25; // 25 tons per truck average
+      console.log('Using estimated items loaded:', totalItemsLoaded, 'tons (finishedStep2 * 25)');
+    }
 
-    return {
+    const transformedData = {
       totalTrucks: aggregatedData.totalTarget,
-      itemsLoaded: estimatedItemsLoaded,
+      itemsLoaded: totalItemsLoaded,
       averageTime: avgTime, // Use the average time from API
       successRate: Math.round(overallProgressPercent),
       companiesCount: items.length,
       activeWarehouses: 3 // Default value
     };
+
+    console.log('Transformed data:', transformedData);
+    console.log('=== End transformApiData Debug ===');
+
+    return transformedData;
   };
 
   // Helper function to calculate trend percentage
@@ -137,16 +183,31 @@ const OperationSummary = ({ date }) => {
       try {
         // Fetch current day data
         const currentResult = await fetchProgressTruckLoading(date);
-        console.log('Current day operation summary data:', currentResult);
+        console.log('=== Current day operation summary data ===');
+        console.log('Date:', date);
+        console.log('API Response:', currentResult);
         
         // Fetch previous day data
         const previousDay = getPreviousDay(date);
         const previousResult = await fetchProgressTruckLoading(previousDay);
-        console.log('Previous day operation summary data:', previousResult);
+        console.log('=== Previous day operation summary data ===');
+        console.log('Previous Date:', previousDay);
+        console.log('API Response:', previousResult);
+        
+        // Fetch warehouse data for current day
+        const currentWarehouseResult = await fetchLoadingVolumeWarehouse(date);
+        console.log('=== Current day warehouse data ===');
+        console.log('API Response:', currentWarehouseResult);
+        
+        // Fetch warehouse data for previous day
+        const previousWarehouseResult = await fetchLoadingVolumeWarehouse(previousDay);
+        console.log('=== Previous day warehouse data ===');
+        console.log('API Response:', previousWarehouseResult);
         
         // Fetch average loading time for current day
         const avgLoadingTimeResult = await fetchAvgLoadingTime(date);
-        console.log('Average loading time data:', avgLoadingTimeResult);
+        console.log('=== Average loading time data ===');
+        console.log('API Response:', avgLoadingTimeResult);
         
         // Transform both datasets
         const currentAvgTime = avgLoadingTimeResult && avgLoadingTimeResult.items 
@@ -159,8 +220,15 @@ const OperationSummary = ({ date }) => {
           ? calculateWeightedAverage(previousAvgLoadingTimeResult.items)
           : 0;
         
-        const currentData = transformApiData(currentResult, currentAvgTime);
-        const previousData = transformApiData(previousResult, previousAvgTime);
+        console.log('=== Processing Current Day Data ===');
+        const currentData = transformApiData(currentResult, currentAvgTime, currentWarehouseResult);
+        
+        console.log('=== Processing Previous Day Data ===');
+        const previousData = transformApiData(previousResult, previousAvgTime, previousWarehouseResult);
+        
+        console.log('=== Final Results ===');
+        console.log('Current Data:', currentData);
+        console.log('Previous Data:', previousData);
         
         setData(currentData);
         setPreviousData(previousData);
@@ -221,11 +289,23 @@ const OperationSummary = ({ date }) => {
   }
 
   // Calculate trends for each KPI
+  console.log('=== Trend Calculation Debug ===');
+  console.log('Current data.totalTrucks:', data.totalTrucks);
+  console.log('Previous data.totalTrucks:', previousData.totalTrucks);
+  
   const totalTrucksTrend = getTrendDirection(data.totalTrucks, previousData.totalTrucks);
   const totalTrucksPercentage = calculateTrendPercentage(data.totalTrucks, previousData.totalTrucks);
   
+  console.log('totalTrucksTrend:', totalTrucksTrend);
+  console.log('totalTrucksPercentage:', totalTrucksPercentage);
+  
   const itemsLoadedTrend = getTrendDirection(data.itemsLoaded, previousData.itemsLoaded);
   const itemsLoadedPercentage = calculateTrendPercentage(data.itemsLoaded, previousData.itemsLoaded);
+  
+  console.log('Current data.itemsLoaded:', data.itemsLoaded);
+  console.log('Previous data.itemsLoaded:', previousData.itemsLoaded);
+  console.log('itemsLoadedTrend:', itemsLoadedTrend);
+  console.log('itemsLoadedPercentage:', itemsLoadedPercentage);
   
   const averageTimeTrend = getAverageTimeTrendDirection(data.averageTime, previousData.averageTime);
   const averageTimePercentage = calculateAverageTimeTrendPercentage(data.averageTime, previousData.averageTime);
@@ -269,78 +349,118 @@ const OperationSummary = ({ date }) => {
   };
 
   // KPI Card Component
-  const KPICard = ({ icon, title, value, unit, trend, trendPercentage, description, iconColor = 'primary.main' }) => (
-    <Card sx={{ 
-      backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-      borderRadius: 2,
-      border: '1px solid rgba(0, 0, 0, 0.1)',
-      height: '100%',
-      transition: 'transform 0.2s',
-      '&:hover': {
-        transform: 'translateY(-2px)',
-        boxShadow: 2
-      }
-    }}>
-      <CardContent sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          {/* Icon */}
-          <Box sx={{ mb: 1 }}>
-            {React.cloneElement(icon, { sx: { color: iconColor, fontSize: 24 } })}
+  const KPICard = ({ icon, title, value, unit, trend, trendPercentage, description, iconColor = 'primary.main' }) => {
+    // Log for totalTrucks specifically
+    if (title === "รถทั้งหมดวันนี้") {
+      console.log('=== KPI Card Debug - Total Trucks ===');
+      console.log('Title:', title);
+      console.log('Value:', value);
+      console.log('Unit:', unit);
+      console.log('Trend:', trend);
+      console.log('Trend Percentage:', trendPercentage);
+      console.log('Description:', description);
+    }
+    
+    // Log for items loaded specifically
+    if (title === "สินค้าที่บรรทุก") {
+      console.log('=== KPI Card Debug - Items Loaded ===');
+      console.log('Title:', title);
+      console.log('Value:', value);
+      console.log('Unit:', unit);
+      console.log('Trend:', trend);
+      console.log('Trend Percentage:', trendPercentage);
+      console.log('Description:', description);
+    }
+    
+    return (
+      <Card sx={{ 
+        backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+        borderRadius: 2,
+        border: '1px solid rgba(0, 0, 0, 0.1)',
+        height: '100%',
+        transition: 'transform 0.2s',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: 2
+        }
+      }}>
+        <CardContent sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            {/* Icon */}
+            <Box sx={{ mb: 1 }}>
+              {React.cloneElement(icon, { sx: { color: iconColor, fontSize: 24 } })}
+            </Box>
+            
+            {/* Title */}
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 500 }}>
+              {title}
+            </Typography>
+            
+            {/* Value */}
+            <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
+              {value}{unit}
+            </Typography>
+            
+            {/* Trend */}
+            <Box sx={{ mb: 1 }}>
+              {renderTrend(trend, trendPercentage)}
+            </Box>
+            
+            {/* Description */}
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 'auto' }}>
+              {description}
+            </Typography>
           </Box>
-          
-          {/* Title */}
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 500 }}>
-            {title}
-          </Typography>
-          
-          {/* Value */}
-          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-            {value}{unit}
-          </Typography>
-          
-          {/* Trend */}
-          <Box sx={{ mb: 1 }}>
-            {renderTrend(trend, trendPercentage)}
-          </Box>
-          
-          {/* Description */}
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 'auto' }}>
-            {description}
-          </Typography>
-        </Box>
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  };
 
      return (
      <Grid container spacing={2}>
        {/* Card 1: Total Trucks Today */}
        <Grid item xs={12} sm={6} md={4} lg={2.4}>
-         <KPICard
-           icon={<LocalShippingIcon />}
-           title="รถทั้งหมดวันนี้"
-           value={data.totalTrucks}
-           unit=" คัน"
-           trend={totalTrucksTrend}
-           trendPercentage={totalTrucksPercentage}
-           description={totalTrucksTrend === 'up' ? 'เพิ่มขึ้นจากเมื่อวาน' : totalTrucksTrend === 'down' ? 'ลดลงจากเมื่อวาน' : 'คงที่จากเมื่อวาน'}
-           iconColor="primary.main"
-         />
+         {(() => {
+           console.log('=== KPICard Props Debug - Total Trucks ===');
+           console.log('data.totalTrucks:', data.totalTrucks);
+           console.log('totalTrucksTrend:', totalTrucksTrend);
+           console.log('totalTrucksPercentage:', totalTrucksPercentage);
+           return (
+             <KPICard
+               icon={<LocalShippingIcon />}
+               title="รถทั้งหมดวันนี้"
+               value={data.totalTrucks}
+               unit=" คัน"
+               trend={totalTrucksTrend}
+               trendPercentage={totalTrucksPercentage}
+               description={totalTrucksTrend === 'up' ? 'เพิ่มขึ้นจากเมื่อวาน' : totalTrucksTrend === 'down' ? 'ลดลงจากเมื่อวาน' : 'คงที่จากเมื่อวาน'}
+               iconColor="primary.main"
+             />
+           );
+         })()}
        </Grid>
 
-       {/* Card 2: Items Loaded */}
-       <Grid item xs={12} sm={6} md={4} lg={2.4}>
-         <KPICard
-           icon={<InventoryIcon />}
-           title="สินค้าที่บรรทุก"
-           value={data.itemsLoaded.toLocaleString()}
-           unit=" ตัน"
-           trend={itemsLoadedTrend}
-           trendPercentage={itemsLoadedPercentage}
-           description={itemsLoadedTrend === 'up' ? 'เพิ่มขึ้นจากเมื่อวาน' : itemsLoadedTrend === 'down' ? 'ลดลงจากเมื่อวาน' : 'คงที่จากเมื่อวาน'}
-           iconColor="primary.main"
-         />
-       </Grid>
+               {/* Card 2: Items Loaded */}
+        <Grid item xs={12} sm={6} md={4} lg={2.4}>
+          {(() => {
+            console.log('=== KPICard Props Debug - Items Loaded ===');
+            console.log('data.itemsLoaded:', data.itemsLoaded);
+            console.log('itemsLoadedTrend:', itemsLoadedTrend);
+            console.log('itemsLoadedPercentage:', itemsLoadedPercentage);
+            return (
+              <KPICard
+                icon={<InventoryIcon />}
+                title="สินค้าที่บรรทุก"
+                value={data.itemsLoaded.toLocaleString()}
+                unit=" ตัน"
+                trend={itemsLoadedTrend}
+                trendPercentage={itemsLoadedPercentage}
+                description={itemsLoadedTrend === 'up' ? 'เพิ่มขึ้นจากเมื่อวาน' : itemsLoadedTrend === 'down' ? 'ลดลงจากเมื่อวาน' : 'คงที่จากเมื่อวาน'}
+                iconColor="primary.main"
+              />
+            );
+          })()}
+        </Grid>
 
        {/* Card 3: Average Time/Truck */}
        <Grid item xs={12} sm={6} md={4} lg={2.4}>

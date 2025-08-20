@@ -13,13 +13,13 @@ const AvgLoadingTimePerTruck = ({ date }) => {
   useEffect(() => {
     const loadData = async () => {
       if (!date) return;
-      
+
       setLoading(true);
       setError(null);
-      
+
       try {
         const result = await fetchAvgLoadingTime(date);
-        
+
         // Transform the data to match the component's expected format
         const items = result.items || result;
         const transformedData = items.map((item) => ({
@@ -27,7 +27,7 @@ const AvgLoadingTimePerTruck = ({ date }) => {
           companyCode: item.product_company_code,
           avgTime: item.avg_loading_min || 0
         }));
-        
+
         setData(transformedData);
       } catch (err) {
         console.error('Error loading average loading time data:', err);
@@ -43,12 +43,14 @@ const AvgLoadingTimePerTruck = ({ date }) => {
 
   if (loading) {
     return (
-      <Card sx={{ 
-        backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-        borderRadius: 2,
-        border: '1px solid rgba(0, 0, 0, 0.1)',
-        height: '100%'
-      }}>
+      <Card
+        sx={{
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: 2,
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+          height: '100%'
+        }}
+      >
         <CardContent>
           <Typography>กำลังโหลดข้อมูล...</Typography>
         </CardContent>
@@ -58,12 +60,14 @@ const AvgLoadingTimePerTruck = ({ date }) => {
 
   if (error) {
     return (
-      <Card sx={{ 
-        backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-        borderRadius: 2,
-        border: '1px solid rgba(0, 0, 0, 0.1)',
-        height: '100%'
-      }}>
+      <Card
+        sx={{
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: 2,
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+          height: '100%'
+        }}
+      >
         <CardContent>
           <Typography color="error">{error}</Typography>
         </CardContent>
@@ -81,10 +85,10 @@ const AvgLoadingTimePerTruck = ({ date }) => {
 
   // Company code mapping
   const companyCodeMap = {
-    'IF': 'ICPF',
-    'II': 'ICPI',
-    'SK': 'SAHAI KASET',
-    'JS': 'JS888'
+    IF: 'ICPF',
+    II: 'ICPI',
+    SK: 'SAHAI KASET',
+    JS: 'JS888'
   };
 
   // Chart options for area chart
@@ -120,7 +124,7 @@ const AvgLoadingTimePerTruck = ({ date }) => {
       colors: ['#4CAF50']
     },
     xaxis: {
-      categories: data.map(item => companyCodeMap[item.companyCode] || item.companyCode),
+      categories: data.map((item) => companyCodeMap[item.companyCode] || item.companyCode),
       labels: {
         style: {
           fontSize: '12px'
@@ -161,23 +165,25 @@ const AvgLoadingTimePerTruck = ({ date }) => {
   const chartSeries = [
     {
       name: 'เวลาเฉลี่ย',
-      data: data.map(item => item.avgTime)
+      data: data.map((item) => item.avgTime)
     }
   ];
 
   return (
-    <Card sx={{ 
-      backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-      borderRadius: 2,
-      border: '1px solid rgba(0, 0, 0, 0.1)',
-      height: '100%'
-    }}>
+    <Card
+      sx={{
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: 2,
+        border: '1px solid rgba(0, 0, 0, 0.1)',
+        height: '100%'
+      }}
+    >
       <CardContent>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <AccessTimeIcon sx={{ color: 'primary.main', fontSize: 28, mr: 1 }} />
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            เวลาเฉลี่ย/คัน
+            Avg. Time/Truck
           </Typography>
         </Box>
 
@@ -187,29 +193,38 @@ const AvgLoadingTimePerTruck = ({ date }) => {
             <Grid container spacing={2} sx={{ mb: 3 }}>
               {data.slice(0, 4).map((item, index) => (
                 <Grid item xs={6} key={index}>
-                  <Card sx={{ 
-                    backgroundColor: 'rgba(173, 216, 230, 0.2)', 
-                    borderRadius: 2,
-                    border: '1px solid rgba(173, 216, 230, 0.3)',
-                    height: '100%'
-                  }}>
+                  <Card
+                    sx={{
+                      backgroundColor: 'rgba(173, 216, 230, 0.2)',
+                      borderRadius: 2,
+                      border: '1px solid rgba(173, 216, 230, 0.3)',
+                      height: '100%'
+                    }}
+                  >
                     <CardContent sx={{ p: 2, textAlign: 'center' }}>
-                      <Typography variant="h4" sx={{ 
-                        color: 'primary.main', 
-                        fontWeight: 'bold',
-                        mb: 1
-                      }}>
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          color: 'primary.main',
+                          fontWeight: 'bold',
+                          mb: 1
+                        }}
+                      >
                         {item.avgTime}
                       </Typography>
                       <Typography variant="body2" sx={{ mb: 0.5 }}>
                         นาที
                       </Typography>
-                                             <Typography variant="body2" sx={{ 
-                         color: 'text.secondary',
-                         fontSize: '0.875rem'
-                       }}>
-                         <CompanyCodeConverter code={item.companyCode} showColor={true} />
-                       </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary', 
+                          fontWeight: 'bold',
+                          fontSize: '0.875rem' 
+                        }}
+                      >
+                        <CompanyCodeConverter code={item.companyCode} showColor={true} />
+                      </Typography>
                     </CardContent>
                   </Card>
                 </Grid>
@@ -218,24 +233,19 @@ const AvgLoadingTimePerTruck = ({ date }) => {
 
             {/* Area Chart */}
             <Box>
-              <ReactApexChart 
-                options={chartOptions} 
-                series={chartSeries} 
-                type="area" 
-                height={200} 
-              />
+              <ReactApexChart options={chartOptions} series={chartSeries} type="area" height={200} />
             </Box>
           </>
         ) : (
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: 300 
-          }}>
-            <Typography color="text.secondary">
-              ไม่มีข้อมูล
-            </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: 300
+            }}
+          >
+            <Typography color="text.secondary">ไม่มีข้อมูล</Typography>
           </Box>
         )}
       </CardContent>

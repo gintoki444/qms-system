@@ -44,11 +44,11 @@ const MainRoutes = {
   children: [
     {
       path: '/',
-      element: <DashboardDefault />
+      element: <DashboardNew />
     },
     {
       path: '/dashboard-new',
-      element: <DashboardNew />
+      element: <DashboardDefault />
     },
     {
       path: '/reserve',

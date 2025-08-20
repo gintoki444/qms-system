@@ -55,6 +55,7 @@ export const fetchProgressTruckLoading = async (date) => {
     };
     const response = await fetch(`${apiUrl}/progress-truck-loading?date=${date}`, requestOptions);
     const result = await response.json();
+    console.log('fetchProgressTruckLoading result:', result);
     return result;
   } catch (error) {
     console.error('Error in fetchAvgLoadingTime:', error);
@@ -95,19 +96,19 @@ export const fetchLoadingVolumeByHour = async (date) => {
 };
 
 export const fetchDeliveryLoadingByHour = async (date) => {
-    try {
-      const requestOptions = {
-        method: 'GET',
-        redirect: 'follow'
-      };
-      const response = await fetch(`${apiUrl}/delivery-loading-by-hour?date=${date}`, requestOptions);
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.error('Error in fetchAvgLoadingTime:', error);
-      throw error;
-    }
-  };
+  try {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+    const response = await fetch(`${apiUrl}/delivery-loading-by-hour?date=${date}`, requestOptions);
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error in fetchAvgLoadingTime:', error);
+    throw error;
+  }
+};
 
 // ==============================|| รายงาน Top Items ||============================== //
 export const fetchTopItems = async (date) => {
@@ -141,20 +142,34 @@ export const fetchAvgLoadingTimeStats = async (date) => {
   }
 };
 
-
 // ==============================|| รายงาน progress truck Loading ||============================== //
 export const fetchLoadingVolumeCompany = async (date) => {
-    try {
-      const requestOptions = {
-        method: 'GET',
-        redirect: 'follow'
-      };
-      const response = await fetch(`${apiUrl}/loading-volume-company?date=${date}`, requestOptions);
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.error('Error in fetchAvgLoadingTime:', error);
-      throw error;
-    }
-  };
-  
+  try {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+    const response = await fetch(`${apiUrl}/loading-volume-company?date=${date}`, requestOptions);
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error in fetchAvgLoadingTime:', error);
+    throw error;
+  }
+};
+
+// ==============================|| รายงาน progress truck Loading ||============================== //
+export const fetchLoadingVolumeWarehouse = async (date) => {
+  try {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+    const response = await fetch(`${apiUrl}/loading-volume-warehouse?date=${date}`, requestOptions);
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error in fetchAvgLoadingTime:', error);
+    throw error;
+  }
+};

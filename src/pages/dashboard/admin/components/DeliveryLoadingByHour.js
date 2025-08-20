@@ -67,7 +67,7 @@ const DeliveryLoadingByHour = ({ date }) => {
 
         setData(transformedData);
       } catch (err) {
-        console.error('Error loading delivery loading by hour data:', err);
+        console.error('Error loading Loading Volume By hour data:', err);
         setError('ไม่สามารถโหลดข้อมูลได้');
         setData([]); // Set empty array when error occurs
       } finally {
@@ -157,7 +157,7 @@ const DeliveryLoadingByHour = ({ date }) => {
 
   if (error) {
     return (
-      <DashboardCard title="Delivery Loading By Hour" icon={<BarChartIcon sx={{ color: 'primary.main' }} />} fullHeight={true}>
+      <DashboardCard title="Loading Volume By hour" icon={<BarChartIcon sx={{ color: 'primary.main' }} />} fullHeight={true}>
         <Typography color="error">ไม่สามารถโหลดข้อมูลได้</Typography>
       </DashboardCard>
     );
@@ -165,7 +165,7 @@ const DeliveryLoadingByHour = ({ date }) => {
 
   return (
     <DashboardCard
-      title="Delivery Loading By Hour"
+      title="Loading Volume By hour"
       icon={<BarChartIcon sx={{ color: 'primary.main' }} />}
       isLoading={loading}
       fullHeight={true}

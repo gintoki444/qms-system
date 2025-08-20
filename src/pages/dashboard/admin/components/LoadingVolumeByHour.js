@@ -27,7 +27,7 @@ const LoadingVolumeByHour = ({ date }) => {
 
       try {
         const result = await fetchLoadingVolumeByHour(date);
-        console.log('Loading volume by hour data received:', result);
+        console.log('Delivery Loading By Hour data received:', result);
 
         // Use result.items if available, otherwise use result directly
         const items = result.items || result;
@@ -77,7 +77,7 @@ const LoadingVolumeByHour = ({ date }) => {
         console.log('Final transformed data:', transformedData);
         setData(transformedData);
       } catch (err) {
-        console.error('Error loading loading volume by hour data:', err);
+        console.error('Error loading Delivery Loading By Hour data:', err);
         setError('ไม่สามารถโหลดข้อมูลได้');
         setData([]); // Set empty array when error occurs
       } finally {
@@ -167,14 +167,14 @@ const LoadingVolumeByHour = ({ date }) => {
 
   if (error) {
     return (
-      <DashboardCard title="Loading Volume By hour" icon={<BarChartIcon sx={{ color: 'primary.main' }} />} fullHeight={true}>
+      <DashboardCard title="Delivery Loading By Hour" icon={<BarChartIcon sx={{ color: 'primary.main' }} />} fullHeight={true}>
         <Typography color="error">ไม่สามารถโหลดข้อมูลได้</Typography>
       </DashboardCard>
     );
   }
 
   return (
-    <DashboardCard title="Loading Volume By hour" icon={<BarChartIcon sx={{ color: 'primary.main' }} />} isLoading={loading} fullHeight={true}>
+    <DashboardCard title="Delivery Loading By Hour" icon={<BarChartIcon sx={{ color: 'primary.main' }} />} isLoading={loading} fullHeight={true}>
       <Box sx={{ height: 300 }}>
         <ReactApexChart options={chartOptions} series={chartSeries} type="bar" height={300} />
       </Box>
