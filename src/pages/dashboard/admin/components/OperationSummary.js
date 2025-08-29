@@ -62,29 +62,16 @@ const OperationSummary = ({ date }) => {
   const transformApiData = (result, avgTime = 0, warehouseData = null) => {
     const items = result.items || [];
     
-    console.log('=== transformApiData Debug ===');
-    console.log('Raw API result:', result);
-    console.log('Items array:', items);
-    console.log('Warehouse data:', warehouseData);
-    
     const aggregatedData = items.reduce((acc, company) => {
       const totalTarget = company.total_target || 0;
       const finishedStep2 = company.finished_step2 || 0;
       const remaining = company.remaining || 0;
       const cancelledCount = company.cancelled_count || 0;
       
-      console.log(`Company: ${company.product_company_name_th || company.product_company_code || 'Unknown'}`);
-      console.log(`  - total_target: ${totalTarget}`);
-      console.log(`  - finished_step2: ${finishedStep2}`);
-      console.log(`  - remaining: ${remaining}`);
-      console.log(`  - cancelled_count: ${cancelledCount}`);
-      
       acc.totalTarget += totalTarget;
       acc.finishedStep2 += finishedStep2;
       acc.remaining += remaining;
       acc.cancelledCount += cancelledCount;
-      
-      console.log(`Running totals - totalTarget: ${acc.totalTarget}, finishedStep2: ${acc.finishedStep2}`);
       
       return acc;
     }, {
@@ -93,33 +80,22 @@ const OperationSummary = ({ date }) => {
       remaining: 0,
       cancelledCount: 0
     });
-
-    console.log('Final aggregated data:', aggregatedData);
-
     const overallProgressPercent = aggregatedData.totalTarget > 0 
       ? (aggregatedData.finishedStep2 / aggregatedData.totalTarget) * 100 
       : 0;
 
     // Calculate total items loaded from warehouse data
     let totalItemsLoaded = 0;
-    console.log('=== Items Loaded Calculation Debug ===');
     
     if (warehouseData && warehouseData.items) {
-      console.log('Using warehouse data for items loaded calculation');
-      console.log('Warehouse items:', warehouseData.items);
       
       totalItemsLoaded = warehouseData.items.reduce((sum, warehouse) => {
         const warehouseVolume = warehouse.total_qty || 0;
-        console.log(`Warehouse ${warehouse.warehouse_name}: ${warehouseVolume} tons`);
         return sum + warehouseVolume;
       }, 0);
-      
-      console.log('Total items loaded from warehouse data:', totalItemsLoaded, 'tons');
     } else {
       // Fallback to estimated calculation
-      console.log('No warehouse data available, using estimated calculation');
-      totalItemsLoaded = aggregatedData.finishedStep2 * 25; // 25 tons per truck average
-      console.log('Using estimated items loaded:', totalItemsLoaded, 'tons (finishedStep2 * 25)');
+      totalItemsLoaded = aggregatedData.finishedStep2 * 25;
     }
 
     const transformedData = {
@@ -130,9 +106,6 @@ const OperationSummary = ({ date }) => {
       companiesCount: items.length,
       activeWarehouses: 3 // Default value
     };
-
-    console.log('Transformed data:', transformedData);
-    console.log('=== End transformApiData Debug ===');
 
     return transformedData;
   };
@@ -183,31 +156,19 @@ const OperationSummary = ({ date }) => {
       try {
         // Fetch current day data
         const currentResult = await fetchProgressTruckLoading(date);
-        console.log('=== Current day operation summary data ===');
-        console.log('Date:', date);
-        console.log('API Response:', currentResult);
         
         // Fetch previous day data
         const previousDay = getPreviousDay(date);
         const previousResult = await fetchProgressTruckLoading(previousDay);
-        console.log('=== Previous day operation summary data ===');
-        console.log('Previous Date:', previousDay);
-        console.log('API Response:', previousResult);
         
         // Fetch warehouse data for current day
         const currentWarehouseResult = await fetchLoadingVolumeWarehouse(date);
-        console.log('=== Current day warehouse data ===');
-        console.log('API Response:', currentWarehouseResult);
         
         // Fetch warehouse data for previous day
         const previousWarehouseResult = await fetchLoadingVolumeWarehouse(previousDay);
-        console.log('=== Previous day warehouse data ===');
-        console.log('API Response:', previousWarehouseResult);
         
         // Fetch average loading time for current day
         const avgLoadingTimeResult = await fetchAvgLoadingTime(date);
-        console.log('=== Average loading time data ===');
-        console.log('API Response:', avgLoadingTimeResult);
         
         // Transform both datasets
         const currentAvgTime = avgLoadingTimeResult && avgLoadingTimeResult.items 
@@ -219,16 +180,9 @@ const OperationSummary = ({ date }) => {
         const previousAvgTime = previousAvgLoadingTimeResult && previousAvgLoadingTimeResult.items 
           ? calculateWeightedAverage(previousAvgLoadingTimeResult.items)
           : 0;
-        
-        console.log('=== Processing Current Day Data ===');
         const currentData = transformApiData(currentResult, currentAvgTime, currentWarehouseResult);
         
-        console.log('=== Processing Previous Day Data ===');
         const previousData = transformApiData(previousResult, previousAvgTime, previousWarehouseResult);
-        
-        console.log('=== Final Results ===');
-        console.log('Current Data:', currentData);
-        console.log('Previous Data:', previousData);
         
         setData(currentData);
         setPreviousData(previousData);
@@ -287,25 +241,12 @@ const OperationSummary = ({ date }) => {
       </Card>
     );
   }
-
-  // Calculate trends for each KPI
-  console.log('=== Trend Calculation Debug ===');
-  console.log('Current data.totalTrucks:', data.totalTrucks);
-  console.log('Previous data.totalTrucks:', previousData.totalTrucks);
   
   const totalTrucksTrend = getTrendDirection(data.totalTrucks, previousData.totalTrucks);
   const totalTrucksPercentage = calculateTrendPercentage(data.totalTrucks, previousData.totalTrucks);
   
-  console.log('totalTrucksTrend:', totalTrucksTrend);
-  console.log('totalTrucksPercentage:', totalTrucksPercentage);
-  
   const itemsLoadedTrend = getTrendDirection(data.itemsLoaded, previousData.itemsLoaded);
   const itemsLoadedPercentage = calculateTrendPercentage(data.itemsLoaded, previousData.itemsLoaded);
-  
-  console.log('Current data.itemsLoaded:', data.itemsLoaded);
-  console.log('Previous data.itemsLoaded:', previousData.itemsLoaded);
-  console.log('itemsLoadedTrend:', itemsLoadedTrend);
-  console.log('itemsLoadedPercentage:', itemsLoadedPercentage);
   
   const averageTimeTrend = getAverageTimeTrendDirection(data.averageTime, previousData.averageTime);
   const averageTimePercentage = calculateAverageTimeTrendPercentage(data.averageTime, previousData.averageTime);
@@ -351,27 +292,6 @@ const OperationSummary = ({ date }) => {
   // KPI Card Component
   const KPICard = ({ icon, title, value, unit, trend, trendPercentage, description, iconColor = 'primary.main' }) => {
     // Log for totalTrucks specifically
-    if (title === "รถทั้งหมดวันนี้") {
-      console.log('=== KPI Card Debug - Total Trucks ===');
-      console.log('Title:', title);
-      console.log('Value:', value);
-      console.log('Unit:', unit);
-      console.log('Trend:', trend);
-      console.log('Trend Percentage:', trendPercentage);
-      console.log('Description:', description);
-    }
-    
-    // Log for items loaded specifically
-    if (title === "สินค้าที่บรรทุก") {
-      console.log('=== KPI Card Debug - Items Loaded ===');
-      console.log('Title:', title);
-      console.log('Value:', value);
-      console.log('Unit:', unit);
-      console.log('Trend:', trend);
-      console.log('Trend Percentage:', trendPercentage);
-      console.log('Description:', description);
-    }
-    
     return (
       <Card sx={{ 
         backgroundColor: 'rgba(255, 255, 255, 0.9)', 
@@ -421,10 +341,6 @@ const OperationSummary = ({ date }) => {
        {/* Card 1: Total Trucks Today */}
        <Grid item xs={12} sm={6} md={4} lg={2.4}>
          {(() => {
-           console.log('=== KPICard Props Debug - Total Trucks ===');
-           console.log('data.totalTrucks:', data.totalTrucks);
-           console.log('totalTrucksTrend:', totalTrucksTrend);
-           console.log('totalTrucksPercentage:', totalTrucksPercentage);
            return (
              <KPICard
                icon={<LocalShippingIcon />}
@@ -443,10 +359,6 @@ const OperationSummary = ({ date }) => {
                {/* Card 2: Items Loaded */}
         <Grid item xs={12} sm={6} md={4} lg={2.4}>
           {(() => {
-            console.log('=== KPICard Props Debug - Items Loaded ===');
-            console.log('data.itemsLoaded:', data.itemsLoaded);
-            console.log('itemsLoadedTrend:', itemsLoadedTrend);
-            console.log('itemsLoadedPercentage:', itemsLoadedPercentage);
             return (
               <KPICard
                 icon={<InventoryIcon />}

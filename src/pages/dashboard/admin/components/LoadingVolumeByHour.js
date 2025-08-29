@@ -27,16 +27,11 @@ const LoadingVolumeByHour = ({ date }) => {
 
       try {
         const result = await fetchLoadingVolumeByHour(date);
-        console.log('Delivery Loading By Hour data received:', result);
-
-        // Use result.items if available, otherwise use result directly
         const items = result.items || result;
         
         // Check if the date is today
         const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
         const isCurrentDay = date === today;
-        
-        console.log('Selected date:', date, 'Today (Thailand):', today, 'Is current day:', isCurrentDay);
         
         let filteredData;
         
@@ -44,25 +39,19 @@ const LoadingVolumeByHour = ({ date }) => {
           // For current day: filter from 6 AM to current hour
           const currentHour = new Date().getHours();
           filteredData = items.filter((item) => item.hour >= 6 && item.hour <= currentHour);
-          console.log('Current day filtering: 6 AM to', currentHour, 'Filtered data count:', filteredData.length);
         } else {
           // For historical days: filter from first hour with data to last hour with data
           const hoursWithData = items.filter((item) => item.total_volume > 0 || item.truck_count > 0);
-          console.log('Hours with data:', hoursWithData.map(h => h.hour));
           
           if (hoursWithData.length > 0) {
             const firstHour = Math.min(...hoursWithData.map(item => item.hour));
             const lastHour = Math.max(...hoursWithData.map(item => item.hour));
             
-            console.log('Historical filtering: from hour', firstHour, 'to hour', lastHour);
-            
             // Include all hours from first to last, even if some have zero data
             filteredData = items.filter((item) => item.hour >= firstHour && item.hour <= lastHour);
-            console.log('Historical filtered data count:', filteredData.length);
           } else {
             // If no data, show from 6 AM to 18 PM (6 PM) as default
             filteredData = items.filter((item) => item.hour >= 6 && item.hour <= 18);
-            console.log('No data found, using default range 6-18. Filtered data count:', filteredData.length);
           }
         }
 
@@ -73,8 +62,6 @@ const LoadingVolumeByHour = ({ date }) => {
           volume: item.total_volume || 0,
           truckCount: item.truck_count || 0
         }));
-
-        console.log('Final transformed data:', transformedData);
         setData(transformedData);
       } catch (err) {
         console.error('Error loading Delivery Loading By Hour data:', err);

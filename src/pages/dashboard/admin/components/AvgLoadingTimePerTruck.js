@@ -39,7 +39,7 @@ const AvgLoadingTimePerTruck = ({ date }) => {
     };
 
     loadData();
-  }, [date]);
+  }, []);
 
   if (loading) {
     return (

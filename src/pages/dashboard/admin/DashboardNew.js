@@ -37,8 +37,6 @@ const DashboardNew = () => {
   };
 
   const handleSearch = () => {
-    // Handle search logic here
-    console.log('Searching for date:', selectedDate);
     setIsRefreshing(true);
     setRefreshKey(prev => prev + 1);
     
@@ -67,8 +65,8 @@ const DashboardNew = () => {
   const getProductCompany = async (dataList) => {
     try {
       const response = await stepRequest.getAllProductCompany(); // รอการดึงข้อมูลจาก API
+      console.log('response getAllProductCompany :', response);
       const companyList = await filterProductCom(response); // รอการเรียงลำดับ
-      // console.log('companyList :', companyList);
 
       if (response.length > 0) {
         response.map((x) => {
@@ -123,7 +121,6 @@ const DashboardNew = () => {
         summaryData.sum_cars_count = summaryData.sum_cars_count + (x.queues_counts - x.step1_cancel_count);
         summaryData.sum_total_quantity = summaryData.sum_total_quantity + setnumber;
         summaryData.sum_total_order = summaryData.sum_total_order + x.queues_counts_orderonly;
-        // console.log('x.total_quantity_orderonly *1  :', typeof (x.total_quantity_orderonly * 1));
 
         summaryTime.step2_total_duration_minutes = summaryTime.step2_total_duration_minutes + x.step2_total_duration_minutes2 * 1;
         summaryTime.step2_cars_count = summaryTime.step2_cars_count + x.step2_cars_count;

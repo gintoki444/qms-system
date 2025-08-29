@@ -19,7 +19,6 @@ const AvgLoadingTime = ({ date }) => {
       
       try {
         const result = await fetchAvgLoadingTimeStats(date);
-        console.log('fetchAvgLoadingTimeStats data:', result);
         
         // Use result.items if available, otherwise use result directly
         const items = result.items || result;

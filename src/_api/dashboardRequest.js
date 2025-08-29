@@ -55,7 +55,6 @@ export const fetchProgressTruckLoading = async (date) => {
     };
     const response = await fetch(`${apiUrl}/progress-truck-loading?date=${date}`, requestOptions);
     const result = await response.json();
-    console.log('fetchProgressTruckLoading result:', result);
     return result;
   } catch (error) {
     console.error('Error in fetchAvgLoadingTime:', error);

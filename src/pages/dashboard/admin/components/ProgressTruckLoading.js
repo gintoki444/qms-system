@@ -21,8 +21,6 @@ const ProgressTruckLoading = ({ date }) => {
 
       try {
         const result = await fetchProgressTruckLoading(date);
-
-        // Use result.items if available, otherwise use result directly
         const items = result.items || result;
 
         // Transform the data to match the component's expected format

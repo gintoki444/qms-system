@@ -19,7 +19,6 @@ const TopItems = ({ date }) => {
 
       try {
         const result = await fetchTopItems(date);
-        console.log('Top items data received:', result);
 
         // Use result.data if available, otherwise use result directly
         const data = result.data || result;
@@ -55,8 +54,6 @@ const TopItems = ({ date }) => {
         Object.keys(groupedData).forEach((companyCode) => {
           groupedData[companyCode].items = groupedData[companyCode].items.sort((a, b) => b.quantity - a.quantity).slice(0, 5);
         });
-
-        console.log('groupedData', groupedData);
 
         setData(groupedData);
       } catch (err) {
