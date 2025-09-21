@@ -29,7 +29,9 @@ import {
   DialogActions,
   Typography,
   Backdrop,
-  CircularProgress
+  CircularProgress,
+  Snackbar,
+  Alert
 } from '@mui/material';
 
 // project import
@@ -236,10 +238,31 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
   const [conpany_id, setCompanyId] = useState('');
   const [onclick, setOnClick] = useState('');
   const [reserveData, setReserveData] = useState([]);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   // ฟังก์ชันที่ใช้ในการเพิ่ม 0 ถ้าจำนวนน้อยกว่า 10
   const padZero = (num) => {
     return num < 10 ? `0${num}` : num;
+  };
+
+  // ฟังก์ชันสำหรับ copy ทะเบียนรถ
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    }
   };
 
   const handleClickOpen = (id, click, total_quantity, brand_code, conpany_id, reserveData) => {
@@ -793,8 +816,22 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
       options: {
         sort: true,
         customBodyRender: (value) => (
-          <Tooltip title={value}>
-            <Chip color={'primary'} label={value} sx={{ width: 122, border: 1 }} />
+          <Tooltip title={`คลิกเพื่อคัดลอก: ${value}`}>
+            <Chip 
+              color={'primary'} 
+              label={value} 
+              sx={{ 
+                width: 122, 
+                border: 1,
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: 'primary.dark',
+                  transform: 'scale(1.05)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
+              onClick={() => copyToClipboard(value)}
+            />
           </Tooltip>
         )
       }
@@ -1103,6 +1140,17 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
         columns={columns}
         options={options}
       />
+      
+      <Snackbar
+        open={copySuccess}
+        autoHideDuration={2000}
+        onClose={() => setCopySuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setCopySuccess(false)} severity="success" sx={{ width: '100%' }}>
+          คัดลอกทะเบียนรถเรียบร้อยแล้ว!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

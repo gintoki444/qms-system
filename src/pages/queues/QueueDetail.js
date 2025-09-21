@@ -648,16 +648,17 @@ function QueueDetail({ sx }) {
                 </Grid>
 
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body">
-                    <strong>เลขที่บัตรประชาชน :</strong> {'-'}
+                  <Typography variant="body1">
+                    <strong>เลขที่บัตรประชาชน :</strong>
+                    {queues.id_card_no}
                   </Typography>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                {/* <Grid item xs={12} md={6}>
                   <Typography variant="body">
                     <strong>เลขที่ใบขับขี่ :</strong> {queues.license_no}{' '}
                   </Typography>
-                </Grid>
+                </Grid> */}
                 <Grid item xs={12} md={6}>
                   <Typography variant="h5">
                     <strong>คลุมผ้าใบ (ตัวแม่) :</strong>

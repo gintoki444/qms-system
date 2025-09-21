@@ -763,8 +763,8 @@ function ReserveDetail() {
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <Typography variant="body1" gutterBottom>
-                      <strong>เลขที่ใบขับขี่ :</strong>
-                      {reserveData.license_no}
+                      <strong>เลขที่บัตรประชาชน :</strong>
+                      {reserveData.id_card_no}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6}>

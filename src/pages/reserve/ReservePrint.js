@@ -25,7 +25,7 @@ function ReservePrint() {
   const [company, setCompany] = useState('');
   const [registration_no, setRegistrationNo] = useState('');
   const [driver_name, setDriverName] = useState('');
-  const [license_no, setLicenseNo] = useState('');
+  const [id_card_no, setIdCardNo] = useState('');
   const [brand_group_description, setBrandGroupDescription] = useState('');
   // const [warehouse_description, setWarehouseDescription] = useState('');
   const [reserve_description, setReserveDescription] = useState('');
@@ -64,7 +64,8 @@ function ReservePrint() {
           setCompany(result['reserve'][0]['company']);
           setRegistrationNo(result['reserve'][0]['registration_no']);
           setDriverName(result['reserve'][0]['firstname'] + ' ' + result['reserve'][0]['lastname']);
-          setLicenseNo(result['reserve'][0]['license_no']);
+          setIdCardNo(result['reserve'][0]['id_card_no']);
+          // setLicenseNo(result['reserve'][0]['license_no']);
           setBrandGroupDescription(result['reserve'][0]['brand_group_description']);
           // setWarehouseDescription(result['reserve'][0]['warehouse_description']);
           setReserveDescription(result['reserve'][0]['reserve_description']);
@@ -188,12 +189,17 @@ function ReservePrint() {
                 <strong>ทะเบียนรถ:</strong> {registration_no}{' '}
               </Typography>
             </Grid>
-
-            <Grid item xs={6}>
-              <Typography variant="body1" gutterBottom>
-                <strong>เลขที่ใบขับขี่:</strong> {license_no}{' '}
+            <Grid item xs={6} md={6}>
+              <Typography variant="body1">
+                <strong>เลขที่บัตรประชาชน :</strong>
+                {id_card_no}
               </Typography>
             </Grid>
+            {/* <Grid item xs={6}>
+                <Typography variant="body1" gutterBottom>
+                  <strong>เลขที่ใบขับขี่:</strong> {license_no}{' '}
+                </Typography>
+              </Grid> */}
 
             <Grid item xs={6}>
               <Typography variant="body1" gutterBottom>
