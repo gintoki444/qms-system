@@ -54,35 +54,179 @@ function ProductManagementTable({ onFilter, permission }) {
   }, [onFilter, permission]);
 
   const [productList, setProductList] = useState([]);
+  const [groupedProductList, setGroupedProductList] = useState([]);
+  
   const getWareHouseManager = async () => {
     setLoading(true);
     try {
       adminRequest.getAllProductRegister().then((response) => {
+        let processedData = [];
+        
         if (onFilter) {
           const filterData = response.filter((x) => x.product_company_id == onFilter && x.total_remain > 0);
-          const newData = filterData.map((item, index) => {
-            return {
-              ...item,
-              No: index + 1
-            };
-          });
-          // setProductList(response.filter((x) => x.product_company_id == onFilter));
-          setProductList(newData);
+          processedData = filterData;
         } else {
-          response = response.filter((x) => x.total_remain > 0);
-          const newData = response.map((item, index) => {
-            return {
-              ...item,
-              No: index + 1
-            };
-          });
-          setProductList(newData);
+          processedData = response.filter((x) => x.total_remain > 0);
         }
+        
+        // จัดกลุ่มข้อมูล
+        const groupedData = groupProductData(processedData);
+        setGroupedProductList(groupedData);
+        setProductList(processedData);
         setLoading(false);
       });
     } catch (error) {
       console.log(error);
     }
+  };
+
+  // ฟังก์ชันจัดกลุ่มข้อมูล
+  const groupProductData = (data) => {
+    // เรียงข้อมูลตามวันที่ตั้งกอง (น้อยไปมาก)
+    const sortedData = [...data].sort((a, b) => {
+      const dateA = new Date(a.product_register_date);
+      const dateB = new Date(b.product_register_date);
+      return dateA - dateB;
+    });
+
+    // จัดกลุ่มตามบริษัทและสินค้า
+    const grouped = {};
+    
+    sortedData.forEach((item, index) => {
+      const companyKey = `${item.product_company_id}_${item.product_company_name_th2}`;
+      const productKey = `${companyKey}_${item.name}`;
+      
+      if (!grouped[companyKey]) {
+        grouped[companyKey] = {
+          companyInfo: {
+            id: item.product_company_id,
+            name: item.product_company_name_th2
+          },
+          products: {}
+        };
+      }
+      
+      if (!grouped[companyKey].products[productKey]) {
+        grouped[companyKey].products[productKey] = {
+          productInfo: {
+            name: item.name,
+            register_name: item.product_register_name,
+            brand: item.product_brand_name
+          },
+          items: []
+        };
+      }
+      
+      grouped[companyKey].products[productKey].items.push({
+        ...item,
+        No: index + 1
+      });
+    });
+
+    // แปลงเป็น array และเพิ่มข้อมูลสรุป
+    const result = [];
+    let globalIndex = 1;
+
+    // เรียงกลุ่มบริษัทตาม ID เพื่อให้แสดงผลตามลำดับที่กำหนด
+    const sortedCompanyKeys = Object.keys(grouped).sort((a, b) => {
+      const idA = parseInt(a.split('_')[0]);
+      const idB = parseInt(b.split('_')[0]);
+      return idA - idB;
+    });
+
+    sortedCompanyKeys.forEach(companyKey => {
+      const company = grouped[companyKey];
+      
+      Object.keys(company.products).forEach(productKey => {
+        const product = company.products[productKey];
+        
+        // เพิ่มรายการสินค้า
+        product.items.forEach(item => {
+          result.push({
+            ...item,
+            No: globalIndex++,
+            isSummary: false,
+            groupKey: `${companyKey}_${productKey}`
+          });
+        });
+        
+        // คำนวณข้อมูลสรุปสำหรับสินค้านี้
+        const summary = calculateProductSummary(product.items);
+        result.push({
+          ...summary,
+          No: '',
+          isSummary: true,
+          groupKey: `${companyKey}_${productKey}`,
+          product_company_id: company.companyInfo.id,
+          product_company_name_th2: company.companyInfo.name,
+          name: product.productInfo.name,
+          product_register_name: product.productInfo.register_name,
+          product_brand_name: product.productInfo.brand,
+          warehouse_name: 'สรุป',
+          product_register_date: '',
+          product_register_remark: '',
+          product_register_id: null
+        });
+      });
+    });
+
+    return result;
+  };
+
+  // ฟังก์ชันคำนวณข้อมูลสรุป
+  const calculateProductSummary = (items) => {
+    const summary = {
+      register_beginning_balance: 0,
+      total_receive: 0,
+      total_sold: 0,
+      total_remain: 0
+    };
+
+    items.forEach(item => {
+      summary.register_beginning_balance += parseFloat(item.register_beginning_balance || 0);
+      summary.total_receive += parseFloat(item.total_receive || 0);
+      summary.total_sold += parseFloat(item.total_sold || 0);
+      summary.total_remain += parseFloat(item.total_remain || 0);
+    });
+
+    return summary;
+  };
+
+  // ฟังก์ชันสร้างสีตามบริษัท (ใช้สีเดียวกับ QueueTag)
+  const getCompanyColor = (companyId) => {
+    let main;
+    switch (parseInt(companyId)) {
+      case 1:
+        main = '#f68b71';
+        break;
+      case 2:
+        main = '#f4ae4d';
+        break;
+      case 3:
+        main = '#f7dc50';
+        break;
+      case 4:
+        main = '#0071C1';
+        break;
+      case 5:
+        main = '#8b6b8e';
+        break;
+      case 6:
+        main = '#17cf6c';
+        break;
+      case 7:
+        main = '#f9acc0';
+        break;
+      case 8:
+        main = '#fec4a2';
+        break;
+      case 9:
+        main = '#17cf6c';
+        break;
+      default:
+        main = '#0071C1'; // ใช้สีน้ำเงินเป็นค่าเริ่มต้น
+    }
+    return main;
   };
 
   // =============== Get Company DataTable ===============//
@@ -98,6 +242,20 @@ function ProductManagementTable({ onFilter, permission }) {
     download: false,
     customBodyRender: (value) => {
       return <div style={{ whiteSpace: 'nowrap' }}>{value}</div>;
+    },
+    setRowProps: (row, dataIndex) => {
+      const rowData = groupedProductList[dataIndex];
+      if (rowData && rowData.isSummary) {
+        const companyColor = getCompanyColor(rowData.product_company_id);
+        return {
+          style: { 
+            backgroundColor: `${companyColor}15`, // เพิ่มความโปร่งใส 15%
+            fontWeight: 'bold',
+            border: `1px solid ${companyColor}30` // border โปร่งใส
+          }
+        };
+      }
+      return {};
     },
     customToolbar: () => {
       return (
@@ -138,7 +296,14 @@ function ProductManagementTable({ onFilter, permission }) {
         }),
         setCellProps: () => ({
           style: { textAlign: 'center' }
-        })
+        }),
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            return '';
+          }
+          return value;
+        }
       }
     },
     {
@@ -146,8 +311,14 @@ function ProductManagementTable({ onFilter, permission }) {
       label: 'บริษัท',
       options: {
         customBodyRender: (value, tableMeta) => {
-          const productData = productList[tableMeta.rowIndex];
-          return <QueueTag id={value} token={productData.product_company_name_th2} />;
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            return '';
+          }
+          if (rowData && rowData.product_company_name_th2) {
+            return <QueueTag id={value} token={rowData.product_company_name_th2} />;
+          }
+          return '';
         }
       }
     },
@@ -155,18 +326,53 @@ function ProductManagementTable({ onFilter, permission }) {
       name: 'name',
       label: 'สินค้า',
       options: {
-        customBodyRender: (value) => (
-          <Tooltip title={value}>
-            <span>{value.length > 8 ? `${value.substring(0, 8)}...` : value}</span>
-          </Tooltip>
-        )
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'center' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'center' }
+        }),
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            // แสดงชื่อสินค้าแบบ span หลายคอลัมน์ (เหมือนภาพตัวอย่าง)
+            const companyColor = getCompanyColor(rowData.product_company_id);
+            return (
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  backgroundColor: `${companyColor}20`, // เพิ่มความโปร่งใส 20%
+                  color: companyColor,
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: `1px solid ${companyColor}`
+                }}
+              >
+                {value}
+              </Typography>
+            );
+          }
+          return (
+            <div style={{ textAlign: 'center' }}>
+              <Tooltip title={value}>
+                <span>{value.length > 8 ? `${value.substring(0, 8)}...` : value}</span>
+              </Tooltip>
+            </div>
+          );
+        }
       }
     },
     {
       name: 'product_register_name',
       label: 'ทะเบียน',
       options: {
-        customBodyRender: (value) => {
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            return '';
+          }
           return (
             <Tooltip title={value}>
               <span>{value.length > 20 ? `${value.substring(0, 20)}...` : value} </span>
@@ -179,72 +385,226 @@ function ProductManagementTable({ onFilter, permission }) {
       name: 'product_register_date',
       label: 'วันที่ตั้งกอง',
       options: {
-        customBodyRender: (value) => <Typography variant="body">{value ? moment(value.slice(0, 10)).format('DD/MM/YYYY') : '-'}</Typography>
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            return '';
+          }
+          return <Typography variant="body">{value ? moment(value.slice(0, 10)).format('DD/MM/YYYY') : '-'}</Typography>
+        }
       }
     },
     {
       name: 'product_register_date',
       label: 'อายุกอง',
       options: {
-        customBodyRender: (value) => <Typography variant="body">{value ? calculateAge(value) : '-'}</Typography>
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            return '';
+          }
+          return <Typography variant="body">{value ? calculateAge(value) : '-'}</Typography>
+        }
       }
     },
     {
       name: 'product_brand_name',
       label: 'ตรา',
       options: {
-        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            return '';
+          }
+          return <Typography variant="body">{value ? value : '-'}</Typography>
+        }
       }
     },
     {
       name: 'warehouse_name',
       label: 'โกดัง',
       options: {
-        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            const companyColor = getCompanyColor(rowData.product_company_id);
+            return (
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  backgroundColor: `${companyColor}20`, // เพิ่มความโปร่งใส 20%
+                  color: companyColor,
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: `1px solid ${companyColor}`
+                }}
+              >
+                {value}
+              </Typography>
+            );
+          }
+          return <Typography variant="body">{value ? value : '-'}</Typography>
+        }
       }
     },
     {
       name: 'register_beginning_balance',
       label: 'ยอดยกมา',
       options: {
-        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'right' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'right' }
+        }),
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            const companyColor = getCompanyColor(rowData.product_company_id);
+            return (
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  textAlign: 'right',
+                  backgroundColor: `${companyColor}20`,
+                  color: companyColor,
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: `1px solid ${companyColor}`
+                }}
+              >
+                {value ? parseFloat(value).toLocaleString() : '0'}
+              </Typography>
+            );
+          }
+          return <Typography variant="body" sx={{ textAlign: 'right' }}>{value ? value : '-'}</Typography>
+        }
       }
     },
     {
       name: 'total_receive',
       label: 'รวมรับ',
       options: {
-        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'right' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'right' }
+        }),
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            const companyColor = getCompanyColor(rowData.product_company_id);
+            return (
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  textAlign: 'right',
+                  backgroundColor: `${companyColor}20`,
+                  color: companyColor,
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: `1px solid ${companyColor}`
+                }}
+              >
+                {value ? parseFloat(value).toLocaleString() : '0'}
+              </Typography>
+            );
+          }
+          return <Typography variant="body" sx={{ textAlign: 'right' }}>{value ? value : '-'}</Typography>
+        }
       }
     },
     {
       name: 'total_sold',
       label: 'รวมจ่าย',
       options: {
-        customBodyRender: (value) => <Typography variant="body">{value ? value : '-'}</Typography>
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'right' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'right' }
+        }),
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            const companyColor = getCompanyColor(rowData.product_company_id);
+            return (
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  textAlign: 'right',
+                  backgroundColor: `${companyColor}20`,
+                  color: companyColor,
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: `1px solid ${companyColor}`
+                }}
+              >
+                {value ? parseFloat(value).toLocaleString() : '0'}
+              </Typography>
+            );
+          }
+          return <Typography variant="body" sx={{ textAlign: 'right' }}>{value ? value : '-'}</Typography>
+        }
       }
     },
     {
       name: 'total_remain',
       label: 'ยอดคงเหลือ',
       options: {
-        customBodyRender: (value) =>
-          value ? (
-            <>
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'right' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'right' }
+        }),
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            const companyColor = getCompanyColor(rowData.product_company_id);
+            return (
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  textAlign: 'right',
+                  backgroundColor: `${companyColor}20`,
+                  color: companyColor,
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: `1px solid ${companyColor}`
+                }}
+              >
+                {value ? parseFloat(value).toLocaleString() : '0'}
+              </Typography>
+            );
+          }
+          return value ? (
+            <div style={{ textAlign: 'right' }}>
               {parseFloat(value) <= 0 && <span style={{ color: 'red' }}>{value}</span>}
               {parseFloat(value) > 0 && value}
-            </>
+            </div>
           ) : (
-            '-'
+            <div style={{ textAlign: 'right' }}>-</div>
           )
+        }
       }
     },
     {
       name: 'product_register_remark',
       label: 'หมายเหตุ',
       options: {
-        customBodyRender: (value) => {
-          // const productData = productList[tableMeta.rowIndex];
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            return '';
+          }
           return value ? (
             <Tooltip title={value}>
               <span>{value.length > 12 ? `${value.substring(0, 12)}...` : value}</span>
@@ -259,10 +619,12 @@ function ProductManagementTable({ onFilter, permission }) {
       name: 'product_register_id',
       label: 'Actions',
       options: {
-        customBodyRender: (value) => {
-          // const productData = productList[tableMeta.rowIndex];
-          // console.log(productData);
-          // console.log(value);
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            return '';
+          }
+          
           return (
             <>
               <ButtonGroup variant="contained" aria-label="Basic button group">
@@ -469,7 +831,7 @@ function ProductManagementTable({ onFilter, permission }) {
         </Backdrop>
       )}
 
-      <MUIDataTable title={<Typography variant="h5">ข้อมูลกองสินค้า</Typography>} data={productList} columns={columns} options={options} />
+      <MUIDataTable title={<Typography variant="h5">ข้อมูลกองสินค้า</Typography>} data={groupedProductList} columns={columns} options={options} />
       <ProductExport data={productList} onClickDownload={tableRef} />
     </Box>
   );
