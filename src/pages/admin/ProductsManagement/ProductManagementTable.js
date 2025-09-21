@@ -476,11 +476,11 @@ function ProductManagementTable({ onFilter, permission }) {
                   border: `1px solid ${companyColor}`
                 }}
               >
-                {value ? parseFloat(value).toLocaleString() : '0'}
+                {value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '0.000'}
               </Typography>
             );
           }
-          return <Typography variant="body" sx={{ textAlign: 'right' }}>{value ? value : '-'}</Typography>
+          return <Typography variant="body" sx={{ textAlign: 'right' }}>{value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '-'}</Typography>
         }
       }
     },
@@ -511,11 +511,11 @@ function ProductManagementTable({ onFilter, permission }) {
                   border: `1px solid ${companyColor}`
                 }}
               >
-                {value ? parseFloat(value).toLocaleString() : '0'}
+                {value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '0.000'}
               </Typography>
             );
           }
-          return <Typography variant="body" sx={{ textAlign: 'right' }}>{value ? value : '-'}</Typography>
+          return <Typography variant="body" sx={{ textAlign: 'right' }}>{value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '-'}</Typography>
         }
       }
     },
@@ -546,11 +546,11 @@ function ProductManagementTable({ onFilter, permission }) {
                   border: `1px solid ${companyColor}`
                 }}
               >
-                {value ? parseFloat(value).toLocaleString() : '0'}
+                {value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '0.000'}
               </Typography>
             );
           }
-          return <Typography variant="body" sx={{ textAlign: 'right' }}>{value ? value : '-'}</Typography>
+          return <Typography variant="body" sx={{ textAlign: 'right' }}>{value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '-'}</Typography>
         }
       }
     },
@@ -581,14 +581,14 @@ function ProductManagementTable({ onFilter, permission }) {
                   border: `1px solid ${companyColor}`
                 }}
               >
-                {value ? parseFloat(value).toLocaleString() : '0'}
+                {value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '0.000'}
               </Typography>
             );
           }
           return value ? (
             <div style={{ textAlign: 'right' }}>
-              {parseFloat(value) <= 0 && <span style={{ color: 'red' }}>{value}</span>}
-              {parseFloat(value) > 0 && value}
+              {parseFloat(value) <= 0 && <span style={{ color: 'red' }}>{parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</span>}
+              {parseFloat(value) > 0 && parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
             </div>
           ) : (
             <div style={{ textAlign: 'right' }}>-</div>
