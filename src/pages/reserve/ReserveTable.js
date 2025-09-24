@@ -124,6 +124,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
             No: index + 1
           };
         });
+
         setItems(newData.filter((x) => x.product_company_id === onFilter));
         setLoading(false);
       } else {
@@ -133,6 +134,7 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
             No: index + 1
           };
         });
+        console.log('newData ***************:', newData);
         reserList(newData);
         setItems(newData);
         setLoading(false);

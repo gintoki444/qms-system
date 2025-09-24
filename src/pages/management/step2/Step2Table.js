@@ -1,36 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Grid,
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Button,
-  Chip,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Backdrop,
-  Tooltip,
-  ButtonGroup,
-  Checkbox,
-  // Autocomplete,
-  RadioGroup,
-  Radio,
-  FormControlLabel,
-  OutlinedInput
-} from '@mui/material';
-import MainCard from 'components/MainCard';
+import { Grid, Box, Table, TableContainer, Typography, Backdrop, CircularProgress } from '@mui/material';
 
 // Link api queues
 import * as adminRequest from '_api/adminRequest';
@@ -39,156 +8,24 @@ import * as stepRequest from '_api/StepRequest';
 import * as reserveRequest from '_api/reserveRequest';
 const apiUrl = process.env.REACT_APP_API_URL;
 
-import CircularProgress from '@mui/material/CircularProgress';
-import { RightSquareOutlined, SoundOutlined } from '@ant-design/icons';
 import moment from 'moment/min/moment-with-locales';
-import QueueTag from 'components/@extended/QueueTag';
 import { useSnackbar } from 'notistack';
 
 // Sound Call
 import SoundCall from 'components/@extended/SoundCall';
-// import { Stack } from '../../../../node_modules/@mui/material/index';
 
 import * as functionCancleTeam from 'components/Function/CancleTeamStation';
 import * as functionAddLogs from 'components/Function/AddLog';
 import checkProductQuantities from 'components/Function/checkProductQuantities';
 
+// Import new components
+import QueueTableHead from 'components/step2/QueueTableHead';
+import QueueTableBody from 'components/step2/QueueTableBody';
+import CallQueueDialog from 'components/step2/CallQueueDialog';
+import CloseQueueDialog from 'components/step2/CloseQueueDialog';
+import CancelQueueDialog from 'components/step2/CancelQueueDialog';
+
 export const Step2Table = ({ status, title, onStatusChange, onFilter, permission }) => {
-  // ==============================|| ORDER TABLE - HEADER ||============================== //
-  const headCells = [
-    {
-      id: 'queueNo',
-      align: 'center',
-      disablePadding: false,
-      width: '5%',
-      label: 'ลำดับ'
-    },
-    {
-      id: 'pickerDate',
-      align: 'left',
-      disablePadding: false,
-      width: '8%',
-      label: 'วันที่เข้ารับสินค้า'
-    },
-    {
-      id: 'queueID',
-      align: 'center',
-      disablePadding: false,
-      width: '5%',
-      label: 'หมายเลขคิว'
-    },
-    {
-      id: 'remarkQueue',
-      align: 'center',
-      disablePadding: false,
-      // width: '5%',
-      label: 'รหัสคิวเดิม'
-    },
-    {
-      id: 'registration_no',
-      align: 'center',
-      disablePadding: true,
-      width: '10%',
-      label: 'ทะเบียนรถ'
-    },
-    {
-      id: 'station',
-      align: 'left',
-      disablePadding: true,
-      width: '170px',
-      label: 'สถานีบริการ'
-    },
-    {
-      id: 'branName',
-      align: 'left',
-      disablePadding: false,
-      width: '10%',
-      label: 'ร้านค้า/บริษัท'
-    },
-    {
-      id: 'totals',
-      align: 'right',
-      disablePadding: true,
-      label: 'จำนวน (ตัน)'
-    },
-    {
-      id: 'driver',
-      align: 'left',
-      disablePadding: true,
-      width: '13%',
-      label: 'ชื่อผู้ขับ'
-    },
-    {
-      id: 'tel',
-      align: 'left',
-      disablePadding: true,
-      width: '10%',
-      label: 'เบอร์โทรศัพท์'
-    },
-    {
-      id: 'times',
-      align: 'left',
-      disablePadding: false,
-      width: '10%',
-      label: 'เวลาเริ่ม'
-    },
-    {
-      id: 'reacallTitle',
-      align: 'center',
-      disablePadding: false,
-      label: 'ทวนสอบ'
-    },
-    {
-      id: 'selectedStation',
-      align: 'center',
-      disablePadding: false,
-      width: '5%',
-      label: 'สถานะ'
-    },
-    {
-      id: 'statusTitle',
-      align: 'center',
-      disablePadding: false,
-      label: 'หัวจ่าย'
-    },
-    {
-      id: 'soundCall',
-      align: 'center',
-      disablePadding: true,
-      label: 'เรียกคิว'
-    },
-    {
-      id: 'action',
-      align: 'right',
-      disablePadding: false,
-      width: '120px',
-      label: 'Actions'
-    }
-  ];
-
-  function QueueTableHead() {
-    return (
-      <TableHead>
-        <TableRow>
-          {headCells.map((headCell) => (
-            <>
-              {(status === 'waiting' && headCell.id === 'soundCall') || (status === 'processing' && headCell.id === 'statusTitle') || (
-                <TableCell
-                  key={headCell.id}
-                  align={headCell.align}
-                  width={headCell.width}
-                  padding={headCell.disablePadding ? 'none' : 'normal'}
-                >
-                  {headCell.label}
-                </TableCell>
-              )}
-            </>
-          ))}
-        </TableRow>
-      </TableHead>
-    );
-  }
-
   const userId = localStorage.getItem('user_id');
   const [items, setItems] = useState([]);
   const [items2, setItems2] = useState([]);
@@ -1190,6 +1027,20 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 }
               }
             }
+
+            // ตัดสต็อกสินค้าเมื่อเรียกคิว
+            if (orderSelect.length > 0) {
+              orderSelect.forEach((dataOrder) => {
+                const setData = {
+                  product_register_id: dataOrder.value,
+                  smash_quantity: 0,
+                  sling_hook_quantity: 0,
+                  sling_sort_quantity: 0,
+                  jumbo_hook_quantity: 0
+                };
+                updateRegisterItems(dataOrder.id, setData);
+              });
+            }
             // if (status === 9999) {
             const dataLogStock = {
               audit_user_id: userId,
@@ -1304,6 +1155,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
             };
             AddAuditLogs(dataLogStock);
 
+            // อัปเดตข้อมูลกองสินค้าที่เลือก
             loopSelect.map((x) => {
               if (
                 x.item_register_id &&
@@ -1314,63 +1166,8 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 updateItemsRegister(x.item_register_id, x);
               }
             });
+
             if (status === 'processing') setOnClickSubmit(true);
-            if (orderSelect.length > 0 || typeSelect.length !== 0) {
-              orders.map((order) => {
-                order.items.map((items) => {
-                  const checkOrderSelect = orderSelect.filter((x) => x.id == items.item_id);
-                  const filterNumSelect = typeNumSelect.filter((x) => x.id == items.item_id);
-
-                  if (checkOrderSelect.length > 0) {
-                    checkOrderSelect.map((dataOrder) => {
-                      if (filterNumSelect.length > 0) {
-                        const setData = {
-                          product_register_id: dataOrder.value,
-                          smash_quantity: 0,
-                          sling_hook_quantity: 0,
-                          sling_sort_quantity: 0,
-                          jumbo_hook_quantity: 0
-                        };
-
-                        filterNumSelect.map((x) => {
-                          if (x.name === 'checked1') setData.smash_quantity = x.value;
-                          if (x.name === 'checked2') setData.sling_hook_quantity = x.value;
-                          if (x.name === 'checked3') setData.sling_sort_quantity = x.value;
-                          if (x.name === 'checked4') setData.jumbo_hook_quantity = x.value;
-                        });
-                        updateRegisterItems(dataOrder.id, setData);
-                      } else {
-                        const setData = {
-                          product_register_id: items.product_register_id,
-                          smash_quantity: 0,
-                          sling_hook_quantity: 0,
-                          sling_sort_quantity: 0,
-                          jumbo_hook_quantity: 0
-                        };
-                        updateRegisterItems(items.item_id, setData);
-                      }
-                    });
-                  } else {
-                    if (filterNumSelect.length > 0) {
-                      const setData = {
-                        product_register_id: items.product_register_id,
-                        smash_quantity: 0,
-                        sling_hook_quantity: 0,
-                        sling_sort_quantity: 0,
-                        jumbo_hook_quantity: 0
-                      };
-                      filterNumSelect.map((x) => {
-                        if (x.name === 'checked1') setData.smash_quantity = x.value;
-                        if (x.name === 'checked2') setData.sling_hook_quantity = x.value;
-                        if (x.name === 'checked3') setData.sling_sort_quantity = x.value;
-                        if (x.name === 'checked4') setData.jumbo_hook_quantity = x.value;
-                      });
-                      updateRegisterItems(items.item_id, setData);
-                    }
-                  }
-                });
-              });
-            }
             getStepToken(id_update)
               .then(({ queue_id, token }) => {
                 // lineNotify(queue_id, token);
@@ -1727,13 +1524,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       .catch((error) => console.log('error', error));
   };
 
-  const handleChangeWarehouse = (e) => {
-    setStationsId('');
-    setWareHouseId(e.target.value);
-    getStationById(e.target.value);
-    getTeamloadingByIdwh(e.target.value);
-  };
-
   // =============== Get Stations ===============//
   const [stationsId, setStationsId] = useState('');
   const [stationsList, setStationsList] = useState([]);
@@ -1747,9 +1537,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     }
   };
 
-  const handleChangeStation = (e) => {
-    setStationsId(e.target.value);
-  };
   // =============== Get TeamLoanding ===============//
   const [teamId, setTeamId] = useState([]);
   const [teamloadingList, setTeamLoadingList] = useState([]);
@@ -1776,12 +1563,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     }
   };
 
-  const handleChangeTeam = (e) => {
-    setTeamLoading([]);
-    setTeamId(e);
-    getTeamloadingByIds(e);
-  };
-
   // =============== Get Contractor ===============//
   const [contractorId, setcontractorId] = useState([]);
   const [contractorList, setContractorList] = useState([]);
@@ -1795,19 +1576,13 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
     }
   };
 
-  const handleChangeContractor = (e) => {
-    getLaborLine(e.target.value);
-    setcontractorId(e.target.value);
-  };
-
   // =============== Get Contractor and laybor Line ===============//
   const [labor_line_id, setLaborLineId] = useState([]);
-  const [layborLineList, setLayborLineList] = useState([]);
 
   const getLaborLine = (id) => {
     try {
-      adminRequest.getContractorById(id).then((result) => {
-        setLayborLineList(result.labor_lines);
+      adminRequest.getContractorById(id).then(() => {
+        // setLayborLineList(result.labor_lines);
       });
     } catch (error) {
       console.log(error);
@@ -1840,10 +1615,6 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
 
     return result;
     //return `${years} ปี ${months} เดือน ${days} วัน`;
-  };
-
-  const handleChangeLaborLine = (e) => {
-    setLaborLineId(e.target.value);
   };
 
   const sumStock = (producrReId, onStock) => {
@@ -1923,1309 +1694,80 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
         )}
 
         {status == 'waiting' && (
-          <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-            <DialogTitle id="responsive-dialog-title" align="center">
-              <Typography variant="h5">
-                {textnotify}หมายเลข : <QueueTag id={queues.product_company_id || ''} token={queues.token} />
-              </Typography>
-            </DialogTitle>
-            <DialogContent sx={{ minWidth: 400 }}>
-              <MainCard>
-                <Grid container spacing={3}>
-                  <Grid item xs={12}>
-                    <Grid item xs={12}>
-                      <Typography variant="h4" sx={{ textDecoration: 'underline' }}>
-                        <strong>ข้อมูลเข้ารับสินค้า</strong>
-                      </Typography>
-
-                      <Grid container spacing={2} sx={{ p: 2 }}>
-                        <Grid item xs={12} md={6}>
-                          <Typography variant="h5">
-                            โกดังสินค้า:{' '}
-                            <strong style={{ color: 'red' }}>
-                              {warehousesList.find((x) => x.warehouse_id === warehouseId)?.description}
-                            </strong>
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                          <Typography variant="h5">
-                            หัวจ่าย:{' '}
-                            <strong style={{ color: 'red' }}>
-                              {stationsList.find((x) => x.station_id === stationsId)?.station_description}
-                            </strong>
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
-                          <Typography variant="h5" sx={{ textDecoration: 'underline' }}>
-                            <strong>{teamloadingList.find((x) => x.team_id === teamId)?.team_name}</strong>
-                          </Typography>
-                        </Grid>
-                        {teamLoading &&
-                          teamLoading.map((item, index) => (
-                            <Grid item xs={12} key={index}>
-                              <Typography variant="h5">
-                                {item.manager_name && 'หัวหน้าโกดัง'}
-                                {item.checker_name && 'พนักงานจ่ายสินค้า'}
-                                {item.forklift_name && 'โฟล์คลิฟท์'}:{' '}
-                                <strong>
-                                  {item.manager_name && item.manager_name}
-                                  {item.checker_name && item.checker_name}
-                                  {item.forklift_name && item.forklift_name}
-                                </strong>
-                              </Typography>
-                            </Grid>
-                          ))}
-
-                        <Grid item xs={12} md={6}>
-                          <Typography variant="h5">
-                            สายแรงงาน : <strong>{contractorList.find((x) => x.contractor_id === contractorId)?.contractor_name}</strong>
-                            {reservesData?.contractor_name_to_other && (
-                              <>
-                                {' '}
-                                , <span style={{ color: 'red' }}>Pre-sling</span> : <strong>{reservesData.contractor_name_to_other}</strong>
-                              </>
-                            )}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </Grid>
-
-                    <Grid item xs={12} sx={{ mt: 1 }}>
-                      {orders.length > 0 && (
-                        <Grid container spacing={2} sx={{ p: 2 }}>
-                          <Typography variant="h4" sx={{ textDecoration: 'underline' }}>
-                            <strong>ข้อมูลกองสินค้า:</strong>
-                          </Typography>
-                          {orders.map((ordersItems, orderId) => (
-                            <Grid item xs={12} key={orderId}>
-                              {ordersItems.product_brand_id !== null && ordersItems.product_company_id && (
-                                <Grid container spacing={0} sx={{ mt: '0px' }}>
-                                  {ordersItems.items.map((orderItem, orderItemId) => (
-                                    <Grid item xs={12} key={orderItemId}>
-                                      <Grid container spacing={2}>
-                                        <Grid item xs={12}>
-                                          <Typography variant="h5">บริษัท (สินค้า): {queues.product_company_name}</Typography>
-                                        </Grid>
-                                        <Grid item xs={12}>
-                                          <Typography variant="h5">ตรา (สินค้า): {queues.product_brand_name}</Typography>
-                                        </Grid>
-                                        <Grid item xs={12}>
-                                          <Typography variant="h5">กองสินค้า : {orderItem.name}</Typography>
-                                        </Grid>
-                                        <Grid item xs={12}>
-                                          <Typography variant="h5">
-                                            จำนวน : <strong>{orderItem.quantity}</strong> (ตัน)
-                                          </Typography>
-                                        </Grid>
-                                      </Grid>
-                                      {loopSelect.length > 0 &&
-                                        loopSelect.map(
-                                          (onLoop, index) =>
-                                            onLoop.order_id === orderItem.order_id &&
-                                            onLoop.item_id === orderItem.item_id && (
-                                              <>
-                                                {queues.recall_status !== 'Y' || onLoop.product_register_id === '' ? (
-                                                  <FormControl sx={{ width: '100%', mb: 2 }} size="small" key={index}>
-                                                    <Select
-                                                      displayEmpty
-                                                      variant="outlined"
-                                                      value={onLoop.product_register_id}
-                                                      onChange={(e) => {
-                                                        handleChangeProduct(e, orderItem.item_id, orderItem, onLoop.id);
-                                                        onLoop.product_register_id = e.target.value;
-
-                                                        // ข้อมูลกองเก่า
-                                                        orderItem.product_register_id = e.target.value;
-                                                      }}
-                                                    >
-                                                      <MenuItem disabled value="">
-                                                        เลือกกองสินค้า
-                                                      </MenuItem>
-                                                      {orderItem.productRegis &&
-                                                        orderItem.productRegis.map(
-                                                          (productRegis) =>
-                                                            parseFloat(productRegis.total_remain) > 0 && (
-                                                              <MenuItem
-                                                                key={productRegis.product_register_id}
-                                                                value={productRegis.product_register_id}
-                                                                disabled={
-                                                                  loopSelect.find(
-                                                                    (x) =>
-                                                                      x.order_id == onLoop.order_id &&
-                                                                      x.item_id == onLoop.item_id &&
-                                                                      x.product_register_id == productRegis.product_register_id &&
-                                                                      index > 0
-                                                                  ) ||
-                                                                  sumStock(
-                                                                    productRegis.product_register_id,
-                                                                    parseFloat(productRegis.total_remain).toFixed(3)
-                                                                  ) <= 0
-                                                                }
-                                                              >
-                                                                {'โกดัง : ' + productRegis.warehouse_name + ' '}
-                                                                {productRegis.product_register_name}
-                                                                {productRegis.product_register_date
-                                                                  ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                                      'DD/MM/YY'
-                                                                    )}) `
-                                                                  : '-'}
-                                                                {productRegis.product_register_date ? (
-                                                                  <strong style={{ color: 'red' }}>
-                                                                    {' '}
-                                                                    ({calculateAge(productRegis.product_register_date)})
-                                                                  </strong>
-                                                                ) : (
-                                                                  '-'
-                                                                )}
-                                                                {productRegis.product_register_remark ? (
-                                                                  <strong style={{ color: 'red' }}>
-                                                                    {' '}
-                                                                    ({productRegis.product_register_remark})
-                                                                  </strong>
-                                                                ) : (
-                                                                  ''
-                                                                )}
-                                                                <strong> ({parseFloat(productRegis.total_remain).toFixed(3)} ตัน)</strong>
-                                                                {stockSelect.filter(
-                                                                  (x) => x.product_register_id === productRegis.product_register_id
-                                                                ).length > 0 &&
-                                                                  ' คงเหลือ ' +
-                                                                    parseFloat(
-                                                                      sumStock(productRegis.product_register_id, productRegis.total_remain)
-                                                                    ).toFixed(3)}
-                                                              </MenuItem>
-                                                            )
-                                                        )}
-                                                    </Select>
-                                                  </FormControl>
-                                                ) : (
-                                                  <FormControl sx={{ width: '100%', mb: 2 }} size="small" key={index}>
-                                                    <Select
-                                                      displayEmpty
-                                                      variant="outlined"
-                                                      value={onLoop.product_register_id}
-                                                      onChange={(e) => {
-                                                        handleChangeProduct(e, orderItem.item_id, orderItem);
-                                                        onLoop.product_register_id = e.target.value;
-
-                                                        // ข้อมูลกองเก่า
-                                                        orderItem.product_register_id = e.target.value;
-                                                      }}
-                                                    >
-                                                      <MenuItem disabled value="">
-                                                        เลือกกองสินค้า
-                                                      </MenuItem>
-                                                      {orderItem.productRegis &&
-                                                        // orderItem.productRegis.length > 0 &&
-                                                        orderItem.productRegis.map(
-                                                          (productRegis) =>
-                                                            productRegis.product_register_id === onLoop.product_register_id && (
-                                                              <MenuItem
-                                                                key={productRegis.product_register_id}
-                                                                value={productRegis.product_register_id}
-                                                                disabled
-                                                              >
-                                                                {'โกดัง : ' + productRegis.warehouse_name + ' '}
-                                                                {productRegis.product_register_name}
-                                                                {productRegis.product_register_date
-                                                                  ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                                      'DD/MM/YY'
-                                                                    )}) `
-                                                                  : '-'}
-                                                                {productRegis.product_register_date ? (
-                                                                  <strong style={{ color: 'red' }}>
-                                                                    {' '}
-                                                                    ({calculateAge(productRegis.product_register_date)})
-                                                                  </strong>
-                                                                ) : (
-                                                                  '-'
-                                                                )}
-                                                                {productRegis.product_register_remark ? (
-                                                                  <strong style={{ color: 'red' }}>
-                                                                    {' '}
-                                                                    ({productRegis.product_register_remark})
-                                                                  </strong>
-                                                                ) : (
-                                                                  ''
-                                                                )}
-                                                                <strong> ({parseFloat(productRegis.total_remain).toFixed(3)} ตัน)</strong>
-                                                                <strong>
-                                                                  {' '}
-                                                                  (เลือกแล้ว {parseFloat(onLoop.product_register_quantity).toFixed(3)} ตัน)
-                                                                </strong>
-                                                                {/* {sumStock(productRegis.product_register_id , parseFloat(productRegis.total_remain))} */}
-                                                              </MenuItem>
-                                                            )
-                                                        )}
-                                                    </Select>
-                                                  </FormControl>
-                                                )}
-                                              </>
-                                            )
-                                        )}
-                                    </Grid>
-                                  ))}
-                                </Grid>
-                              )}
-                            </Grid>
-                          ))}
-                        </Grid>
-                      )}
-                      {/* </Stack> */}
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </MainCard>
-            </DialogContent>
-            <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
-              {onclickSubmit == true ? (
-                <>
-                  <CircularProgress color="primary" />
-                </>
-              ) : (
-                <>
-                  {stockSelect.length > 0 && (
-                    <Button
-                      color="warning"
-                      variant="contained"
-                      autoFocus
-                      onClick={() => {
-                        setLoopSelect([]);
-                        setStockSelect([]);
-                        setOrderSelect([]);
-                        getOrderOfReserve(queues.reserve_id, 'call');
-                      }}
-                    >
-                      รีเซ็ต
-                    </Button>
-                  )}
-                  <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
-                    ยกเลิก
-                  </Button>
-                  <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
-                    ยืนยัน
-                  </Button>
-                  {fr === 'call' && (
-                    <Button color="info" variant="contained" onClick={() => handleCallQueue(queues)} autoFocus endIcon={<SoundOutlined />}>
-                      เรียกคิว
-                    </Button>
-                  )}
-                </>
-              )}
-            </DialogActions>
-          </Dialog>
+          <CallQueueDialog
+            open={open}
+            onClose={handleClose}
+            textnotify={textnotify}
+            queues={queues}
+            warehousesList={warehousesList}
+            warehouseId={warehouseId}
+            stationsList={stationsList}
+            stationsId={stationsId}
+            teamloadingList={teamloadingList}
+            teamId={teamId}
+            teamLoading={teamLoading}
+            contractorList={contractorList}
+            contractorId={contractorId}
+            reservesData={reservesData}
+            orders={orders}
+            loopSelect={loopSelect}
+            stockSelect={stockSelect}
+            typeSelect={typeSelect}
+            typeNumSelect={typeNumSelect}
+            onclickSubmit={onclickSubmit}
+            onProductChange={handleChangeProduct}
+            onTypeSelect={handleChangeSelect}
+            onTypeNumChange={handleChangeTypeNum}
+            calculateAge={calculateAge}
+            sumStock={sumStock}
+            onCallQueue={handleCallQueue}
+            onReset={() => {
+              setLoopSelect([]);
+              setStockSelect([]);
+              setOrderSelect([]);
+              getOrderOfReserve(queues.reserve_id, 'call');
+            }}
+            onConfirm={() => handleClose(1)}
+          />
         )}
 
-        {status == 'processing' && (
-          <Dialog open={open} onClose={handleClose} aria-labelledby="responsive-dialog-title">
-            {fr === 'close' ? (
-              <>
-                <DialogTitle id="responsive-dialog-title" align="center">
-                  <Typography variant="h5">
-                    {'ปิดคิวรับสินค้า'}หมายเลข : <QueueTag id={queues.product_company_id || ''} token={queues.token} />
-                  </Typography>
-                </DialogTitle>
-                <DialogContent>
-                  <MainCard>
-                    <Grid container spacing={3}>
-                      <Grid item xs={12}>
-                        <Typography variant="h4" sx={{ textDecoration: 'underline' }}>
-                          <strong>ข้อมูลเข้ารับสินค้า</strong>
-                        </Typography>
-
-                        <Grid container spacing={2} sx={{ p: 2 }}>
-                          <Grid item xs={12} md={6}>
-                            <Typography variant="h5">
-                              โกดังสินค้า:{' '}
-                              <strong style={{ color: 'red' }}>
-                                {warehousesList.find((x) => x.warehouse_id === warehouseId)?.description}
-                              </strong>
-                            </Typography>
-                          </Grid>
-                          <Grid item xs={12} md={6}>
-                            <Typography variant="h5">
-                              หัวจ่าย:{' '}
-                              <strong style={{ color: 'red' }}>
-                                {stationsList.find((x) => x.station_id === stationsId)?.station_description}
-                              </strong>
-                            </Typography>
-                          </Grid>
-                          <Grid item xs={12} md={6} sx={{ mt: 1 }}>
-                            <Typography variant="h5" sx={{ textDecoration: 'underline' }}>
-                              <strong>{teamloadingList.find((x) => x.team_id === teamId)?.team_name}</strong>
-                            </Typography>
-                          </Grid>
-                          {teamLoading &&
-                            teamLoading.map((item, index) => (
-                              <Grid item xs={12} key={index}>
-                                <Typography variant="h5">
-                                  {item.manager_name && 'หัวหน้าโกดัง'}
-                                  {item.checker_name && 'พนักงานจ่ายสินค้า'}
-                                  {item.forklift_name && 'โฟล์คลิฟท์'}:{' '}
-                                  <strong>
-                                    {item.manager_name && item.manager_name}
-                                    {item.checker_name && item.checker_name}
-                                    {item.forklift_name && item.forklift_name}
-                                  </strong>
-                                </Typography>
-                              </Grid>
-                            ))}
-
-                          <Grid item xs={12} md={6}>
-                            <Typography variant="h5">
-                              สายแรงงาน : <strong>{contractorList.find((x) => x.contractor_id === contractorId)?.contractor_name}</strong>
-                              {reservesData?.contractor_name_to_other && (
-                                <>
-                                  {' '}
-                                  , <span style={{ color: 'red' }}>Pre-sling</span> :{' '}
-                                  <strong>{reservesData.contractor_name_to_other}</strong>
-                                </>
-                              )}
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <Typography variant="h4" sx={{ textDecoration: 'underline' }}>
-                          <strong>ข้อมูลรถเข้ารับสินค้า</strong>
-                        </Typography>
-
-                        <Grid container spacing={2} sx={{ p: 2 }}>
-                          <Grid item xs={12} md={12}>
-                            <Typography variant="h5">ร้านค้า/บริษัท : {queues.company_name}</Typography>
-                          </Grid>
-                          <Grid item xs={12} md={12}>
-                            <Typography variant="h5">ทะเบียนรถ: {queues.registration_no}</Typography>
-                          </Grid>
-                          <Grid item xs={12} md={12}>
-                            <Typography variant="h5">ชื่อคนขับ : {queues.driver_name}</Typography>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        {orders.length > 0 && (
-                          <Grid container spacing={2} sx={{ p: 2 }}>
-                            <Typography variant="h4" sx={{ textDecoration: 'underline' }}>
-                              <strong>ข้อมูลกองสินค้า:</strong>
-                            </Typography>
-                            {orders.map((ordersItems, orderId) => (
-                              <Grid item xs={12} key={orderId}>
-                                {ordersItems.product_brand_id !== null && ordersItems.product_company_id && (
-                                  <Grid container spacing={2}>
-                                    {ordersItems.items.map((orderItem, orderIndex) => (
-                                      <>
-                                        <Grid item xs={12} key={orderIndex}>
-                                          <Grid container spacing={2}>
-                                            {/* <Grid item xs={12}>
-                                              <Typography variant="h5">บริษัท (สินค้า): {queues.product_company_name}</Typography>
-                                            </Grid>
-                                            <Grid item xs={12}>
-                                              <Typography variant="h5">ตรา (สินค้า): {queues.product_brand_name}</Typography>
-                                            </Grid> */}
-                                            <Grid item xs={12}>
-                                              <Typography variant="h5">กองสินค้า : {orderItem.name}</Typography>
-                                            </Grid>
-                                            <Grid item xs={12}>
-                                              <Typography variant="h5">
-                                                จำนวน : <strong>{orderItem.quantity}</strong> (ตัน)
-                                              </Typography>
-                                            </Grid>
-                                          </Grid>
-
-                                          {loopSelect.map(
-                                            (onLoop, index) =>
-                                              onLoop.order_id == orderItem.order_id &&
-                                              onLoop.item_id == orderItem.item_id && (
-                                                <MainCard key={index} sx={{ mb: 2 }}>
-                                                  <FormControl sx={{ width: '100%' }} size="small">
-                                                    <Select
-                                                      displayEmpty
-                                                      variant="outlined"
-                                                      value={onLoop.product_register_id}
-                                                      onChange={(e) => {
-                                                        handleChangeProduct(e, orderItem.item_id, orderItem);
-                                                        onLoop.product_register_id = e.target.value;
-
-                                                        // ข้อมูลกองเก่า
-                                                        orderItem.product_register_id = e.target.value;
-                                                      }}
-                                                    >
-                                                      <MenuItem disabled value="">
-                                                        เลือกกองสินค้า
-                                                      </MenuItem>
-                                                      {orderItem.productRegis.map(
-                                                        (productRegis) =>
-                                                          productRegis.product_register_id === onLoop.product_register_id && (
-                                                            <MenuItem
-                                                              key={productRegis.product_register_id}
-                                                              value={productRegis.product_register_id}
-                                                              disabled
-                                                            >
-                                                              {'โกดัง : ' + productRegis.warehouse_name + ' '}
-                                                              {productRegis.product_register_name}
-                                                              {productRegis.product_register_date
-                                                                ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                                    'DD/MM/YY'
-                                                                  )}) `
-                                                                : '-'}
-                                                              {productRegis.product_register_date ? (
-                                                                <strong style={{ color: 'red' }}>
-                                                                  {' '}
-                                                                  ({calculateAge(productRegis.product_register_date)})
-                                                                </strong>
-                                                              ) : (
-                                                                '-'
-                                                              )}
-                                                              {' (คงเหลือ : ' + productRegis.total_remain + ' ตัน) '}
-                                                              {productRegis.product_register_remark ? (
-                                                                <strong style={{ color: 'red' }}>
-                                                                  {' '}
-                                                                  ({productRegis.product_register_remark})
-                                                                </strong>
-                                                              ) : (
-                                                                ''
-                                                              )}
-                                                              <strong> ({onLoop.product_register_quantity} ตัน)</strong>
-                                                            </MenuItem>
-                                                          )
-                                                      )}
-                                                    </Select>
-                                                  </FormControl>
-
-                                                  <Grid sx={{ mt: 2 }}>
-                                                    <InputLabel sx={{ mt: 1, mb: 1 }}>ประเภท</InputLabel>
-                                                    <FormControlLabel
-                                                      control={
-                                                        <Checkbox
-                                                          checked={typeSelect.some(
-                                                            (item) =>
-                                                              item.id == orderItem.item_id &&
-                                                              item.product_register_id == onLoop.product_register_id &&
-                                                              item.name === 'checked1' &&
-                                                              item.value === 'on'
-                                                          )}
-                                                          onChange={handleChangeSelect(orderItem.item_id, 'checked1', onLoop)}
-                                                          name="checked1"
-                                                        />
-                                                      }
-                                                      label="ทุบปุ๋ย"
-                                                    />
-                                                    <FormControlLabel
-                                                      control={
-                                                        <Checkbox
-                                                          // checked={typeSelect[orderItem.item_id]?.checked2 || false}
-                                                          checked={typeSelect.some(
-                                                            (item) =>
-                                                              item.id == orderItem.item_id &&
-                                                              item.product_register_id == onLoop.product_register_id &&
-                                                              item.name === 'checked2' &&
-                                                              item.value === 'on'
-                                                          )}
-                                                          onChange={handleChangeSelect(orderItem.item_id, 'checked2', onLoop)}
-                                                          name="checked2"
-                                                        />
-                                                      }
-                                                      label="เกี่ยวสลิง"
-                                                    />
-                                                    <FormControlLabel
-                                                      control={
-                                                        <Checkbox
-                                                          // checked={typeSelect[orderItem.item_id]?.checked3 || false}
-                                                          checked={typeSelect.some(
-                                                            (item) =>
-                                                              item.id == orderItem.item_id &&
-                                                              item.product_register_id == onLoop.product_register_id &&
-                                                              item.name === 'checked3' &&
-                                                              item.value === 'on'
-                                                          )}
-                                                          onChange={handleChangeSelect(orderItem.item_id, 'checked3', onLoop)}
-                                                          name="checked3"
-                                                        />
-                                                      }
-                                                      label="เรียงสลิง"
-                                                    />
-                                                    <FormControlLabel
-                                                      control={
-                                                        <Checkbox
-                                                          // checked={typeSelect[orderItem.item_id]?.checked4 || false}
-                                                          checked={typeSelect.some(
-                                                            (item) =>
-                                                              item.id == orderItem.item_id &&
-                                                              item.product_register_id == onLoop.product_register_id &&
-                                                              item.name === 'checked4' &&
-                                                              item.value === 'on'
-                                                          )}
-                                                          onChange={handleChangeSelect(orderItem.item_id, 'checked4', onLoop)}
-                                                          name="checked4"
-                                                        />
-                                                      }
-                                                      label="เกี่ยวจัมโบ้"
-                                                    />
-                                                  </Grid>
-
-                                                  {typeSelect.some(
-                                                    (item) =>
-                                                      item.id == orderItem.item_id &&
-                                                      item.product_register_id == onLoop.product_register_id &&
-                                                      item.name === 'checked1' &&
-                                                      item.value === 'on'
-                                                  ) && (
-                                                    <Grid item xs={12} md={12}>
-                                                      <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                                        จำนวนทุบปุ๋ย : (สูงสุด{' '}
-                                                        {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
-                                                      </InputLabel>
-                                                      <FormControl sx={{ width: '100%' }} size="small">
-                                                        <OutlinedInput
-                                                          size="small"
-                                                          id={typeNumSelect[orderItem.item_id]}
-                                                          type="number"
-                                                          value={
-                                                            typeNumSelect.find(
-                                                              (item) =>
-                                                                item.id == orderItem.item_id &&
-                                                                item.product_register_id == onLoop.product_register_id &&
-                                                                item.name === 'checked1'
-                                                            )?.value || ''
-                                                          }
-                                                          onChange={(e) => {
-                                                            handleChangeTypeNum(
-                                                              orderItem.item_id,
-                                                              'checked1',
-                                                              e,
-                                                              parseFloat((onLoop.product_register_quantity * 1).toFixed(3)),
-                                                              onLoop
-                                                            );
-                                                          }}
-                                                          placeholder="จำนวน"
-                                                        />
-                                                      </FormControl>
-                                                    </Grid>
-                                                  )}
-                                                  {typeSelect.some(
-                                                    (item) =>
-                                                      item.id == orderItem.item_id &&
-                                                      item.product_register_id == onLoop.product_register_id &&
-                                                      item.name === 'checked2' &&
-                                                      item.value === 'on'
-                                                  ) && (
-                                                    <Grid item xs={12} md={12}>
-                                                      <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                                        จำนวนเกี่ยวสลิง : (สูงสุด{' '}
-                                                        {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
-                                                      </InputLabel>
-                                                      <FormControl sx={{ width: '100%' }} size="small">
-                                                        <OutlinedInput
-                                                          size="small"
-                                                          id={typeNumSelect[orderItem.item_id]}
-                                                          type="number"
-                                                          value={
-                                                            typeNumSelect.find(
-                                                              (item) =>
-                                                                item.id == orderItem.item_id &&
-                                                                item.product_register_id == onLoop.product_register_id &&
-                                                                item.name === 'checked2'
-                                                            )?.value || ''
-                                                          }
-                                                          // onChange={(e) => {
-                                                          //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
-                                                          // }}
-                                                          onChange={(e) => {
-                                                            handleChangeTypeNum(
-                                                              orderItem.item_id,
-                                                              'checked2',
-                                                              e,
-                                                              parseFloat(onLoop.product_register_quantity),
-                                                              onLoop
-                                                            );
-                                                          }}
-                                                          placeholder="จำนวน"
-                                                        />
-                                                      </FormControl>
-                                                    </Grid>
-                                                  )}
-                                                  {typeSelect.some(
-                                                    (item) =>
-                                                      item.id == orderItem.item_id &&
-                                                      item.product_register_id == onLoop.product_register_id &&
-                                                      item.name === 'checked3' &&
-                                                      item.value === 'on'
-                                                  ) && (
-                                                    <Grid item xs={12} md={12}>
-                                                      <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                                        จำนวนเรียงสลิง : (สูงสุด{' '}
-                                                        {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
-                                                      </InputLabel>
-                                                      <FormControl sx={{ width: '100%' }} size="small">
-                                                        <OutlinedInput
-                                                          size="small"
-                                                          id={typeNumSelect[orderItem.item_id]}
-                                                          type="number"
-                                                          value={
-                                                            typeNumSelect.find(
-                                                              (item) =>
-                                                                item.id == orderItem.item_id &&
-                                                                item.product_register_id == onLoop.product_register_id &&
-                                                                item.name === 'checked3'
-                                                            )?.value || ''
-                                                          }
-                                                          // onChange={(e) => {
-                                                          //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
-                                                          // }}
-                                                          onChange={(e) => {
-                                                            handleChangeTypeNum(
-                                                              orderItem.item_id,
-                                                              'checked3',
-                                                              e,
-                                                              parseFloat(onLoop.product_register_quantity),
-                                                              onLoop
-                                                            );
-                                                          }}
-                                                          placeholder="จำนวน"
-                                                        />
-                                                      </FormControl>
-                                                    </Grid>
-                                                  )}
-                                                  {typeSelect.some(
-                                                    (item) =>
-                                                      item.id == orderItem.item_id &&
-                                                      item.product_register_id == onLoop.product_register_id &&
-                                                      item.name === 'checked4' &&
-                                                      item.value === 'on'
-                                                  ) && (
-                                                    <Grid item xs={12} md={12}>
-                                                      <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                                        จำนวนเกี่ยวจัมโบ้ : (สูงสุด{' '}
-                                                        {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
-                                                      </InputLabel>
-                                                      <FormControl sx={{ width: '100%' }} size="small">
-                                                        <OutlinedInput
-                                                          size="small"
-                                                          id={typeNumSelect[orderItem.item_id]}
-                                                          type="number"
-                                                          value={
-                                                            typeNumSelect.find(
-                                                              (item) =>
-                                                                item.id == orderItem.item_id &&
-                                                                item.product_register_id == onLoop.product_register_id &&
-                                                                item.name === 'checked4'
-                                                            )?.value || ''
-                                                          }
-                                                          // onChange={(e) => {
-                                                          //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
-                                                          // }}
-                                                          onChange={(e) => {
-                                                            handleChangeTypeNum(
-                                                              orderItem.item_id,
-                                                              'checked4',
-                                                              e,
-                                                              parseFloat(onLoop.product_register_quantity),
-                                                              onLoop
-                                                            );
-                                                          }}
-                                                          placeholder="จำนวน"
-                                                        />
-                                                      </FormControl>
-                                                    </Grid>
-                                                  )}
-                                                </MainCard>
-                                              )
-                                          )}
-                                        </Grid>
-                                      </>
-                                    ))}
-                                  </Grid>
-                                )}
-                              </Grid>
-                            ))}
-                          </Grid>
-                        )}
-                      </Grid>
-                      {queues.company_name === '9999999' && (
-                        <>
-                          <Grid item xs={12} md={6}>
-                            <Typography variant="body">
-                              <strong>ชื่อผู้ขับ :</strong> {queues.driver_name}
-                            </Typography>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <Typography variant="body">
-                              <strong>ทะเบียนรถ :</strong> {queues.registration_no}
-                            </Typography>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <Typography variant="body">
-                              <strong>เลขที่บัตรประชาชน :</strong> {queues.id_card_no}
-                              {'-'}
-                            </Typography>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <Typography variant="body">
-                              <strong>เลขที่ใบขับขี่ :</strong> {queues.license_no}{' '}
-                            </Typography>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <InputLabel>โกดังสินค้า</InputLabel>
-                            <FormControl sx={{ width: '100%' }} size="small">
-                              <Select
-                                displayEmpty
-                                variant="outlined"
-                                disabled={warehouseId && 'disabled'}
-                                value={warehouseId}
-                                onChange={(e) => {
-                                  handleChangeWarehouse(e);
-                                }}
-                                placeholder="เลือกโกดังสินค้า"
-                              >
-                                <MenuItem disabled value="">
-                                  เลือกโกดังสินค้า
-                                </MenuItem>
-                                {warehousesList.length > 0 &&
-                                  warehousesList.map((warehouses) => (
-                                    <MenuItem key={warehouses.warehouse_id} value={warehouses.warehouse_id}>
-                                      {warehouses.description}
-                                    </MenuItem>
-                                  ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <InputLabel>หัวจ่าย</InputLabel>
-                            <FormControl sx={{ width: '100%' }} size="small">
-                              <Select
-                                displayEmpty
-                                variant="outlined"
-                                disabled={stationsId && 'disabled'}
-                                value={stationsId == null ? '' : stationsId}
-                                onChange={(e) => {
-                                  handleChangeStation(e);
-                                }}
-                                placeholder="เลือกหัวจ่าย"
-                              >
-                                <MenuItem disabled value="">
-                                  เลือกหัวจ่าย
-                                </MenuItem>
-                                {stationsList.length > 0 &&
-                                  stationsList.map((station) => (
-                                    <MenuItem key={station.station_id} value={station.station_id}>
-                                      {station.station_description}
-                                    </MenuItem>
-                                  ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <InputLabel>ทีมรับสินค้า</InputLabel>
-                            <FormControl sx={{ width: '100%' }} size="small">
-                              <Select
-                                displayEmpty
-                                disabled={teamId !== null && teamId && 'disabled'}
-                                variant="outlined"
-                                value={teamId == null ? '' : teamId}
-                                onChange={(e) => {
-                                  handleChangeTeam(e.target.value);
-                                }}
-                                placeholder="เลือกทีมรับสินค้า"
-                              >
-                                <MenuItem disabled value="">
-                                  เลือกทีมรับสินค้า
-                                </MenuItem>
-                                {teamloadingList.length > 0 &&
-                                  teamloadingList.map((teamload) => (
-                                    <MenuItem key={teamload.team_id} value={teamload.team_id}>
-                                      {teamload.team_name}
-                                    </MenuItem>
-                                  ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <InputLabel>สายแรงงาน</InputLabel>
-                            <FormControl sx={{ width: '100%' }} size="small">
-                              <Select
-                                displayEmpty
-                                variant="outlined"
-                                value={contractorId == null ? '' : contractorId}
-                                onChange={(e) => {
-                                  handleChangeContractor(e);
-                                  setcontractorId(e.target.value);
-                                }}
-                                placeholder="เลือกสายแรงงาน"
-                              >
-                                <MenuItem disabled value="">
-                                  เลือกสายแรงงาน
-                                </MenuItem>
-                                {contractorList.length > 0 &&
-                                  contractorList.map((contractorList) => (
-                                    <MenuItem key={contractorList.contractor_id} value={contractorList.contractor_id}>
-                                      {contractorList.contractor_name}
-                                    </MenuItem>
-                                  ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-
-                          <Grid item xs={12} md={6} sx={{ display: 'none' }}>
-                            <InputLabel>หมายเลขสาย</InputLabel>
-                            <FormControl sx={{ width: '100%' }} size="small">
-                              <Select
-                                displayEmpty
-                                variant="outlined"
-                                value={labor_line_id == null ? '' : labor_line_id}
-                                onChange={(e) => {
-                                  handleChangeLaborLine(e);
-                                }}
-                                placeholder="เลือกหมายเลขสาย"
-                              >
-                                <MenuItem disabled value="">
-                                  เลือกหมายเลขสาย
-                                </MenuItem>
-                                {layborLineList.length > 0 &&
-                                  layborLineList.map((layborLine) => (
-                                    <MenuItem key={layborLine.labor_line_id} value={layborLine.labor_line_id}>
-                                      {layborLine.labor_line_name}
-                                    </MenuItem>
-                                  ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-
-                          {orders.length > 0 && (
-                            <Grid item xs={12}>
-                              <Grid item xs={12}>
-                                <Typography variant="h5">
-                                  <strong>ข้อมูลกองสินค้า:</strong>
-                                </Typography>
-                              </Grid>
-                              {orders.map((ordersItems, orderId) => (
-                                <div key={orderId}>
-                                  {ordersItems.product_brand_id !== null && ordersItems.product_company_id && (
-                                    <Grid container spacing={2}>
-                                      {ordersItems.items.map((orderItem, orderIndex) => (
-                                        <>
-                                          <Grid item xs={12} md={12} key={orderIndex}>
-                                            <InputLabel sx={{ mt: 1, mb: 1 }}>กองสินค้า : {orderItem.name}</InputLabel>
-                                            <InputLabel sx={{ mt: 1, mb: 1 }}>
-                                              จำนวน : <strong>{orderItem.quantity}</strong> (ตัน)
-                                            </InputLabel>
-                                            {loopSelect.map(
-                                              (onLoop, index) =>
-                                                onLoop.order_id == orderItem.order_id &&
-                                                onLoop.item_id == orderItem.item_id && (
-                                                  <MainCard key={index} sx={{ mb: 2 }}>
-                                                    <FormControl sx={{ width: '100%' }} size="small">
-                                                      <Select
-                                                        displayEmpty
-                                                        variant="outlined"
-                                                        value={onLoop.product_register_id}
-                                                        onChange={(e) => {
-                                                          handleChangeProduct(e, orderItem.item_id, orderItem);
-                                                          onLoop.product_register_id = e.target.value;
-
-                                                          // ข้อมูลกองเก่า
-                                                          orderItem.product_register_id = e.target.value;
-                                                        }}
-                                                      >
-                                                        <MenuItem disabled value="">
-                                                          เลือกกองสินค้า
-                                                        </MenuItem>
-
-                                                        {orderItem.productRegis.map(
-                                                          (productRegis) =>
-                                                            productRegis.product_register_id === onLoop.product_register_id && (
-                                                              <MenuItem
-                                                                key={productRegis.product_register_id}
-                                                                value={productRegis.product_register_id}
-                                                                disabled
-                                                              >
-                                                                {'โกดัง : ' + productRegis.warehouse_name + ' '}
-                                                                {productRegis.product_register_name}
-                                                                {productRegis.product_register_date
-                                                                  ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                                      'DD/MM/YY'
-                                                                    )}) `
-                                                                  : '-'}
-                                                                {productRegis.product_register_date ? (
-                                                                  <strong style={{ color: 'red' }}>
-                                                                    {' '}
-                                                                    ({calculateAge(productRegis.product_register_date)})
-                                                                  </strong>
-                                                                ) : (
-                                                                  '-'
-                                                                )}
-                                                                {productRegis.product_register_remark ? (
-                                                                  <strong style={{ color: 'red' }}>
-                                                                    {' '}
-                                                                    ({productRegis.product_register_remark})
-                                                                  </strong>
-                                                                ) : (
-                                                                  ''
-                                                                )}
-                                                                <strong> ({onLoop.product_register_quantity} ตัน)</strong>
-                                                              </MenuItem>
-                                                            )
-                                                        )}
-                                                      </Select>
-                                                    </FormControl>
-
-                                                    <Grid sx={{ mt: 2 }}>
-                                                      <InputLabel sx={{ mt: 1, mb: 1 }}>ประเภท</InputLabel>
-                                                      <FormControlLabel
-                                                        control={
-                                                          <Checkbox
-                                                            checked={typeSelect.some(
-                                                              (item) =>
-                                                                item.id == orderItem.item_id &&
-                                                                item.product_register_id == onLoop.product_register_id &&
-                                                                item.name === 'checked1' &&
-                                                                item.value === 'on'
-                                                            )}
-                                                            onChange={handleChangeSelect(orderItem.item_id, 'checked1', onLoop)}
-                                                            name="checked1"
-                                                          />
-                                                        }
-                                                        label="ทุบปุ๋ย"
-                                                      />
-                                                      <FormControlLabel
-                                                        control={
-                                                          <Checkbox
-                                                            // checked={typeSelect[orderItem.item_id]?.checked2 || false}
-                                                            checked={typeSelect.some(
-                                                              (item) =>
-                                                                item.id == orderItem.item_id &&
-                                                                item.product_register_id == onLoop.product_register_id &&
-                                                                item.name === 'checked2' &&
-                                                                item.value === 'on'
-                                                            )}
-                                                            onChange={handleChangeSelect(orderItem.item_id, 'checked2', onLoop)}
-                                                            name="checked2"
-                                                          />
-                                                        }
-                                                        label="เกี่ยวสลิง"
-                                                      />
-                                                      <FormControlLabel
-                                                        control={
-                                                          <Checkbox
-                                                            // checked={typeSelect[orderItem.item_id]?.checked3 || false}
-                                                            checked={typeSelect.some(
-                                                              (item) =>
-                                                                item.id == orderItem.item_id &&
-                                                                item.product_register_id == onLoop.product_register_id &&
-                                                                item.name === 'checked3' &&
-                                                                item.value === 'on'
-                                                            )}
-                                                            onChange={handleChangeSelect(orderItem.item_id, 'checked3', onLoop)}
-                                                            name="checked3"
-                                                          />
-                                                        }
-                                                        label="เรียงสลิง"
-                                                      />
-                                                      <FormControlLabel
-                                                        control={
-                                                          <Checkbox
-                                                            // checked={typeSelect[orderItem.item_id]?.checked4 || false}
-                                                            checked={typeSelect.some(
-                                                              (item) =>
-                                                                item.id == orderItem.item_id &&
-                                                                item.product_register_id == onLoop.product_register_id &&
-                                                                item.name === 'checked4' &&
-                                                                item.value === 'on'
-                                                            )}
-                                                            onChange={handleChangeSelect(orderItem.item_id, 'checked4', onLoop)}
-                                                            name="checked4"
-                                                          />
-                                                        }
-                                                        label="เกี่ยวจัมโบ้"
-                                                      />
-                                                    </Grid>
-
-                                                    {typeSelect.some(
-                                                      (item) =>
-                                                        item.id == orderItem.item_id &&
-                                                        item.product_register_id == onLoop.product_register_id &&
-                                                        item.name === 'checked1' &&
-                                                        item.value === 'on'
-                                                    ) && (
-                                                      <Grid item xs={12} md={12}>
-                                                        <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                                          จำนวนทุบปุ๋ย : (สูงสุด{' '}
-                                                          {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
-                                                        </InputLabel>
-                                                        <FormControl sx={{ width: '100%' }} size="small">
-                                                          <OutlinedInput
-                                                            size="small"
-                                                            id={typeNumSelect[orderItem.item_id]}
-                                                            type="number"
-                                                            value={
-                                                              typeNumSelect.find(
-                                                                (item) =>
-                                                                  item.id == orderItem.item_id &&
-                                                                  item.product_register_id == onLoop.product_register_id &&
-                                                                  item.name === 'checked1'
-                                                              )?.value || ''
-                                                            }
-                                                            onChange={(e) => {
-                                                              handleChangeTypeNum(
-                                                                orderItem.item_id,
-                                                                'checked1',
-                                                                e,
-                                                                parseFloat((onLoop.product_register_quantity * 1).toFixed(3)),
-                                                                onLoop
-                                                              );
-                                                            }}
-                                                            placeholder="จำนวน"
-                                                          />
-                                                        </FormControl>
-                                                      </Grid>
-                                                    )}
-                                                    {typeSelect.some(
-                                                      (item) =>
-                                                        item.id == orderItem.item_id &&
-                                                        item.product_register_id == onLoop.product_register_id &&
-                                                        item.name === 'checked2' &&
-                                                        item.value === 'on'
-                                                    ) && (
-                                                      <Grid item xs={12} md={12}>
-                                                        <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                                          จำนวนเกี่ยวสลิง : (สูงสุด{' '}
-                                                          {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
-                                                        </InputLabel>
-                                                        <FormControl sx={{ width: '100%' }} size="small">
-                                                          <OutlinedInput
-                                                            size="small"
-                                                            id={typeNumSelect[orderItem.item_id]}
-                                                            type="number"
-                                                            value={
-                                                              typeNumSelect.find(
-                                                                (item) =>
-                                                                  item.id == orderItem.item_id &&
-                                                                  item.product_register_id == onLoop.product_register_id &&
-                                                                  item.name === 'checked2'
-                                                              )?.value || ''
-                                                            }
-                                                            // onChange={(e) => {
-                                                            //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
-                                                            // }}
-                                                            onChange={(e) => {
-                                                              handleChangeTypeNum(
-                                                                orderItem.item_id,
-                                                                'checked2',
-                                                                e,
-                                                                parseFloat(onLoop.product_register_quantity),
-                                                                onLoop
-                                                              );
-                                                            }}
-                                                            placeholder="จำนวน"
-                                                          />
-                                                        </FormControl>
-                                                      </Grid>
-                                                    )}
-                                                    {typeSelect.some(
-                                                      (item) =>
-                                                        item.id == orderItem.item_id &&
-                                                        item.product_register_id == onLoop.product_register_id &&
-                                                        item.name === 'checked3' &&
-                                                        item.value === 'on'
-                                                    ) && (
-                                                      <Grid item xs={12} md={12}>
-                                                        <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                                          จำนวนเรียงสลิง : (สูงสุด{' '}
-                                                          {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
-                                                        </InputLabel>
-                                                        <FormControl sx={{ width: '100%' }} size="small">
-                                                          <OutlinedInput
-                                                            size="small"
-                                                            id={typeNumSelect[orderItem.item_id]}
-                                                            type="number"
-                                                            value={
-                                                              typeNumSelect.find(
-                                                                (item) =>
-                                                                  item.id == orderItem.item_id &&
-                                                                  item.product_register_id == onLoop.product_register_id &&
-                                                                  item.name === 'checked3'
-                                                              )?.value || ''
-                                                            }
-                                                            // onChange={(e) => {
-                                                            //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
-                                                            // }}
-                                                            onChange={(e) => {
-                                                              handleChangeTypeNum(
-                                                                orderItem.item_id,
-                                                                'checked3',
-                                                                e,
-                                                                parseFloat(onLoop.product_register_quantity),
-                                                                onLoop
-                                                              );
-                                                            }}
-                                                            placeholder="จำนวน"
-                                                          />
-                                                        </FormControl>
-                                                      </Grid>
-                                                    )}
-                                                    {typeSelect.some(
-                                                      (item) =>
-                                                        item.id == orderItem.item_id &&
-                                                        item.product_register_id == onLoop.product_register_id &&
-                                                        item.name === 'checked4' &&
-                                                        item.value === 'on'
-                                                    ) && (
-                                                      <Grid item xs={12} md={12}>
-                                                        <InputLabel sx={{ mt: 1, mb: 1.5 }}>
-                                                          จำนวนเกี่ยวจัมโบ้ : (สูงสุด{' '}
-                                                          {parseFloat((onLoop.product_register_quantity * 1).toFixed(3)) + ' ตัน'})
-                                                        </InputLabel>
-                                                        <FormControl sx={{ width: '100%' }} size="small">
-                                                          <OutlinedInput
-                                                            size="small"
-                                                            id={typeNumSelect[orderItem.item_id]}
-                                                            type="number"
-                                                            value={
-                                                              typeNumSelect.find(
-                                                                (item) =>
-                                                                  item.id == orderItem.item_id &&
-                                                                  item.product_register_id == onLoop.product_register_id &&
-                                                                  item.name === 'checked4'
-                                                              )?.value || ''
-                                                            }
-                                                            // onChange={(e) => {
-                                                            //   handleChangeTypeNum(e, orderItem.item_id, parseFloat((orderItem.quantity * 1).toFixed(3)));
-                                                            // }}
-                                                            onChange={(e) => {
-                                                              handleChangeTypeNum(
-                                                                orderItem.item_id,
-                                                                'checked4',
-                                                                e,
-                                                                parseFloat(onLoop.product_register_quantity),
-                                                                onLoop
-                                                              );
-                                                            }}
-                                                            placeholder="จำนวน"
-                                                          />
-                                                        </FormControl>
-                                                      </Grid>
-                                                    )}
-                                                  </MainCard>
-                                                )
-                                            )}
-                                          </Grid>
-                                        </>
-                                      ))}
-                                    </Grid>
-                                  )}
-                                </div>
-                              ))}
-                            </Grid>
-                          )}
-                          {teamLoading.length > 0 && (
-                            <Grid item xs={12}>
-                              <Grid item xs={12}>
-                                <Typography variant="h5">
-                                  <strong>ข้อมูลทีมขึ้นสินค้า:</strong>
-                                </Typography>
-                              </Grid>
-                              <TableContainer>
-                                <Table
-                                  aria-labelledby="tableTitle"
-                                  size="small"
-                                  sx={{
-                                    '& .MuiTableCell-root:first-of-type': {
-                                      pl: 2
-                                    },
-                                    '& .MuiTableCell-root:last-of-type': {
-                                      pr: 3
-                                    }
-                                  }}
-                                >
-                                  <TableHead>
-                                    <TableRow>
-                                      <TableCell align="center">ลำดับ</TableCell>
-                                      <TableCell align="left">รายชื่อ</TableCell>
-                                      <TableCell align="left">ตำแหน่ง</TableCell>
-                                    </TableRow>
-                                  </TableHead>
-
-                                  {teamLoading ? (
-                                    <TableBody>
-                                      {teamLoading.map((item, index) => (
-                                        <TableRow key={index}>
-                                          <TableCell align="center">{index + 1}</TableCell>
-                                          <TableCell align="left">
-                                            {item.manager_name && item.manager_name}
-                                            {item.checker_name && item.checker_name}
-                                            {item.forklift_name && item.forklift_name}
-                                          </TableCell>
-                                          <TableCell align="left">
-                                            {item.manager_name && 'หัวหน้าโกดัง'}
-                                            {item.checker_name && 'พนักงานจ่ายสินค้า'}
-                                            {item.forklift_name && 'โฟล์คลิฟท์'}
-                                          </TableCell>
-                                        </TableRow>
-                                      ))}
-                                    </TableBody>
-                                  ) : (
-                                    <TableRow>
-                                      <TableCell colSpan={13} align="center">
-                                        ไม่พบข้อมูล
-                                      </TableCell>
-                                    </TableRow>
-                                  )}
-                                </Table>
-                              </TableContainer>
-                            </Grid>
-                          )}
-                        </>
-                      )}
-                    </Grid>
-                  </MainCard>
-                  <DialogContentText>{/* ต้องการ {textnotify} ID:{id_update} หรือไม่? */}</DialogContentText>
-                </DialogContent>
-              </>
-            ) : (
-              <>
-                <DialogTitle id="responsive-dialog-title" align="center">
-                  <Typography variant="h5">{'ยกเลิกคิวรับสินค้า'}</Typography>
-                </DialogTitle>
-
-                <DialogContent>
-                  <DialogContentText align="center" sx={{ p: 2 }}>
-                    ต้องการ <strong> {textnotify} </strong> คิวหมายเลข :{' '}
-                    <QueueTag id={queues.product_company_id || ''} token={queues.token} /> หรือไม่?
-                  </DialogContentText>
-                  <FormControl>
-                    <RadioGroup
-                      row
-                      aria-labelledby="demo-row-radio-buttons-group-label"
-                      name="row-radio-buttons-group"
-                      defaultValue={stationStatus === '' ? 'R' : 'N'}
-                      onChange={(e) => handleSelectCloseStation(e.target.value)}
-                    >
-                      <FormControlLabel value="R" control={<Radio />} label={'ยกเลิกกองสินค้า'} />
-                      <FormControlLabel value="Y" control={<Radio />} label={'ยกเลิกรายการคำสั่งซื้อ'} />
-                      <FormControlLabel value="N" control={<Radio />} label={'ยกเลิกเข้าหัวจ่าย'} />
-                    </RadioGroup>
-                  </FormControl>
-                </DialogContent>
-              </>
-            )}
-            <DialogActions align="center" sx={{ justifyContent: 'center!important' }}>
-              <Button color="error" variant="contained" autoFocus onClick={() => handleClose(0)}>
-                ยกเลิก
-              </Button>
-              <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
-                ยืนยัน
-              </Button>
-            </DialogActions>
-          </Dialog>
+        {status == 'processing' && fr === 'close' && (
+          <CloseQueueDialog
+            open={open}
+            onClose={handleClose}
+            queues={queues}
+            warehousesList={warehousesList}
+            warehouseId={warehouseId}
+            stationsList={stationsList}
+            stationsId={stationsId}
+            teamloadingList={teamloadingList}
+            teamId={teamId}
+            teamLoading={teamLoading}
+            contractorList={contractorList}
+            contractorId={contractorId}
+            reservesData={reservesData}
+            orders={orders}
+            loopSelect={loopSelect}
+            typeSelect={typeSelect}
+            typeNumSelect={typeNumSelect}
+            onProductChange={handleChangeProduct}
+            onTypeSelect={handleChangeSelect}
+            onTypeNumChange={handleChangeTypeNum}
+            calculateAge={calculateAge}
+          />
         )}
+
+        {status == 'processing' && fr === 'cancel' && (
+          <CancelQueueDialog
+            open={open}
+            onClose={handleClose}
+            textnotify={textnotify}
+            queues={queues}
+            stationStatus={stationStatus}
+            onSelectCloseStation={handleSelectCloseStation}
+          />
+        )}
+
         <Grid>
           <TableContainer
             sx={{
@@ -3238,185 +1780,18 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
             }}
           >
             <Table aria-labelledby="tableTitle">
-              <QueueTableHead />
-              {loading ? (
-                <TableBody>
-                  <TableRow>
-                    <TableCell colSpan={12} align="center">
-                      <CircularProgress />
-                      <Typography variant="body1">Loading....</Typography>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              ) : (
-                <TableBody>
-                  {items.length > 0 &&
-                    items.map((row, index) => {
-                      return (
-                        <TableRow key={index}>
-                          <TableCell align="center">
-                            <Typography>
-                              <strong>{index + 1}</strong>
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="left">
-                            {moment(row.queue_date.slice(0, 10)).format('DD/MM/YY')}
-                            {row.queue_time ? ' - ' + row.queue_time.slice(0, 5) + 'น.' : ''}
-                          </TableCell>
-                          <TableCell align="center">
-                            <QueueTag id={row.product_company_id || ''} token={row.token} />
-                            {moment(row.queue_date.slice(0, 10)).format('DD/MM/YYYY') != moment(new Date()).format('DD/MM/YYYY') && (
-                              <span style={{ color: 'red' }}> (คิวค้าง)</span>
-                            )}
-                          </TableCell>
-                          <TableCell align="left">
-                            {row.description ? <strong style={{ color: 'red' }}>{row.description}</strong> : '-'}
-                          </TableCell>
-                          <TableCell align="center">
-                            <Chip color="primary" sx={{ width: '122px' }} label={row.registration_no} />
-                          </TableCell>
-                          <TableCell align="left">
-                            <Typography sx={{ width: '160px' }}>{row.station_description}</Typography>
-                          </TableCell>
-                          <TableCell align="left">
-                            <Typography sx={{ width: '240px', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                              {row.company_name} ({row.count_car_id} คิว)
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography variant="body">
-                              <strong>{row.total_quantity ? parseFloat((row.total_quantity * 1).toFixed(3)) : '-'}</strong>
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="left">{row.driver_name}</TableCell>
-                          <TableCell align="left">{row.driver_mobile}</TableCell>
-                          <TableCell align="left">{row.start_time ? row.start_time.slice(11, 19) : '-'}</TableCell>
-                          <TableCell align="center">
-                            {row.recall_status == 'Y' ? <Chip color="error" sx={{ width: '80px' }} label={'ทวนสอบ'} /> : '-'}
-                          </TableCell>
-                          <TableCell align="center">
-                            {status == 'waiting' && <Chip color="warning" sx={{ width: '95px' }} label={'รอขึ้นสินค้า'} />}
-                            {status == 'processing' && <Chip color="success" sx={{ width: '95px' }} label={'ขึ้นสินค้า'} />}
-                          </TableCell>
-                          {status == 'processing' && (
-                            <TableCell align="center">
-                              <Tooltip title="เรียกคิว">
-                                <span>
-                                  <Button
-                                    sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                    variant="contained"
-                                    size="small"
-                                    align="center"
-                                    color="info"
-                                    disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
-                                    onClick={() => handleCallQueue(row)}
-                                  >
-                                    <SoundOutlined />
-                                  </Button>
-                                </span>
-                              </Tooltip>
-                            </TableCell>
-                          )}
-
-                          {status == 'waiting' && (
-                            <TableCell align="center">
-                              <FormControl sx={{ minWidth: 140 }} size="small">
-                                <Select
-                                  size="small"
-                                  labelId={`station-select-label-${row.step_id}`}
-                                  disabled
-                                  value={selectedStations[row.step_id] || row.reserve_station_id} // ใช้สถานีที่ถูกเลือกในแต่ละแถวหรือสถานีที่ถูกจองเริ่มต้น
-                                  onChange={(event) => handleStationChange(event, row)}
-                                >
-                                  {stations.map((station) => (
-                                    <MenuItem key={station.station_id} value={station.station_id}>
-                                      {station.station_description}
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                            </TableCell>
-                          )}
-
-                          <TableCell align="right" width="120" sx={{ width: 120, maxWidth: 120 }}>
-                            <ButtonGroup aria-label="button group" sx={{ alignItems: 'center' }}>
-                              {status == 'waiting' && (
-                                <Tooltip title="เรียกคิว">
-                                  {/* <Button
-                                    // sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                    variant="contained"
-                                    size="small"
-                                    color="info"
-                                    disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
-                                    onClick={handleClickOpentest}
-                                  >
-                                    ทดสอบ
-                                  </Button> */}
-                                  <Button
-                                    // sx={{ minWidth: '33px!important', p: '6px 0px' }}
-                                    variant="contained"
-                                    size="small"
-                                    color="info"
-                                    disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
-                                    onClick={() =>
-                                      handleClickOpen(
-                                        row.step_id,
-                                        'call',
-                                        row.queue_id,
-                                        selectedStations[row.step_id] || row.reserve_station_id,
-                                        row
-                                      )
-                                    }
-                                    endIcon={<RightSquareOutlined />}
-                                  >
-                                    เรียกคิว
-                                  </Button>
-                                </Tooltip>
-                              )}
-
-                              {status == 'processing' && (
-                                <div>
-                                  <Tooltip title="ยกเลิก">
-                                    <Button
-                                      // startIcon={<ArrowBackIosIcon />}
-                                      variant="contained"
-                                      size="small"
-                                      disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
-                                      onClick={() => handleClickOpen(row.step_id, 'cancel', row.queue_id, row.station_id, row)}
-                                      color="error"
-                                    >
-                                      ยกเลิก
-                                    </Button>
-                                  </Tooltip>
-                                  <Tooltip title="ปิดคิว">
-                                    <span>
-                                      <Button
-                                        size="small"
-                                        variant="contained"
-                                        disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
-                                        onClick={() => handleClickOpen(row.step_id, 'close', row.queue_id, row.station_id, row)}
-                                      >
-                                        ปิดคิว
-                                      </Button>
-                                    </span>
-                                  </Tooltip>
-                                </div>
-                              )}
-                            </ButtonGroup>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-
-                  {items.length == 0 && (
-                    <TableRow>
-                      <TableCell colSpan={12} align="center">
-                        ไม่พบข้อมูล
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              )}
+              <QueueTableHead status={status} />
+              <QueueTableBody
+                loading={loading}
+                items={items}
+                status={status}
+                permission={permission}
+                selectedStations={selectedStations}
+                stations={stations}
+                onStationChange={handleStationChange}
+                onCallQueue={handleCallQueue}
+                onOpenDialog={handleClickOpen}
+              />
             </Table>
           </TableContainer>
         </Grid>

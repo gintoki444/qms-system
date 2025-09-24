@@ -22,7 +22,9 @@ import {
   SwitcherOutlined,
   ContainerOutlined,
   FileExcelOutlined,
-  HistoryOutlined
+  HistoryOutlined,
+  PoweroffOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons';
 
 // Link api url
@@ -55,20 +57,20 @@ function ProductManagementTable({ onFilter, permission }) {
 
   const [productList, setProductList] = useState([]);
   const [groupedProductList, setGroupedProductList] = useState([]);
-  
+
   const getWareHouseManager = async () => {
     setLoading(true);
     try {
       adminRequest.getAllProductRegister().then((response) => {
         let processedData = [];
-        
+
         if (onFilter) {
           const filterData = response.filter((x) => x.product_company_id == onFilter && x.total_remain > 0);
           processedData = filterData;
         } else {
           processedData = response.filter((x) => x.total_remain > 0);
         }
-        
+
         // จัดกลุ่มข้อมูล
         const groupedData = groupProductData(processedData);
         setGroupedProductList(groupedData);
@@ -91,11 +93,11 @@ function ProductManagementTable({ onFilter, permission }) {
 
     // จัดกลุ่มตามบริษัทและสินค้า
     const grouped = {};
-    
+
     sortedData.forEach((item, index) => {
       const companyKey = `${item.product_company_id}_${item.product_company_name_th2}`;
       const productKey = `${companyKey}_${item.name}`;
-      
+
       if (!grouped[companyKey]) {
         grouped[companyKey] = {
           companyInfo: {
@@ -105,7 +107,7 @@ function ProductManagementTable({ onFilter, permission }) {
           products: {}
         };
       }
-      
+
       if (!grouped[companyKey].products[productKey]) {
         grouped[companyKey].products[productKey] = {
           productInfo: {
@@ -116,7 +118,7 @@ function ProductManagementTable({ onFilter, permission }) {
           items: []
         };
       }
-      
+
       grouped[companyKey].products[productKey].items.push({
         ...item,
         No: index + 1
@@ -134,14 +136,14 @@ function ProductManagementTable({ onFilter, permission }) {
       return idA - idB;
     });
 
-    sortedCompanyKeys.forEach(companyKey => {
+    sortedCompanyKeys.forEach((companyKey) => {
       const company = grouped[companyKey];
-      
-      Object.keys(company.products).forEach(productKey => {
+
+      Object.keys(company.products).forEach((productKey) => {
         const product = company.products[productKey];
-        
+
         // เพิ่มรายการสินค้า
-        product.items.forEach(item => {
+        product.items.forEach((item) => {
           result.push({
             ...item,
             No: globalIndex++,
@@ -149,7 +151,7 @@ function ProductManagementTable({ onFilter, permission }) {
             groupKey: `${companyKey}_${productKey}`
           });
         });
-        
+
         // คำนวณข้อมูลสรุปสำหรับสินค้านี้
         const summary = calculateProductSummary(product.items);
         result.push({
@@ -182,7 +184,7 @@ function ProductManagementTable({ onFilter, permission }) {
       total_remain: 0
     };
 
-    items.forEach(item => {
+    items.forEach((item) => {
       summary.register_beginning_balance += parseFloat(item.register_beginning_balance || 0);
       summary.total_receive += parseFloat(item.total_receive || 0);
       summary.total_sold += parseFloat(item.total_sold || 0);
@@ -248,7 +250,7 @@ function ProductManagementTable({ onFilter, permission }) {
       if (rowData && rowData.isSummary) {
         const companyColor = getCompanyColor(rowData.product_company_id);
         return {
-          style: { 
+          style: {
             backgroundColor: `${companyColor}15`, // เพิ่มความโปร่งใส 15%
             fontWeight: 'bold',
             border: `1px solid ${companyColor}30` // border โปร่งใส
@@ -338,9 +340,9 @@ function ProductManagementTable({ onFilter, permission }) {
             // แสดงชื่อสินค้าแบบ span หลายคอลัมน์ (เหมือนภาพตัวอย่าง)
             const companyColor = getCompanyColor(rowData.product_company_id);
             return (
-              <Typography 
-                variant="body2" 
-                sx={{ 
+              <Typography
+                variant="body2"
+                sx={{
                   fontWeight: 'bold',
                   textAlign: 'center',
                   backgroundColor: `${companyColor}20`, // เพิ่มความโปร่งใส 20%
@@ -390,7 +392,7 @@ function ProductManagementTable({ onFilter, permission }) {
           if (rowData && rowData.isSummary) {
             return '';
           }
-          return <Typography variant="body">{value ? moment(value.slice(0, 10)).format('DD/MM/YYYY') : '-'}</Typography>
+          return <Typography variant="body">{value ? moment(value.slice(0, 10)).format('DD/MM/YYYY') : '-'}</Typography>;
         }
       }
     },
@@ -403,7 +405,7 @@ function ProductManagementTable({ onFilter, permission }) {
           if (rowData && rowData.isSummary) {
             return '';
           }
-          return <Typography variant="body">{value ? calculateAge(value) : '-'}</Typography>
+          return <Typography variant="body">{value ? calculateAge(value) : '-'}</Typography>;
         }
       }
     },
@@ -416,7 +418,46 @@ function ProductManagementTable({ onFilter, permission }) {
           if (rowData && rowData.isSummary) {
             return '';
           }
-          return <Typography variant="body">{value ? value : '-'}</Typography>
+          return <Typography variant="body">{value ? value : '-'}</Typography>;
+        }
+      }
+    },
+    {
+      name: 'product_register_staus',
+      label: 'สถานะ',
+      options: {
+        setCellHeaderProps: () => ({
+          style: { textAlign: 'center' }
+        }),
+        setCellProps: () => ({
+          style: { textAlign: 'center' }
+        }),
+        customBodyRender: (value, tableMeta) => {
+          const rowData = groupedProductList[tableMeta.rowIndex];
+          if (rowData && rowData.isSummary) {
+            return '';
+          }
+
+          const isActive = value === 'A';
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+              {isActive ? (
+                <>
+                  <CheckCircleOutlined style={{ color: '#4caf50', fontSize: '16px' }} />
+                  <Typography variant="body2" sx={{ color: '#4caf50', fontWeight: 'bold' }}>
+                    เปิด
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <PoweroffOutlined style={{ color: '#f44336', fontSize: '16px' }} />
+                  <Typography variant="body2" sx={{ color: '#f44336', fontWeight: 'bold' }}>
+                    ปิด
+                  </Typography>
+                </>
+              )}
+            </Box>
+          );
         }
       }
     },
@@ -429,9 +470,9 @@ function ProductManagementTable({ onFilter, permission }) {
           if (rowData && rowData.isSummary) {
             const companyColor = getCompanyColor(rowData.product_company_id);
             return (
-              <Typography 
-                variant="body2" 
-                sx={{ 
+              <Typography
+                variant="body2"
+                sx={{
                   fontWeight: 'bold',
                   textAlign: 'center',
                   backgroundColor: `${companyColor}20`, // เพิ่มความโปร่งใส 20%
@@ -445,7 +486,7 @@ function ProductManagementTable({ onFilter, permission }) {
               </Typography>
             );
           }
-          return <Typography variant="body">{value ? value : '-'}</Typography>
+          return <Typography variant="body">{value ? value : '-'}</Typography>;
         }
       }
     },
@@ -464,9 +505,9 @@ function ProductManagementTable({ onFilter, permission }) {
           if (rowData && rowData.isSummary) {
             const companyColor = getCompanyColor(rowData.product_company_id);
             return (
-              <Typography 
-                variant="body2" 
-                sx={{ 
+              <Typography
+                variant="body2"
+                sx={{
                   fontWeight: 'bold',
                   textAlign: 'right',
                   backgroundColor: `${companyColor}20`,
@@ -480,7 +521,11 @@ function ProductManagementTable({ onFilter, permission }) {
               </Typography>
             );
           }
-          return <Typography variant="body" sx={{ textAlign: 'right' }}>{value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '-'}</Typography>
+          return (
+            <Typography variant="body" sx={{ textAlign: 'right' }}>
+              {value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '-'}
+            </Typography>
+          );
         }
       }
     },
@@ -499,9 +544,9 @@ function ProductManagementTable({ onFilter, permission }) {
           if (rowData && rowData.isSummary) {
             const companyColor = getCompanyColor(rowData.product_company_id);
             return (
-              <Typography 
-                variant="body2" 
-                sx={{ 
+              <Typography
+                variant="body2"
+                sx={{
                   fontWeight: 'bold',
                   textAlign: 'right',
                   backgroundColor: `${companyColor}20`,
@@ -515,7 +560,11 @@ function ProductManagementTable({ onFilter, permission }) {
               </Typography>
             );
           }
-          return <Typography variant="body" sx={{ textAlign: 'right' }}>{value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '-'}</Typography>
+          return (
+            <Typography variant="body" sx={{ textAlign: 'right' }}>
+              {value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '-'}
+            </Typography>
+          );
         }
       }
     },
@@ -534,9 +583,9 @@ function ProductManagementTable({ onFilter, permission }) {
           if (rowData && rowData.isSummary) {
             const companyColor = getCompanyColor(rowData.product_company_id);
             return (
-              <Typography 
-                variant="body2" 
-                sx={{ 
+              <Typography
+                variant="body2"
+                sx={{
                   fontWeight: 'bold',
                   textAlign: 'right',
                   backgroundColor: `${companyColor}20`,
@@ -550,7 +599,11 @@ function ProductManagementTable({ onFilter, permission }) {
               </Typography>
             );
           }
-          return <Typography variant="body" sx={{ textAlign: 'right' }}>{value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '-'}</Typography>
+          return (
+            <Typography variant="body" sx={{ textAlign: 'right' }}>
+              {value ? parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : '-'}
+            </Typography>
+          );
         }
       }
     },
@@ -569,9 +622,9 @@ function ProductManagementTable({ onFilter, permission }) {
           if (rowData && rowData.isSummary) {
             const companyColor = getCompanyColor(rowData.product_company_id);
             return (
-              <Typography 
-                variant="body2" 
-                sx={{ 
+              <Typography
+                variant="body2"
+                sx={{
                   fontWeight: 'bold',
                   textAlign: 'right',
                   backgroundColor: `${companyColor}20`,
@@ -587,12 +640,16 @@ function ProductManagementTable({ onFilter, permission }) {
           }
           return value ? (
             <div style={{ textAlign: 'right' }}>
-              {parseFloat(value) <= 0 && <span style={{ color: 'red' }}>{parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</span>}
+              {parseFloat(value) <= 0 && (
+                <span style={{ color: 'red' }}>
+                  {parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
+                </span>
+              )}
               {parseFloat(value) > 0 && parseFloat(value).toLocaleString('th-TH', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
             </div>
           ) : (
             <div style={{ textAlign: 'right' }}>-</div>
-          )
+          );
         }
       }
     },
@@ -624,7 +681,7 @@ function ProductManagementTable({ onFilter, permission }) {
           if (rowData && rowData.isSummary) {
             return '';
           }
-          
+
           return (
             <>
               <ButtonGroup variant="contained" aria-label="Basic button group">
@@ -645,6 +702,18 @@ function ProductManagementTable({ onFilter, permission }) {
                 </Tooltip>
                 {permission && (permission === 'manage_everything' || permission === 'add_edit_delete_data') && (
                   <>
+                    <Tooltip title={rowData.product_register_staus === 'A' ? 'ปิดสถานะ' : 'เปิดสถานะ'}>
+                      <Button
+                        variant="contained"
+                        size="medium"
+                        color={rowData.product_register_staus === 'A' ? 'error' : 'success'}
+                        disabled={permission !== 'manage_everything' && permission !== 'add_edit_delete_data'}
+                        sx={{ minWidth: '33px!important', p: '6px 0px' }}
+                        onClick={() => toggleProductStatus(value, rowData.product_register_staus)}
+                      >
+                        {rowData.product_register_staus === 'A' ? <PoweroffOutlined /> : <CheckCircleOutlined />}
+                      </Button>
+                    </Tooltip>
                     <Tooltip title="เบิกสินค้า">
                       <Button
                         variant="contained"
@@ -797,6 +866,55 @@ function ProductManagementTable({ onFilter, permission }) {
     navigate('/admin/product-register/details/' + id);
   };
 
+  // ฟังก์ชันเปิด/ปิดสถานะสินค้า
+  const toggleProductStatus = async (productId, currentStatus) => {
+    try {
+      setLoading(true);
+      const newStatus = currentStatus === 'A' ? 'I' : 'A';
+
+      // หาข้อมูลสินค้าจาก productList
+      const productData = productList.find((item) => item.product_register_id === productId);
+
+      if (!productData) {
+        console.error('ไม่พบข้อมูลสินค้า');
+        return;
+      }
+
+      // เตรียมข้อมูลสำหรับอัปเดต
+      const updateData = {
+        product_company_id: productData.product_company_id,
+        product_id: productData.product_id,
+        product_brand_id: productData.product_brand_id,
+        warehouse_id: productData.warehouse_id,
+        product_register_name: productData.product_register_name,
+        product_register_date: moment(productData.product_register_date).format('YYYY-MM-DD'),
+        register_beginning_balance: productData.register_beginning_balance,
+        product_register_remark: productData.product_register_remark,
+        product_register_staus: newStatus // ใช้ product_register_staus ตามตัวอย่าง
+      };
+
+      console.log('updateData:', updateData);
+      console.log('productId:', productId);
+
+      // เรียก API เพื่ออัปเดตสถานะ
+      const response = await adminRequest.putProductRegisterById(productId, updateData);
+
+      console.log('newStatus :', newStatus);
+      console.log('response adminRequest.putProductRegisterById :', response);
+
+      // รีเฟรชข้อมูล
+      getWareHouseManager();
+
+      // แสดงข้อความแจ้งเตือน
+      const statusText = newStatus === 'A' ? 'เปิด' : 'ปิด';
+      console.log(`สถานะสินค้า ${statusText} เรียบร้อยแล้ว`);
+    } catch (error) {
+      console.error('เกิดข้อผิดพลาดในการอัปเดตสถานะ:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -831,7 +949,12 @@ function ProductManagementTable({ onFilter, permission }) {
         </Backdrop>
       )}
 
-      <MUIDataTable title={<Typography variant="h5">ข้อมูลกองสินค้า</Typography>} data={groupedProductList} columns={columns} options={options} />
+      <MUIDataTable
+        title={<Typography variant="h5">ข้อมูลกองสินค้า</Typography>}
+        data={groupedProductList}
+        columns={columns}
+        options={options}
+      />
       <ProductExport data={productList} onClickDownload={tableRef} />
     </Box>
   );

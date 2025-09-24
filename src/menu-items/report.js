@@ -13,7 +13,8 @@ const report = {
       id: 'dailyproductout',
       title: 'รายการจ่ายสินค้าประจำวัน',
       type: 'item',
-      url: '/report/dailyproductout',
+      url: '/report/DailyProductOutNew',
+      // url: '/report/dailyproductout',
       icon: FundViewOutlined,
       target: false
       // breadcrumbs: false

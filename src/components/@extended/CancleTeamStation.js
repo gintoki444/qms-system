@@ -35,12 +35,18 @@ function CancleTeamStation({ reserveId, handleReload, reserveData, permission })
     await reserveRequest
       .getReserDetailID(reserveId)
       .then((res) => {
-        if (res) {
+        if (res && res.reserve && Array.isArray(res.reserve) && res.reserve.length > 0) {
           setReservationData(res.reserve[0]);
+          setLoading(false);
+        } else {
+          console.error('Invalid response structure or empty reserve array:', res);
           setLoading(false);
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
   };
 
   // const { enqueueSnackbar } = useSnackbar();

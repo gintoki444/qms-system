@@ -3,11 +3,16 @@ import * as adminRequest from '_api/adminRequest';
 import * as stepRequest from '_api/StepRequest';
 
 async function getReserveData(id) {
-    return await new Promise((resolve) => {
+    return await new Promise((resolve, reject) => {
         reserveRequest.getReserDetailID(id).then((response) => {
-            if (response) {
+            if (response && response.reserve && Array.isArray(response.reserve) && response.reserve.length > 0) {
                 resolve(response.reserve);
+            } else {
+                console.error('Invalid response structure or empty reserve array:', response);
+                reject(new Error('Invalid response structure or empty reserve array'));
             }
+        }).catch((error) => {
+            reject(error);
         });
     });
 }
@@ -45,9 +50,10 @@ const updateTeamData = (reserveId, values) => {
 
 export const updateCancleTeamStation = async (reserveId) => {
     // const [reserData, setReserveData] = useState([]);
-    const reserveData = await getReserveData(reserveId);
-    const contractor_id = reserveData[0].contractor_id;
-    await updateContractor(contractor_id, 'waiting');
+    try {
+        const reserveData = await getReserveData(reserveId);
+        const contractor_id = reserveData[0].contractor_id;
+        await updateContractor(contractor_id, 'waiting');
 
     reserveData[0].warehouse_id = 1;
     reserveData[0].reserve_station_id = 1;
@@ -62,15 +68,19 @@ export const updateCancleTeamStation = async (reserveId) => {
         labor_line_id: null
     };
 
-    await reserveRequest.putReserById(reserveId, reserveData[0]).then((result) => {
-        if (result.status === 'ok') {
-            updateTeamLoading(reserveId, teamValue);
-            updateTeamData(reserveId, []);
-        } else {
-            alert(result['message']['sqlMessage']);
-        }
-    }).catch((error) => {
-        console.log(error);
-    });
-    return reserveData[0];
+        await reserveRequest.putReserById(reserveId, reserveData[0]).then((result) => {
+            if (result.status === 'ok') {
+                updateTeamLoading(reserveId, teamValue);
+                updateTeamData(reserveId, []);
+            } else {
+                alert(result['message']['sqlMessage']);
+            }
+        }).catch((error) => {
+            console.log(error);
+        });
+        return reserveData[0];
+    } catch (error) {
+        console.error('Error in updateCancleTeamStation:', error);
+        throw error;
+    }
 };
