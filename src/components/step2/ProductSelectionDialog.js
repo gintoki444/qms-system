@@ -4,8 +4,10 @@ import {
   Typography,
   FormControl,
   Select,
-  MenuItem
+  MenuItem,
+  Box
 } from '@mui/material';
+import { CheckCircleOutlined, PoweroffOutlined } from '@ant-design/icons';
 import moment from 'moment/min/moment-with-locales';
 
 const ProductSelectionDialog = ({
@@ -17,6 +19,7 @@ const ProductSelectionDialog = ({
   calculateAge,
   sumStock
 }) => {
+
   return (
     <Grid item xs={12} sx={{ mt: 1 }}>
       {orders.length > 0 && (
@@ -68,9 +71,23 @@ const ProductSelectionDialog = ({
                                         เลือกกองสินค้า
                                       </MenuItem>
                                       {orderItem.productRegis &&
-                                        orderItem.productRegis.map(
-                                          (productRegis) =>
-                                            parseFloat(productRegis.total_remain) > 0 && (
+                                        orderItem.productRegis
+                                          .filter((productRegis) => parseFloat(productRegis.total_remain) > 0)
+                                          .sort((a, b) => {
+                                            // เรียงลำดับ: เปิด (A) ก่อน ปิด (อื่นๆ)
+                                            if (a.product_register_staus === 'A' && b.product_register_staus !== 'A') return -1;
+                                            if (a.product_register_staus !== 'A' && b.product_register_staus === 'A') return 1;
+                                            
+                                            // ถ้าสถานะเหมือนกัน ให้เรียงตามวันที่ (เก่าไปหาใหม่)
+                                            if (a.product_register_staus === b.product_register_staus) {
+                                              const dateA = new Date(a.product_register_date);
+                                              const dateB = new Date(b.product_register_date);
+                                              return dateA - dateB; // เก่าไปหาใหม่
+                                            }
+                                            
+                                            return 0;
+                                          })
+                                          .map((productRegis) => (
                                               <MenuItem
                                                 key={productRegis.product_register_id}
                                                 value={productRegis.product_register_id}
@@ -88,40 +105,64 @@ const ProductSelectionDialog = ({
                                                   ) <= 0
                                                 }
                                               >
-                                                {'โกดัง : ' + productRegis.warehouse_name + ' '}
-                                                {productRegis.product_register_name}
-                                                {productRegis.product_register_date
-                                                  ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                      'DD/MM/YY'
-                                                    )}) `
-                                                  : '-'}
-                                                {productRegis.product_register_date ? (
-                                                  <strong style={{ color: 'red' }}>
-                                                    {' '}
-                                                    ({calculateAge(productRegis.product_register_date)})
-                                                  </strong>
-                                                ) : (
-                                                  '-'
-                                                )}
-                                                {productRegis.product_register_remark ? (
-                                                  <strong style={{ color: 'red' }}>
-                                                    {' '}
-                                                    ({productRegis.product_register_remark})
-                                                  </strong>
-                                                ) : (
-                                                  ''
-                                                )}
-                                                <strong> ({parseFloat(productRegis.total_remain).toFixed(3)} ตัน)</strong>
-                                                {stockSelect.filter(
-                                                  (x) => x.product_register_id === productRegis.product_register_id
-                                                ).length > 0 &&
-                                                  ' คงเหลือ ' +
-                                                    parseFloat(
-                                                      sumStock(productRegis.product_register_id, productRegis.total_remain)
-                                                    ).toFixed(3)}
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                                                  {/* สถานะ เปิด/ปิด */}
+                                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: '60px' }}>
+                                                    {productRegis.product_register_staus === 'A' ? (
+                                                      <>
+                                                        <CheckCircleOutlined style={{ color: '#4caf50', fontSize: '14px' }} />
+                                                        <Typography variant="caption" sx={{ color: '#4caf50', fontWeight: 'bold', fontSize: '11px' }}>
+                                                          เปิด
+                                                        </Typography>
+                                                      </>
+                                                    ) : (
+                                                      <>
+                                                        <PoweroffOutlined style={{ color: '#f44336', fontSize: '14px' }} />
+                                                        <Typography variant="caption" sx={{ color: '#f44336', fontWeight: 'bold', fontSize: '11px' }}>
+                                                          ปิด
+                                                        </Typography>
+                                                      </>
+                                                    )}
+                                                  </Box>
+                                                  
+                                                  {/* ข้อมูลกองสินค้า */}
+                                                  <Box sx={{ flex: 1 }}>
+                                                    {'โกดัง : ' + productRegis.warehouse_name + ' '}
+                                                    {productRegis.product_register_name}
+                                                    {productRegis.product_register_date
+                                                      ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
+                                                          'DD/MM/YY'
+                                                        )}) `
+                                                      : '-'}
+                                                    {productRegis.product_register_date ? (
+                                                      <strong style={{ color: 'red' }}>
+                                                        {' '}
+                                                        ({calculateAge(productRegis.product_register_date)})
+                                                      </strong>
+                                                    ) : (
+                                                      '-'
+                                                    )}
+                                                    {productRegis.product_register_remark ? (
+                                                      <strong style={{ color: 'red' }}>
+                                                        {' '}
+                                                        ({productRegis.product_register_remark})
+                                                      </strong>
+                                                    ) : (
+                                                      ''
+                                                    )}
+                                                    <strong> ({parseFloat(productRegis.total_remain).toFixed(3)} ตัน)</strong>
+                                                    {stockSelect.filter(
+                                                      (x) => x.product_register_id === productRegis.product_register_id
+                                                    ).length > 0 &&
+                                                      ' คงเหลือ ' +
+                                                        parseFloat(
+                                                          sumStock(productRegis.product_register_id, productRegis.total_remain)
+                                                        ).toFixed(3)}
+                                                  </Box>
+                                                </Box>
                                               </MenuItem>
                                             )
-                                        )}
+                                          )}
                                     </Select>
                                   </FormControl>
                                 ) : (
@@ -140,45 +181,83 @@ const ProductSelectionDialog = ({
                                         เลือกกองสินค้า
                                       </MenuItem>
                                       {orderItem.productRegis &&
-                                        orderItem.productRegis.map(
-                                          (productRegis) =>
-                                            productRegis.product_register_id === onLoop.product_register_id && (
+                                        orderItem.productRegis
+                                          .filter((productRegis) => productRegis.product_register_id === onLoop.product_register_id)
+                                          .sort((a, b) => {
+                                            // เรียงลำดับ: เปิด (A) ก่อน ปิด (อื่นๆ)
+                                            if (a.product_register_staus === 'A' && b.product_register_staus !== 'A') return -1;
+                                            if (a.product_register_staus !== 'A' && b.product_register_staus === 'A') return 1;
+                                            
+                                            // ถ้าสถานะเหมือนกัน ให้เรียงตามวันที่ (เก่าไปหาใหม่)
+                                            if (a.product_register_staus === b.product_register_staus) {
+                                              const dateA = new Date(a.product_register_date);
+                                              const dateB = new Date(b.product_register_date);
+                                              return dateA - dateB; // เก่าไปหาใหม่
+                                            }
+                                            
+                                            return 0;
+                                          })
+                                          .map((productRegis) => (
                                               <MenuItem
                                                 key={productRegis.product_register_id}
                                                 value={productRegis.product_register_id}
                                                 disabled
                                               >
-                                                {'โกดัง : ' + productRegis.warehouse_name + ' '}
-                                                {productRegis.product_register_name}
-                                                {productRegis.product_register_date
-                                                  ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
-                                                      'DD/MM/YY'
-                                                    )}) `
-                                                  : '-'}
-                                                {productRegis.product_register_date ? (
-                                                  <strong style={{ color: 'red' }}>
-                                                    {' '}
-                                                    ({calculateAge(productRegis.product_register_date)})
-                                                  </strong>
-                                                ) : (
-                                                  '-'
-                                                )}
-                                                {productRegis.product_register_remark ? (
-                                                  <strong style={{ color: 'red' }}>
-                                                    {' '}
-                                                    ({productRegis.product_register_remark})
-                                                  </strong>
-                                                ) : (
-                                                  ''
-                                                )}
-                                                <strong> ({parseFloat(productRegis.total_remain).toFixed(3)} ตัน)</strong>
-                                                <strong>
-                                                  {' '}
-                                                  (เลือกแล้ว {parseFloat(onLoop.product_register_quantity).toFixed(3)} ตัน)
-                                                </strong>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                                                  {/* สถานะ เปิด/ปิด */}
+                                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: '60px' }}>
+                                                    {productRegis.product_register_staus === 'A' ? (
+                                                      <>
+                                                        <CheckCircleOutlined style={{ color: '#4caf50', fontSize: '14px' }} />
+                                                        <Typography variant="caption" sx={{ color: '#4caf50', fontWeight: 'bold', fontSize: '11px' }}>
+                                                          เปิด
+                                                        </Typography>
+                                                      </>
+                                                    ) : (
+                                                      <>
+                                                        <PoweroffOutlined style={{ color: '#f44336', fontSize: '14px' }} />
+                                                        <Typography variant="caption" sx={{ color: '#f44336', fontWeight: 'bold', fontSize: '11px' }}>
+                                                          ปิด
+                                                        </Typography>
+                                                      </>
+                                                    )}
+                                                  </Box>
+                                                  
+                                                  {/* ข้อมูลกองสินค้า */}
+                                                  <Box sx={{ flex: 1 }}>
+                                                    {'โกดัง : ' + productRegis.warehouse_name + ' '}
+                                                    {productRegis.product_register_name}
+                                                    {productRegis.product_register_date
+                                                      ? ` (${moment(productRegis.product_register_date.slice(0, 10)).format(
+                                                          'DD/MM/YY'
+                                                        )}) `
+                                                      : '-'}
+                                                    {productRegis.product_register_date ? (
+                                                      <strong style={{ color: 'red' }}>
+                                                        {' '}
+                                                        ({calculateAge(productRegis.product_register_date)})
+                                                      </strong>
+                                                    ) : (
+                                                      '-'
+                                                    )}
+                                                    {productRegis.product_register_remark ? (
+                                                      <strong style={{ color: 'red' }}>
+                                                        {' '}
+                                                        ({productRegis.product_register_remark})
+                                                      </strong>
+                                                    ) : (
+                                                      ''
+                                                    )}
+                                                    <strong> ({parseFloat(productRegis.total_remain).toFixed(3)} ตัน)</strong>
+                                                    <strong>
+                                                      {' '}
+                                                      (เลือกแล้ว {parseFloat(onLoop.product_register_quantity).toFixed(3)} ตัน)
+                                                    </strong>
+                                                  </Box>
+                                                </Box>
                                               </MenuItem>
                                             )
-                                        )}
+                                          )}
                                     </Select>
                                   </FormControl>
                                 )}

@@ -49,6 +49,12 @@ const headCells = [
     label: 'หมายเลขคิว'
   },
   {
+    id: 'company_name',
+    align: 'left',
+    disablePadding: false,
+    label: 'ลูกค้า'
+  },
+  {
     id: 'vehicle_registration',
     align: 'center',
     disablePadding: false,
@@ -165,7 +171,6 @@ function DailyProductOutTable({ startDate, endDate, clickDownload, onFilter, dat
     return reportRequest
       .getOrdersProduct(startDate, endDate)
       .then((result) => {
-        console.log('result getOrdersProduct *************:', result);
         if (onFilter) {
           setItems(result.filter((x) => x.product_company_id == onFilter));
         } else {
@@ -184,7 +189,6 @@ function DailyProductOutTable({ startDate, endDate, clickDownload, onFilter, dat
     return queueRequest
       .getAllqueueByDateV2(startDate, endDate)
       .then((result) => {
-        console.log('result getAllqueueByDateV2 *************:', result);
         setQueueData(result);
         return result;
       })
@@ -197,8 +201,6 @@ function DailyProductOutTable({ startDate, endDate, clickDownload, onFilter, dat
   // ฟังก์ชัน map ข้อมูล queue กับ product
   const mapQueueWithProduct = (productData, queueData) => {
     const mapped = [];
-    console.log('mapQueueWithProduct - productData:', productData);
-    console.log('mapQueueWithProduct - queueData:', queueData);
 
     // จัดเรียงข้อมูลตามบริษัทก่อน
     const sortedProductData = [...productData].sort((a, b) => {
@@ -222,6 +224,7 @@ function DailyProductOutTable({ startDate, endDate, clickDownload, onFilter, dat
             date: startDate,
             queue: index, // ยังไม่ใส่หมายเลขคิว
             queue_number: item.token || '-',
+            company_name: queueInfo.company_name ? queueInfo.company_name || '-' : '-',
             vehicle_registration: queueInfo ? queueInfo.registration_no || '-' : '-',
             product_name: product.name,
             product_register: product.product_register || '-',
@@ -240,7 +243,7 @@ function DailyProductOutTable({ startDate, endDate, clickDownload, onFilter, dat
         // ถ้าไม่มี items ให้แสดงข้อมูล product หลัก
         const mappedItem = {
           date: startDate,
-          queue: '', // ยังไม่ใส่หมายเลขคิว
+          queue: '',
           queue_number: '-',
           vehicle_registration: '-',
           product_name: product.name,
@@ -404,6 +407,7 @@ function DailyProductOutTable({ startDate, endDate, clickDownload, onFilter, dat
                            {row.queue}
                          </TableCell>
                         <TableCell align="center">{row.queue_number}</TableCell>
+                        <TableCell align="left">{row.company_name}</TableCell>
                         <TableCell align="center">{row.vehicle_registration}</TableCell>
                         <TableCell align="left">
                           <span style={{ display: 'none' }}>{`'`}</span>

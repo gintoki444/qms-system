@@ -64,9 +64,8 @@ const DashboardNew = () => {
   // Function to get product companies and count items
   const getProductCompany = async (dataList) => {
     try {
-      const response = await stepRequest.getAllProductCompany(); // รอการดึงข้อมูลจาก API
-      console.log('response getAllProductCompany :', response);
-      const companyList = await filterProductCom(response); // รอการเรียงลำดับ
+      const response = await stepRequest.getAllProductCompany();
+      const companyList = await filterProductCom(response);
 
       if (response.length > 0) {
         response.map((x) => {

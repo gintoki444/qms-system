@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -12,7 +12,15 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle
+  DialogTitle,
+  TextField,
+  InputAdornment,
+  // IconButton,
+  Stack,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 
 import {
@@ -24,7 +32,9 @@ import {
   FileExcelOutlined,
   HistoryOutlined,
   PoweroffOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  SearchOutlined,
+  ClearOutlined
 } from '@ant-design/icons';
 
 // Link api url
@@ -49,14 +59,46 @@ function ProductManagementTable({ onFilter, permission }) {
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [productList, setProductList] = useState([]);
+  const [groupedProductList, setGroupedProductList] = useState([]);
+  
+  // State สำหรับ filter (เก็บใน localStorage)
+  const [filters, setFilters] = useState(() => {
+    try {
+      const savedFilters = localStorage.getItem('productManagementFilters');
+      return savedFilters ? JSON.parse(savedFilters) : {
+        productName: '',
+        brandName: '',
+        warehouseName: '',
+        status: ''
+      };
+    } catch (error) {
+      console.error('Error loading filters from localStorage:', error);
+      return {
+        productName: '',
+        brandName: '',
+        warehouseName: '',
+        status: ''
+      };
+    }
+  });
+
+  // State สำหรับ debounced filters
+  const [debouncedFilters, setDebouncedFilters] = useState(filters);
+
+  // Debounce filters เพื่อลดการเรียก API
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFilters(filters);
+    }, 300); // รอ 300ms หลังจากการพิมพ์ครั้งสุดท้าย
+
+    return () => clearTimeout(timer);
+  }, [filters]);
 
   useEffect(() => {
     // getPermission();
     getWareHouseManager();
-  }, [onFilter, permission]);
-
-  const [productList, setProductList] = useState([]);
-  const [groupedProductList, setGroupedProductList] = useState([]);
+  }, [onFilter, permission, debouncedFilters]);
 
   const getWareHouseManager = async () => {
     setLoading(true);
@@ -71,6 +113,7 @@ function ProductManagementTable({ onFilter, permission }) {
           processedData = response.filter((x) => x.total_remain > 0);
         }
 
+        processedData = applyFilters(processedData);
         // จัดกลุ่มข้อมูล
         const groupedData = groupProductData(processedData);
         setGroupedProductList(groupedData);
@@ -82,21 +125,38 @@ function ProductManagementTable({ onFilter, permission }) {
     }
   };
 
-  // ฟังก์ชันจัดกลุ่มข้อมูล
-  const groupProductData = (data) => {
-    // เรียงข้อมูลตามวันที่ตั้งกอง (น้อยไปมาก)
+  // ฟังก์ชันจัดกลุ่มข้อมูล (ใช้ useCallback เพื่อเพิ่มประสิทธิภาพ)
+  const groupProductData = useCallback((data) => {
+    // เรียงข้อมูลตามชื่อสินค้า (เช่น 0-0-60, 11-6-34, 12-12-17)
+    // สินค้าที่มีคำว่า "Scrap" จะอยู่ล่างสุด
     const sortedData = [...data].sort((a, b) => {
-      const dateA = new Date(a.product_register_date);
-      const dateB = new Date(b.product_register_date);
-      return dateA - dateB;
+      const aIsScrap = a.name.toLowerCase().includes('scrap');
+      const bIsScrap = b.name.toLowerCase().includes('scrap');
+      
+      // ถ้าทั้งคู่เป็น Scrap หรือทั้งคู่ไม่เป็น Scrap ให้เรียงตามชื่อ
+      if (aIsScrap === bIsScrap) {
+        return a.name.localeCompare(b.name, undefined, { 
+          numeric: true, 
+          sensitivity: 'base' 
+        });
+      }
+      
+      // ถ้า a เป็น Scrap และ b ไม่เป็น Scrap ให้ a อยู่หลัง
+      if (aIsScrap && !bIsScrap) {
+        return 1;
+      }
+      
+      // ถ้า b เป็น Scrap และ a ไม่เป็น Scrap ให้ b อยู่หลัง
+      return -1;
     });
 
-    // จัดกลุ่มตามบริษัทและสินค้า
+    // จัดกลุ่มตามบริษัท → สินค้า → ตรา
     const grouped = {};
 
     sortedData.forEach((item, index) => {
       const companyKey = `${item.product_company_id}_${item.product_company_name_th2}`;
       const productKey = `${companyKey}_${item.name}`;
+      const brandKey = `${productKey}_${item.product_brand_name || 'ไม่มีตรา'}`;
 
       if (!grouped[companyKey]) {
         grouped[companyKey] = {
@@ -112,14 +172,22 @@ function ProductManagementTable({ onFilter, permission }) {
         grouped[companyKey].products[productKey] = {
           productInfo: {
             name: item.name,
-            register_name: item.product_register_name,
-            brand: item.product_brand_name
+            register_name: item.product_register_name
+          },
+          brands: {}
+        };
+      }
+
+      if (!grouped[companyKey].products[productKey].brands[brandKey]) {
+        grouped[companyKey].products[productKey].brands[brandKey] = {
+          brandInfo: {
+            name: item.product_brand_name || 'ไม่มีตรา'
           },
           items: []
         };
       }
 
-      grouped[companyKey].products[productKey].items.push({
+      grouped[companyKey].products[productKey].brands[brandKey].items.push({
         ...item,
         No: index + 1
       });
@@ -139,44 +207,90 @@ function ProductManagementTable({ onFilter, permission }) {
     sortedCompanyKeys.forEach((companyKey) => {
       const company = grouped[companyKey];
 
-      Object.keys(company.products).forEach((productKey) => {
+      // เรียงสินค้าตามชื่อ (สินค้า Scrap อยู่ล่างสุด)
+      const sortedProductKeys = Object.keys(company.products).sort((a, b) => {
+        const productA = company.products[a].productInfo.name;
+        const productB = company.products[b].productInfo.name;
+        
+        const aIsScrap = productA.toLowerCase().includes('scrap');
+        const bIsScrap = productB.toLowerCase().includes('scrap');
+        
+        // ถ้าทั้งคู่เป็น Scrap หรือทั้งคู่ไม่เป็น Scrap ให้เรียงตามชื่อ
+        if (aIsScrap === bIsScrap) {
+          return productA.localeCompare(productB, undefined, { 
+            numeric: true, 
+            sensitivity: 'base' 
+          });
+        }
+        
+        // ถ้า a เป็น Scrap และ b ไม่เป็น Scrap ให้ a อยู่หลัง
+        if (aIsScrap && !bIsScrap) {
+          return 1;
+        }
+        
+        // ถ้า b เป็น Scrap และ a ไม่เป็น Scrap ให้ b อยู่หลัง
+        return -1;
+      });
+
+      sortedProductKeys.forEach((productKey) => {
         const product = company.products[productKey];
 
-        // เพิ่มรายการสินค้า
-        product.items.forEach((item) => {
-          result.push({
-            ...item,
-            No: globalIndex++,
-            isSummary: false,
-            groupKey: `${companyKey}_${productKey}`
+        // เรียงตราสินค้าตามชื่อ
+        const sortedBrandKeys = Object.keys(product.brands).sort((a, b) => {
+          const brandA = product.brands[a].brandInfo.name;
+          const brandB = product.brands[b].brandInfo.name;
+          return brandA.localeCompare(brandB, undefined, { 
+            numeric: true, 
+            sensitivity: 'base' 
           });
         });
 
-        // คำนวณข้อมูลสรุปสำหรับสินค้านี้
-        const summary = calculateProductSummary(product.items);
-        result.push({
-          ...summary,
-          No: '',
-          isSummary: true,
-          groupKey: `${companyKey}_${productKey}`,
-          product_company_id: company.companyInfo.id,
-          product_company_name_th2: company.companyInfo.name,
-          name: product.productInfo.name,
-          product_register_name: product.productInfo.register_name,
-          product_brand_name: product.productInfo.brand,
-          warehouse_name: 'สรุป',
-          product_register_date: '',
-          product_register_remark: '',
-          product_register_id: null
+        sortedBrandKeys.forEach((brandKey) => {
+          const brand = product.brands[brandKey];
+
+          // เรียงรายการสินค้าตามวันที่ตั้งกอง (น้อยไปมาก)
+          const sortedItems = brand.items.sort((a, b) => {
+            const dateA = new Date(a.product_register_date);
+            const dateB = new Date(b.product_register_date);
+            return dateA - dateB;
+          });
+
+          // เพิ่มรายการสินค้า
+          sortedItems.forEach((item) => {
+            result.push({
+              ...item,
+              No: globalIndex++,
+              isSummary: false,
+              groupKey: `${companyKey}_${productKey}_${brandKey}`
+            });
+          });
+
+          // คำนวณข้อมูลสรุปสำหรับตราสินค้านี้
+          const summary = calculateProductSummary(brand.items);
+          result.push({
+            ...summary,
+            No: '',
+            isSummary: true,
+            groupKey: `${companyKey}_${productKey}_${brandKey}`,
+            product_company_id: company.companyInfo.id,
+            product_company_name_th2: company.companyInfo.name,
+            name: product.productInfo.name,
+            product_register_name: product.productInfo.register_name,
+            product_brand_name: brand.brandInfo.name,
+            warehouse_name: 'สรุป',
+            product_register_date: '',
+            product_register_remark: '',
+            product_register_id: null
+          });
         });
       });
     });
 
     return result;
-  };
+  }, []);
 
-  // ฟังก์ชันคำนวณข้อมูลสรุป
-  const calculateProductSummary = (items) => {
+  // ฟังก์ชันคำนวณข้อมูลสรุป (ใช้ useCallback เพื่อเพิ่มประสิทธิภาพ)
+  const calculateProductSummary = useCallback((items) => {
     const summary = {
       register_beginning_balance: 0,
       total_receive: 0,
@@ -192,10 +306,61 @@ function ProductManagementTable({ onFilter, permission }) {
     });
 
     return summary;
+  }, []);
+
+  // ฟังก์ชันจัดการ filter
+  const handleFilterChange = (field, value) => {
+    const newFilters = {
+      ...filters,
+      [field]: value
+    };
+    setFilters(newFilters);
+    // บันทึกลง localStorage
+    try {
+      localStorage.setItem('productManagementFilters', JSON.stringify(newFilters));
+    } catch (error) {
+      console.error('Error saving filters to localStorage:', error);
+    }
   };
 
+  // ฟังก์ชันเคลียร์ filter
+  const clearFilters = () => {
+    const emptyFilters = {
+      productName: '',
+      brandName: '',
+      warehouseName: '',
+      status: ''
+    };
+    setFilters(emptyFilters);
+    // ลบข้อมูลจาก localStorage
+    try {
+      localStorage.removeItem('productManagementFilters');
+    } catch (error) {
+      console.error('Error removing filters from localStorage:', error);
+    }
+  };
+
+  // ฟังก์ชันกรองข้อมูล (ใช้ useMemo เพื่อเพิ่มประสิทธิภาพ)
+  const applyFilters = useCallback((data) => {
+    return data.filter(item => {
+      if (debouncedFilters.productName && !item.name.toLowerCase().includes(debouncedFilters.productName.toLowerCase())) {
+        return false;
+      }
+      if (debouncedFilters.brandName && !item.product_brand_name?.toLowerCase().includes(debouncedFilters.brandName.toLowerCase())) {
+        return false;
+      }
+      if (debouncedFilters.warehouseName && !item.warehouse_name?.toLowerCase().includes(debouncedFilters.warehouseName.toLowerCase())) {
+        return false;
+      }
+      if (debouncedFilters.status && item.product_register_staus !== debouncedFilters.status) {
+        return false;
+      }
+      return true;
+    });
+  }, [debouncedFilters]);
+
   // ฟังก์ชันสร้างสีตามบริษัท (ใช้สีเดียวกับ QueueTag)
-  const getCompanyColor = (companyId) => {
+  const getCompanyColor = useCallback((companyId) => {
     let main;
     switch (parseInt(companyId)) {
       case 1:
@@ -229,10 +394,32 @@ function ProductManagementTable({ onFilter, permission }) {
         main = '#0071C1'; // ใช้สีน้ำเงินเป็นค่าเริ่มต้น
     }
     return main;
+  }, []);
+
+  // ฟังก์ชันสำหรับ navigation
+  const navigate = useNavigate();
+  const historyProductManagement = () => {
+    navigate('/admin/product-register/historys/');
+  };
+
+  const updateProductManagement = (id) => {
+    navigate('/admin/product-register/update/' + id);
+  };
+
+  const addProductReceives = (id) => {
+    navigate('/admin/product-register/add-receive/' + id);
+  };
+
+  const addCutOffProduct = (id) => {
+    navigate('/admin/product-register/add-cutoff/' + id);
+  };
+
+  const productsDetails = (id) => {
+    navigate('/admin/product-register/details/' + id);
   };
 
   // =============== Get Company DataTable ===============//
-  const options = {
+  const options = useMemo(() => ({
     viewColumns: false,
     print: false,
     selectableRows: 'none',
@@ -281,14 +468,16 @@ function ProductManagementTable({ onFilter, permission }) {
             </Tooltip>
           )}
           <Tooltip title="New Export Excel">
-            <ExportProductManage dataList={productList} />
+            <span>
+              <ExportProductManage dataList={productList} />
+            </span>
           </Tooltip>
         </>
       );
     }
-  };
+  }), [groupedProductList, getCompanyColor, productList, onDownload, historyProductManagement]);
 
-  const columns = [
+  const columns = useMemo(() => [
     {
       name: 'No',
       label: 'ลำดับ',
@@ -789,7 +978,7 @@ function ProductManagementTable({ onFilter, permission }) {
         })
       }
     }
-  ];
+  ], [groupedProductList, permission, getCompanyColor]);
   // =============== Get calculateAge จำนวนวัน  ===============//
   const calculateAge = (registrationDate) => {
     if (!registrationDate) return '-';
@@ -846,25 +1035,6 @@ function ProductManagementTable({ onFilter, permission }) {
     }
   };
 
-  const navigate = useNavigate();
-  const updateProductManagement = (id) => {
-    navigate('/admin/product-register/update/' + id);
-  };
-  const historyProductManagement = () => {
-    navigate('/admin/product-register/historys/');
-  };
-
-  const addProductReceives = (id) => {
-    navigate('/admin/product-register/add-receive/' + id);
-  };
-
-  const addCutOffProduct = (id) => {
-    navigate('/admin/product-register/add-cutoff/' + id);
-  };
-
-  const productsDetails = (id) => {
-    navigate('/admin/product-register/details/' + id);
-  };
 
   // ฟังก์ชันเปิด/ปิดสถานะสินค้า
   const toggleProductStatus = async (productId, currentStatus) => {
@@ -893,21 +1063,14 @@ function ProductManagementTable({ onFilter, permission }) {
         product_register_staus: newStatus // ใช้ product_register_staus ตามตัวอย่าง
       };
 
-      console.log('updateData:', updateData);
-      console.log('productId:', productId);
-
-      // เรียก API เพื่ออัปเดตสถานะ
-      const response = await adminRequest.putProductRegisterById(productId, updateData);
-
-      console.log('newStatus :', newStatus);
-      console.log('response adminRequest.putProductRegisterById :', response);
+      await adminRequest.putProductRegisterById(productId, updateData);
 
       // รีเฟรชข้อมูล
       getWareHouseManager();
 
-      // แสดงข้อความแจ้งเตือน
-      const statusText = newStatus === 'A' ? 'เปิด' : 'ปิด';
-      console.log(`สถานะสินค้า ${statusText} เรียบร้อยแล้ว`);
+      // // แสดงข้อความแจ้งเตือน
+      // const statusText = newStatus === 'A' ? 'เปิด' : 'ปิด';
+      // console.log(`สถานะสินค้า ${statusText} เรียบร้อยแล้ว`);
     } catch (error) {
       console.error('เกิดข้อผิดพลาดในการอัปเดตสถานะ:', error);
     } finally {
@@ -948,6 +1111,184 @@ function ProductManagementTable({ onFilter, permission }) {
           <CircularProgress color="primary" />
         </Backdrop>
       )}
+
+      {/* Filter Section */}
+      <Box 
+        sx={{ 
+          // mb: 3, 
+          pt: 3,
+          pl: 3,
+          pr: 3,
+          // background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+          // borderRadius: 2,
+          // boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          // border: '1px solid #dee2e6'
+        }}
+      >
+        {/* <Typography 
+          variant="h6" 
+          sx={{ 
+            mb: 2, 
+            color: '#495057',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
+          }}
+        >
+          <SearchOutlined sx={{ fontSize: '1.2rem', color: '#6c757d' }} />
+          กรองข้อมูล
+        </Typography> */}
+        
+        <Stack 
+          direction="row" 
+          spacing={2} 
+          alignItems="center" 
+          flexWrap="wrap"
+        >
+          <TextField
+            size="small"
+            label="ชื่อสินค้า"
+            value={filters.productName}
+            onChange={(e) => handleFilterChange('productName', e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchOutlined sx={{ color: '#6c757d', fontSize: '1rem' }} />
+                </InputAdornment>
+              )
+            }}
+            sx={{ 
+              minWidth: 200,
+              backgroundColor: 'white',
+              borderRadius: 1,
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': {
+                  borderColor: '#007bff',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#007bff',
+                },
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#007bff',
+              }
+            }}
+          />
+          
+          <TextField
+            size="small"
+            label="ตราสินค้า"
+            value={filters.brandName}
+            onChange={(e) => handleFilterChange('brandName', e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchOutlined sx={{ color: '#6c757d', fontSize: '1rem' }} />
+                </InputAdornment>
+              )
+            }}
+            sx={{ 
+              minWidth: 200,
+              backgroundColor: 'white',
+              borderRadius: 1,
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': {
+                  borderColor: '#007bff',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#007bff',
+                },
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#007bff',
+              }
+            }}
+          />
+          
+          <TextField
+            size="small"
+            label="โกดัง"
+            value={filters.warehouseName}
+            onChange={(e) => handleFilterChange('warehouseName', e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchOutlined sx={{ color: '#6c757d', fontSize: '1rem' }} />
+                </InputAdornment>
+              )
+            }}
+            sx={{ 
+              minWidth: 150,
+              backgroundColor: 'white',
+              borderRadius: 1,
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': {
+                  borderColor: '#007bff',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#007bff',
+                },
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#007bff',
+              }
+            }}
+          />
+          
+          <FormControl 
+            size="small" 
+            sx={{ 
+              minWidth: 120,
+              backgroundColor: 'white',
+              borderRadius: 1,
+              '& .MuiOutlinedInput-root': {
+                '&:hover fieldset': {
+                  borderColor: '#007bff',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#007bff',
+                },
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: '#007bff',
+              }
+            }}
+          >
+            <InputLabel>สถานะ</InputLabel>
+            <Select
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+              label="สถานะ"
+            >
+              <MenuItem value="">ทั้งหมด</MenuItem>
+              <MenuItem value="A">เปิด</MenuItem>
+              <MenuItem value="I">ปิด</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <Button
+            variant="outlined"
+            startIcon={<ClearOutlined />}
+            onClick={clearFilters}
+            sx={{ 
+              minWidth: 120,
+              height: 40,
+              borderColor: '#6c757d',
+              color: '#6c757d',
+              fontWeight: '500',
+              borderRadius: 1,
+              '&:hover': {
+                borderColor: '#495057',
+                backgroundColor: '#f8f9fa',
+                color: '#495057'
+              }
+            }}
+          >
+            เคลียร์
+          </Button>
+        </Stack>
+      </Box>
 
       <MUIDataTable
         title={<Typography variant="h5">ข้อมูลกองสินค้า</Typography>}

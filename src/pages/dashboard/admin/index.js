@@ -123,7 +123,6 @@ const AdminDashboard = () => {
     try {
       const response = await stepRequest.getAllProductCompany(); // รอการดึงข้อมูลจาก API
       const companyList = await filterProductCom(response); // รอการเรียงลำดับ
-      // console.log('companyList :', companyList);
 
       if (response.length > 0) {
         response.map((x) => {
@@ -176,16 +175,12 @@ const AdminDashboard = () => {
         summaryData.sum_cars_count = summaryData.sum_cars_count + (x.queues_counts - x.step1_cancel_count);
         summaryData.sum_total_quantity = summaryData.sum_total_quantity + setnumber;
         summaryData.sum_total_order = summaryData.sum_total_order + x.queues_counts_orderonly;
-        // console.log('x.total_quantity_orderonly *1  :', typeof (x.total_quantity_orderonly * 1));
-
         summaryTime.step2_total_duration_minutes = summaryTime.step2_total_duration_minutes + x.step2_total_duration_minutes2 * 1;
         summaryTime.step2_cars_count = summaryTime.step2_cars_count + x.step2_cars_count;
         summaryTime.step2_average_minutes = summaryTime.step2_total_duration_minutes / summaryTime.step2_cars_count;
         summaryTime.step2_total_quantity = summaryTime.step2_total_quantity + x.step2_total_quantity * 1;
       });
     }
-    // console.log(summaryData);
-    // console.log('summaryTime :', summaryTime);
     setQueueSumTimeStep2(summaryTime);
     setQueueSummary(summaryData);
   };

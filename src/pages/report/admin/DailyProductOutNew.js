@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
 
 import { useDownloadExcel } from 'react-export-table-to-excel';
 // import ExportDailyProductout from './export/ExportDailyProductout';
@@ -18,6 +19,30 @@ import * as stepRequest from '_api/StepRequest';
 import QueueTab from 'components/@extended/QueueTab';
 // import OrderTable from 'pages/dashboard/admin/OrdersTable';
 import DailyProductOutTableNew from './DailyProductOutTableNew';
+import DailyProductOutTable from './DailyProductOutTable';
+
+// TabPanel component
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`table-tabpanel-${index}`}
+      aria-labelledby={`table-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired
+};
 
 const DailyProductOut = () => {
   const pageId = 25;
@@ -118,6 +143,12 @@ const DailyProductOut = () => {
   const [valueFilter, setValueFilter] = useState('');
   const handleChange = (newValue) => {
     setValueFilter(newValue);
+  };
+
+  // State สำหรับจัดการ tab ของตาราง
+  const [tableTabValue, setTableTabValue] = useState(0);
+  const handleTableTabChange = (event, newValue) => {
+    setTableTabValue(newValue);
   };
 
   const handleQueueData = (data) => {
@@ -243,13 +274,38 @@ const DailyProductOut = () => {
               >
                 <Divider></Divider>
                 <Box sx={{ pt: 1 }}>
-                  <DailyProductOutTableNew
-                    startDate={selectedDateRange.startDate}
-                    endDate={selectedDateRange.endDate}
-                    onFilter={valueFilter}
-                    clickDownload={tableRef}
-                    dataList={handleQueueData}
-                  />
+                  {/* Tab สำหรับเลือกประเภทตาราง */}
+                  <Tabs 
+                    value={tableTabValue} 
+                    onChange={handleTableTabChange} 
+                    aria-label="table-type-tabs"
+                    sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
+                  >
+                    <Tab label="สรุปยอดสินค้า(ตามบริษัท)" />
+                    <Tab label="สรุปยอดสินค้า(ตามสินค้า)" />
+                  </Tabs>
+
+                  {/* TabPanel สำหรับรายละเอียดคิว */}
+                  <TabPanel value={tableTabValue} index={0}>
+                    <DailyProductOutTableNew
+                      startDate={selectedDateRange.startDate}
+                      endDate={selectedDateRange.endDate}
+                      onFilter={valueFilter}
+                      clickDownload={tableRef}
+                      dataList={handleQueueData}
+                    />
+                  </TabPanel>
+
+                  {/* TabPanel สำหรับสรุปยอดสินค้า */}
+                  <TabPanel value={tableTabValue} index={1}>
+                    <DailyProductOutTable
+                      startDate={selectedDateRange.startDate}
+                      endDate={selectedDateRange.endDate}
+                      onFilter={valueFilter}
+                      clickDownload={tableRef}
+                      dataList={handleQueueData}
+                    />
+                  </TabPanel>
                 </Box>
               </MainCard>
             )}

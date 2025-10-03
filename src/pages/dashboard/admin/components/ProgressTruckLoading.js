@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, LinearProgress } from '@mui/material';
 // import ReactApexChart from 'react-apexcharts';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import { fetchProgressTruckLoading } from '_api/dashboardRequest';
+import { fetchProgressTruckLoading, fetchAvgLoadingTime } from '_api/dashboardRequest';
 import DashboardCard from './DashboardCard';
 import CompanyCodeConverter from 'components/CompanyCodeConverter';
 // import CompanyCodeConverter from '../../../components/CompanyCodeConverter';
@@ -20,17 +20,34 @@ const ProgressTruckLoading = ({ date }) => {
       setError(null);
 
       try {
-        const result = await fetchProgressTruckLoading(date);
-        const items = result.items || result;
+        // Fetch both progress data and average loading time data
+        const [progressResult, avgTimeResult] = await Promise.all([
+          fetchProgressTruckLoading(date),
+          fetchAvgLoadingTime(date)
+        ]);
+
+        const progressItems = progressResult.items || progressResult;
+        const avgTimeItems = avgTimeResult.items || avgTimeResult;
+        // Create a map of company code to average loading time
+        const avgTimeMap = {};
+        avgTimeItems.forEach(item => {
+          const companyCode = item.product_company_code;
+          if (companyCode) {
+            avgTimeMap[companyCode] = item.avg_loading_min || 0;
+          }
+        });
 
         // Transform the data to match the component's expected format
-        const transformedData = items.map((item, index) => ({
-          company: item.product_company_code || item.product_company_name_th || `Company ${index + 1}`,
-          loaded: item.finished_step2 || 0,
-          total: item.total_target || 0,
-          percentage: item.total_target > 0 ? Math.round((item.finished_step2 / item.total_target) * 100) : 0,
-          avgLoadingMin: item.avg_loading_min || 0
-        }));
+        const transformedData = progressItems.map((item, index) => {
+          const companyCode = item.product_company_code || item.product_company_name_th || `Company ${index + 1}`;
+          return {
+            company: companyCode,
+            loaded: item.finished_step2 || 0,
+            total: item.total_target || 0,
+            percentage: item.total_target > 0 ? Math.round((item.finished_step2 / item.total_target) * 100) : 0,
+            avgLoadingMin: avgTimeMap[companyCode] || 0
+          };
+        });
 
         setData(transformedData);
       } catch (err) {
