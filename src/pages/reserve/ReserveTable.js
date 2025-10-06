@@ -134,7 +134,6 @@ export default function ReserveTable({ startDate, endDate, permission, onFilter,
             No: index + 1
           };
         });
-        console.log('newData ***************:', newData);
         reserList(newData);
         setItems(newData);
         setLoading(false);

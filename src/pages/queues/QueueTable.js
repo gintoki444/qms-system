@@ -26,7 +26,9 @@ import {
   Radio,
   RadioGroup,
   FormControlLabel,
-  FormControl
+  FormControl,
+  Snackbar,
+  Alert
 } from '@mui/material';
 
 import { ProfileOutlined, DeleteOutlined, RetweetOutlined } from '@ant-design/icons';
@@ -258,6 +260,7 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
 
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -355,7 +358,25 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       label: 'ทะเบียนรถ',
       options: {
         sort: true,
-        customBodyRender: (value) => <Chip color={'primary'} label={value} sx={{ width: 122, border: 1 }} />
+        customBodyRender: (value) => (
+          <Tooltip title={`คลิกเพื่อคัดลอก: ${value}`}>
+            <Chip 
+              color={'primary'} 
+              label={value} 
+              sx={{ 
+                width: 122, 
+                border: 1,
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: 'primary.dark',
+                  transform: 'scale(1.05)'
+                },
+                transition: 'all 0.2s ease-in-out'
+              }}
+              onClick={() => copyToClipboard(value)}
+            />
+          </Tooltip>
+        )
       }
     },
     {
@@ -586,6 +607,26 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
     navigate('/queues/detail/' + id);
   };
 
+  // ฟังก์ชันสำหรับ copy ทะเบียนรถ
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -629,6 +670,17 @@ export default function QueueTable({ startDate, endDate, permission, queusList, 
       )}
 
       <MUIDataTable title={<Typography variant="h5">ข้อมูลคิวรับสินค้า</Typography>} data={items} columns={columns} options={options} />
+      
+      <Snackbar
+        open={copySuccess}
+        autoHideDuration={2000}
+        onClose={() => setCopySuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setCopySuccess(false)} severity="success" sx={{ width: '100%' }}>
+          คัดลอกทะเบียนรถเรียบร้อยแล้ว!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

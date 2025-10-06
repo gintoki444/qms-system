@@ -1010,6 +1010,12 @@ function ProductManagementTable({ onFilter, permission }) {
   const [product_id, setProductId] = useState(false);
   const [textnotify, setText] = useState('');
 
+  // Modal สำหรับการเปิด/ปิดสถานะ
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [statusProductId, setStatusProductId] = useState(null);
+  const [statusProductData, setStatusProductData] = useState(null);
+  const [statusAction, setStatusAction] = useState(''); // 'open' หรือ 'close'
+
   const handleClickOpen = (manager_id) => {
     setProductId(manager_id);
     setText('ลบข้อมูล');
@@ -1025,6 +1031,36 @@ function ProductManagementTable({ onFilter, permission }) {
     }
   };
 
+  // ฟังก์ชันเปิด modal แจ้งเตือนการเปิด/ปิดสถานะ
+  const handleStatusModalOpen = (productId, currentStatus) => {
+    const productData = productList.find((item) => item.product_register_id === productId);
+    if (!productData) {
+      console.error('ไม่พบข้อมูลสินค้า');
+      return;
+    }
+
+    setStatusProductId(productId);
+    setStatusProductData(productData);
+    setStatusAction(currentStatus === 'A' ? 'close' : 'open');
+    setStatusModalOpen(true);
+  };
+
+  // ฟังก์ชันปิด modal แจ้งเตือนการเปิด/ปิดสถานะ
+  const handleStatusModalClose = (flag) => {
+    if (flag === 1) {
+      // ยืนยันการเปลี่ยนสถานะ
+      setLoading(true);
+      setStatusModalOpen(false);
+      executeStatusChange(statusProductId, statusProductData.product_register_staus);
+    } else {
+      // ยกเลิก
+      setStatusModalOpen(false);
+      setStatusProductId(null);
+      setStatusProductData(null);
+      setStatusAction('');
+    }
+  };
+
   const deteteProductManagement = (id) => {
     try {
       adminRequest.deteteProductRegister(id).then(() => {
@@ -1036,10 +1072,14 @@ function ProductManagementTable({ onFilter, permission }) {
   };
 
 
-  // ฟังก์ชันเปิด/ปิดสถานะสินค้า
-  const toggleProductStatus = async (productId, currentStatus) => {
+  // ฟังก์ชันเปิด/ปิดสถานะสินค้า (เรียก modal แจ้งเตือนก่อน)
+  const toggleProductStatus = (productId, currentStatus) => {
+    handleStatusModalOpen(productId, currentStatus);
+  };
+
+  // ฟังก์ชันดำเนินการเปลี่ยนสถานะจริง
+  const executeStatusChange = async (productId, currentStatus) => {
     try {
-      setLoading(true);
       const newStatus = currentStatus === 'A' ? 'I' : 'A';
 
       // หาข้อมูลสินค้าจาก productList
@@ -1099,6 +1139,53 @@ function ProductManagementTable({ onFilter, permission }) {
           </Button>
           <Button color="primary" variant="contained" onClick={() => handleClose(1)} autoFocus>
             ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal แจ้งเตือนการเปิด/ปิดสถานะ */}
+      <Dialog open={statusModalOpen} fullWidth maxWidth="xs" onClose={() => handleStatusModalClose(0)} aria-labelledby="status-dialog-title">
+        <DialogTitle id="status-dialog-title" align="center">
+          <Typography variant="h5" sx={{ color: statusAction === 'open' ? '#4caf50' : '#f44336' }}>
+            แจ้งเตือนการ{statusAction === 'open' ? 'เปิด' : 'ปิด'}สถานะ
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ textAlign: 'center', fontSize: '16px' }}>
+            {statusProductData && (
+              <>
+                คุณต้องการ{statusAction === 'open' ? 'เปิด' : 'ปิด'}สถานะสินค้า : {' '}
+                <strong style={{ color: statusAction === 'open' ? '#4caf50' : '#f44336' }}>
+                  {statusProductData.name}
+                </strong>
+                <br />
+                ตรา: <strong style={{ color: '#000' }}>{statusProductData.product_brand_name || 'ไม่มีตรา'}</strong>
+                <br />
+                โกดัง: <strong style={{ color: '#000' }} >{statusProductData.warehouse_name}</strong>
+                <br />
+                หรือไม่?
+              </>
+            )}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions align="center" sx={{ justifyContent: 'center!important', pb: 2 }}>
+          <Button 
+            color="error" 
+            variant="outlined" 
+            autoFocus 
+            onClick={() => handleStatusModalClose(0)}
+            sx={{ minWidth: 100 }}
+          >
+            ยกเลิก
+          </Button>
+          <Button 
+            color={statusAction === 'open' ? 'success' : 'error'} 
+            variant="contained" 
+            onClick={() => handleStatusModalClose(1)} 
+            autoFocus
+            sx={{ minWidth: 100 }}
+          >
+            ยืนยัน{statusAction === 'open' ? 'เปิด' : 'ปิด'}
           </Button>
         </DialogActions>
       </Dialog>

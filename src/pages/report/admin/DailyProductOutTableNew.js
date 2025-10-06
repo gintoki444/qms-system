@@ -218,7 +218,6 @@ function DailyProductOutTable({ startDate, endDate, clickDownload, onFilter, dat
         product.items.forEach((item, index) => {
           // หาข้อมูล queue ที่ตรงกับ token
           const queueInfo = queueData.find((q) => q.token === item.token);
-          console.log('item.token:', item.token, 'queueInfo:', queueInfo);
 
           const mappedItem = {
             date: startDate,
@@ -316,7 +315,6 @@ function DailyProductOutTable({ startDate, endDate, clickDownload, onFilter, dat
       item.queue = `${queueGroupCounter}/${itemIndexInGroup}`;
     });
 
-    console.log('mapped data:', sortedMappedData);
     return sortedMappedData;
   };
 
