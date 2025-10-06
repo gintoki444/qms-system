@@ -414,27 +414,52 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {}, [orders]);
-  const getOrderOfReserve = async (id, status) => {
+  const getOrderOfReserve = async (id, status, queuesData) => {
     try {
+
       await reserveRequest.getOrderByReserveId(id).then(async (response) => {
         if (response.length > 0) {
           const getAllProductRegis = await getProductRegisters(status); // หรือ 'อื่นๆ' ตามที่คุณต้องการ
-
-          console.log('getAllProductRegis :', getAllProductRegis);
+          
           for (let result of response) {
             const allProductRegis = await getItemsRegisByOrder(result.order_id);
 
-            // const getAllProductRegis = await getProductRegistersComBrand(result.product_company_id, result.product_brand_id);
             if (result.product_company_id && result.product_brand_id) {
               for (let data of result.items) {
                 // เพิ่มพารามิเตอร์ status ในการเรียก getProductRegisters
 
-                const getProductRegis = getAllProductRegis.filter(
+                let getProductRegis = getAllProductRegis.filter(
                   (x) =>
                     x.product_id == data.product_id &&
                     x.product_brand_id == result.product_brand_id &&
                     x.product_company_id == result.product_company_id
                 );
+
+                // ถ้า recall_status = 'Y' ให้ดึงข้อมูลเพิ่มเติมจาก getProductsRegisByComBrand
+                if (status === 'call' && queuesData.recall_status === 'Y') {
+                  const getAllProductRegisComBrand = await adminRequest.getProductsRegisByComBrand(
+                    result.product_company_id, 
+                    result.product_brand_id
+                  );
+                  
+                  // รวมข้อมูลจาก getProductsRegisByComBrand เข้ากับ getProductRegis
+                  const additionalProductRegis = getAllProductRegisComBrand.filter(
+                    (x) => x.product_id == data.product_id
+                  );
+                  
+                  // รวมข้อมูลโดยไม่ให้ซ้ำกัน
+                  const combinedProductRegis = [...getProductRegis];
+                  additionalProductRegis.forEach(additional => {
+                    const exists = combinedProductRegis.some(
+                      existing => existing.product_register_id === additional.product_register_id
+                    );
+                    if (!exists) {
+                      combinedProductRegis.push(additional);
+                    }
+                  });
+                  
+                  getProductRegis = combinedProductRegis;
+                }
 
                 data.productRegis = getProductRegis;
                 console.log('data :', data);
@@ -931,7 +956,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
       setSaveLoading(true);
       await Promise.all([
         // await getProductRegisters(),
-        await getOrderOfReserve(queuesData.reserve_id, 'call'),
+        await getOrderOfReserve(queuesData.reserve_id, 'call', queuesData),
         await getReserveId(queuesData.reserve_id)
       ]).then(() => {
         setSaveLoading(false); // ปิดการแสดง Loading เมื่อข้อมูลทั้งหมดถูกโหลดเสร็จ

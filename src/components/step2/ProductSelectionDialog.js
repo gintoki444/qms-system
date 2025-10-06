@@ -20,6 +20,51 @@ const ProductSelectionDialog = ({
   sumStock
 }) => {
 
+  // ฟังก์ชันคำนวณจำนวนกองสินค้าที่เปิดทั้งหมด
+  const calculateOpenStockTotal = (productRegisList) => {
+    const openStocks = productRegisList.filter((productRegis) => 
+      parseFloat(productRegis.total_remain) > 0 && 
+      productRegis.product_register_staus === 'A'
+    );
+    
+    const total = openStocks.reduce((total, productRegis) => {
+      const remainingStock = stockSelect.filter(
+        (x) => x.product_register_id === productRegis.product_register_id
+      ).length > 0 
+        ? parseFloat(sumStock(productRegis.product_register_id, productRegis.total_remain))
+        : parseFloat(productRegis.total_remain);
+      return total + remainingStock;
+    }, 0);
+    
+    console.log('Debug calculateOpenStockTotal:', {
+      openStocks: openStocks.map(s => ({
+        id: s.product_register_id,
+        total_remain: s.total_remain,
+        status: s.product_register_staus
+      })),
+      total
+    });
+    
+    return total;
+  };
+
+  // ฟังก์ชันตรวจสอบว่าควรแสดงกองสินค้าที่ปิดหรือไม่
+  const shouldShowClosedStock = (orderItem) => {
+    if (!orderItem.productRegis) return false;
+    
+    const openStockTotal = calculateOpenStockTotal(orderItem.productRegis);
+    const requiredQuantity = parseFloat(orderItem.quantity);
+    
+    console.log('Debug shouldShowClosedStock:', {
+      openStockTotal,
+      requiredQuantity,
+      shouldShow: openStockTotal < requiredQuantity
+    });
+    
+    // ถ้าจำนวนกองสินค้าที่เปิดไม่เพียงพอ ให้แสดงกองสินค้าที่ปิดด้วย
+    return openStockTotal < requiredQuantity;
+  };
+
   return (
     <Grid item xs={12} sx={{ mt: 1 }}>
       {orders.length > 0 && (
@@ -72,7 +117,16 @@ const ProductSelectionDialog = ({
                                       </MenuItem>
                                       {orderItem.productRegis &&
                                         orderItem.productRegis
-                                          .filter((productRegis) => parseFloat(productRegis.total_remain) > 0)
+                                          .filter((productRegis) => {
+                                            // กรองกองสินค้าที่มีจำนวนมากกว่า 0
+                                            if (parseFloat(productRegis.total_remain) <= 0) return false;
+                                            
+                                            // ถ้ากองสินค้าเปิด ให้แสดง
+                                            if (productRegis.product_register_staus === 'A') return true;
+                                            
+                                            // ถ้ากองสินค้าปิด ให้ตรวจสอบว่าจำนวนกองสินค้าที่เปิดเพียงพอหรือไม่
+                                            return shouldShowClosedStock(orderItem);
+                                          })
                                           .sort((a, b) => {
                                             // เรียงลำดับ: เปิด (A) ก่อน ปิด (อื่นๆ)
                                             if (a.product_register_staus === 'A' && b.product_register_staus !== 'A') return -1;
@@ -182,7 +236,16 @@ const ProductSelectionDialog = ({
                                       </MenuItem>
                                       {orderItem.productRegis &&
                                         orderItem.productRegis
-                                          .filter((productRegis) => productRegis.product_register_id === onLoop.product_register_id)
+                                          .filter((productRegis) => {
+                                            // แสดงเฉพาะกองสินค้าที่เลือกแล้ว
+                                            if (productRegis.product_register_id !== onLoop.product_register_id) return false;
+                                            
+                                            // ถ้ากองสินค้าเปิด ให้แสดง
+                                            if (productRegis.product_register_staus === 'A') return true;
+                                            
+                                            // ถ้ากองสินค้าปิด ให้ตรวจสอบว่าจำนวนกองสินค้าที่เปิดเพียงพอหรือไม่
+                                            return shouldShowClosedStock(orderItem);
+                                          })
                                           .sort((a, b) => {
                                             // เรียงลำดับ: เปิด (A) ก่อน ปิด (อื่นๆ)
                                             if (a.product_register_staus === 'A' && b.product_register_staus !== 'A') return -1;
