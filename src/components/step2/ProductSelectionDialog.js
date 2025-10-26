@@ -36,14 +36,14 @@ const ProductSelectionDialog = ({
       return total + remainingStock;
     }, 0);
     
-    console.log('Debug calculateOpenStockTotal:', {
-      openStocks: openStocks.map(s => ({
-        id: s.product_register_id,
-        total_remain: s.total_remain,
-        status: s.product_register_staus
-      })),
-      total
-    });
+    // console.log('Debug calculateOpenStockTotal:', {
+    //   openStocks: openStocks.map(s => ({
+    //     id: s.product_register_id,
+    //     total_remain: s.total_remain,
+    //     status: s.product_register_staus
+    //   })),
+    //   total
+    // });
     
     return total;
   };
@@ -55,11 +55,11 @@ const ProductSelectionDialog = ({
     const openStockTotal = calculateOpenStockTotal(orderItem.productRegis);
     const requiredQuantity = parseFloat(orderItem.quantity);
     
-    console.log('Debug shouldShowClosedStock:', {
-      openStockTotal,
-      requiredQuantity,
-      shouldShow: openStockTotal < requiredQuantity
-    });
+    // console.log('Debug shouldShowClosedStock:', {
+    //   openStockTotal,
+    //   requiredQuantity,
+    //   shouldShow: openStockTotal < requiredQuantity
+    // });
     
     // ถ้าจำนวนกองสินค้าที่เปิดไม่เพียงพอ ให้แสดงกองสินค้าที่ปิดด้วย
     return openStockTotal < requiredQuantity;

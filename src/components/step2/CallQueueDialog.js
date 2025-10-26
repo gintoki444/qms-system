@@ -108,7 +108,7 @@ const CallQueueDialog = ({
           </>
         ) : (
           <>
-            {stockSelect.length > 0 && (
+            {/* {stockSelect.length > 0 && ( */}
               <Button
                 color="warning"
                 variant="contained"
@@ -117,7 +117,7 @@ const CallQueueDialog = ({
               >
                 รีเซ็ต
               </Button>
-            )}
+            {/* )} */}
             <Button color="error" variant="contained" autoFocus onClick={() => onClose(0)}>
               ยกเลิก
             </Button>

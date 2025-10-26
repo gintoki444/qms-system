@@ -436,7 +436,7 @@ export const Step2Table = ({ status, title, onStatusChange, onFilter, permission
                 );
 
                 // ถ้า recall_status = 'Y' ให้ดึงข้อมูลเพิ่มเติมจาก getProductsRegisByComBrand
-                if (status === 'call' && queuesData.recall_status === 'Y') {
+                if (status === 'call' && queuesData && queuesData.recall_status === 'Y') {
                   const getAllProductRegisComBrand = await adminRequest.getProductsRegisByComBrand(
                     result.product_company_id, 
                     result.product_brand_id
